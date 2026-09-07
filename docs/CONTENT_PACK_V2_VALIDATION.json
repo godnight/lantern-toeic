@@ -1,0 +1,53 @@
+{
+  "status": "passed",
+  "questionCount": 40,
+  "partCounts": {
+    "2": 8,
+    "3": 6,
+    "4": 6,
+    "5": 8,
+    "6": 8,
+    "7": 4
+  },
+  "answerPositionsPart2": {
+    "A": 3,
+    "B": 3,
+    "C": 2
+  },
+  "answerPositionsFourChoice": {
+    "A": 8,
+    "B": 8,
+    "C": 8,
+    "D": 8
+  },
+  "difficultyCounts": {
+    "基础": 26,
+    "进阶": 14
+  },
+  "groupSizes": {
+    "conversation-v2-handouts": 3,
+    "conversation-v2-shuttle": 3,
+    "talk-v2-training": 3,
+    "talk-v2-exhibition": 3,
+    "text-v2-visitor": 4,
+    "text-v2-shuttle": 4,
+    "passage-v2-ereader": 2,
+    "documents-v2-print-order": 2
+  },
+  "checks": [
+    "required field types and nonempty strings",
+    "new unique IDs and question fingerprints",
+    "option count, distinctness and answer-index bounds",
+    "Part 2 transcript includes all response options",
+    "all listening transcript/audioText equal",
+    "shared group texts and translations exactly equal",
+    "Part 3 clean two-speaker labels",
+    "Part 5 correct answer reconstructs evidence sentence",
+    "Part 6 four unique blanks and one sentence insertion per group",
+    "Part 7 one single passage and one double-document group",
+    "balanced answer positions",
+    "content version and honest provenance metadata"
+  ],
+  "semanticReview": "Second-pass model review completed for all 40 keys, supporting evidence, alternatives and translations; not human review or empirical item calibration.",
+  "humanReviewed": false
+}

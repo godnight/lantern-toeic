@@ -1,10 +1,43 @@
-# Draft: not executed in the current development environment.
-# Place at .github/workflows/android-debug.yml to enable manual debug builds.
-# This workflow does not deploy the Site or publish a store release.
+# Builds a debug-signed internal test APK; no Site or store deployment.
 name: Android debug APK
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'hooks/**'
+      - 'lib/**'
+      - 'content/**'
+      - 'public/**'
+      - 'mobile/**'
+      - 'build/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - '.openai/hosting.json'
+      - '.github/workflows/android-debug.yml'
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'hooks/**'
+      - 'lib/**'
+      - 'content/**'
+      - 'public/**'
+      - 'mobile/**'
+      - 'build/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - '.openai/hosting.json'
+      - '.github/workflows/android-debug.yml'
 
 permissions:
   contents: read
@@ -20,13 +53,11 @@ jobs:
     defaults:
       run:
         shell: bash
-
     steps:
       - name: Check out source
         uses: actions/checkout@v7
         with:
           persist-credentials: false
-
       - name: Set up Node 22
         uses: actions/setup-node@v7
         with:
@@ -35,46 +66,72 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             mobile/package-lock.json
-
       - name: Set up JDK 21
         uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
-
       - name: Set up Android SDK 36
         uses: android-actions/setup-android@v4
         with:
           packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
-
       - name: Install shared frontend dependencies
         run: npm ci
-
       - name: Install mobile dependencies
         working-directory: mobile
         run: npm ci
-
       - name: Verify study behavior and types
-        run: npm run typecheck && npm run test:study
-
+        run: |
+          npm run typecheck
+          npm run test:study
       - name: Build local mobile web assets
         working-directory: mobile
         run: npm run build
-
       - name: Sync Android project
         working-directory: mobile
         run: npx cap sync android
-
       - name: Build debug APK
         working-directory: mobile/android
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleDebug
-
+          ./gradlew --no-daemon --stacktrace assembleDebug
+      - name: Verify APK contains the complete offline web bundle
+        run: |
+          python3 - <<'PYCODE'
+          from pathlib import Path
+          from zipfile import ZipFile
+          apk = Path('mobile/android/app/build/outputs/apk/debug/app-debug.apk')
+          bundle = Path('mobile/dist')
+          assert (bundle / 'index.html').is_file(), 'Missing web entrypoint'
+          with ZipFile(apk) as archive:
+              for source in bundle.rglob('*'):
+                  if source.is_file():
+                      target = 'assets/public/' + source.relative_to(bundle).as_posix()
+                      assert archive.read(target) == source.read_bytes(), f'Missing or stale APK asset: {target}'
+          print('APK contains every bundled web asset, including practice images.')
+          PYCODE
+      - name: Record APK checksum and source revision
+        working-directory: mobile/android/app/build/outputs/apk/debug
+        env:
+          SOURCE_REVISION: ${{ github.sha }}
+          BUILD_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          sha256sum app-debug.apk > app-debug.apk.sha256
+          printf 'Source: %s\nBuild: %s\nType: debug-signed internal Android test APK\n' "$SOURCE_REVISION" "$BUILD_RUN_URL" > build-info.txt
       - name: Upload debug APK
+        id: apk
         uses: actions/upload-artifact@v7
         with:
-          name: lantern-toeic-android-debug-${{ github.run_number }}
-          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          name: lantern-toeic-android-debug-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            mobile/android/app/build/outputs/apk/debug/app-debug.apk
+            mobile/android/app/build/outputs/apk/debug/app-debug.apk.sha256
+            mobile/android/app/build/outputs/apk/debug/build-info.txt
           if-no-files-found: error
           retention-days: 14
+          compression-level: 0
+      - name: Add APK download to build summary
+        env:
+          APK_ARTIFACT_URL: ${{ steps.apk.outputs.artifact-url }}
+        run: |
+          printf 'Download the [Android test APK archive](%s), unzip it, and install app-debug.apk on a test Android device.\n\nThis build checks compilation and packaged assets. Microphone, audio playback, and persistence still need device acceptance.\n' "$APK_ARTIFACT_URL" >> "$GITHUB_STEP_SUMMARY"

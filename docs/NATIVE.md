@@ -2,7 +2,7 @@
 
 本仓库同时保留网页版与原生客户端。原生端是 `mobile/` 下的 Vite + Capacitor 工程，复用 `app/study-app.tsx`、练习组件和学习数据模型。它将本地前端资源打包进 App，不在 WebView 中加载远程 Site。
 
-**当前状态：Android 和 iOS 源码已生成；原生编译、真机录音及分发尚未验证。** 本次开发环境没有 Android SDK / JDK，也没有 macOS / Xcode。不能把 Vite 构建或 `cap sync` 成功等同于 APK / iOS 构建成功。配套 Android 工作流是待执行草案，没有成功运行记录。
+**当前状态：Android 和 iOS 源码已生成；原生编译、真机录音及分发尚未验证。** 本次开发环境有JDK17，但缺少所需JDK21、Android SDK及macOS/Xcode。不能把 Vite 构建或 `cap sync` 成功等同于 APK / iOS 构建成功。已加入Android自动打包和iOS模拟器编译工作流；实际执行结果见项目状态。
 
 ## 工程入口与数据边界
 
@@ -90,7 +90,7 @@ xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -sdk 
 
 打包前检查以下平台声明：
 
-- Android：`mobile/android/app/src/main/AndroidManifest.xml` 包含 `android.permission.RECORD_AUDIO`；还需要系统运行时权限及 WebView 媒体授权正常通过，Manifest 声明本身不足以证明录音可用。
+- Android：`mobile/android/app/src/main/AndroidManifest.xml` 包含 `android.permission.RECORD_AUDIO` 和 `android.permission.MODIFY_AUDIO_SETTINGS`；还需要系统运行时权限及 WebView 媒体授权正常通过，Manifest 声明本身不足以证明录音可用。
 - iOS：`mobile/ios/App/App/Info.plist` 包含清楚说明口语练习用途的 `NSMicrophoneUsageDescription`；WKWebView 实际录音需真机验证。
 - 不要求摄像头、通讯录、位置或宽泛存储权限。当前录音保存于应用自己的 WebView 存储。
 
@@ -98,11 +98,11 @@ xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -sdk 
 
 听力起步包使用系统 `speechSynthesis`，不是内置真人音频。原生 WebView 是否提供该 API、英语声音是否可用，均需单独验证；不支持时应给出明确提示，不应承诺离线听力可用。原生文件下载、外部官方链接、状态栏安全区和键盘遮挡也在真机验收范围内。
 
-## Android CI 草案
+## 自动原生构建
 
-将配套 `android-debug.yml` 放入仓库 `.github/workflows/android-debug.yml` 后，可通过 GitHub Actions 的手动入口运行。工作流只读检出仓库，安装根与 `mobile/` 两套锁定依赖，构建本地前端、同步 Android 工程，使用 JDK 21 / SDK 36 编译 debug APK，并上传成功生成的 APK 工件。
+`.github/workflows/android-debug.yml` 在main相关代码更新、PR或手动操作时运行。另有 `ios-simulator.yml` 在macos-26编译无签名模拟器目标，不生成iPhone安装包。工作流只读检出仓库，安装根与 `mobile/` 两套锁定依赖，构建本地前端、同步 Android 工程，使用 JDK 21 / SDK 36 编译 debug APK，并上传成功生成的 APK 工件。
 
-该流程不部署 Site，不调用生产模型，不注入用户凭证，也不发布商店包。工作流未在本次环境执行；第一次运行成功后，才能把状态更新为“Android CI 编译通过”。编译通过仍不能替代真机录音和持久化验收。
+该流程不部署 Site，不调用生产模型，不注入用户凭证，也不发布商店包。Android流程还逐文件核对最终APK中的离线资源，并附校验和与来源信息。首次成功后才能标为编译通过；调试签名由临时runner生成，跨构建覆盖安装与数据保留暂不保证。编译通过仍不能替代真机录音和持久化验收。
 
 ## 下一阶段：移动身份与云同步
 
@@ -111,3 +111,7 @@ xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -sdk 
 Sites 的 owner-private 访问边界继续保留；不能复制浏览器 cookie、伪造 owner header、把 owner session 放进包，或通过公开 API 绕过平台访问许可。仅设置 API 地址不会获得登录身份。若现有托管平台没有受支持的移动认证方式，原生端继续作为本机版本，云同步保持未启用。
 
 Capacitor `server.url` 是开发 live reload 配置，官方不建议用于生产；当前配置保持本地 `webDir`，不加入远程 Site URL。原生 HTTP 插件也只提供网络传输，不构成身份认证。[配置文档](https://capacitorjs.com/docs/config)、[HTTP 插件](https://capacitorjs.com/docs/apis/http)、[应用深链](https://capacitorjs.com/docs/guides/deep-links)。
+
+## v0.2 录音改进
+
+进入后台时取消准备或结束录音，录音开始与结束时间在事件发生时记录，不把后台等待计入音频时长。捕获录音器启动错误并释放麦克风。支持取消准备；原生界面不再承诺未接入的云同步。MP4录音下载名使用m4a后缀。原生文件下载/分享功能与系统返回键仍待完善，不能把JSON导出视为已验证的原生备份。

@@ -1,0 +1,58 @@
+{
+  "version": "0.2.0",
+  "assets": {
+    "blue-cathedral-wide.png": "hollow-v2-wide.webp",
+    "crimson-sanctuary-wide.png": "silk-v2-wide.webp",
+    "blue-cathedral-mobile.png": "hollow-v2-portrait.webp",
+    "crimson-sanctuary-mobile.png": "silk-v2-portrait.webp"
+  },
+  "researchAndPrompts": {
+    "created": "2026-09-07",
+    "method": "Built-in image_gen tool; original generated assets, no official artwork composited or published.",
+    "assets": [
+      {
+        "file": "blue-cathedral-wide.png",
+        "width": 1672,
+        "height": 941,
+        "prompt": "Use case: stylized-concept. Asset type: high-resolution original illustrated website background. Create one 3840x2160 landscape image, wide 16:9 composition. An elegant immense subterranean cathedral grown from mineral shells and slender ribbed stone, very thin tall pointed arches and delicate organic iron curls. Original scenery with clear 2D hand-drawn pen outlines, simplified flat color shapes in distinct parallax layers and softly brushed atmospheric depth. NOT 3D, NOT photoreal, NOT thick impasto, NOT generic realistic fantasy concept art. Main cathedral architecture rises on right half: needle spires, narrow glowing blue windows, rib vaults, tiny hanging lamps, shallow stairway to a distant blue portal. Near-black midnight navy silhouettes frame the bottom and right edges, long curved roots and sparse grasses, middle distance in muted indigo and mist blue, a restrained icy cyan glow far behind arches. Uncluttered left 45 percent with quiet dark-blue haze and only faint distant silhouettes for readable UI later. Rich detail concentrated on the right, clean 2D contours and subtle painterly lighting, a quiet mysterious storybook atmosphere. No people, no characters, no faces, no creatures, no text, no logos, no UI, no watermark. Entirely new architecture and composition; do not copy any existing game screen or artwork."
+      },
+      {
+        "file": "crimson-sanctuary-wide.png",
+        "width": 1672,
+        "height": 941,
+        "prompt": "Use case: stylized-concept. Asset type: high-resolution original illustrated website background. Create one 3840x2160 landscape image, wide 16:9 composition. An elegant towering cavern sanctuary of deep crimson silk, brass bells and ivory branching stalks. Original scenery with crisp 2D hand-drawn black ink contours, sophisticated simplified flat shapes, distinct parallax silhouette layers and gentle painterly atmospheric depth. NOT 3D, NOT photoreal, NOT heavy oil painting, NOT generic realistic fantasy concept art. Compose architectural detail on right half: several richly shaped suspended brass bells at different scales, narrow white silk lines sweep in graceful long arcs across upper right, ivory stalks form organic pointed arches, layered garnet and burgundy cavern walls. Distant golden sanctuary with fine spires and warm pale cream windows glows far back in upper right, a delicate curved path descends toward it. Deep near-black plum silhouettes frame bottom and right; rich crimson foliage and red silk edges in foreground. Uncluttered left 45 percent kept dim wine-red with faint distant silhouettes and subtle haze to allow readable UI later. Crisp dark line work, flat 2D forms, wonderful vertical scale, warm mysterious storybook atmosphere. No people, no characters, no faces, no creatures, no text, no logos, no UI, no watermark. Entirely new scenery and composition; do not copy any existing game screenshot or exact artwork."
+      },
+      {
+        "file": "blue-cathedral-mobile.png",
+        "width": 941,
+        "height": 1672,
+        "prompt": "Use case: stylized-concept. Asset type: original portrait mobile website scenery. Generate one HD tall 9:16 image. An original blue subterranean cathedral environment drawn as a whimsical 2D animation background, with graphic, bold ink contours and flat stylized layered shapes softened by blue haze. Organic shell-like arches, narrow curling ironwork, tapering ribbed columns and tiny hanging lamps descend from upper right toward a small blue glowing doorway near lower right. The depth must feel like many flat illustrated theater flats, NOT realistic architecture. Scalloped organic stone forms, dark curved roots and drooping pale blue leaves frame right edge, top corners and bottom. Small crisp ivory lantern lights, a few drifting motes, very dark navy foreground, hazy blue middle ground, pale icy-blue distant spires. Quiet uncluttered dark-blue center-left vertical space covers the middle 55 percent of height for later readable interface. Detailed frame, simple readable silhouettes, smooth 2D line work, lovely mysterious hand-painted animation cels, confident graphic shapes. No human, no character, no creature, no face, no logo, no text, no UI, no watermark. Entirely original world design and new composition, no copied artwork or game screenshot. Portrait mobile framing, not a crop of a landscape."
+      },
+      {
+        "file": "crimson-sanctuary-mobile.png",
+        "width": 941,
+        "height": 1672,
+        "prompt": "Use case: stylized-concept. Asset type: original portrait mobile website scenery. Generate one HD tall 9:16 image. An original crimson silk-and-bell cavern drawn as a whimsical 2D animation background with graphic bold dark ink outlines, flat stylized shapes and layered illustrated scenery softened by warm mist. Organic ivory stalks curve like long fine spines along upper right and lower right, supporting three rounded brass bells hung from thin strings. Long white silk strands make graceful sweeping arcs near the top edge. A distant miniature golden sanctuary glows in the lower-right distance amid crimson cavern silhouettes. Burgundy and near-black plum silhouettes at corners, simplified dense clusters of crimson round leaves, sparse tiny amber motes. The depth must feel like many flat illustrated theater flats, NOT realistic architecture. Keep the center-left middle 55 percent of height quiet deep wine red with faint hazy silhouettes so interface content can later be legible. Confident clean line work and simple readable organic shapes, playful elegant hand-painted animation cel detail, enchanted solemn atmosphere. No human, no character, no creature, no face, no logo, no text, no UI, no watermark. Entirely original world design and new composition, no copied artwork or game screenshot. Portrait mobile framing, not a crop of a landscape."
+      }
+    ],
+    "sources": [
+      {
+        "page": "https://www.hollowknight.com/",
+        "image": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/6cdafaab-e95a-49c7-a045-4f21469bb327/Blue_Cave.jpg"
+      },
+      {
+        "page": "https://hollowknightsilksong.com/",
+        "image": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/2998be3f-3d43-4a34-b005-defe3159ae8c/09a_peak.png"
+      },
+      {
+        "page": "https://hollowknightsilksong.com/",
+        "image": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/c5a909b7-cf12-4f86-916c-1fbe4e37ed7d/11_lace.png"
+      }
+    ],
+    "permission": {
+      "page": "https://www.teamcherry.com.au/faq",
+      "summary": "Official screenshots are copyright Team Cherry. FAQ permits game owners and press to make original media such as reviews/gameplay videos and monetize them, but provides no general license to reuse official graphics as website backgrounds. Reference screenshots were viewed only; they are not final design assets."
+    },
+    "visualFindings": "Crisp 2D contours, simplified flat shapes, near-black foreground silhouettes, soft atmospheric depth, small localized glows, organic shell/rib motifs. Generated desktop assets reserve left 45% for interface; portrait assets reserve a quiet central column."
+  }
+}
