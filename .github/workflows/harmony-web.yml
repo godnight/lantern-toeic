@@ -1,0 +1,35 @@
+name: HarmonyOS shared asset check
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['harmony/**', 'app/**', 'lib/**', 'components/**', 'content/**', 'public/**', 'mobile/vite.config.ts', 'mobile/src/**', 'package-lock.json', '.github/workflows/harmony-web.yml']
+  pull_request:
+    paths: ['harmony/**', 'app/**', 'lib/**', 'components/**', 'content/**', 'public/**', 'mobile/vite.config.ts', 'mobile/src/**', 'package-lock.json', '.github/workflows/harmony-web.yml']
+permissions:
+  contents: read
+concurrency:
+  group: harmony-web-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  shared-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm --prefix harmony run sync:web
+      - run: npm --prefix harmony run check:web
+      - name: Upload verified web resources (not an installable HAP)
+        uses: actions/upload-artifact@v7
+        with:
+          name: lantern-harmony-web-resources-${{ github.run_number }}
+          path: harmony/entry/src/main/resources/rawfile/web/
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,12 @@
+.hvigor/
+oh_modules/
+build/
+entry/build/
+entry/oh_modules/
+entry/src/main/resources/rawfile/web/
+local.properties
+*.p12
+*.p7b
+*.cer
+*.jks
+*.keystore

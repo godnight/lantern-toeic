@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "LANTERN TOEIC 学习应用"
+    },
+    {
+      "name": "ability_desc",
+      "value": "LANTERN TOEIC 学习与口语练习"
+    },
+    {
+      "name": "microphone_reason",
+      "value": "用于口语练习时录音和回听，仅在你开始录音后使用麦克风。"
+    }
+  ]
+}
