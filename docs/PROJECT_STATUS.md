@@ -14,15 +14,15 @@
 - 原创配图已目视核对，P1及图片描述的场景一致。
 - 尚未做浏览器视觉验收、真机麦克风、Android APK编译、iOS签名安装或生产数据回读验证。
 
-## 当前阻碍
+## 个人GitHub仓库
 
-用户指定个人GitHub账号godnight。当前连接的App安装仅覆盖JiusiServe组织，未发现可写的个人仓库，工具也未提供新建repository接口。尚未在个人GitHub创建或推送，源代码先保存在当前项目的版本仓库。不得将组织仓库称为用户个人仓库。
+用户已创建个人仓库 https://github.com/godnight/lantern-toeic 。2026-09-07已确认个人账号安装授权，实际Git对象写入成功；本次初始化提交将完整项目加入main，并保留用户的初始提交。
 
-建议个人仓库名：lantern-toeic。用户在个人账号创建空仓库并授权GitHub连接访问后，继续推送该项目、运行Android构建工作流。
+当前网页试用地址：https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site 。个人GitHub保存项目源码，网页发布仍使用已有Sites项目；仓库变更不会自动改动已上线网页。
 
 ## 下一阶段按顺序
 
-1. 补齐个人GitHub仓库授权，提交源码与CI，产出Android测试包；macOS/Xcode构建iOS并完成签名。
+1. 运行Android构建工作流产出测试包；macOS/Xcode构建iOS并完成签名。
 2. 真机验收录音、回放、英文系统语音、前后台切换、安全区和离线恢复；完成桌面/手机三主题视觉验收。
 3. 为原生App设计正式登录与共享云API；补录音文件备份、导入恢复和用户删除数据。
 4. 托尼老师与真人教师扩展原创题库，加入人工校审与内容版本字段；保留完整模考的未见题。

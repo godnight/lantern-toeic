@@ -2,6 +2,8 @@
 
 把每天的一小步，变成可复习、可积累、可分享的学习资源。
 
+[个人GitHub仓库](https://github.com/godnight/lantern-toeic) · [网页试用](https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site)（当前仅所有者可访问）
+
 微光是面向 TOEIC 听读与口语的学习教练。目标、考试日期、每日时间与时区均可配置。预设为听读 >650、口语 ≥130、2026-12-20 听读考试、每日25分钟、每周启动4天；这只是首位学习者的可编辑起点。
 
 ## 第一版已经实现
