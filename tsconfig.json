@@ -42,6 +42,7 @@
     "mobile/android",
     "mobile/ios",
     "mobile/dist",
-    "dist"
+    "dist",
+    "harmony"
   ]
 }

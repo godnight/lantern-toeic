@@ -1,0 +1,8 @@
+{
+  "modelVersion": "5.0.0",
+  "name": "lantern-toeic-harmony",
+  "version": "0.2.0",
+  "description": "LANTERN TOEIC native HarmonyOS ArkWeb host",
+  "dependencies": {},
+  "devDependencies": {}
+}
