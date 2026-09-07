@@ -1,0 +1,75 @@
+[
+  {
+    "id": "speaking-read-01",
+    "type": "read-aloud",
+    "title": "朗读 · 图书馆通知",
+    "prompt": "Read the announcement aloud. Aim for clear phrasing and a steady pace.",
+    "prepSeconds": 45,
+    "answerSeconds": 45,
+    "guide": [
+      "先用准备时间找到长句的停顿位置。",
+      "读清地点、日期和服务变化，不需要刻意模仿口音。",
+      "录音后只选一处重音或停顿重新练习。"
+    ],
+    "passage": "Attention, library visitors. Starting next Monday, our second-floor reading room will open at eight in the morning, one hour earlier than usual. This change will give students and other visitors more quiet study time. Please remember that food is not permitted in the reading room. Drinks in containers with lids are welcome. If you need assistance, speak to a member of staff at the front desk.",
+    "sampleAnswer": "Attention, library visitors. Starting next Monday, our second-floor reading room will open at eight in the morning, one hour earlier than usual. This change will give students and other visitors more quiet study time. Please remember that food is not permitted in the reading room. Drinks in containers with lids are welcome. If you need assistance, speak to a member of staff at the front desk."
+  },
+  {
+    "id": "speaking-picture-01",
+    "type": "describe-picture",
+    "title": "图片描述 · 一次小组会议",
+    "prompt": "Describe the photograph in as much detail as you can.",
+    "prepSeconds": 45,
+    "answerSeconds": 30,
+    "guide": [
+      "先说场景，再说主要人物及动作。",
+      "用standing、seated、holding和on the table描述可见信息。",
+      "描述看得到的内容；不必猜测人物身份或公司。"
+    ],
+    "image": "/images/office-practice.webp",
+    "sampleAnswer": "This picture shows a small meeting in an office. A woman is standing beside a whiteboard and holding a marker. Two other people are seated at a table. There is a closed laptop on the table, and I can also see cups. The people appear to be discussing something together."
+  },
+  {
+    "id": "speaking-respond-01",
+    "type": "respond",
+    "title": "简短问答 · 你的学习时间",
+    "prompt": "When do you usually study English, and where do you study?",
+    "prepSeconds": 3,
+    "answerSeconds": 15,
+    "guide": [
+      "回答时间和地点两个信息点。",
+      "两句简单完整的话就够。",
+      "这是问答类中15秒小题的练习，并非完整三题组。"
+    ],
+    "sampleAnswer": "I usually study English after dinner. I study at the desk in my bedroom because it is quiet and I can concentrate there."
+  },
+  {
+    "id": "speaking-information-01",
+    "type": "use-information",
+    "title": "资料回答 · 查询培训安排",
+    "prompt": "I would like to attend the email-writing session. What time does it start, and who is the presenter?",
+    "prepSeconds": 45,
+    "answerSeconds": 15,
+    "guide": [
+      "先阅读日程，定位课程、开始时间和讲师。",
+      "用完整句答出9:30和Nina Brooks两个信息点。",
+      "本练习的45秒用于阅读资料；正式考试每个问题后另有3秒间隔，完整该类含三题。"
+    ],
+    "passage": "Customer Support Workshop — Friday, October 9\n9:00–9:30 Registration\n9:30–10:45 Writing clear email replies — Nina Brooks\n10:45–11:00 Break\n11:00–12:00 Handling customer complaints — Omar Chen",
+    "sampleAnswer": "The email-writing session starts at nine thirty in the morning. The presenter is Nina Brooks."
+  },
+  {
+    "id": "speaking-opinion-01",
+    "type": "express-opinion",
+    "title": "表达观点 · 每天短练还是周末长练",
+    "prompt": "Some people prefer to study a language for a short time every day. Others prefer one long study session each week. Which do you prefer, and why?",
+    "prepSeconds": 45,
+    "answerSeconds": 60,
+    "guide": [
+      "用一句话明确选择。",
+      "给出两个理由，每个理由配一个具体细节。",
+      "优先做到观点清晰、内容相关、不断句；无需塞入高级词。"
+    ],
+    "sampleAnswer": "I prefer to study for a short time every day. First, it is easier to fit a short lesson into my schedule. For example, I can practice listening for ten minutes after dinner, even on a busy day. Second, daily practice helps me remember new expressions. If I learn a phrase on Monday and use it again on Tuesday, it becomes more familiar. A long weekly session can be useful for a practice test, but I may feel tired and lose concentration. For these reasons, I would choose short daily lessons and add an occasional longer session when I have more time."
+  }
+]

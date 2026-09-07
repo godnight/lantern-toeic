@@ -1,0 +1,42 @@
+[
+  {
+    "id": "official-part1",
+    "title": "官方听力样题 · 图片描述",
+    "type": "听力样题",
+    "description": "IIBC官方Part 1样题页面，含英文音频与图片。先听作答，再在官方页面核对；本站只提供入口。",
+    "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample01.html",
+    "access": "官方入口"
+  },
+  {
+    "id": "official-part2",
+    "title": "官方听力样题 · 问答",
+    "type": "听力样题",
+    "description": "IIBC官方Part 2样题，练习疑问词、间接回答与听觉辨别；网页导航为日文。",
+    "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample02.html",
+    "access": "官方入口"
+  },
+  {
+    "id": "official-part5",
+    "title": "官方阅读样题 · 短句填空",
+    "type": "阅读样题",
+    "description": "IIBC官方Part 5样题。适合摸清词性、语法与搭配卡点，少量样题不用于换算总分。",
+    "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample05.html",
+    "access": "官方入口"
+  },
+  {
+    "id": "ets-preparation",
+    "title": "ETS官方备考资源",
+    "type": "样题与指南",
+    "description": "包含听读、口语写作样题和考生手册的下载入口；资料在ETS网站查看或下载，本站不重新分发。",
+    "url": "https://www.ets.org/toeic/test-takers/prepare.html",
+    "access": "官方入口"
+  },
+  {
+    "id": "official-speaking-format",
+    "title": "现行口语题型与计时",
+    "type": "题型说明",
+    "description": "核对现行五类、11道口语题的顺序及准备和作答时间；没有已取消的“提出解决方案”题。",
+    "url": "https://www.ets.org/toeic/about/speaking-writing.html",
+    "access": "官方入口"
+  }
+]

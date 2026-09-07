@@ -1,0 +1,817 @@
+[
+  {
+    "id": "p1-01",
+    "part": 1,
+    "title": "会议室里的动作",
+    "prompt": "Look at the photograph. Choose the best description.",
+    "options": [
+      "A woman is standing beside a whiteboard.",
+      "Two people are carrying a table.",
+      "A laptop computer is open on the table.",
+      "Everyone in the room is standing."
+    ],
+    "correctIndex": 0,
+    "explanation": "照片中一位女性站在白板旁，A直接描述了可见动作和位置。B的搬桌子、C的电脑打开、D的所有人都站着均与照片不符。先判断动作，再核对主语和位置。",
+    "evidence": "A woman is standing beside a whiteboard.",
+    "skill": "动作与方位",
+    "difficulty": "基础",
+    "image": "/images/office-practice.webp",
+    "translation": "一位女性站在白板旁。",
+    "vocabulary": [
+      {
+        "word": "beside",
+        "meaning": "在……旁边",
+        "example": "The printer is beside the door."
+      }
+    ],
+    "audioText": "Look at the photograph. Choose the best description. A. A woman is standing beside a whiteboard. B. Two people are carrying a table. C. A laptop computer is open on the table. D. Everyone in the room is standing.",
+    "transcript": "Look at the photograph. Choose the best description. A. A woman is standing beside a whiteboard. B. Two people are carrying a table. C. A laptop computer is open on the table. D. Everyone in the room is standing."
+  },
+  {
+    "id": "p1-02",
+    "part": 1,
+    "title": "观察人物的位置",
+    "prompt": "Look at the photograph. Choose the best description.",
+    "options": [
+      "A woman is drinking from a cup.",
+      "Some people are waiting in a line.",
+      "A laptop screen is being cleaned.",
+      "Two people are seated at a table."
+    ],
+    "correctIndex": 3,
+    "explanation": "D与照片中两位同事坐在会议桌前的状态一致。照片虽然有杯子和电脑，却没有喝水或擦屏幕的动作；看到名词相同不代表整句话正确。",
+    "evidence": "Two people are seated at a table.",
+    "skill": "状态描述与干扰排除",
+    "difficulty": "基础",
+    "image": "/images/office-practice.webp",
+    "translation": "两个人坐在一张桌子旁。",
+    "vocabulary": [
+      {
+        "word": "be seated",
+        "meaning": "坐着；就座",
+        "example": "The guests are seated near the window."
+      }
+    ],
+    "audioText": "Look at the photograph. Choose the best description. A. A woman is drinking from a cup. B. Some people are waiting in a line. C. A laptop screen is being cleaned. D. Two people are seated at a table.",
+    "transcript": "Look at the photograph. Choose the best description. A. A woman is drinking from a cup. B. Some people are waiting in a line. C. A laptop screen is being cleaned. D. Two people are seated at a table."
+  },
+  {
+    "id": "p2-01",
+    "part": 2,
+    "title": "确认开始时间",
+    "prompt": "When does the training session begin?",
+    "options": [
+      "In the meeting room.",
+      "At half past nine.",
+      "About twenty employees."
+    ],
+    "correctIndex": 1,
+    "explanation": "When询问时间，B的half past nine表示9点30分。A回答地点，C回答人数，都没有回应问题。",
+    "evidence": "When does the training session begin? — At half past nine.",
+    "skill": "疑问词与时间",
+    "difficulty": "基础",
+    "translation": "培训什么时候开始？——九点半。",
+    "vocabulary": [
+      {
+        "word": "training session",
+        "meaning": "培训课；培训场次",
+        "example": "Our training session begins at nine."
+      }
+    ],
+    "audioText": "When does the training session begin? A. In the meeting room. B. At half past nine. C. About twenty employees.",
+    "transcript": "When does the training session begin? A. In the meeting room. B. At half past nine. C. About twenty employees."
+  },
+  {
+    "id": "p2-02",
+    "part": 2,
+    "title": "间接回答：找文件",
+    "prompt": "Where can I find the updated price list?",
+    "options": [
+      "The prices are quite reasonable.",
+      "Yes, I bought one yesterday.",
+      "Maya emailed it to you this morning."
+    ],
+    "correctIndex": 2,
+    "explanation": "C没有直接给地点，却说明文件已通过邮件发给你，因此可以去邮件里找。A只是提到价格，B只是陈述购买经历，都不能帮助定位价目表。",
+    "evidence": "Where can I find the updated price list? — Maya emailed it to you this morning.",
+    "skill": "间接回答",
+    "difficulty": "进阶",
+    "translation": "我在哪里能找到更新后的价目表？——玛雅今天早上把它发邮件给你了。",
+    "vocabulary": [
+      {
+        "word": "updated",
+        "meaning": "更新后的",
+        "example": "Please use the updated schedule."
+      }
+    ],
+    "audioText": "Where can I find the updated price list? A. The prices are quite reasonable. B. Yes, I bought one yesterday. C. Maya emailed it to you this morning.",
+    "transcript": "Where can I find the updated price list? A. The prices are quite reasonable. B. Yes, I bought one yesterday. C. Maya emailed it to you this morning."
+  },
+  {
+    "id": "p2-03",
+    "part": 2,
+    "title": "礼貌请求",
+    "prompt": "Could you reserve a room for our meeting?",
+    "options": [
+      "Sure. How many people are coming?",
+      "The room has large windows.",
+      "I enjoyed meeting her."
+    ],
+    "correctIndex": 0,
+    "explanation": "Could you在这里提出请求。A先答应，再追问参会人数，以便预订合适的房间，回应完整。B只描述房间，C把meeting误当成会见某人。",
+    "evidence": "Could you reserve a room for our meeting? — Sure. How many people are coming?",
+    "skill": "请求与追问",
+    "difficulty": "基础",
+    "translation": "你能为我们的会议预订一个房间吗？——当然，有多少人参加？",
+    "vocabulary": [
+      {
+        "word": "reserve",
+        "meaning": "预订",
+        "example": "We need to reserve a conference room."
+      }
+    ],
+    "audioText": "Could you reserve a room for our meeting? A. Sure. How many people are coming? B. The room has large windows. C. I enjoyed meeting her.",
+    "transcript": "Could you reserve a room for our meeting? A. Sure. How many people are coming? B. The room has large windows. C. I enjoyed meeting her."
+  },
+  {
+    "id": "p2-04",
+    "part": 2,
+    "title": "识别原因",
+    "prompt": "Why was the delivery delayed?",
+    "options": [
+      "The loading dock is downstairs.",
+      "There was a problem with the truck.",
+      "Two boxes of office supplies."
+    ],
+    "correctIndex": 1,
+    "explanation": "Why要求解释原因。B说明货车出了问题，能够解释送货延误。A是地点，C是货物数量和内容。",
+    "evidence": "Why was the delivery delayed? — There was a problem with the truck.",
+    "skill": "原因定位",
+    "difficulty": "基础",
+    "translation": "为什么送货延迟了？——货车出了点问题。",
+    "vocabulary": [
+      {
+        "word": "delay",
+        "meaning": "延误；推迟",
+        "example": "Heavy rain delayed the delivery."
+      }
+    ],
+    "audioText": "Why was the delivery delayed? A. The loading dock is downstairs. B. There was a problem with the truck. C. Two boxes of office supplies.",
+    "transcript": "Why was the delivery delayed? A. The loading dock is downstairs. B. There was a problem with the truck. C. Two boxes of office supplies."
+  },
+  {
+    "id": "p2-05",
+    "part": 2,
+    "title": "选择问句的间接回应",
+    "prompt": "Will you take the train or drive to the conference?",
+    "options": [
+      "The conference starts on Monday.",
+      "Please take a seat over there.",
+      "I haven't decided yet."
+    ],
+    "correctIndex": 2,
+    "explanation": "虽然问题提供了火车和开车两个选项，回答仍可以表示尚未决定。C自然回应出行方式的选择；不必机械地要求答案重复某个选项。",
+    "evidence": "Will you take the train or drive to the conference? — I haven't decided yet.",
+    "skill": "选择问句与间接回答",
+    "difficulty": "进阶",
+    "translation": "你打算坐火车还是开车去参加会议？——我还没决定。",
+    "vocabulary": [
+      {
+        "word": "conference",
+        "meaning": "会议；研讨会",
+        "example": "She is attending a design conference."
+      }
+    ],
+    "audioText": "Will you take the train or drive to the conference? A. The conference starts on Monday. B. Please take a seat over there. C. I haven't decided yet.",
+    "transcript": "Will you take the train or drive to the conference? A. The conference starts on Monday. B. Please take a seat over there. C. I haven't decided yet."
+  },
+  {
+    "id": "p3-01",
+    "part": 3,
+    "title": "产品演示：问题是什么",
+    "prompt": "Why do the speakers need a different room?",
+    "options": [
+      "Their clients will arrive tomorrow.",
+      "Their current room is too small.",
+      "Some equipment is not working.",
+      "The meeting has been canceled."
+    ],
+    "correctIndex": 2,
+    "explanation": "玛雅明确说B会议室的投影仪不能工作；C把projector概括为equipment。不是房间太小，也没有取消演示。",
+    "evidence": "The projector in Room B isn't working.",
+    "skill": "原因与同义转述",
+    "difficulty": "基础",
+    "groupId": "conversation-demo",
+    "transcript": "Maya: Leo, our product demonstration is at two, but the projector in Room B isn't working.\nLeo: The support team can't fix it until tomorrow. Room D has a working projector, and it's free this afternoon.\nMaya: Great. Please book Room D for one thirty so we can set up before the clients arrive.\nLeo: I'll do that now. Could you email the clients about the room change?\nMaya: Of course. I'll send the message before lunch.",
+    "audioText": "Maya: Leo, our product demonstration is at two, but the projector in Room B isn't working.\nLeo: The support team can't fix it until tomorrow. Room D has a working projector, and it's free this afternoon.\nMaya: Great. Please book Room D for one thirty so we can set up before the clients arrive.\nLeo: I'll do that now. Could you email the clients about the room change?\nMaya: Of course. I'll send the message before lunch.",
+    "translation": "玛雅：利奥，我们的产品演示在两点开始，但B会议室的投影仪坏了。\n利奥：技术支持团队要到明天才能修好。D会议室有可用的投影仪，而且今天下午空着。\n玛雅：太好了。请从一点半开始预订D会议室，这样客户到达前我们可以布置。\n利奥：我现在就办。你能发邮件告诉客户换会议室了吗？\n玛雅：当然，我会在午餐前发送。",
+    "vocabulary": [
+      {
+        "word": "set up",
+        "meaning": "布置；准备设备",
+        "example": "We need twenty minutes to set up the equipment."
+      },
+      {
+        "word": "room change",
+        "meaning": "更换房间",
+        "example": "We notified all visitors of the room change."
+      }
+    ]
+  },
+  {
+    "id": "p3-02",
+    "part": 3,
+    "title": "产品演示：区分两个时间",
+    "prompt": "When should the reservation for Room D begin?",
+    "options": [
+      "At 1:30 P.M.",
+      "At 2:00 P.M.",
+      "Before lunch.",
+      "Tomorrow morning."
+    ],
+    "correctIndex": 0,
+    "explanation": "预订从1:30开始，用于提前布置；2:00是演示开始时间。听到多个时间时要把时间与对应事件绑定。",
+    "evidence": "Please book Room D for one thirty so we can set up before the clients arrive.",
+    "skill": "时间与事件配对",
+    "difficulty": "进阶",
+    "groupId": "conversation-demo",
+    "transcript": "Maya: Leo, our product demonstration is at two, but the projector in Room B isn't working.\nLeo: The support team can't fix it until tomorrow. Room D has a working projector, and it's free this afternoon.\nMaya: Great. Please book Room D for one thirty so we can set up before the clients arrive.\nLeo: I'll do that now. Could you email the clients about the room change?\nMaya: Of course. I'll send the message before lunch.",
+    "audioText": "Maya: Leo, our product demonstration is at two, but the projector in Room B isn't working.\nLeo: The support team can't fix it until tomorrow. Room D has a working projector, and it's free this afternoon.\nMaya: Great. Please book Room D for one thirty so we can set up before the clients arrive.\nLeo: I'll do that now. Could you email the clients about the room change?\nMaya: Of course. I'll send the message before lunch.",
+    "translation": "玛雅：利奥，我们的产品演示在两点开始，但B会议室的投影仪坏了。\n利奥：技术支持团队要到明天才能修好。D会议室有可用的投影仪，而且今天下午空着。\n玛雅：太好了。请从一点半开始预订D会议室，这样客户到达前我们可以布置。\n利奥：我现在就办。你能发邮件告诉客户换会议室了吗？\n玛雅：当然，我会在午餐前发送。",
+    "vocabulary": [
+      {
+        "word": "set up",
+        "meaning": "布置；准备设备",
+        "example": "We need twenty minutes to set up the equipment."
+      },
+      {
+        "word": "room change",
+        "meaning": "更换房间",
+        "example": "We notified all visitors of the room change."
+      }
+    ]
+  },
+  {
+    "id": "p3-03",
+    "part": 3,
+    "title": "产品演示：下一步行动",
+    "prompt": "What will Maya do before lunch?",
+    "options": [
+      "Repair a projector.",
+      "Meet the support team.",
+      "Cancel the room reservation.",
+      "Notify the clients about the new room."
+    ],
+    "correctIndex": 3,
+    "explanation": "利奥请玛雅把换房间的消息发给客户，玛雅答应在午餐前发送。D中的notify对应email the clients；预订房间是利奥的任务。",
+    "evidence": "Could you email the clients about the room change? — Of course. I'll send the message before lunch.",
+    "skill": "说话者与下一步行动",
+    "difficulty": "基础",
+    "groupId": "conversation-demo",
+    "transcript": "Maya: Leo, our product demonstration is at two, but the projector in Room B isn't working.\nLeo: The support team can't fix it until tomorrow. Room D has a working projector, and it's free this afternoon.\nMaya: Great. Please book Room D for one thirty so we can set up before the clients arrive.\nLeo: I'll do that now. Could you email the clients about the room change?\nMaya: Of course. I'll send the message before lunch.",
+    "audioText": "Maya: Leo, our product demonstration is at two, but the projector in Room B isn't working.\nLeo: The support team can't fix it until tomorrow. Room D has a working projector, and it's free this afternoon.\nMaya: Great. Please book Room D for one thirty so we can set up before the clients arrive.\nLeo: I'll do that now. Could you email the clients about the room change?\nMaya: Of course. I'll send the message before lunch.",
+    "translation": "玛雅：利奥，我们的产品演示在两点开始，但B会议室的投影仪坏了。\n利奥：技术支持团队要到明天才能修好。D会议室有可用的投影仪，而且今天下午空着。\n玛雅：太好了。请从一点半开始预订D会议室，这样客户到达前我们可以布置。\n利奥：我现在就办。你能发邮件告诉客户换会议室了吗？\n玛雅：当然，我会在午餐前发送。",
+    "vocabulary": [
+      {
+        "word": "set up",
+        "meaning": "布置；准备设备",
+        "example": "We need twenty minutes to set up the equipment."
+      },
+      {
+        "word": "room change",
+        "meaning": "更换房间",
+        "example": "We notified all visitors of the room change."
+      }
+    ]
+  },
+  {
+    "id": "p4-01",
+    "part": 4,
+    "title": "博物馆公告：主要目的",
+    "prompt": "What is the main purpose of the announcement?",
+    "options": [
+      "To announce a ticket price increase.",
+      "To explain a change to a tour schedule.",
+      "To introduce a new museum director.",
+      "To request donations for an exhibition."
+    ],
+    "correctIndex": 1,
+    "explanation": "公告开头的核心信息是十点导览延后十五分钟。摄影展和手机静音是补充说明；没有涨价、介绍馆长或募捐。",
+    "evidence": "The ten o'clock building tour will begin fifteen minutes late today.",
+    "skill": "主旨判断",
+    "difficulty": "基础",
+    "groupId": "talk-museum",
+    "transcript": "Good morning, visitors. Welcome to the Harbor Design Museum. The ten o'clock building tour will begin fifteen minutes late today because our guide is assisting a school group. Please meet at the information desk at ten fifteen. Your ticket also includes the photography exhibition on the second floor, which you are welcome to visit while you wait. To keep the galleries quiet, please set your phones to silent mode. Thank you for your patience.",
+    "audioText": "Good morning, visitors. Welcome to the Harbor Design Museum. The ten o'clock building tour will begin fifteen minutes late today because our guide is assisting a school group. Please meet at the information desk at ten fifteen. Your ticket also includes the photography exhibition on the second floor, which you are welcome to visit while you wait. To keep the galleries quiet, please set your phones to silent mode. Thank you for your patience.",
+    "translation": "各位游客，早上好。欢迎来到海港设计博物馆。原定十点开始的建筑导览今天将晚十五分钟，因为导览员正在接待一个学校团体。请于十点十五分在咨询台集合。门票也包含二楼的摄影展，欢迎您在等候时参观。为了保持展厅安静，请将手机调至静音。感谢您的耐心。",
+    "vocabulary": [
+      {
+        "word": "information desk",
+        "meaning": "咨询台",
+        "example": "Ask for a map at the information desk."
+      },
+      {
+        "word": "include",
+        "meaning": "包括",
+        "example": "The ticket includes access to two exhibitions."
+      }
+    ]
+  },
+  {
+    "id": "p4-02",
+    "part": 4,
+    "title": "博物馆公告：集合地点",
+    "prompt": "Where should visitors meet for the tour?",
+    "options": [
+      "At the main entrance.",
+      "In a second-floor gallery.",
+      "At the information desk.",
+      "Outside the museum."
+    ],
+    "correctIndex": 2,
+    "explanation": "Please meet at the information desk直接给出集合地点。二楼是摄影展所在地，不是导览集合点。",
+    "evidence": "Please meet at the information desk at ten fifteen.",
+    "skill": "地点定位",
+    "difficulty": "基础",
+    "groupId": "talk-museum",
+    "transcript": "Good morning, visitors. Welcome to the Harbor Design Museum. The ten o'clock building tour will begin fifteen minutes late today because our guide is assisting a school group. Please meet at the information desk at ten fifteen. Your ticket also includes the photography exhibition on the second floor, which you are welcome to visit while you wait. To keep the galleries quiet, please set your phones to silent mode. Thank you for your patience.",
+    "audioText": "Good morning, visitors. Welcome to the Harbor Design Museum. The ten o'clock building tour will begin fifteen minutes late today because our guide is assisting a school group. Please meet at the information desk at ten fifteen. Your ticket also includes the photography exhibition on the second floor, which you are welcome to visit while you wait. To keep the galleries quiet, please set your phones to silent mode. Thank you for your patience.",
+    "translation": "各位游客，早上好。欢迎来到海港设计博物馆。原定十点开始的建筑导览今天将晚十五分钟，因为导览员正在接待一个学校团体。请于十点十五分在咨询台集合。门票也包含二楼的摄影展，欢迎您在等候时参观。为了保持展厅安静，请将手机调至静音。感谢您的耐心。",
+    "vocabulary": [
+      {
+        "word": "information desk",
+        "meaning": "咨询台",
+        "example": "Ask for a map at the information desk."
+      },
+      {
+        "word": "include",
+        "meaning": "包括",
+        "example": "The ticket includes access to two exhibitions."
+      }
+    ]
+  },
+  {
+    "id": "p4-03",
+    "part": 4,
+    "title": "博物馆公告：等候时能做什么",
+    "prompt": "What can visitors do while they wait?",
+    "options": [
+      "Attend a photography class.",
+      "Help the guide with a school group.",
+      "Collect a refund from the ticket office.",
+      "Visit an exhibition included in their ticket."
+    ],
+    "correctIndex": 3,
+    "explanation": "门票包含二楼摄影展，游客可以在等候时参观，因此D正确。photography exhibition是摄影展，不是摄影课。",
+    "evidence": "Your ticket also includes the photography exhibition on the second floor, which you are welcome to visit while you wait.",
+    "skill": "细节与词义辨析",
+    "difficulty": "基础",
+    "groupId": "talk-museum",
+    "transcript": "Good morning, visitors. Welcome to the Harbor Design Museum. The ten o'clock building tour will begin fifteen minutes late today because our guide is assisting a school group. Please meet at the information desk at ten fifteen. Your ticket also includes the photography exhibition on the second floor, which you are welcome to visit while you wait. To keep the galleries quiet, please set your phones to silent mode. Thank you for your patience.",
+    "audioText": "Good morning, visitors. Welcome to the Harbor Design Museum. The ten o'clock building tour will begin fifteen minutes late today because our guide is assisting a school group. Please meet at the information desk at ten fifteen. Your ticket also includes the photography exhibition on the second floor, which you are welcome to visit while you wait. To keep the galleries quiet, please set your phones to silent mode. Thank you for your patience.",
+    "translation": "各位游客，早上好。欢迎来到海港设计博物馆。原定十点开始的建筑导览今天将晚十五分钟，因为导览员正在接待一个学校团体。请于十点十五分在咨询台集合。门票也包含二楼的摄影展，欢迎您在等候时参观。为了保持展厅安静，请将手机调至静音。感谢您的耐心。",
+    "vocabulary": [
+      {
+        "word": "information desk",
+        "meaning": "咨询台",
+        "example": "Ask for a map at the information desk."
+      },
+      {
+        "word": "include",
+        "meaning": "包括",
+        "example": "The ticket includes access to two exhibitions."
+      }
+    ]
+  },
+  {
+    "id": "p5-01",
+    "part": 5,
+    "title": "词性：副词修饰动词",
+    "prompt": "Please review the attached schedule _____ before confirming your availability.",
+    "options": [
+      "careful",
+      "carefully",
+      "care",
+      "carefulness"
+    ],
+    "correctIndex": 1,
+    "explanation": "空格修饰动作review，需要副词carefully。careful是形容词，care和carefulness是名词，不能在这里修饰review。",
+    "evidence": "Please review the attached schedule carefully before confirming your availability.",
+    "skill": "词性：副词",
+    "difficulty": "基础",
+    "translation": "请仔细查看随附的日程，再确认你是否有空。",
+    "vocabulary": [
+      {
+        "word": "availability",
+        "meaning": "可用时间；空闲情况",
+        "example": "Please confirm your availability for Friday."
+      }
+    ]
+  },
+  {
+    "id": "p5-02",
+    "part": 5,
+    "title": "期限表达",
+    "prompt": "All expense reports must be submitted _____ Friday at 5 P.M.",
+    "options": [
+      "during",
+      "until",
+      "by",
+      "between"
+    ],
+    "correctIndex": 2,
+    "explanation": "by表示不晚于某个截止时间。until通常表示动作或状态持续到某时，不用于这里“必须在截止前提交”的意思；during后通常接一段时期。",
+    "evidence": "All expense reports must be submitted by Friday at 5 P.M.",
+    "skill": "介词：截止时间",
+    "difficulty": "基础",
+    "translation": "所有费用报销单都必须在周五下午五点之前提交。",
+    "vocabulary": [
+      {
+        "word": "expense report",
+        "meaning": "费用报销单",
+        "example": "I submitted my expense report yesterday."
+      }
+    ]
+  },
+  {
+    "id": "p5-03",
+    "part": 5,
+    "title": "主谓一致",
+    "prompt": "Each of the new employees _____ a security badge on the first day.",
+    "options": [
+      "receive",
+      "receiving",
+      "have received",
+      "receives"
+    ],
+    "correctIndex": 3,
+    "explanation": "主语核心是Each，按单数处理；一般现在时谓语用receives。不要被of后面的复数employees干扰。",
+    "evidence": "Each of the new employees receives a security badge on the first day.",
+    "skill": "主谓一致",
+    "difficulty": "基础",
+    "translation": "每位新员工都在第一天领到一张门禁卡。",
+    "vocabulary": [
+      {
+        "word": "security badge",
+        "meaning": "门禁卡；身份识别证",
+        "example": "Please wear your security badge inside the building."
+      }
+    ]
+  },
+  {
+    "id": "p5-04",
+    "part": 5,
+    "title": "被动语态",
+    "prompt": "The replacement printer _____ by a technician yesterday.",
+    "options": [
+      "was installed",
+      "installed",
+      "is installing",
+      "has install"
+    ],
+    "correctIndex": 0,
+    "explanation": "打印机是被安装的，需要被动语态；yesterday表示过去，所以用was installed。by a technician也提示动作执行者。",
+    "evidence": "The replacement printer was installed by a technician yesterday.",
+    "skill": "过去时与被动语态",
+    "difficulty": "基础",
+    "translation": "替换用的打印机昨天由一位技术员安装好了。",
+    "vocabulary": [
+      {
+        "word": "replacement",
+        "meaning": "替换品；替换用的",
+        "example": "A replacement part will arrive tomorrow."
+      }
+    ]
+  },
+  {
+    "id": "p5-05",
+    "part": 5,
+    "title": "连接词：让步关系",
+    "prompt": "_____ the shipment arrived late, all items were in good condition.",
+    "options": [
+      "Because",
+      "Unless",
+      "Although",
+      "During"
+    ],
+    "correctIndex": 2,
+    "explanation": "“到货晚”与“物品完好”构成让步关系，用Although，表示虽然。During是介词，不能直接引导完整主谓句。",
+    "evidence": "Although the shipment arrived late, all items were in good condition.",
+    "skill": "连接词与逻辑关系",
+    "difficulty": "进阶",
+    "translation": "虽然货物到达晚了，但所有物品都完好无损。",
+    "vocabulary": [
+      {
+        "word": "in good condition",
+        "meaning": "状况良好；完好",
+        "example": "The returned camera is in good condition."
+      }
+    ]
+  },
+  {
+    "id": "p5-06",
+    "part": 5,
+    "title": "商务词汇：回应请求",
+    "prompt": "Please _____ to the client's request within two business days.",
+    "options": [
+      "arrive",
+      "respond",
+      "happen",
+      "belong"
+    ],
+    "correctIndex": 1,
+    "explanation": "respond to a request表示回应请求。其余词虽然也可能与to搭配或出现在商务语境中，但不能表达回应客户请求。",
+    "evidence": "Please respond to the client's request within two business days.",
+    "skill": "动词搭配",
+    "difficulty": "基础",
+    "translation": "请在两个工作日内回复客户的请求。",
+    "vocabulary": [
+      {
+        "word": "respond to",
+        "meaning": "回复；回应",
+        "example": "Our support team will respond to your message soon."
+      }
+    ]
+  },
+  {
+    "id": "p5-07",
+    "part": 5,
+    "title": "关系代词",
+    "prompt": "Applicants _____ portfolios demonstrate strong design skills will be invited for an interview.",
+    "options": [
+      "who",
+      "which",
+      "whom",
+      "whose"
+    ],
+    "correctIndex": 3,
+    "explanation": "空格后有名词portfolios，表示申请人的作品集，因此用表示所属关系的whose。who和whom不能在这里直接修饰portfolios。",
+    "evidence": "Applicants whose portfolios demonstrate strong design skills will be invited for an interview.",
+    "skill": "定语从句：所属关系",
+    "difficulty": "进阶",
+    "translation": "作品集能体现扎实设计能力的申请人将获邀参加面试。",
+    "vocabulary": [
+      {
+        "word": "portfolio",
+        "meaning": "作品集",
+        "example": "Please attach a link to your online portfolio."
+      }
+    ]
+  },
+  {
+    "id": "p6-01",
+    "part": 6,
+    "title": "临时入口通知 · 第1空",
+    "prompt": "Which word best completes blank [1]?",
+    "options": [
+      "repair",
+      "repairing",
+      "repaired",
+      "repairs"
+    ],
+    "correctIndex": 2,
+    "explanation": "台阶是被维修的；are being后接过去分词，构成现在进行时的被动语态。repaired是正确形式。",
+    "evidence": "The front steps are being repaired.",
+    "skill": "篇章填空：被动语态",
+    "difficulty": "基础",
+    "groupId": "notice-entrance",
+    "passage": "To: All staff\nSubject: Temporary office entrance\n\nFrom September 14 to September 18, our main entrance will be closed while the front steps are being [1]. During this period, please enter through the side door on Pine Street. [2]\n\nThe security desk will remain open at its usual hours, so no changes to employee badges are [3]. If you are expecting a visitor, please [4] the visitor about the temporary entrance before the appointment.\n\nThank you for your cooperation.\nFacilities Team",
+    "translation": "收件人：全体员工\n主题：临时办公入口\n\n9月14日至18日，正门台阶维修期间，正门将关闭。此期间请从松树街的侧门进入。指示牌会引导大家从侧门前往接待区。\n\n安保服务台仍按正常时间开放，因此员工门禁卡无需更改。如果您有访客，请在预约时间前告知对方临时入口的位置。\n\n感谢您的配合。\n设施管理团队",
+    "vocabulary": [
+      {
+        "word": "temporary",
+        "meaning": "临时的",
+        "example": "This is a temporary entrance."
+      },
+      {
+        "word": "cooperation",
+        "meaning": "配合；合作",
+        "example": "Thank you for your cooperation during the repairs."
+      }
+    ]
+  },
+  {
+    "id": "p6-02",
+    "part": 6,
+    "title": "临时入口通知 · 第2空",
+    "prompt": "Which sentence best completes blank [2]?",
+    "options": [
+      "Signs will guide you from the side door to the reception area.",
+      "The side door will also be closed throughout this period.",
+      "Staff members are required to enter through the main entrance.",
+      "Visitors should wait until October to enter the building."
+    ],
+    "correctIndex": 0,
+    "explanation": "上句要求使用侧门，A接着说明如何从侧门到接待区，信息衔接自然。B关闭侧门、C要求走已关闭正门，均与通知冲突；D擅自把限制延长到十月。",
+    "evidence": "During this period, please enter through the side door on Pine Street. Signs will guide you from the side door to the reception area.",
+    "skill": "篇章填空：句子衔接",
+    "difficulty": "进阶",
+    "groupId": "notice-entrance",
+    "passage": "To: All staff\nSubject: Temporary office entrance\n\nFrom September 14 to September 18, our main entrance will be closed while the front steps are being [1]. During this period, please enter through the side door on Pine Street. [2]\n\nThe security desk will remain open at its usual hours, so no changes to employee badges are [3]. If you are expecting a visitor, please [4] the visitor about the temporary entrance before the appointment.\n\nThank you for your cooperation.\nFacilities Team",
+    "translation": "收件人：全体员工\n主题：临时办公入口\n\n9月14日至18日，正门台阶维修期间，正门将关闭。此期间请从松树街的侧门进入。指示牌会引导大家从侧门前往接待区。\n\n安保服务台仍按正常时间开放，因此员工门禁卡无需更改。如果您有访客，请在预约时间前告知对方临时入口的位置。\n\n感谢您的配合。\n设施管理团队",
+    "vocabulary": [
+      {
+        "word": "temporary",
+        "meaning": "临时的",
+        "example": "This is a temporary entrance."
+      },
+      {
+        "word": "cooperation",
+        "meaning": "配合；合作",
+        "example": "Thank you for your cooperation during the repairs."
+      }
+    ]
+  },
+  {
+    "id": "p6-03",
+    "part": 6,
+    "title": "临时入口通知 · 第3空",
+    "prompt": "Which word best completes blank [3]?",
+    "options": [
+      "necessity",
+      "necessary",
+      "necessarily",
+      "necessitate"
+    ],
+    "correctIndex": 1,
+    "explanation": "are后需要形容词作表语，no changes are necessary表示无需做出更改。necessity是名词，necessarily是副词，necessitate是动词。",
+    "evidence": "No changes to employee badges are necessary.",
+    "skill": "篇章填空：词性",
+    "difficulty": "基础",
+    "groupId": "notice-entrance",
+    "passage": "To: All staff\nSubject: Temporary office entrance\n\nFrom September 14 to September 18, our main entrance will be closed while the front steps are being [1]. During this period, please enter through the side door on Pine Street. [2]\n\nThe security desk will remain open at its usual hours, so no changes to employee badges are [3]. If you are expecting a visitor, please [4] the visitor about the temporary entrance before the appointment.\n\nThank you for your cooperation.\nFacilities Team",
+    "translation": "收件人：全体员工\n主题：临时办公入口\n\n9月14日至18日，正门台阶维修期间，正门将关闭。此期间请从松树街的侧门进入。指示牌会引导大家从侧门前往接待区。\n\n安保服务台仍按正常时间开放，因此员工门禁卡无需更改。如果您有访客，请在预约时间前告知对方临时入口的位置。\n\n感谢您的配合。\n设施管理团队",
+    "vocabulary": [
+      {
+        "word": "temporary",
+        "meaning": "临时的",
+        "example": "This is a temporary entrance."
+      },
+      {
+        "word": "cooperation",
+        "meaning": "配合；合作",
+        "example": "Thank you for your cooperation during the repairs."
+      }
+    ]
+  },
+  {
+    "id": "p6-04",
+    "part": 6,
+    "title": "临时入口通知 · 第4空",
+    "prompt": "Which word best completes blank [4]?",
+    "options": [
+      "informs",
+      "informing",
+      "information",
+      "inform"
+    ],
+    "correctIndex": 3,
+    "explanation": "please后接动词原形，inform somebody about something表示告知某人某事。后面的the visitor是被告知的人。",
+    "evidence": "Please inform the visitor about the temporary entrance before the appointment.",
+    "skill": "篇章填空：祈使句与搭配",
+    "difficulty": "基础",
+    "groupId": "notice-entrance",
+    "passage": "To: All staff\nSubject: Temporary office entrance\n\nFrom September 14 to September 18, our main entrance will be closed while the front steps are being [1]. During this period, please enter through the side door on Pine Street. [2]\n\nThe security desk will remain open at its usual hours, so no changes to employee badges are [3]. If you are expecting a visitor, please [4] the visitor about the temporary entrance before the appointment.\n\nThank you for your cooperation.\nFacilities Team",
+    "translation": "收件人：全体员工\n主题：临时办公入口\n\n9月14日至18日，正门台阶维修期间，正门将关闭。此期间请从松树街的侧门进入。指示牌会引导大家从侧门前往接待区。\n\n安保服务台仍按正常时间开放，因此员工门禁卡无需更改。如果您有访客，请在预约时间前告知对方临时入口的位置。\n\n感谢您的配合。\n设施管理团队",
+    "vocabulary": [
+      {
+        "word": "temporary",
+        "meaning": "临时的",
+        "example": "This is a temporary entrance."
+      },
+      {
+        "word": "cooperation",
+        "meaning": "配合；合作",
+        "example": "Thank you for your cooperation during the repairs."
+      }
+    ]
+  },
+  {
+    "id": "p7-01",
+    "part": 7,
+    "title": "工作坊与邮件 · 费用包含什么",
+    "prompt": "According to the schedule, what is included in the workshop fee?",
+    "options": [
+      "A laptop rental.",
+      "Printed materials and coffee.",
+      "A train ticket.",
+      "Lunch at a nearby restaurant."
+    ],
+    "correctIndex": 1,
+    "explanation": "日程明确写明费用包含纸质资料和咖啡。电脑要求自带，列车只是Alex的交通方式，午餐没有被列为包含项目。",
+    "evidence": "Printed materials and coffee are included.",
+    "skill": "阅读：明确细节",
+    "difficulty": "基础",
+    "groupId": "documents-workshop",
+    "passage": "DOCUMENT 1 — WORKSHOP SCHEDULE\nClear Writing for Customer Support\nFriday, October 9 | Lakeside Business Center, Room 204\n\n9:00–9:30  Registration and coffee\n9:30–10:45  Writing clear email replies — Nina Brooks\n10:45–11:00  Break\n11:00–12:00  Handling customer complaints — Omar Chen\n\nFee: $60 per participant. Printed materials and coffee are included. Bring your own laptop for the exercises. Register by October 2.\n\nDOCUMENT 2 — EMAIL\nTo: Workshop Coordinator\nFrom: Alex Rivera\nSubject: Late arrival on October 9\n\nHello,\nI registered for the customer-support writing workshop and have already paid the fee. My train is scheduled to arrive at 9:40, so I expect to reach Room 204 at about 10:00. I understand that the first session will already be in progress. Could you keep my printed materials at the registration desk? I will bring my laptop as requested and plan to stay until the workshop ends.\n\nThank you,\nAlex",
+    "translation": "文档1：客户支持清晰写作工作坊，10月9日周五，湖畔商务中心204室。9:00—9:30签到和咖啡；9:30—10:45清晰的邮件回复（Nina Brooks）；10:45—11:00休息；11:00—12:00处理客户投诉（Omar Chen）。每人60美元，含纸质资料和咖啡，练习需自带笔记本电脑，10月2日前报名。\n\n文档2：Alex致协调员的邮件。已报名并付款；列车预计9:40到站，约10:00到204室，届时第一节已开始；请将纸质资料留在签到台，会自带电脑，并参加到工作坊结束。",
+    "vocabulary": [
+      {
+        "word": "in progress",
+        "meaning": "正在进行中",
+        "example": "The training session is already in progress."
+      },
+      {
+        "word": "registration desk",
+        "meaning": "签到台；登记处",
+        "example": "Collect your badge at the registration desk."
+      }
+    ]
+  },
+  {
+    "id": "p7-02",
+    "part": 7,
+    "title": "工作坊与邮件 · 写信目的",
+    "prompt": "Why did Alex write the email?",
+    "options": [
+      "To cancel a workshop registration.",
+      "To request a refund for a train ticket.",
+      "To notify the coordinator of a late arrival and ask for materials.",
+      "To suggest a different topic for the workshop."
+    ],
+    "correctIndex": 2,
+    "explanation": "邮件说明预计迟到，并请协调员保留纸质资料，因此C完整概括写信目的。Alex已付款且打算参加到结束，没有取消或退款。",
+    "evidence": "I expect to reach Room 204 at about 10:00. Could you keep my printed materials at the registration desk?",
+    "skill": "阅读：邮件目的",
+    "difficulty": "基础",
+    "groupId": "documents-workshop",
+    "passage": "DOCUMENT 1 — WORKSHOP SCHEDULE\nClear Writing for Customer Support\nFriday, October 9 | Lakeside Business Center, Room 204\n\n9:00–9:30  Registration and coffee\n9:30–10:45  Writing clear email replies — Nina Brooks\n10:45–11:00  Break\n11:00–12:00  Handling customer complaints — Omar Chen\n\nFee: $60 per participant. Printed materials and coffee are included. Bring your own laptop for the exercises. Register by October 2.\n\nDOCUMENT 2 — EMAIL\nTo: Workshop Coordinator\nFrom: Alex Rivera\nSubject: Late arrival on October 9\n\nHello,\nI registered for the customer-support writing workshop and have already paid the fee. My train is scheduled to arrive at 9:40, so I expect to reach Room 204 at about 10:00. I understand that the first session will already be in progress. Could you keep my printed materials at the registration desk? I will bring my laptop as requested and plan to stay until the workshop ends.\n\nThank you,\nAlex",
+    "translation": "文档1：客户支持清晰写作工作坊，10月9日周五，湖畔商务中心204室。9:00—9:30签到和咖啡；9:30—10:45清晰的邮件回复（Nina Brooks）；10:45—11:00休息；11:00—12:00处理客户投诉（Omar Chen）。每人60美元，含纸质资料和咖啡，练习需自带笔记本电脑，10月2日前报名。\n\n文档2：Alex致协调员的邮件。已报名并付款；列车预计9:40到站，约10:00到204室，届时第一节已开始；请将纸质资料留在签到台，会自带电脑，并参加到工作坊结束。",
+    "vocabulary": [
+      {
+        "word": "in progress",
+        "meaning": "正在进行中",
+        "example": "The training session is already in progress."
+      },
+      {
+        "word": "registration desk",
+        "meaning": "签到台；登记处",
+        "example": "Collect your badge at the registration desk."
+      }
+    ]
+  },
+  {
+    "id": "p7-03",
+    "part": 7,
+    "title": "工作坊与邮件 · 跨文档对应",
+    "prompt": "Which presenter will most likely be speaking when Alex arrives?",
+    "options": [
+      "Nina Brooks.",
+      "Omar Chen.",
+      "Alex Rivera.",
+      "The workshop coordinator."
+    ],
+    "correctIndex": 0,
+    "explanation": "邮件说Alex约10:00到达；日程显示9:30—10:45由Nina Brooks讲解邮件写作。需要把第二份文档的到达时间与第一份日程对应。",
+    "evidence": "Arrival: about 10:00. Writing clear email replies — Nina Brooks: 9:30–10:45.",
+    "skill": "阅读：跨文档推断",
+    "difficulty": "进阶",
+    "groupId": "documents-workshop",
+    "passage": "DOCUMENT 1 — WORKSHOP SCHEDULE\nClear Writing for Customer Support\nFriday, October 9 | Lakeside Business Center, Room 204\n\n9:00–9:30  Registration and coffee\n9:30–10:45  Writing clear email replies — Nina Brooks\n10:45–11:00  Break\n11:00–12:00  Handling customer complaints — Omar Chen\n\nFee: $60 per participant. Printed materials and coffee are included. Bring your own laptop for the exercises. Register by October 2.\n\nDOCUMENT 2 — EMAIL\nTo: Workshop Coordinator\nFrom: Alex Rivera\nSubject: Late arrival on October 9\n\nHello,\nI registered for the customer-support writing workshop and have already paid the fee. My train is scheduled to arrive at 9:40, so I expect to reach Room 204 at about 10:00. I understand that the first session will already be in progress. Could you keep my printed materials at the registration desk? I will bring my laptop as requested and plan to stay until the workshop ends.\n\nThank you,\nAlex",
+    "translation": "文档1：客户支持清晰写作工作坊，10月9日周五，湖畔商务中心204室。9:00—9:30签到和咖啡；9:30—10:45清晰的邮件回复（Nina Brooks）；10:45—11:00休息；11:00—12:00处理客户投诉（Omar Chen）。每人60美元，含纸质资料和咖啡，练习需自带笔记本电脑，10月2日前报名。\n\n文档2：Alex致协调员的邮件。已报名并付款；列车预计9:40到站，约10:00到204室，届时第一节已开始；请将纸质资料留在签到台，会自带电脑，并参加到工作坊结束。",
+    "vocabulary": [
+      {
+        "word": "in progress",
+        "meaning": "正在进行中",
+        "example": "The training session is already in progress."
+      },
+      {
+        "word": "registration desk",
+        "meaning": "签到台；登记处",
+        "example": "Collect your badge at the registration desk."
+      }
+    ]
+  },
+  {
+    "id": "p7-04",
+    "part": 7,
+    "title": "工作坊与邮件 · 是否能完整参加",
+    "prompt": "Which session does Alex expect to attend from beginning to end?",
+    "options": [
+      "Registration and coffee.",
+      "Writing clear email replies.",
+      "The morning registration briefing.",
+      "Handling customer complaints."
+    ],
+    "correctIndex": 3,
+    "explanation": "Alex约10:00到达并计划待到结束，因此能完整参加11:00—12:00的投诉处理课。签到已结束，第一节9:30开始，不能从头参加；日程中没有额外的登记说明会。",
+    "evidence": "I expect to reach Room 204 at about 10:00. I plan to stay until the workshop ends. Handling customer complaints: 11:00–12:00.",
+    "skill": "阅读：跨文档时间判断",
+    "difficulty": "进阶",
+    "groupId": "documents-workshop",
+    "passage": "DOCUMENT 1 — WORKSHOP SCHEDULE\nClear Writing for Customer Support\nFriday, October 9 | Lakeside Business Center, Room 204\n\n9:00–9:30  Registration and coffee\n9:30–10:45  Writing clear email replies — Nina Brooks\n10:45–11:00  Break\n11:00–12:00  Handling customer complaints — Omar Chen\n\nFee: $60 per participant. Printed materials and coffee are included. Bring your own laptop for the exercises. Register by October 2.\n\nDOCUMENT 2 — EMAIL\nTo: Workshop Coordinator\nFrom: Alex Rivera\nSubject: Late arrival on October 9\n\nHello,\nI registered for the customer-support writing workshop and have already paid the fee. My train is scheduled to arrive at 9:40, so I expect to reach Room 204 at about 10:00. I understand that the first session will already be in progress. Could you keep my printed materials at the registration desk? I will bring my laptop as requested and plan to stay until the workshop ends.\n\nThank you,\nAlex",
+    "translation": "文档1：客户支持清晰写作工作坊，10月9日周五，湖畔商务中心204室。9:00—9:30签到和咖啡；9:30—10:45清晰的邮件回复（Nina Brooks）；10:45—11:00休息；11:00—12:00处理客户投诉（Omar Chen）。每人60美元，含纸质资料和咖啡，练习需自带笔记本电脑，10月2日前报名。\n\n文档2：Alex致协调员的邮件。已报名并付款；列车预计9:40到站，约10:00到204室，届时第一节已开始；请将纸质资料留在签到台，会自带电脑，并参加到工作坊结束。",
+    "vocabulary": [
+      {
+        "word": "in progress",
+        "meaning": "正在进行中",
+        "example": "The training session is already in progress."
+      },
+      {
+        "word": "registration desk",
+        "meaning": "签到台；登记处",
+        "example": "Collect your badge at the registration desk."
+      }
+    ]
+  }
+]
