@@ -13,8 +13,8 @@
 ## 验证与交付
 
 - 8项实际源码行为回归通过，包括后台暂停不夸大录音长度。
-- Web与mobile生产构建通过；Capacitor同步Android/iOS成功；全部public资源逐字节匹配两端资源包。GitHub与网站发布在本轮交付时核对。
-- 原生APK与iOS编译须以Actions实际结果为准；没有真机麦克风、系统返回键、安装升级或原生导出验收。
+- Web与mobile生产构建通过；Capacitor同步Android/iOS成功；全部public资源逐字节匹配两端资源包。GitHub main已提交，222个源码文件与本地逐文件一致；私有网页第2版发布成功。
+- [Android APK构建](https://github.com/godnight/lantern-toeic/actions/runs/34136109477)与[iOS无签名模拟器编译](https://github.com/godnight/lantern-toeic/actions/runs/34136109354)均成功。Android产物已下载并核对SHA-256，四张高清图与仓库逐字节一致。没有真机麦克风、系统返回键、安装升级或原生导出验收。
 
 ## 尚未完成
 
@@ -25,3 +25,11 @@
 个人仓库：https://github.com/godnight/lantern-toeic 。网页：https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site ，保持原有私有访问。目标、考试日期和时间预算仍由用户配置。首答与复练分别保存，漏学不累计补课债。
 
 接下来按实际体验推进：真机录音与回放、原生备份和稳定签名；教师审校与可复用真人音频；正式移动身份及数据同步。资源贡献须保留文字/图片/音频各自来源，非盈利方向不取代第三方授权。
+
+## v0.2.0 可追溯交付
+
+- APP源版本：`dd350f7448b27b8753c03054f6a0ba74249e078b`。
+- Android产物：`lantern-toeic-android-debug-1-1`，Actions artifact ID `10024104220`，构建页面含下载。
+- APK SHA-256：`4b52662b93cb986dff90512143fc486282d4a830923c994054762e4f70def605`。
+- 网站源版本：`b6dca30c95caf8954c0aa7f5c8b94686b7619a65`（与上面的GitHub内容树一致，保留各自提交历史），2026-09-07成功更新原私有URL。
+- 本状态记录属于构建后的文档更新，不改动已验收的程序或包体。
