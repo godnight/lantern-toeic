@@ -164,7 +164,7 @@ test('an earlier recording save cannot mark the current recording as saved', asy
     react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stub,
     '@/components/ui/dialog':stub,'@/components/ui/checkbox':stub,
     sonner:{toast:Object.assign(()=>{},{error(){},success(){}})},'./practice':stub
-  },{Blob,URL,MediaRecorder:Recorder,window:{MediaRecorder:Recorder},navigator:{mediaDevices:{getUserMedia:async()=>({getTracks:()=>[{stop(){}}]})}},setInterval:()=>1,clearInterval(){}}).default;
+  },{Blob,URL,MediaRecorder:Recorder,window:{MediaRecorder:Recorder},document:{hidden:false,addEventListener(){},removeEventListener(){}},navigator:{mediaDevices:{getUserMedia:async()=>({getTracks:()=>[{stop(){}}]})}},setInterval:()=>1,clearInterval(){}}).default;
   const prompt=JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8'))[0];
   function render(){cursor=0;const tree=Room({prompt,onClose(){},onFinish(){},onSave:()=>new Promise(resolve=>deferred.push(resolve))});const pending=effects;effects=[];pending.forEach(fn=>fn());return tree;}
   function textOf(node){if(node==null||typeof node==='boolean')return '';if(typeof node==='string'||typeof node==='number')return String(node);if(Array.isArray(node))return node.map(textOf).join('');return textOf(node.props?.children);}
@@ -182,4 +182,48 @@ test('an earlier recording save cannot mark the current recording as saved', asy
   deferred[0]();await flush();
   assert.equal(button(render(),'记录收获').props.disabled,true,'Recording 2 is still saving; recording 1 completion must not enable Finish');
   deferred[1]();await flush();
+});
+
+
+test('background recording stop preserves elapsed time and pending save completion', async () => {
+  let slots=[],cursor=0,effects=[],stopTask,saveComplete;
+  const startTime=Date.parse('2026-09-07T10:00:00.000Z');
+  let clock=startTime;
+  const saved=[];
+  class ClockDate extends Date { static now(){return clock;} }
+  const react={
+    useState(initial){const i=cursor++;if(!(i in slots))slots[i]=initial;return [slots[i],value=>slots[i]=typeof value==='function'?value(slots[i]):value];},
+    useRef(initial){const i=cursor++;if(!(i in slots))slots[i]={current:initial};return slots[i];},
+    useEffect(fn,deps){const i=cursor++;if(!slots[i]||deps.some((x,j)=>!Object.is(x,slots[i].deps[j]))){const old=slots[i];slots[i]={deps};effects.push(()=>{old?.cleanup?.();slots[i].cleanup=fn();});}}
+  };
+  class Recorder {
+    static isTypeSupported(){return true;}
+    constructor(){this.state='inactive';this.mimeType='audio/webm';}
+    start(){this.state='recording';}
+    // Browsers enqueue data/stop events; suspension can delay their delivery.
+    stop(){this.state='inactive';stopTask=()=>{this.ondataavailable?.({data:new Blob(['sample audio'],{type:'audio/webm'})});return this.onstop?.();};}
+  }
+  const document={hidden:false,addEventListener(type,fn){if(type==='visibilitychange')this.onVisibility=fn;},removeEventListener(){}};
+  const jsx=(type,props)=>({type,props});
+  const stub=new Proxy({},{get:(_,name)=>String(name)});
+  const Room=load('app/learn/speaking.tsx',{
+    react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stub,
+    '@/components/ui/dialog':stub,'@/components/ui/checkbox':stub,
+    sonner:{toast:Object.assign(()=>{},{error(){},success(){}})},'./practice':stub
+  },{Date:ClockDate,Blob,URL,MediaRecorder:Recorder,window:{MediaRecorder:Recorder},document,navigator:{mediaDevices:{getUserMedia:async()=>({getTracks:()=>[{stop(){}}]})}},setInterval:()=>1,clearInterval(){}}).default;
+  const prompt=JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8'))[0];
+  function render(){cursor=0;const tree=Room({prompt,onClose(){},onFinish(){},onSave:meta=>{saved.push(meta);return new Promise(resolve=>saveComplete=resolve);}});const pending=effects;effects=[];pending.forEach(fn=>fn());return tree;}
+  function textOf(node){if(node==null||typeof node==='boolean')return '';if(typeof node==='string'||typeof node==='number')return String(node);if(Array.isArray(node))return node.map(textOf).join('');return textOf(node.props?.children);}
+  function button(tree,label){const nodes=[tree];while(nodes.length){const node=nodes.shift();if(!node)continue;if(Array.isArray(node)){nodes.push(...node);continue;}if(node.type==='button'&&textOf(node).includes(label))return node;nodes.push(node.props?.children);}throw Error('Missing button '+label);}
+  await button(render(),'开始准备').props.onClick();
+  button(render(),'准备好了').props.onClick();render();
+  clock=startTime+5000;document.hidden=true;document.onVisibility();
+  clock=startTime+305000;const persisted=stopTask();
+  assert.equal(saved[0].duration,5,'Suspended time after stop must not inflate the clip or exceed the upload limit');
+  assert.equal(saved[0].createdAt,new Date(startTime).toISOString(),'Clip must retain its recording start time');
+  assert.equal(button(render(),'记录收获').props.disabled,true);
+  document.hidden=false;document.onVisibility();
+  document.hidden=true;document.onVisibility();
+  saveComplete();await persisted;
+  assert.equal(button(render(),'记录收获').props.disabled,false,'Hiding an already completed recording must not invalidate its pending save');
 });

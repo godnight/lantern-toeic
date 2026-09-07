@@ -49,3 +49,7 @@ next-env.d.ts
 /mobile/ios/App/build/
 
 *.tsbuildinfo
+
+/mobile/ios-build/
+/mobile/ios-build-result.xcresult/
+/mobile/ios-build.log

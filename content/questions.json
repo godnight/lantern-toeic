@@ -813,5 +813,1393 @@
         "example": "Collect your badge at the registration desk."
       }
     ]
+  },
+  {
+    "id": "p2-v2-01",
+    "part": 2,
+    "title": "找到站内服务点",
+    "prompt": "Where can I recharge my travel card?",
+    "options": [
+      "At the machine beside the ticket office.",
+      "It takes about fifteen minutes.",
+      "The next train goes to Northbridge."
+    ],
+    "correctIndex": 0,
+    "explanation": "Where询问充值地点，A明确给出车票办公室旁的机器。B回答所需时间，C说明下一班列车的目的地，都没有回答在哪里充值。",
+    "evidence": "Where can I recharge my travel card? — At the machine beside the ticket office.",
+    "skill": "地点问句",
+    "difficulty": "基础",
+    "translation": "我在哪里可以给交通卡充值？\nA. 在售票处旁边的机器上。\nB. 大约需要十五分钟。\nC. 下一班列车开往北桥。",
+    "vocabulary": [
+      {
+        "word": "recharge",
+        "meaning": "充值；再充电",
+        "example": "You can recharge the card before boarding the bus."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "transcript": "Where can I recharge my travel card? A. At the machine beside the ticket office. B. It takes about fifteen minutes. C. The next train goes to Northbridge.",
+    "audioText": "Where can I recharge my travel card? A. At the machine beside the ticket office. B. It takes about fifteen minutes. C. The next train goes to Northbridge."
+  },
+  {
+    "id": "p2-v2-02",
+    "part": 2,
+    "title": "安排发送会议纪要",
+    "prompt": "Could you send the meeting notes before lunch?",
+    "options": [
+      "The meeting room is on the third floor.",
+      "Certainly. I'll email them in ten minutes.",
+      "I usually bring my lunch from home."
+    ],
+    "correctIndex": 1,
+    "explanation": "Could you在这里提出请求。B先答应，再说明十分钟后发邮件，直接回应发送会议纪要的请求。A是会议室位置；C被lunch一词吸引，却只是说午餐习惯。",
+    "evidence": "Could you send the meeting notes before lunch? — Certainly. I'll email them in ten minutes.",
+    "skill": "请求与应答",
+    "difficulty": "基础",
+    "translation": "你能在午饭前发出会议纪要吗？\nA. 会议室在三楼。\nB. 当然，我十分钟后发邮件。\nC. 我通常从家里带午饭。",
+    "vocabulary": [
+      {
+        "word": "meeting notes",
+        "meaning": "会议纪要",
+        "example": "The meeting notes list three tasks for our team."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "transcript": "Could you send the meeting notes before lunch? A. The meeting room is on the third floor. B. Certainly. I'll email them in ten minutes. C. I usually bring my lunch from home.",
+    "audioText": "Could you send the meeting notes before lunch? A. The meeting room is on the third floor. B. Certainly. I'll email them in ten minutes. C. I usually bring my lunch from home."
+  },
+  {
+    "id": "p2-v2-03",
+    "part": 2,
+    "title": "理解打印机旁的提示",
+    "prompt": "The printer is out of paper again.",
+    "options": [
+      "I printed the report yesterday.",
+      "The shop closes at six.",
+      "There's an unopened pack in the cabinet."
+    ],
+    "correctIndex": 2,
+    "explanation": "原句是陈述问题，并非疑问句。C指出柜子里有未拆封的纸，提供解决办法，是最合适的回应。A只说明昨天打印过报告，B只给商店关门时间，均未解决眼前缺纸的问题。",
+    "evidence": "The printer is out of paper again. — There's an unopened pack in the cabinet.",
+    "skill": "陈述句与间接回应",
+    "difficulty": "进阶",
+    "translation": "打印机又没纸了。\nA. 我昨天打印了报告。\nB. 商店六点关门。\nC. 柜子里有一包未拆封的纸。",
+    "vocabulary": [
+      {
+        "word": "unopened",
+        "meaning": "未打开的；未拆封的",
+        "example": "Please put the unopened boxes on the lower shelf."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "transcript": "The printer is out of paper again. A. I printed the report yesterday. B. The shop closes at six. C. There's an unopened pack in the cabinet.",
+    "audioText": "The printer is out of paper again. A. I printed the report yesterday. B. The shop closes at six. C. There's an unopened pack in the cabinet."
+  },
+  {
+    "id": "p2-v2-04",
+    "part": 2,
+    "title": "选择寄送方式",
+    "prompt": "Should we send the samples by courier or by regular mail?",
+    "options": [
+      "Use a courier; the client needs them tomorrow.",
+      "Yes, the samples are blue.",
+      "The email was sent this morning."
+    ],
+    "correctIndex": 0,
+    "explanation": "原句要求在快递和普通邮件之间选择。A选择快递，并用客户明天要收到样品解释原因。B只回答样品颜色且误用Yes回应选择问句；C把mail误听成email。",
+    "evidence": "Should we send the samples by courier or by regular mail? — Use a courier; the client needs them tomorrow.",
+    "skill": "选择问句",
+    "difficulty": "进阶",
+    "translation": "我们应该用快递还是普通邮件寄样品？\nA. 用快递，客户明天就需要它们。\nB. 是的，样品是蓝色的。\nC. 电子邮件今天早上已经发出。",
+    "vocabulary": [
+      {
+        "word": "courier",
+        "meaning": "快递；快递员",
+        "example": "A courier will collect the package at three."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "transcript": "Should we send the samples by courier or by regular mail? A. Use a courier; the client needs them tomorrow. B. Yes, the samples are blue. C. The email was sent this morning.",
+    "audioText": "Should we send the samples by courier or by regular mail? A. Use a courier; the client needs them tomorrow. B. Yes, the samples are blue. C. The email was sent this morning."
+  },
+  {
+    "id": "p2-v2-05",
+    "part": 2,
+    "title": "确认材料数量",
+    "prompt": "How many copies of the visitor guide should I make?",
+    "options": [
+      "The guide was written last year.",
+      "Twenty, including two for the reception desk.",
+      "Visitors enter through the side door."
+    ],
+    "correctIndex": 1,
+    "explanation": "How many询问数量，B给出二十份，并说明其中两份给接待台。A的去年是时间；C是访客进入的位置，都不是所需份数。",
+    "evidence": "How many copies of the visitor guide should I make? — Twenty, including two for the reception desk.",
+    "skill": "数量问句",
+    "difficulty": "基础",
+    "translation": "游客指南应该复印多少份？\nA. 指南是去年编写的。\nB. 二十份，其中两份给接待台。\nC. 游客从侧门进入。",
+    "vocabulary": [
+      {
+        "word": "including",
+        "meaning": "包括",
+        "example": "We ordered twelve notebooks, including one for the trainer."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "transcript": "How many copies of the visitor guide should I make? A. The guide was written last year. B. Twenty, including two for the reception desk. C. Visitors enter through the side door.",
+    "audioText": "How many copies of the visitor guide should I make? A. The guide was written last year. B. Twenty, including two for the reception desk. C. Visitors enter through the side door."
+  },
+  {
+    "id": "p2-v2-06",
+    "part": 2,
+    "title": "为何调整日程",
+    "prompt": "Why was the team briefing moved to Thursday?",
+    "options": [
+      "In the small conference room.",
+      "Thursday is the day after Wednesday.",
+      "The team leader is traveling on Wednesday."
+    ],
+    "correctIndex": 2,
+    "explanation": "Why询问改期原因。C说明团队负责人周三出差，因此解释了为何移到周四。A只给地点；B只是星期顺序，重复Thursday并不等于回答原因。",
+    "evidence": "Why was the team briefing moved to Thursday? — The team leader is traveling on Wednesday.",
+    "skill": "原因与上下文",
+    "difficulty": "基础",
+    "translation": "团队简报会为什么改到周四了？\nA. 在小会议室。\nB. 周四是周三的下一天。\nC. 团队负责人周三要出差。",
+    "vocabulary": [
+      {
+        "word": "briefing",
+        "meaning": "简报会；情况说明会",
+        "example": "The morning briefing will cover changes to the schedule."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "transcript": "Why was the team briefing moved to Thursday? A. In the small conference room. B. Thursday is the day after Wednesday. C. The team leader is traveling on Wednesday.",
+    "audioText": "Why was the team briefing moved to Thursday? A. In the small conference room. B. Thursday is the day after Wednesday. C. The team leader is traveling on Wednesday."
+  },
+  {
+    "id": "p2-v2-07",
+    "part": 2,
+    "title": "回应否定疑问句",
+    "prompt": "Didn't you reserve a table for the project lunch?",
+    "options": [
+      "Yes, for six people at twelve thirty.",
+      "The reservation desk is made of wood.",
+      "I prefer the table near the window."
+    ],
+    "correctIndex": 0,
+    "explanation": "否定疑问句仍在核实是否预订。A用Yes表示已经预订，并给出六人、十二点半的细节。B将table话题带到桌子的材质；C只表达座位偏好，不能确认是否已预订。",
+    "evidence": "Didn't you reserve a table for the project lunch? — Yes, for six people at twelve thirty.",
+    "skill": "否定疑问句",
+    "difficulty": "进阶",
+    "translation": "你不是为项目午餐预订了桌位吗？\nA. 是的，订了十二点半的六人桌。\nB. 预订服务台是木制的。\nC. 我更喜欢靠窗的桌子。",
+    "vocabulary": [
+      {
+        "word": "reserve",
+        "meaning": "预订；保留",
+        "example": "We need to reserve a room for the design review."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "transcript": "Didn't you reserve a table for the project lunch? A. Yes, for six people at twelve thirty. B. The reservation desk is made of wood. C. I prefer the table near the window.",
+    "audioText": "Didn't you reserve a table for the project lunch? A. Yes, for six people at twelve thirty. B. The reservation desk is made of wood. C. I prefer the table near the window."
+  },
+  {
+    "id": "p2-v2-08",
+    "part": 2,
+    "title": "询问工作负责人",
+    "prompt": "Who is updating the visitor map?",
+    "options": [
+      "The map shows all three floors.",
+      "I'm not sure; ask the information desk.",
+      "The visitors arrived by bus."
+    ],
+    "correctIndex": 1,
+    "explanation": "Who询问负责人。B坦诚说明不知道，并建议询问咨询台，是可成立的间接应答。A只是地图内容；C只是访客交通方式，没有回答由谁更新，也没有提供查询办法。",
+    "evidence": "Who is updating the visitor map? — I'm not sure; ask the information desk.",
+    "skill": "人物问句与间接应答",
+    "difficulty": "进阶",
+    "translation": "谁在更新游客地图？\nA. 地图显示了全部三层楼。\nB. 我不确定，问问咨询台吧。\nC. 游客是乘大巴来的。",
+    "vocabulary": [
+      {
+        "word": "update",
+        "meaning": "更新",
+        "example": "Our assistant will update the contact list on Monday."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "transcript": "Who is updating the visitor map? A. The map shows all three floors. B. I'm not sure; ask the information desk. C. The visitors arrived by bus.",
+    "audioText": "Who is updating the visitor map? A. The map shows all three floors. B. I'm not sure; ask the information desk. C. The visitors arrived by bus."
+  },
+  {
+    "id": "p3-v2-01",
+    "part": 3,
+    "title": "培训讲义 · 遇到的问题",
+    "prompt": "What problem do the speakers discuss?",
+    "options": [
+      "Printed materials will arrive after the workshop begins.",
+      "The training portal is unavailable.",
+      "Too many people have registered.",
+      "The workshop room has no tables."
+    ],
+    "correctIndex": 0,
+    "explanation": "工作坊十点开始，讲义十一点才送到，因此A概括了核心问题。B不符，埃文表示可以立刻上传；C和D均未提及。注意不是讲义遗失，而是晚于开课时间到达。",
+    "evidence": "The customer-service workshop starts at ten. ... won't reach us until eleven.",
+    "skill": "问题与时间关系",
+    "difficulty": "基础",
+    "translation": "诺拉：埃文，客户服务工作坊十点开始。印好的讲义送到了吗？\n埃文：还没有。打印店说送货车耽搁了，要到十一点才能到我们这里。\n诺拉：我们不能让参加者一直等着。你有最终版PDF吗？\n埃文：有。我现在可以把它上传到培训平台，但有些参加者可能没带笔记本电脑。\n诺拉：他们可以用设备室里的平板电脑。请你上传文件，我请接待处把平板电脑送过来。\n埃文：好的。我还会把下载链接放到欢迎幻灯片上。",
+    "vocabulary": [
+      {
+        "word": "handout",
+        "meaning": "讲义；分发的材料",
+        "example": "Each handout contains a short practice activity."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "conversation-v2-handouts",
+    "transcript": "Nora: Evan, the customer-service workshop starts at ten. Have the printed handouts arrived?\nEvan: Not yet. The print shop says its delivery van is delayed and won't reach us until eleven.\nNora: We can't keep the participants waiting. Do you have the final PDF?\nEvan: Yes. I can upload it to the training portal now, but some participants may not have brought a laptop.\nNora: They can use the tablets from the equipment room. Please upload the file while I ask reception to bring the tablets here.\nEvan: All right. I'll also put the download link on the welcome slide.",
+    "audioText": "Nora: Evan, the customer-service workshop starts at ten. Have the printed handouts arrived?\nEvan: Not yet. The print shop says its delivery van is delayed and won't reach us until eleven.\nNora: We can't keep the participants waiting. Do you have the final PDF?\nEvan: Yes. I can upload it to the training portal now, but some participants may not have brought a laptop.\nNora: They can use the tablets from the equipment room. Please upload the file while I ask reception to bring the tablets here.\nEvan: All right. I'll also put the download link on the welcome slide."
+  },
+  {
+    "id": "p3-v2-02",
+    "part": 3,
+    "title": "培训讲义 · 推断实际意图",
+    "prompt": "What does Nora mean when she says, \"We can't keep the participants waiting\"?",
+    "options": [
+      "The participants should leave immediately.",
+      "The workshop should begin at its scheduled time.",
+      "The participants arrived too early.",
+      "The workshop should move to the print shop."
+    ],
+    "correctIndex": 1,
+    "explanation": "诺拉随后提议用PDF和平板替代纸质讲义，可知她希望按时开始，B正确。A的立即离开、C的过早到达均无依据；D误把打印店当作新的上课地点。",
+    "evidence": "We can't keep the participants waiting. Do you have the final PDF?",
+    "skill": "语用推断",
+    "difficulty": "进阶",
+    "translation": "诺拉：埃文，客户服务工作坊十点开始。印好的讲义送到了吗？\n埃文：还没有。打印店说送货车耽搁了，要到十一点才能到我们这里。\n诺拉：我们不能让参加者一直等着。你有最终版PDF吗？\n埃文：有。我现在可以把它上传到培训平台，但有些参加者可能没带笔记本电脑。\n诺拉：他们可以用设备室里的平板电脑。请你上传文件，我请接待处把平板电脑送过来。\n埃文：好的。我还会把下载链接放到欢迎幻灯片上。",
+    "vocabulary": [
+      {
+        "word": "participant",
+        "meaning": "参加者",
+        "example": "Every participant will receive a feedback form."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "conversation-v2-handouts",
+    "transcript": "Nora: Evan, the customer-service workshop starts at ten. Have the printed handouts arrived?\nEvan: Not yet. The print shop says its delivery van is delayed and won't reach us until eleven.\nNora: We can't keep the participants waiting. Do you have the final PDF?\nEvan: Yes. I can upload it to the training portal now, but some participants may not have brought a laptop.\nNora: They can use the tablets from the equipment room. Please upload the file while I ask reception to bring the tablets here.\nEvan: All right. I'll also put the download link on the welcome slide.",
+    "audioText": "Nora: Evan, the customer-service workshop starts at ten. Have the printed handouts arrived?\nEvan: Not yet. The print shop says its delivery van is delayed and won't reach us until eleven.\nNora: We can't keep the participants waiting. Do you have the final PDF?\nEvan: Yes. I can upload it to the training portal now, but some participants may not have brought a laptop.\nNora: They can use the tablets from the equipment room. Please upload the file while I ask reception to bring the tablets here.\nEvan: All right. I'll also put the download link on the welcome slide."
+  },
+  {
+    "id": "p3-v2-03",
+    "part": 3,
+    "title": "培训讲义 · 下一步行动",
+    "prompt": "What will Nora do next?",
+    "options": [
+      "Drive to the print shop.",
+      "Upload the PDF herself.",
+      "Ask reception to deliver some tablets.",
+      "Cancel the welcome presentation."
+    ],
+    "correctIndex": 2,
+    "explanation": "诺拉明确说由她请接待处把平板送来，C正确。A未提及；B上传PDF是埃文的任务；D与埃文要在欢迎幻灯片上加链接的安排不符。答题时要分清两位说话人的分工。",
+    "evidence": "Please upload the file while I ask reception to bring the tablets here.",
+    "skill": "行动与人物对应",
+    "difficulty": "基础",
+    "translation": "诺拉：埃文，客户服务工作坊十点开始。印好的讲义送到了吗？\n埃文：还没有。打印店说送货车耽搁了，要到十一点才能到我们这里。\n诺拉：我们不能让参加者一直等着。你有最终版PDF吗？\n埃文：有。我现在可以把它上传到培训平台，但有些参加者可能没带笔记本电脑。\n诺拉：他们可以用设备室里的平板电脑。请你上传文件，我请接待处把平板电脑送过来。\n埃文：好的。我还会把下载链接放到欢迎幻灯片上。",
+    "vocabulary": [
+      {
+        "word": "reception",
+        "meaning": "接待处",
+        "example": "Reception keeps a spare visitor badge for each department."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "conversation-v2-handouts",
+    "transcript": "Nora: Evan, the customer-service workshop starts at ten. Have the printed handouts arrived?\nEvan: Not yet. The print shop says its delivery van is delayed and won't reach us until eleven.\nNora: We can't keep the participants waiting. Do you have the final PDF?\nEvan: Yes. I can upload it to the training portal now, but some participants may not have brought a laptop.\nNora: They can use the tablets from the equipment room. Please upload the file while I ask reception to bring the tablets here.\nEvan: All right. I'll also put the download link on the welcome slide.",
+    "audioText": "Nora: Evan, the customer-service workshop starts at ten. Have the printed handouts arrived?\nEvan: Not yet. The print shop says its delivery van is delayed and won't reach us until eleven.\nNora: We can't keep the participants waiting. Do you have the final PDF?\nEvan: Yes. I can upload it to the training portal now, but some participants may not have brought a laptop.\nNora: They can use the tablets from the equipment room. Please upload the file while I ask reception to bring the tablets here.\nEvan: All right. I'll also put the download link on the welcome slide."
+  },
+  {
+    "id": "p3-v2-04",
+    "part": 3,
+    "title": "接驳车 · 行程变更原因",
+    "prompt": "Why was the shuttle pickup point changed?",
+    "options": [
+      "The station closes early.",
+      "The driver is on a break.",
+      "The hotel changed its name.",
+      "Construction is taking place."
+    ],
+    "correctIndex": 3,
+    "explanation": "萨姆用because of construction直接说明变更原因，D正确。A的提前关站、B的司机休息和C的酒店改名都没有出现。不能把找不到标志误判为车站关闭。",
+    "evidence": "The pickup point moved to the west exit this week because of construction.",
+    "skill": "原因定位",
+    "difficulty": "基础",
+    "translation": "莉娜：你好。确认邮件上写酒店接驳车今天下午四点半从中央车站出发，但我找不到上车点标志。\n萨姆：您在东出口，对吗？这周因为施工，上车点改到西出口了。\n莉娜：对，我在东出口旁。从这里走到西侧要多久？\n萨姆：穿过主大厅大约五分钟。现在四点十分，所以您的时间很充裕。\n莉娜：那就好。我有一个大行李箱。路上有电梯吗？\n萨姆：有，就在咨询台旁边。我会请司机留意在西出口等候的您。\n莉娜：谢谢。我现在就过去。",
+    "vocabulary": [
+      {
+        "word": "pickup point",
+        "meaning": "上车点；接人地点",
+        "example": "The tour group will meet at the pickup point near the library."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "conversation-v2-shuttle",
+    "transcript": "Lena: Hello. My confirmation email says the hotel shuttle leaves Central Station at four thirty this afternoon, but I can't find the pickup sign.\nSam: You're at the east exit, aren't you? The pickup point moved to the west exit this week because of construction.\nLena: Yes, I'm by the east exit. How long does it take to walk to the west side?\nSam: About five minutes through the main hall. It's four ten now, so you have plenty of time.\nLena: Good. I have a large suitcase. Is there a lift on the way?\nSam: Yes, beside the information desk. I'll tell the driver to look for you at the west exit.\nLena: Thank you. I'll head there now.",
+    "audioText": "Lena: Hello. My confirmation email says the hotel shuttle leaves Central Station at four thirty this afternoon, but I can't find the pickup sign.\nSam: You're at the east exit, aren't you? The pickup point moved to the west exit this week because of construction.\nLena: Yes, I'm by the east exit. How long does it take to walk to the west side?\nSam: About five minutes through the main hall. It's four ten now, so you have plenty of time.\nLena: Good. I have a large suitcase. Is there a lift on the way?\nSam: Yes, beside the information desk. I'll tell the driver to look for you at the west exit.\nLena: Thank you. I'll head there now."
+  },
+  {
+    "id": "p3-v2-05",
+    "part": 3,
+    "title": "接驳车 · 时间计算",
+    "prompt": "If Lena starts walking immediately, about what time should she reach the west exit?",
+    "options": [
+      "4:15 P.M.",
+      "4:20 P.M.",
+      "4:30 P.M.",
+      "4:35 P.M."
+    ],
+    "correctIndex": 0,
+    "explanation": "现在是4:10，步行约五分钟，所以约4:15到达，A正确。B多加了五分钟；C是接驳车发车时间；D把发车时间误当成出发步行时间再加五分钟。",
+    "evidence": "About five minutes through the main hall. It's four ten now.",
+    "skill": "时间信息整合",
+    "difficulty": "进阶",
+    "translation": "莉娜：你好。确认邮件上写酒店接驳车今天下午四点半从中央车站出发，但我找不到上车点标志。\n萨姆：您在东出口，对吗？这周因为施工，上车点改到西出口了。\n莉娜：对，我在东出口旁。从这里走到西侧要多久？\n萨姆：穿过主大厅大约五分钟。现在四点十分，所以您的时间很充裕。\n莉娜：那就好。我有一个大行李箱。路上有电梯吗？\n萨姆：有，就在咨询台旁边。我会请司机留意在西出口等候的您。\n莉娜：谢谢。我现在就过去。",
+    "vocabulary": [
+      {
+        "word": "main hall",
+        "meaning": "主大厅",
+        "example": "Signs in the main hall show the route to every platform."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "conversation-v2-shuttle",
+    "transcript": "Lena: Hello. My confirmation email says the hotel shuttle leaves Central Station at four thirty this afternoon, but I can't find the pickup sign.\nSam: You're at the east exit, aren't you? The pickup point moved to the west exit this week because of construction.\nLena: Yes, I'm by the east exit. How long does it take to walk to the west side?\nSam: About five minutes through the main hall. It's four ten now, so you have plenty of time.\nLena: Good. I have a large suitcase. Is there a lift on the way?\nSam: Yes, beside the information desk. I'll tell the driver to look for you at the west exit.\nLena: Thank you. I'll head there now.",
+    "audioText": "Lena: Hello. My confirmation email says the hotel shuttle leaves Central Station at four thirty this afternoon, but I can't find the pickup sign.\nSam: You're at the east exit, aren't you? The pickup point moved to the west exit this week because of construction.\nLena: Yes, I'm by the east exit. How long does it take to walk to the west side?\nSam: About five minutes through the main hall. It's four ten now, so you have plenty of time.\nLena: Good. I have a large suitcase. Is there a lift on the way?\nSam: Yes, beside the information desk. I'll tell the driver to look for you at the west exit.\nLena: Thank you. I'll head there now."
+  },
+  {
+    "id": "p3-v2-06",
+    "part": 3,
+    "title": "接驳车 · 定位设施",
+    "prompt": "Where is the lift located?",
+    "options": [
+      "Inside the hotel lobby.",
+      "Beside the information desk.",
+      "Behind the ticket machines.",
+      "Next to the shuttle parking space."
+    ],
+    "correctIndex": 1,
+    "explanation": "萨姆回答电梯在咨询台旁，B与原话对应。A将位置从车站换成酒店；C的售票机未提及；D把上车点和电梯位置混在一起。",
+    "evidence": "Yes, beside the information desk.",
+    "skill": "地点细节",
+    "difficulty": "基础",
+    "translation": "莉娜：你好。确认邮件上写酒店接驳车今天下午四点半从中央车站出发，但我找不到上车点标志。\n萨姆：您在东出口，对吗？这周因为施工，上车点改到西出口了。\n莉娜：对，我在东出口旁。从这里走到西侧要多久？\n萨姆：穿过主大厅大约五分钟。现在四点十分，所以您的时间很充裕。\n莉娜：那就好。我有一个大行李箱。路上有电梯吗？\n萨姆：有，就在咨询台旁边。我会请司机留意在西出口等候的您。\n莉娜：谢谢。我现在就过去。",
+    "vocabulary": [
+      {
+        "word": "lift",
+        "meaning": "电梯（英式英语）",
+        "example": "Please take the lift to the second floor if you have luggage."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "conversation-v2-shuttle",
+    "transcript": "Lena: Hello. My confirmation email says the hotel shuttle leaves Central Station at four thirty this afternoon, but I can't find the pickup sign.\nSam: You're at the east exit, aren't you? The pickup point moved to the west exit this week because of construction.\nLena: Yes, I'm by the east exit. How long does it take to walk to the west side?\nSam: About five minutes through the main hall. It's four ten now, so you have plenty of time.\nLena: Good. I have a large suitcase. Is there a lift on the way?\nSam: Yes, beside the information desk. I'll tell the driver to look for you at the west exit.\nLena: Thank you. I'll head there now.",
+    "audioText": "Lena: Hello. My confirmation email says the hotel shuttle leaves Central Station at four thirty this afternoon, but I can't find the pickup sign.\nSam: You're at the east exit, aren't you? The pickup point moved to the west exit this week because of construction.\nLena: Yes, I'm by the east exit. How long does it take to walk to the west side?\nSam: About five minutes through the main hall. It's four ten now, so you have plenty of time.\nLena: Good. I have a large suitcase. Is there a lift on the way?\nSam: Yes, beside the information desk. I'll tell the driver to look for you at the west exit.\nLena: Thank you. I'll head there now."
+  },
+  {
+    "id": "p4-v2-01",
+    "part": 4,
+    "title": "培训留言 · 通知目的",
+    "prompt": "What is the main purpose of the message?",
+    "options": [
+      "To advertise a new training course.",
+      "To request payment for some tablets.",
+      "To announce a change of training room.",
+      "To cancel a customer-service workshop."
+    ],
+    "correctIndex": 2,
+    "explanation": "留言发给已报名人员，核心信息是培训改在305室，C正确。A不是招募新学员；B未要求付费；D错误，因为培训照常进行且开始时间不变。",
+    "evidence": "The session will take place in Room 305 on the third floor.",
+    "skill": "主旨判断",
+    "difficulty": "基础",
+    "translation": "下午好。这里向所有报名参加明天绿径学习中心客户服务培训的人员通知一件事。由于一楼培训室正在粉刷，培训将改在三楼305室举行。开始时间仍是九点半。请提前十五分钟到达，在大厅领取访客证。我们会提供纸质练习册和平板电脑，所以您只需带一支笔。如果您报名时申请了无障碍工作位，我们已经为您预留。如对教室变更有任何疑问，请在今天五点前致电接待团队。",
+    "vocabulary": [
+      {
+        "word": "take place",
+        "meaning": "举行；发生",
+        "example": "The orientation will take place in the visitor center."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "talk-v2-training",
+    "transcript": "Good afternoon. This is a message for everyone registered for tomorrow's customer-service training at Greenway Learning Center. Because the ground-floor training room is being painted, the session will take place in Room 305 on the third floor. The start time is still nine thirty. Please arrive fifteen minutes early to collect your visitor badge in the lobby. Printed workbooks and tablets will be provided, so you only need to bring a pen. If you requested an accessible workstation when you registered, it has already been reserved. For any questions about the room change, call our reception team before five today.",
+    "audioText": "Good afternoon. This is a message for everyone registered for tomorrow's customer-service training at Greenway Learning Center. Because the ground-floor training room is being painted, the session will take place in Room 305 on the third floor. The start time is still nine thirty. Please arrive fifteen minutes early to collect your visitor badge in the lobby. Printed workbooks and tablets will be provided, so you only need to bring a pen. If you requested an accessible workstation when you registered, it has already been reserved. For any questions about the room change, call our reception team before five today."
+  },
+  {
+    "id": "p4-v2-02",
+    "part": 4,
+    "title": "培训留言 · 到达时间",
+    "prompt": "What time are participants asked to arrive?",
+    "options": [
+      "9:00 A.M.",
+      "9:30 A.M.",
+      "9:45 A.M.",
+      "9:15 A.M."
+    ],
+    "correctIndex": 3,
+    "explanation": "培训九点半开始，要求提前十五分钟到达，因此是9:15，D正确。A提前了三十分钟；B是开课时间；C把提前十五分钟误算成晚到十五分钟。",
+    "evidence": "The start time is still nine thirty. Please arrive fifteen minutes early.",
+    "skill": "时间关系",
+    "difficulty": "进阶",
+    "translation": "下午好。这里向所有报名参加明天绿径学习中心客户服务培训的人员通知一件事。由于一楼培训室正在粉刷，培训将改在三楼305室举行。开始时间仍是九点半。请提前十五分钟到达，在大厅领取访客证。我们会提供纸质练习册和平板电脑，所以您只需带一支笔。如果您报名时申请了无障碍工作位，我们已经为您预留。如对教室变更有任何疑问，请在今天五点前致电接待团队。",
+    "vocabulary": [
+      {
+        "word": "visitor badge",
+        "meaning": "访客证",
+        "example": "Wear your visitor badge while you are inside the building."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "talk-v2-training",
+    "transcript": "Good afternoon. This is a message for everyone registered for tomorrow's customer-service training at Greenway Learning Center. Because the ground-floor training room is being painted, the session will take place in Room 305 on the third floor. The start time is still nine thirty. Please arrive fifteen minutes early to collect your visitor badge in the lobby. Printed workbooks and tablets will be provided, so you only need to bring a pen. If you requested an accessible workstation when you registered, it has already been reserved. For any questions about the room change, call our reception team before five today.",
+    "audioText": "Good afternoon. This is a message for everyone registered for tomorrow's customer-service training at Greenway Learning Center. Because the ground-floor training room is being painted, the session will take place in Room 305 on the third floor. The start time is still nine thirty. Please arrive fifteen minutes early to collect your visitor badge in the lobby. Printed workbooks and tablets will be provided, so you only need to bring a pen. If you requested an accessible workstation when you registered, it has already been reserved. For any questions about the room change, call our reception team before five today."
+  },
+  {
+    "id": "p4-v2-03",
+    "part": 4,
+    "title": "培训留言 · 自带物品",
+    "prompt": "What should participants bring?",
+    "options": [
+      "A pen.",
+      "A tablet computer.",
+      "A printed workbook.",
+      "A folding chair."
+    ],
+    "correctIndex": 0,
+    "explanation": "讲者说只需带一支笔，A正确。平板电脑和纸质练习册均由中心提供，排除B、C；D的折叠椅没有被要求。provided是判断无需自带的关键。",
+    "evidence": "Printed workbooks and tablets will be provided, so you only need to bring a pen.",
+    "skill": "物品与提供方",
+    "difficulty": "基础",
+    "translation": "下午好。这里向所有报名参加明天绿径学习中心客户服务培训的人员通知一件事。由于一楼培训室正在粉刷，培训将改在三楼305室举行。开始时间仍是九点半。请提前十五分钟到达，在大厅领取访客证。我们会提供纸质练习册和平板电脑，所以您只需带一支笔。如果您报名时申请了无障碍工作位，我们已经为您预留。如对教室变更有任何疑问，请在今天五点前致电接待团队。",
+    "vocabulary": [
+      {
+        "word": "provide",
+        "meaning": "提供",
+        "example": "The center will provide headphones for the listening activity."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "talk-v2-training",
+    "transcript": "Good afternoon. This is a message for everyone registered for tomorrow's customer-service training at Greenway Learning Center. Because the ground-floor training room is being painted, the session will take place in Room 305 on the third floor. The start time is still nine thirty. Please arrive fifteen minutes early to collect your visitor badge in the lobby. Printed workbooks and tablets will be provided, so you only need to bring a pen. If you requested an accessible workstation when you registered, it has already been reserved. For any questions about the room change, call our reception team before five today.",
+    "audioText": "Good afternoon. This is a message for everyone registered for tomorrow's customer-service training at Greenway Learning Center. Because the ground-floor training room is being painted, the session will take place in Room 305 on the third floor. The start time is still nine thirty. Please arrive fifteen minutes early to collect your visitor badge in the lobby. Printed workbooks and tablets will be provided, so you only need to bring a pen. If you requested an accessible workstation when you registered, it has already been reserved. For any questions about the room change, call our reception team before five today."
+  },
+  {
+    "id": "p4-v2-04",
+    "part": 4,
+    "title": "历史中心 · 展品来源",
+    "prompt": "Who provided the maps and travel diaries?",
+    "options": [
+      "The café employees.",
+      "Local residents.",
+      "A group of train drivers.",
+      "The center's tour guides."
+    ],
+    "correctIndex": 1,
+    "explanation": "讲者说展品由residents捐赠，即当地居民，B正确。A、C、D分别换成咖啡厅员工、火车司机、导览员，原文都未把这些人列为捐赠者。",
+    "evidence": "Maps and travel diaries donated by residents.",
+    "skill": "同义转述：人物",
+    "difficulty": "基础",
+    "translation": "感谢您参观里弗顿历史中心。本周六，我们将开放新的“本地旅程”展览，展示居民捐赠的地图和旅行日记。展览免费入场。讲解导览将于下午两点开始，持续四十分钟。导览名额有限，请在周六中午前到前台预约。导览结束后，游客可以在东展厅体验我们的新数字地图桌。请注意，咖啡厅将于三点因维护而关闭，但主入口旁仍会提供饮用水。期待您的到来。",
+    "vocabulary": [
+      {
+        "word": "resident",
+        "meaning": "居民",
+        "example": "Several residents shared old photographs for the display."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "talk-v2-exhibition",
+    "transcript": "Thank you for visiting the Riverton History Center. This Saturday, we are opening our new Local Journeys exhibition, featuring maps and travel diaries donated by residents. Admission to the exhibition is free. A guided tour will begin at two in the afternoon and last forty minutes. Places on the tour are limited, so please reserve yours at the front desk before noon on Saturday. After the tour, visitors can try our new digital map table in the east gallery. Please note that the café will close at three for maintenance, but drinking water will remain available beside the main entrance. We look forward to welcoming you.",
+    "audioText": "Thank you for visiting the Riverton History Center. This Saturday, we are opening our new Local Journeys exhibition, featuring maps and travel diaries donated by residents. Admission to the exhibition is free. A guided tour will begin at two in the afternoon and last forty minutes. Places on the tour are limited, so please reserve yours at the front desk before noon on Saturday. After the tour, visitors can try our new digital map table in the east gallery. Please note that the café will close at three for maintenance, but drinking water will remain available beside the main entrance. We look forward to welcoming you."
+  },
+  {
+    "id": "p4-v2-05",
+    "part": 4,
+    "title": "历史中心 · 预约截止时间",
+    "prompt": "By when should visitors reserve a place on the guided tour?",
+    "options": [
+      "Friday at two in the afternoon.",
+      "Saturday at three in the afternoon.",
+      "Before noon on Saturday.",
+      "After the tour on Saturday."
+    ],
+    "correctIndex": 2,
+    "explanation": "预约须在周六中午前完成，C正确。A把日期和时间都换了；B的三点是咖啡厅关闭时间；D将预约放在导览之后，不符before noon。",
+    "evidence": "Please reserve yours at the front desk before noon on Saturday.",
+    "skill": "截止时间",
+    "difficulty": "基础",
+    "translation": "感谢您参观里弗顿历史中心。本周六，我们将开放新的“本地旅程”展览，展示居民捐赠的地图和旅行日记。展览免费入场。讲解导览将于下午两点开始，持续四十分钟。导览名额有限，请在周六中午前到前台预约。导览结束后，游客可以在东展厅体验我们的新数字地图桌。请注意，咖啡厅将于三点因维护而关闭，但主入口旁仍会提供饮用水。期待您的到来。",
+    "vocabulary": [
+      {
+        "word": "limited",
+        "meaning": "有限的",
+        "example": "Seats in the demonstration room are limited."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "talk-v2-exhibition",
+    "transcript": "Thank you for visiting the Riverton History Center. This Saturday, we are opening our new Local Journeys exhibition, featuring maps and travel diaries donated by residents. Admission to the exhibition is free. A guided tour will begin at two in the afternoon and last forty minutes. Places on the tour are limited, so please reserve yours at the front desk before noon on Saturday. After the tour, visitors can try our new digital map table in the east gallery. Please note that the café will close at three for maintenance, but drinking water will remain available beside the main entrance. We look forward to welcoming you.",
+    "audioText": "Thank you for visiting the Riverton History Center. This Saturday, we are opening our new Local Journeys exhibition, featuring maps and travel diaries donated by residents. Admission to the exhibition is free. A guided tour will begin at two in the afternoon and last forty minutes. Places on the tour are limited, so please reserve yours at the front desk before noon on Saturday. After the tour, visitors can try our new digital map table in the east gallery. Please note that the café will close at three for maintenance, but drinking water will remain available beside the main entrance. We look forward to welcoming you."
+  },
+  {
+    "id": "p4-v2-06",
+    "part": 4,
+    "title": "历史中心 · 导览之后",
+    "prompt": "What are visitors invited to do after the tour?",
+    "options": [
+      "Deliver drinking water to the café.",
+      "Donate a new travel diary.",
+      "Join a map-making class at the front desk.",
+      "Try a digital map table in the east gallery."
+    ],
+    "correctIndex": 3,
+    "explanation": "讲者明确邀请游客导览后体验东展厅的数字地图桌，D正确。A把饮用水提示改成送水任务；B把展品来源改成捐赠要求；C虚构了制图课。",
+    "evidence": "After the tour, visitors can try our new digital map table in the east gallery.",
+    "skill": "行动细节与干扰排除",
+    "difficulty": "进阶",
+    "translation": "感谢您参观里弗顿历史中心。本周六，我们将开放新的“本地旅程”展览，展示居民捐赠的地图和旅行日记。展览免费入场。讲解导览将于下午两点开始，持续四十分钟。导览名额有限，请在周六中午前到前台预约。导览结束后，游客可以在东展厅体验我们的新数字地图桌。请注意，咖啡厅将于三点因维护而关闭，但主入口旁仍会提供饮用水。期待您的到来。",
+    "vocabulary": [
+      {
+        "word": "gallery",
+        "meaning": "展厅；画廊",
+        "example": "The west gallery contains models of historic buildings."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "talk-v2-exhibition",
+    "transcript": "Thank you for visiting the Riverton History Center. This Saturday, we are opening our new Local Journeys exhibition, featuring maps and travel diaries donated by residents. Admission to the exhibition is free. A guided tour will begin at two in the afternoon and last forty minutes. Places on the tour are limited, so please reserve yours at the front desk before noon on Saturday. After the tour, visitors can try our new digital map table in the east gallery. Please note that the café will close at three for maintenance, but drinking water will remain available beside the main entrance. We look forward to welcoming you.",
+    "audioText": "Thank you for visiting the Riverton History Center. This Saturday, we are opening our new Local Journeys exhibition, featuring maps and travel diaries donated by residents. Admission to the exhibition is free. A guided tour will begin at two in the afternoon and last forty minutes. Places on the tour are limited, so please reserve yours at the front desk before noon on Saturday. After the tour, visitors can try our new digital map table in the east gallery. Please note that the café will close at three for maintenance, but drinking water will remain available beside the main entrance. We look forward to welcoming you."
+  },
+  {
+    "id": "p5-v2-01",
+    "part": 5,
+    "title": "词性 · 可供使用的设备",
+    "prompt": "Several tablets are _____ for visitors who did not bring a laptop.",
+    "options": [
+      "available",
+      "availability",
+      "avail",
+      "availed"
+    ],
+    "correctIndex": 0,
+    "explanation": "系动词are后需要形容词作表语，available表示可供使用，A正确。availability是名词；avail是动词原形；availed是其过去式或过去分词，都不能构成这里自然且完整的表达。",
+    "evidence": "Several tablets are available for visitors who did not bring a laptop.",
+    "skill": "词性：形容词",
+    "difficulty": "基础",
+    "translation": "有几台平板电脑可供没带笔记本电脑的访客使用。",
+    "vocabulary": [
+      {
+        "word": "available",
+        "meaning": "可用的；有空的",
+        "example": "A quiet meeting room is available after lunch."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    }
+  },
+  {
+    "id": "p5-v2-02",
+    "part": 5,
+    "title": "介词 · 提交截止时间",
+    "prompt": "Please submit your travel request _____ Friday so that we can book the tickets next week.",
+    "options": [
+      "since",
+      "by",
+      "during",
+      "while"
+    ],
+    "correctIndex": 1,
+    "explanation": "by加时间表示不晚于该时间，符合周五前交申请、下周订票的顺序，B正确。since表示自某时起，通常与持续状态或完成时搭配；during不能自然修饰这里的单个截止日；while通常引导从句，不能直接接Friday。",
+    "evidence": "Please submit your travel request by Friday so that we can book the tickets next week.",
+    "skill": "介词：截止时间",
+    "difficulty": "基础",
+    "translation": "请最迟在周五提交出差申请，以便我们下周预订车票。",
+    "vocabulary": [
+      {
+        "word": "submit",
+        "meaning": "提交",
+        "example": "Please submit the completed form to the front desk."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    }
+  },
+  {
+    "id": "p5-v2-03",
+    "part": 5,
+    "title": "被动语态 · 检查设备",
+    "prompt": "All rental bicycles must be _____ by a technician before they are given to customers.",
+    "options": [
+      "inspecting",
+      "inspection",
+      "inspected",
+      "inspect"
+    ],
+    "correctIndex": 2,
+    "explanation": "自行车是被检查的，情态动词must后用be加过去分词构成被动语态，因此C inspected正确。inspecting是现在分词；inspection是名词；inspect是动词原形，均不能填入must be之后表达该被动关系。",
+    "evidence": "All rental bicycles must be inspected by a technician before they are given to customers.",
+    "skill": "语态：情态动词后的被动",
+    "difficulty": "基础",
+    "translation": "所有租赁自行车交给顾客之前，都必须由技术人员检查。",
+    "vocabulary": [
+      {
+        "word": "technician",
+        "meaning": "技术人员",
+        "example": "A technician tested the microphone before the presentation."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    }
+  },
+  {
+    "id": "p5-v2-04",
+    "part": 5,
+    "title": "连词 · 让步关系",
+    "prompt": "_____ the train was crowded, Mia found a seat near the door.",
+    "options": [
+      "Despite",
+      "During",
+      "Instead",
+      "Although"
+    ],
+    "correctIndex": 3,
+    "explanation": "空格后是完整从句the train was crowded，需要能引导让步从句的Although，D正确。Despite和During是介词，不能直接接该完整从句；Instead是副词，不能独自连接这两个分句。",
+    "evidence": "Although the train was crowded, Mia found a seat near the door.",
+    "skill": "连词：让步从句",
+    "difficulty": "进阶",
+    "translation": "虽然火车很拥挤，米娅还是在门边找到了座位。",
+    "vocabulary": [
+      {
+        "word": "crowded",
+        "meaning": "拥挤的",
+        "example": "The station is often crowded before a holiday."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    }
+  },
+  {
+    "id": "p5-v2-05",
+    "part": 5,
+    "title": "主谓一致 · 每位成员",
+    "prompt": "Every month, each member of the support team _____ a short progress report.",
+    "options": [
+      "receives",
+      "receive",
+      "receiving",
+      "have received"
+    ],
+    "correctIndex": 0,
+    "explanation": "主语核心是each member，为单数；Every month说明经常性动作，故用一般现在时单数形式receives，A正确。B和D不与单数主语一致；C是非谓语形式，不能独立充当此句谓语。",
+    "evidence": "Every month, each member of the support team receives a short progress report.",
+    "skill": "主谓一致",
+    "difficulty": "基础",
+    "translation": "支持团队的每位成员每月都会收到一份简短的进度报告。",
+    "vocabulary": [
+      {
+        "word": "progress report",
+        "meaning": "进度报告",
+        "example": "The progress report explains which tasks are complete."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    }
+  },
+  {
+    "id": "p5-v2-06",
+    "part": 5,
+    "title": "代词 · 名词前的所属关系",
+    "prompt": "Please keep the temporary pass until you receive _____ replacement.",
+    "options": [
+      "yours",
+      "your",
+      "you",
+      "yourself"
+    ],
+    "correctIndex": 1,
+    "explanation": "replacement在这里是名词，前面需要形容词性物主代词your，B正确。yours可独立使用但不能直接修饰名词；you是人称代词；yourself是反身代词，均不适合此处。",
+    "evidence": "Please keep the temporary pass until you receive your replacement.",
+    "skill": "代词：物主限定词",
+    "difficulty": "基础",
+    "translation": "请保留临时通行证，直到收到替换用的新证。",
+    "vocabulary": [
+      {
+        "word": "replacement",
+        "meaning": "替换物；替代者",
+        "example": "A replacement for the damaged headset will arrive tomorrow."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    }
+  },
+  {
+    "id": "p5-v2-07",
+    "part": 5,
+    "title": "比较级 · 两个版本的效率",
+    "prompt": "The new booking system is _____ than the previous version.",
+    "options": [
+      "efficient",
+      "most efficient",
+      "more efficient",
+      "efficiently"
+    ],
+    "correctIndex": 2,
+    "explanation": "than明确引出两者比较，多音节形容词efficient的比较级是more efficient，C正确。A是原级；B是最高级且此处不构成两者比较；D是副词，不能在is后表达系统的这一属性。",
+    "evidence": "The new booking system is more efficient than the previous version.",
+    "skill": "形容词比较级",
+    "difficulty": "基础",
+    "translation": "新的预订系统比以前的版本更高效。",
+    "vocabulary": [
+      {
+        "word": "previous",
+        "meaning": "以前的；先前的",
+        "example": "The previous schedule listed a different departure time."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    }
+  },
+  {
+    "id": "p5-v2-08",
+    "part": 5,
+    "title": "动词搭配 · 核对确认邮件",
+    "prompt": "Please _____ the room number on your confirmation email before leaving home.",
+    "options": [
+      "collect",
+      "supply",
+      "invite",
+      "check"
+    ],
+    "correctIndex": 3,
+    "explanation": "语境是出门前核对邮件上的房间号，check表示检查、核对，D正确。collect是收集；supply是供应；invite是邀请，都不能自然表达核实既有邮件中房间号这一动作。",
+    "evidence": "Please check the room number on your confirmation email before leaving home.",
+    "skill": "词汇：动词与语境",
+    "difficulty": "基础",
+    "translation": "离家前，请核对确认邮件上的房间号。",
+    "vocabulary": [
+      {
+        "word": "confirmation email",
+        "meaning": "确认邮件",
+        "example": "The confirmation email includes a map of the venue."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    }
+  },
+  {
+    "id": "p6-v2-01",
+    "part": 6,
+    "title": "访客登记 · 第1空",
+    "prompt": "Which word best completes blank [1]?",
+    "options": [
+      "registered",
+      "registering",
+      "registration",
+      "register"
+    ],
+    "correctIndex": 0,
+    "explanation": "visits是被登记的，must be后需要过去分词registered构成被动语态，A正确。B是现在分词；C是名词；D是动词原形，都不能与must be组成这里所需的被动表达。",
+    "evidence": "All visits must be registered through the staff portal.",
+    "skill": "篇章填空：被动语态",
+    "difficulty": "基础",
+    "translation": "收件人：全体员工\n主题：新的访客登记流程\n\n从10月12日起，办公室将以在线表格代替纸质访客登记簿。所有来访都必须通过员工平台登记。为避免延误，请至少提前一个工作日提交每位访客的姓名。\n\n每位已登记的访客都会收到一封带有二维码的确认邮件。他们到达时应向接待员出示此二维码。如果访客无法查看邮件，接待处可以用访客姓名查找预约。接待团队还会在访客到达时发放纸质访客证。\n\n请把这些说明分享给您邀请来办公室的任何人。员工平台上提供了新表格的样本。\n\n办公室服务团队",
+    "vocabulary": [
+      {
+        "word": "visitor log",
+        "meaning": "访客登记簿",
+        "example": "The receptionist stores the visitor log in a locked drawer."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "text-v2-visitor",
+    "passage": "To: All staff\nSubject: New visitor check-in process\n\nBeginning October 12, our office will use an online form instead of the paper visitor log. All visits must be [1] through the staff portal. To avoid delays, please submit each visitor's name at least one working day [2] the visit.\n\nEach registered visitor will receive a confirmation email containing a QR code. [3] If a visitor cannot access the email, reception can look up the booking using the visitor's name. The reception team will also [4] a printed badge on arrival.\n\nPlease share these instructions with anyone you invite to the office. A sample of the new form is available on the staff portal.\n\nOffice Services Team"
+  },
+  {
+    "id": "p6-v2-02",
+    "part": 6,
+    "title": "访客登记 · 第2空",
+    "prompt": "Which word best completes blank [2]?",
+    "options": [
+      "across",
+      "before",
+      "despite",
+      "between"
+    ],
+    "correctIndex": 1,
+    "explanation": "为了避免延误，应在来访前至少一个工作日提交姓名，before准确表达这一先后关系，B正确。across表示横跨；despite表示尽管；between表示在两者之间，均不能表达提前一天的安排。",
+    "evidence": "Please submit each visitor's name at least one working day before the visit.",
+    "skill": "篇章填空：时间介词",
+    "difficulty": "基础",
+    "translation": "收件人：全体员工\n主题：新的访客登记流程\n\n从10月12日起，办公室将以在线表格代替纸质访客登记簿。所有来访都必须通过员工平台登记。为避免延误，请至少提前一个工作日提交每位访客的姓名。\n\n每位已登记的访客都会收到一封带有二维码的确认邮件。他们到达时应向接待员出示此二维码。如果访客无法查看邮件，接待处可以用访客姓名查找预约。接待团队还会在访客到达时发放纸质访客证。\n\n请把这些说明分享给您邀请来办公室的任何人。员工平台上提供了新表格的样本。\n\n办公室服务团队",
+    "vocabulary": [
+      {
+        "word": "working day",
+        "meaning": "工作日",
+        "example": "Allow two working days for a reply from the office."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "text-v2-visitor",
+    "passage": "To: All staff\nSubject: New visitor check-in process\n\nBeginning October 12, our office will use an online form instead of the paper visitor log. All visits must be [1] through the staff portal. To avoid delays, please submit each visitor's name at least one working day [2] the visit.\n\nEach registered visitor will receive a confirmation email containing a QR code. [3] If a visitor cannot access the email, reception can look up the booking using the visitor's name. The reception team will also [4] a printed badge on arrival.\n\nPlease share these instructions with anyone you invite to the office. A sample of the new form is available on the staff portal.\n\nOffice Services Team"
+  },
+  {
+    "id": "p6-v2-03",
+    "part": 6,
+    "title": "访客登记 · 第3空整句补入",
+    "prompt": "Which sentence best completes blank [3]?",
+    "options": [
+      "Staff should stop inviting visitors until next month.",
+      "The office is replacing all its reception furniture.",
+      "They should show this code to the receptionist when they arrive.",
+      "Visitors must bring the old paper log from home."
+    ],
+    "correctIndex": 2,
+    "explanation": "前句介绍确认邮件中的二维码，C用this code承接，并说明到达后如何使用；后句再补充无法查看邮件时的替代办法，逻辑连贯。A无故暂停来访；B转向家具更换；D要求访客从家带旧登记簿，与在线登记流程不符。",
+    "evidence": "Each registered visitor will receive a confirmation email containing a QR code. They should show this code to the receptionist when they arrive.",
+    "skill": "篇章填空：指代与整句衔接",
+    "difficulty": "进阶",
+    "translation": "收件人：全体员工\n主题：新的访客登记流程\n\n从10月12日起，办公室将以在线表格代替纸质访客登记簿。所有来访都必须通过员工平台登记。为避免延误，请至少提前一个工作日提交每位访客的姓名。\n\n每位已登记的访客都会收到一封带有二维码的确认邮件。他们到达时应向接待员出示此二维码。如果访客无法查看邮件，接待处可以用访客姓名查找预约。接待团队还会在访客到达时发放纸质访客证。\n\n请把这些说明分享给您邀请来办公室的任何人。员工平台上提供了新表格的样本。\n\n办公室服务团队",
+    "vocabulary": [
+      {
+        "word": "QR code",
+        "meaning": "二维码",
+        "example": "Scan the QR code to open the digital event guide."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "text-v2-visitor",
+    "passage": "To: All staff\nSubject: New visitor check-in process\n\nBeginning October 12, our office will use an online form instead of the paper visitor log. All visits must be [1] through the staff portal. To avoid delays, please submit each visitor's name at least one working day [2] the visit.\n\nEach registered visitor will receive a confirmation email containing a QR code. [3] If a visitor cannot access the email, reception can look up the booking using the visitor's name. The reception team will also [4] a printed badge on arrival.\n\nPlease share these instructions with anyone you invite to the office. A sample of the new form is available on the staff portal.\n\nOffice Services Team"
+  },
+  {
+    "id": "p6-v2-04",
+    "part": 6,
+    "title": "访客登记 · 第4空",
+    "prompt": "Which word best completes blank [4]?",
+    "options": [
+      "attend",
+      "repair",
+      "postpone",
+      "issue"
+    ],
+    "correctIndex": 3,
+    "explanation": "接待团队在访客到达时发放访客证，issue表示正式发放，D符合语境。attend是参加；repair是修理；postpone是推迟，都不能自然搭配a printed badge表达此处的办理流程。will后虽都可接动词原形，但仍须核对意思。",
+    "evidence": "The reception team will also issue a printed badge on arrival.",
+    "skill": "篇章填空：动词语义",
+    "difficulty": "进阶",
+    "translation": "收件人：全体员工\n主题：新的访客登记流程\n\n从10月12日起，办公室将以在线表格代替纸质访客登记簿。所有来访都必须通过员工平台登记。为避免延误，请至少提前一个工作日提交每位访客的姓名。\n\n每位已登记的访客都会收到一封带有二维码的确认邮件。他们到达时应向接待员出示此二维码。如果访客无法查看邮件，接待处可以用访客姓名查找预约。接待团队还会在访客到达时发放纸质访客证。\n\n请把这些说明分享给您邀请来办公室的任何人。员工平台上提供了新表格的样本。\n\n办公室服务团队",
+    "vocabulary": [
+      {
+        "word": "issue",
+        "meaning": "发放；签发",
+        "example": "The travel office can issue a replacement ticket."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "text-v2-visitor",
+    "passage": "To: All staff\nSubject: New visitor check-in process\n\nBeginning October 12, our office will use an online form instead of the paper visitor log. All visits must be [1] through the staff portal. To avoid delays, please submit each visitor's name at least one working day [2] the visit.\n\nEach registered visitor will receive a confirmation email containing a QR code. [3] If a visitor cannot access the email, reception can look up the booking using the visitor's name. The reception team will also [4] a printed badge on arrival.\n\nPlease share these instructions with anyone you invite to the office. A sample of the new form is available on the staff portal.\n\nOffice Services Team"
+  },
+  {
+    "id": "p6-v2-05",
+    "part": 6,
+    "title": "接驳车试运行 · 第1空",
+    "prompt": "Which word best completes blank [1]?",
+    "options": [
+      "departure",
+      "depart",
+      "departing",
+      "departed"
+    ],
+    "correctIndex": 1,
+    "explanation": "情态动词will后接动词原形depart，表示将按固定间隔发车，B正确。departure是名词；departing是现在分词；departed是过去式或过去分词，均不能直接放在will后作此句谓语。",
+    "evidence": "The shuttle will depart every twenty minutes between seven and nine in the morning.",
+    "skill": "篇章填空：动词形式",
+    "difficulty": "基础",
+    "translation": "员工通知\n免费接驳车试运行\n\n从11月2日起，北站与榆树商务园之间将开通为期四周的免费接驳车试运行服务。接驳车早晨七点到九点之间每二十分钟发一班。员工必须向司机出示自己的员工证。无需提前预约。\n\n返程接驳车将在傍晚五点至七点从商务园开往车站。最后一班返程车将在晚上七点离开商务园。上车点位于A栋外的带顶步道旁。\n\n为帮助我们决定是否继续提供此服务，请在首次乘坐后完成一份简短的在线调查。调查将开放至11月30日。员工平台上提供调查链接和完整时刻表。\n\n交通团队",
+    "vocabulary": [
+      {
+        "word": "depart",
+        "meaning": "出发；离开",
+        "example": "The first bus will depart from the station at six thirty."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "text-v2-shuttle",
+    "passage": "NOTICE TO EMPLOYEES\nFree shuttle trial\n\nStarting November 2, a free shuttle will connect North Station with Elm Business Park for a four-week trial. The shuttle will [1] every twenty minutes between seven and nine in the morning. Employees must show [2] staff badges to the driver. No advance reservation is required.\n\n[3] The last return trip will leave the business park at seven in the evening. The pickup point is outside Building A, next to the covered walkway.\n\nTo help us decide whether to continue the service, please complete a short online survey after your first ride. The survey will remain open [4] November 30. You can find the link and the full timetable on the employee portal.\n\nTransport Team"
+  },
+  {
+    "id": "p6-v2-06",
+    "part": 6,
+    "title": "接驳车试运行 · 第2空",
+    "prompt": "Which word best completes blank [2]?",
+    "options": [
+      "their",
+      "theirs",
+      "them",
+      "they"
+    ],
+    "correctIndex": 0,
+    "explanation": "staff badges前需要物主限定词，their表示员工各自的员工证，A正确。theirs独立使用，不直接修饰名词；them是宾格；they是主格，均不能在这里表示所属关系。",
+    "evidence": "Employees must show their staff badges to the driver.",
+    "skill": "篇章填空：代词",
+    "difficulty": "基础",
+    "translation": "员工通知\n免费接驳车试运行\n\n从11月2日起，北站与榆树商务园之间将开通为期四周的免费接驳车试运行服务。接驳车早晨七点到九点之间每二十分钟发一班。员工必须向司机出示自己的员工证。无需提前预约。\n\n返程接驳车将在傍晚五点至七点从商务园开往车站。最后一班返程车将在晚上七点离开商务园。上车点位于A栋外的带顶步道旁。\n\n为帮助我们决定是否继续提供此服务，请在首次乘坐后完成一份简短的在线调查。调查将开放至11月30日。员工平台上提供调查链接和完整时刻表。\n\n交通团队",
+    "vocabulary": [
+      {
+        "word": "advance reservation",
+        "meaning": "提前预约",
+        "example": "An advance reservation is required for the guided factory tour."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "text-v2-shuttle",
+    "passage": "NOTICE TO EMPLOYEES\nFree shuttle trial\n\nStarting November 2, a free shuttle will connect North Station with Elm Business Park for a four-week trial. The shuttle will [1] every twenty minutes between seven and nine in the morning. Employees must show [2] staff badges to the driver. No advance reservation is required.\n\n[3] The last return trip will leave the business park at seven in the evening. The pickup point is outside Building A, next to the covered walkway.\n\nTo help us decide whether to continue the service, please complete a short online survey after your first ride. The survey will remain open [4] November 30. You can find the link and the full timetable on the employee portal.\n\nTransport Team"
+  },
+  {
+    "id": "p6-v2-07",
+    "part": 6,
+    "title": "接驳车试运行 · 第3空整句补入",
+    "prompt": "Which sentence best completes blank [3]?",
+    "options": [
+      "The shuttle will stop operating before lunchtime each day.",
+      "Employees may only use the service on their first day of work.",
+      "The survey results were published several years ago.",
+      "Return shuttles will run from the park to the station from five to seven in the evening."
+    ],
+    "correctIndex": 3,
+    "explanation": "本段后文给出最后一班返程车晚上七点出发及上车位置，因此D先介绍傍晚返程时段，能自然衔接。A说午饭前停止运行，与晚间返程矛盾；B无依据地限制乘坐资格；C突然转到几年前的调查结果，与本次试运行不符。",
+    "evidence": "Return shuttles will run from the park to the station from five to seven in the evening. The last return trip will leave the business park at seven in the evening.",
+    "skill": "篇章填空：整句衔接",
+    "difficulty": "进阶",
+    "translation": "员工通知\n免费接驳车试运行\n\n从11月2日起，北站与榆树商务园之间将开通为期四周的免费接驳车试运行服务。接驳车早晨七点到九点之间每二十分钟发一班。员工必须向司机出示自己的员工证。无需提前预约。\n\n返程接驳车将在傍晚五点至七点从商务园开往车站。最后一班返程车将在晚上七点离开商务园。上车点位于A栋外的带顶步道旁。\n\n为帮助我们决定是否继续提供此服务，请在首次乘坐后完成一份简短的在线调查。调查将开放至11月30日。员工平台上提供调查链接和完整时刻表。\n\n交通团队",
+    "vocabulary": [
+      {
+        "word": "return trip",
+        "meaning": "返程",
+        "example": "The return trip takes longer during the evening rush hour."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "text-v2-shuttle",
+    "passage": "NOTICE TO EMPLOYEES\nFree shuttle trial\n\nStarting November 2, a free shuttle will connect North Station with Elm Business Park for a four-week trial. The shuttle will [1] every twenty minutes between seven and nine in the morning. Employees must show [2] staff badges to the driver. No advance reservation is required.\n\n[3] The last return trip will leave the business park at seven in the evening. The pickup point is outside Building A, next to the covered walkway.\n\nTo help us decide whether to continue the service, please complete a short online survey after your first ride. The survey will remain open [4] November 30. You can find the link and the full timetable on the employee portal.\n\nTransport Team"
+  },
+  {
+    "id": "p6-v2-08",
+    "part": 6,
+    "title": "接驳车试运行 · 第4空",
+    "prompt": "Which word best completes blank [4]?",
+    "options": [
+      "across",
+      "while",
+      "until",
+      "during"
+    ],
+    "correctIndex": 2,
+    "explanation": "remain open表示持续开放，until November 30给出持续到的终点，C正确。across不表达该时间终点；while不能直接接日期；during强调在某段期间内，不能在这里自然表达开放截止日期。",
+    "evidence": "The survey will remain open until November 30.",
+    "skill": "篇章填空：持续与终点",
+    "difficulty": "基础",
+    "translation": "员工通知\n免费接驳车试运行\n\n从11月2日起，北站与榆树商务园之间将开通为期四周的免费接驳车试运行服务。接驳车早晨七点到九点之间每二十分钟发一班。员工必须向司机出示自己的员工证。无需提前预约。\n\n返程接驳车将在傍晚五点至七点从商务园开往车站。最后一班返程车将在晚上七点离开商务园。上车点位于A栋外的带顶步道旁。\n\n为帮助我们决定是否继续提供此服务，请在首次乘坐后完成一份简短的在线调查。调查将开放至11月30日。员工平台上提供调查链接和完整时刻表。\n\n交通团队",
+    "vocabulary": [
+      {
+        "word": "timetable",
+        "meaning": "时刻表",
+        "example": "The updated timetable lists two extra services on Saturdays."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "text-v2-shuttle",
+    "passage": "NOTICE TO EMPLOYEES\nFree shuttle trial\n\nStarting November 2, a free shuttle will connect North Station with Elm Business Park for a four-week trial. The shuttle will [1] every twenty minutes between seven and nine in the morning. Employees must show [2] staff badges to the driver. No advance reservation is required.\n\n[3] The last return trip will leave the business park at seven in the evening. The pickup point is outside Building A, next to the covered walkway.\n\nTo help us decide whether to continue the service, please complete a short online survey after your first ride. The survey will remain open [4] November 30. You can find the link and the full timetable on the employee portal.\n\nTransport Team"
+  },
+  {
+    "id": "p7-v2-01",
+    "part": 7,
+    "title": "电子阅读器借用 · 借期",
+    "prompt": "For how long may a library member borrow an e-reader?",
+    "options": [
+      "Fourteen days.",
+      "Two days.",
+      "Three days.",
+      "One month."
+    ],
+    "correctIndex": 0,
+    "explanation": "首段明确说明可以借用十四天，A正确。B的两天是收到通知后的领取期限；C把服务开始日期June 3中的数字当成借期；D的一个月没有依据。",
+    "evidence": "Library members can borrow an e-reader for fourteen days.",
+    "skill": "阅读：明确细节",
+    "difficulty": "基础",
+    "translation": "布鲁克菲尔德图书馆\n电子阅读器借用服务\n\n从6月3日起，图书馆会员可以借用电子阅读器十四天。每台设备都配有保护套和充电线，并预装了一些旅行指南和经典小说。\n\n如需预约设备，请致电图书馆或向借阅台工作人员提出申请。目前尚不能在线预约。设备准备好后，我们会联系您。请在收到通知后的两天内携带借书证前来领取。未被领取的设备将提供给等候名单上的下一位读者。\n\n所有设备都必须在开放时间内归还到借阅台。请勿将设备放入室外还书箱。",
+    "vocabulary": [
+      {
+        "word": "protective case",
+        "meaning": "保护套",
+        "example": "The protective case keeps the tablet clean during travel."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "passage-v2-ereader",
+    "passage": "BROOKFIELD LIBRARY\nE-reader loan service\n\nBeginning June 3, library members can borrow an e-reader for fourteen days. Each device comes with a protective case and a charging cable. A selection of travel guides and classic novels is already installed.\n\nTo reserve a device, call the library or speak to a member of staff at the lending desk. Online reservations are not yet available. We will contact you when a device is ready. Please collect it within two days of our message and bring your library card. Uncollected devices will be offered to the next person on the waiting list.\n\nAll devices must be returned to the lending desk during opening hours. Please do not place them in the outdoor book-return box."
+  },
+  {
+    "id": "p7-v2-02",
+    "part": 7,
+    "title": "电子阅读器借用 · 领取要求",
+    "prompt": "What must a member bring when collecting an e-reader?",
+    "options": [
+      "A printed online reservation.",
+      "A library card.",
+      "A personal charging cable.",
+      "A copy of a travel guide."
+    ],
+    "correctIndex": 1,
+    "explanation": "通知明确要求领取时带借书证，B正确。A无依据，文中还说暂不能在线预约；C的充电线随设备提供；D的旅行指南已预装，不是需要携带的物品。",
+    "evidence": "Please collect it within two days of our message and bring your library card.",
+    "skill": "阅读：任务要求",
+    "difficulty": "基础",
+    "translation": "布鲁克菲尔德图书馆\n电子阅读器借用服务\n\n从6月3日起，图书馆会员可以借用电子阅读器十四天。每台设备都配有保护套和充电线，并预装了一些旅行指南和经典小说。\n\n如需预约设备，请致电图书馆或向借阅台工作人员提出申请。目前尚不能在线预约。设备准备好后，我们会联系您。请在收到通知后的两天内携带借书证前来领取。未被领取的设备将提供给等候名单上的下一位读者。\n\n所有设备都必须在开放时间内归还到借阅台。请勿将设备放入室外还书箱。",
+    "vocabulary": [
+      {
+        "word": "waiting list",
+        "meaning": "等候名单",
+        "example": "Your name will stay on the waiting list until a device is available."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "passage-v2-ereader",
+    "passage": "BROOKFIELD LIBRARY\nE-reader loan service\n\nBeginning June 3, library members can borrow an e-reader for fourteen days. Each device comes with a protective case and a charging cable. A selection of travel guides and classic novels is already installed.\n\nTo reserve a device, call the library or speak to a member of staff at the lending desk. Online reservations are not yet available. We will contact you when a device is ready. Please collect it within two days of our message and bring your library card. Uncollected devices will be offered to the next person on the waiting list.\n\nAll devices must be returned to the lending desk during opening hours. Please do not place them in the outdoor book-return box."
+  },
+  {
+    "id": "p7-v2-03",
+    "part": 7,
+    "title": "地图印刷订单 · 跨文档时间判断",
+    "prompt": "What can be concluded about Ari's request to change the quantity?",
+    "options": [
+      "It was sent after printing was scheduled to begin.",
+      "It changed the collection branch.",
+      "It was sent three hours before the stated deadline.",
+      "It asked for fewer maps than originally ordered."
+    ],
+    "correctIndex": 2,
+    "explanation": "订单规定5月13日中午截止，邮件发送于同日9:00，相差三小时，C正确。A把截止前误判为印刷开始后；B不符，仍在湖路店领取；D不符，数量由80增至100。只能判断请求及时发出，不能据此断言商家已经确认修改。",
+    "evidence": "Quantity changes must reach us by noon on May 13. / Sent: May 13, 9:00 A.M.",
+    "skill": "阅读：跨文档整合",
+    "difficulty": "进阶",
+    "translation": "文档1：订单确认\n枫树印刷\n日期：5月12日\n客户：阿里·吴\n订单号：MP-218\n\n商品：80份折叠式游客地图，彩色印刷\n领取时间：5月16日上午10点起\n领取分店：湖路店\n\n数量变更必须在5月13日中午前送达我们。此后将开始印刷，数量无法再更改。所有来信请注明订单号。领取时请在柜台出示此确认邮件。\n\n文档2：电子邮件\n收件人：枫树印刷\n发件人：阿里·吴\n发送时间：5月13日上午9点\n主题：更改MP-218的数量\n\n您好：\n报名参加我们社区步行导览的人数增加了，因此请把我的订单从80份地图增加到100份。彩色印刷和折叠方式请保持不变。我仍会在5月16日到湖路店领取地图，但会在约十一点而非十点到达。请确认能够在开始印刷前按新数量调整。\n\n谢谢！\n阿里",
+    "vocabulary": [
+      {
+        "word": "quantity",
+        "meaning": "数量",
+        "example": "Please check the quantity before confirming the order."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "documents-v2-print-order",
+    "passage": "DOCUMENT 1 — ORDER CONFIRMATION\nMaple Print\nDate: May 12\nCustomer: Ari Wu\nOrder number: MP-218\n\nItem: 80 folded visitor maps, printed in color\nCollection: May 16, from 10:00 A.M.\nCollection branch: Lake Road\n\nQuantity changes must reach us by noon on May 13. After that time, printing will begin and the quantity cannot be changed. Please include your order number in all messages. For collection, show this confirmation email at the counter.\n\nDOCUMENT 2 — EMAIL\nTo: Maple Print\nFrom: Ari Wu\nSent: May 13, 9:00 A.M.\nSubject: Quantity change for MP-218\n\nHello,\nMore people have registered for our neighborhood walking tour, so please increase my order from 80 maps to 100. Please keep the same color printing and folding. I will still collect the maps at the Lake Road branch on May 16, but I will arrive at about eleven rather than ten. Please confirm that the new quantity can be included before printing begins.\n\nThank you,\nAri"
+  },
+  {
+    "id": "p7-v2-04",
+    "part": 7,
+    "title": "地图印刷订单 · 没有变化的安排",
+    "prompt": "Which detail will remain the same according to Ari's email?",
+    "options": [
+      "The number of maps.",
+      "The expected arrival time.",
+      "The number of tour participants.",
+      "The branch where the maps will be collected."
+    ],
+    "correctIndex": 3,
+    "explanation": "原订单为湖路店领取，邮件说仍到湖路店，D正确。A从80份改为100份；B从十点改为约十一点；C已有更多人报名，人数增加。此题需将订单原安排与邮件变更逐项对应。",
+    "evidence": "Collection branch: Lake Road. / I will still collect the maps at the Lake Road branch on May 16.",
+    "skill": "阅读：变更与保留信息",
+    "difficulty": "进阶",
+    "translation": "文档1：订单确认\n枫树印刷\n日期：5月12日\n客户：阿里·吴\n订单号：MP-218\n\n商品：80份折叠式游客地图，彩色印刷\n领取时间：5月16日上午10点起\n领取分店：湖路店\n\n数量变更必须在5月13日中午前送达我们。此后将开始印刷，数量无法再更改。所有来信请注明订单号。领取时请在柜台出示此确认邮件。\n\n文档2：电子邮件\n收件人：枫树印刷\n发件人：阿里·吴\n发送时间：5月13日上午9点\n主题：更改MP-218的数量\n\n您好：\n报名参加我们社区步行导览的人数增加了，因此请把我的订单从80份地图增加到100份。彩色印刷和折叠方式请保持不变。我仍会在5月16日到湖路店领取地图，但会在约十一点而非十点到达。请确认能够在开始印刷前按新数量调整。\n\n谢谢！\n阿里",
+    "vocabulary": [
+      {
+        "word": "branch",
+        "meaning": "分店；分支机构",
+        "example": "The station branch opens earlier than our city-center shop."
+      }
+    ],
+    "contentVersion": "0.2.0",
+    "provenance": {
+      "author": "LANTERN 原创内容组",
+      "method": "ai-assisted-original",
+      "license": "CC-BY-4.0",
+      "reviewStatus": "automated-reviewed",
+      "humanReviewed": false
+    },
+    "groupId": "documents-v2-print-order",
+    "passage": "DOCUMENT 1 — ORDER CONFIRMATION\nMaple Print\nDate: May 12\nCustomer: Ari Wu\nOrder number: MP-218\n\nItem: 80 folded visitor maps, printed in color\nCollection: May 16, from 10:00 A.M.\nCollection branch: Lake Road\n\nQuantity changes must reach us by noon on May 13. After that time, printing will begin and the quantity cannot be changed. Please include your order number in all messages. For collection, show this confirmation email at the counter.\n\nDOCUMENT 2 — EMAIL\nTo: Maple Print\nFrom: Ari Wu\nSent: May 13, 9:00 A.M.\nSubject: Quantity change for MP-218\n\nHello,\nMore people have registered for our neighborhood walking tour, so please increase my order from 80 maps to 100. Please keep the same color printing and folding. I will still collect the maps at the Lake Road branch on May 16, but I will arrive at about eleven rather than ten. Please confirm that the new quantity can be included before printing begins.\n\nThank you,\nAri"
   }
 ]
