@@ -1,0 +1,41 @@
+{
+  "generatedAt": "2026-09-08",
+  "tool": "built-in image_gen.imagegen",
+  "mode": "generate",
+  "images": [
+    {
+      "id": "hollow-mobile-ink-v3",
+      "source": "/workspace/scratch/18fd4a9b69a2/generated_images/exec-6340d25c-2520-428f-ad15-8f7e91b84c0c.png",
+      "filename": "lantern-blue-bench-mobile-v3.png",
+      "requestedSize": {
+        "width": 2160,
+        "height": 3840
+      },
+      "prompt": "Use case: stylized-concept.\nAsset type: original portrait background illustration for a refined mobile English-learning app; a complete bitmap environment asset, not a screen mockup.\nCreate a very high resolution 9:16 portrait image, preferably 2160 by 3840 pixels. Entirely original hand-inked 2D underground fantasy scenery: a quiet little stone bench beneath a delicately curved bell-shaped streetlamp, monumental black leaves framing the lower sides, two or three tiny pale moths floating around the cool lamp, and huge empty blue-black cavern space above. Layers of distant organic stone arches dissolve into cyan-blue mist. Place the bench, lamp, and readable scenic details in the bottom 55 percent. Keep the top 40 percent predominantly near-black navy negative space with restrained blue atmospheric depth, useful for white UI text; no bright focal points in this upper area.\nStyle: extraordinarily crisp drawn black ink contours, carefully tapering hand-drawn lines, elegant simplified shapes, distinct layered 2D silhouettes and restrained soft blue fog between layers. Rich art direction, delicate edge detail, clean flat shading. The image should feel crafted and atmospheric, quietly encouraging a long study session.\nPalette: midnight ink #08121e, deep blue #152d43, muted teal #437c93, pale cool lamp light #c7eaf2.\nNo people, no characters, no masks, no game symbols, no copied game scene or existing intellectual property. No text, no logo, no watermark, no interface elements. Avoid photorealism, 3D rendering, glossy surfaces, oil-paint strokes, noisy textures, generic castle wallpaper, bright upper half, and visually cluttered composition.",
+      "inspection": "Original 2D ink cave scene. Top dark negative space, stone bench, bell-shaped lamp, three pale moths, layered arched caves. No text, watermark, characters or copied game scene.",
+      "actualSize": {
+        "width": 940,
+        "height": 1672
+      },
+      "bytes": 2014688,
+      "sha256": "05e729ae47902052da0c887d5cb0a63874c678665ec7f76e121ea9ac5a07be68"
+    },
+    {
+      "id": "silk-mobile-ink-v3",
+      "source": "/workspace/scratch/18fd4a9b69a2/generated_images/exec-f93ad019-af9f-4a13-9781-bc34cc3c9539.png",
+      "filename": "lantern-crimson-spire-mobile-v3.png",
+      "requestedSize": {
+        "width": 2160,
+        "height": 3840
+      },
+      "prompt": "Use case: stylized-concept.\nAsset type: original portrait environment background for a polished mobile English-learning app; a bitmap illustration, not an app screen mockup.\nCreate a high-resolution 9:16 portrait composition, preferably 2160 by 3840 pixels. Entirely original hand-inked 2D fantasy environment: an elegant ivory spiral bell tower emerges from a deep burgundy chasm in the bottom half, with a few small antique gold bells suspended inside narrow arched openings. Flowing crimson silk ribbons and fine silk threads stretch between the tower and dark silhouetted rock ledges. Threadlike architectural detail and the carefully outlined curves of ivory stairs give it a graceful drawn quality. The composition must be markedly graphic and designed, with clean shapes, exquisite black ink contours, flat color planes and layered 2D silhouettes. Keep the top 40 percent predominantly dark oxblood near-black negative space for white interface copy. Let only a few very fine, subdued red threads pass along its outer edges; no bright tower or bells in the upper 40 percent. Put the main tower silhouette, golden glow and readable silk in the bottom 55 percent.\nAtmosphere: quiet, mysterious, noble, inviting; soft crimson haze separating three clear depth layers, focused warm gold highlights at the bottom.\nPalette: black cherry #19090f, deep burgundy #431521, crimson #a32b45, warm ivory #d9c6a6, antique gold #b89354.\nMaterials: matte ink drawing, graceful precise hatching only in architectural shadows, clean silk color shapes.\nNo people, no characters, no masks, no game logos, no existing game setting or copied artwork. No text, no watermark, no interface elements. Avoid photorealism, 3D renders, oil paint, glossy metallic gradients, heavy particle effects, cluttered wallpaper, and bright top half.",
+      "inspection": "Original 2D ink tower scene. Dark oxblood upper negative space, ivory spiral bell tower below, gold bells, red silk and chasm silhouettes. Tower tip begins around 26% of frame; most brighter detail sits below 40%. No text, watermark or characters.",
+      "actualSize": {
+        "width": 941,
+        "height": 1672
+      },
+      "bytes": 1877899,
+      "sha256": "ae4b1b5a2d3419bdbadadc8d36d848a33f89fb4f50feb0e7987097ea5c683ed2"
+    }
+  ]
+}
