@@ -2,6 +2,8 @@
 
 先读取README.md、docs/PROJECT_STATUS.md和docs/TEAM.md，再接续当前阶段。用户目标、考期与预算是可编辑配置，不写死在学习算法中。
 
+Codex新环境接续时同时读取docs/CODEX_HANDOFF.md。初始化执行`bash scripts/codex-setup.sh`，会安装根目录与mobile依赖并检查类型、内容和行为；构建与平台工具链要求见交接文档。GitHub main为后续开发基线，按任务分支和PR提交。
+
 保持Web/PWA与mobile共享React业务和学习模型。使用现有Sites运行时、D1/R2绑定及迁移，遵守当前环境的Sites所有者规则。不要绕过身份或将凭据写进源码。仅集成负责人修改当前Sites checkout；独立子代理产出内容/素材或只读审查。
 
 重要不变量：首次与复练记录并存；客户端成绩由服务端校验；用户数据隔离；提前反复作答不升复习间隔；录音保留练习发生时间；不伪造分数、基线、训练历史或AI审核。
