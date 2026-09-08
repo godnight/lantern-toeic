@@ -1,0 +1,143 @@
+Command: npm test
+Started: 2026-09-08T11:42:00.581958+00:00
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> lantern-toeic@0.2.2 test
+> npm run validate:content && npm run test:study && npm run build && node --test tests/*.test.mjs
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> lantern-toeic@0.2.2 validate:content
+> node scripts/validate-content.mjs
+
+Validated 68 original questions, 5 speaking prompts and 22 official resource records. Structural validation is not teacher review or reuse permission.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> lantern-toeic@0.2.2 test:study
+> node --test tests/study-invariants.test.cjs tests/native-lifecycle.test.cjs tests/repo-review-regressions.test.cjs
+
+✔ native background stops and saves recording even when document.hidden stays false (344.143088ms)
+✔ permission reply after a native background and foreground round trip cannot begin preparation (151.613557ms)
+✔ native back waits for stop events and successful saving before closing the room (97.317241ms)
+✔ failed recording save stays open when discard confirmation is declined (94.988966ms)
+✔ native back cancels preparation and releases the microphone before a later dismissal (64.348022ms)
+✔ Harmony bridge validates foreground events, pauses media, and survives an isolated listener failure (28.094605ms)
+✔ native back respects overlay priority, unregisters cleanly, and consumes handler errors (12.830273ms)
+✔ offline profile changes preserve newest settings independently of Storage.key order (320.234637ms)
+✔ storage quota failure keeps resource checkin open without a false success message (376.201305ms)
+✔ record ids remain valid when a browser exposes getRandomValues without randomUUID (93.631183ms)
+✔ short sessions retain complete groups in source order and keep standalone tasks short (9.09557ms)
+✔ reviewing one due item expands its full group without adding unrelated questions (5.341522ms)
+✔ chronologically first answer survives reverse delivery and merge (22.309123ms)
+✔ switching account never uploads another account pending operations (121.708077ms)
+✔ two offline tabs preserve both pending attempts after reload (206.796338ms)
+✔ one malformed metadata record cannot erase healthy snapshot data or its journal (55.229567ms)
+✔ a native missing recording cannot fall through to a nonexistent cloud playback endpoint (70.166745ms)
+✔ storage events converge when two tabs share a synchronized attempt (144.520904ms)
+✔ immediate repetitions do not count as spaced retrieval successes (2.439182ms)
+✔ a rejected operation stays local and does not block later records or retry on focus (59.583612ms)
+✔ transient retries survive reload, respect backoff and stop after three attempts (49.67763ms)
+✔ missing local audio stays visible while a valid recording uploads (47.892965ms)
+✔ recording queued during remote refresh triggers another pass without another user event (25.669865ms)
+✔ remote audio acknowledgement repairs independent metadata and removes a missing-blob error (26.765797ms)
+✔ an account rejection stops later requests and cannot leak into the next account (46.506491ms)
+✔ late failure state for an acknowledged operation cannot keep polling or surface an error (44.251135ms)
+✔ the request timeout remains active while the GET response body is stalled (55.864363ms)
+✔ very long Retry-After cannot overflow into a rapid timer (26.262695ms)
+✔ invalid recording metadata and malformed multipart are permanent input failures (22.40058ms)
+✔ uploading an offline recording retains the date the practice occurred (11.689781ms)
+✔ an earlier recording save cannot mark the current recording as saved (68.870309ms)
+✔ background recording stop preserves elapsed time and pending save completion (52.024941ms)
+✔ a late GET cannot roll back a newer profile already acknowledged by another tab (127.511039ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2443.635983
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> lantern-toeic@0.2.2 build
+> bash scripts/build-verified.sh
+
+/usr/bin/timeout
+Running bounded vinext build...
+
+  vinext build  (Vite 8.0.16)
+
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+[1/5] analyze client references...
+
+transforming...✓ 261 modules transformed.
+rendering chunks...
+✓ built in 1.96s
+[2/5] analyze server references...
+
+transforming...✓ 225 modules transformed.
+rendering chunks...
+✓ built in 583ms
+[3/5] build rsc environment...
+
+transforming...✓ 267 modules transformed.
+rendering chunks...
+computing gzip size...
+✓ built in 1.63s
+[4/5] build client environment...
+
+transforming...✓ 2004 modules transformed.
+rendering chunks...
+computing gzip size...
+✓ built in 1.99s
+[5/5] build ssr environment...
+
+transforming...✓ 231 modules transformed.
+rendering chunks...
+computing gzip size...
+✓ built in 1.10s
+
+  Route (app)
+  ┌ ƒ /              
+  ├ λ /api/recordings
+  └ λ /api/study     
+
+  λ API  ƒ Dynamic
+
+  Build complete. Run `vinext start` to start the production server.
+
+✖ renders development preview metadata (89.747705ms)
+8:42:18 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+✔ emits the catalog's animation and scrolling utilities (53.303236ms)
+8:42:19 PM [vite] (client) [optimizer] scanning dependencies...
+✔ forwards progress semantics to the primitive (1131.869629ms)
+✔ emits chart themes for the starter's media dark mode (685.656526ms)
+✔ renders sidebar skeletons deterministically (837.793816ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3713.797221
+
+✖ failing tests:
+
+test at tests/rendered-html.test.mjs:7:1
+✖ renders development preview metadata (89.747705ms)
+  Error [ERR_UNSUPPORTED_ESM_URL_SCHEME]: Only URLs with a scheme in: file, data, and node are supported by the default ESM loader. Received protocol 'cloudflare:'
+      at throwIfUnsupportedURLScheme (node:internal/modules/esm/load:193:11)
+      at defaultLoadSync (node:internal/modules/esm/load:146:3)
+      at #loadAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:802:12)
+      at #loadSync (node:internal/modules/esm/loader:834:53)
+      at ModuleLoader.load (node:internal/modules/esm/loader:783:26)
+      at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:494:31)
+      at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:560:36)
+      at afterResolve (node:internal/modules/esm/loader:607:52)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:613:12)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33) {
+    code: 'ERR_UNSUPPORTED_ESM_URL_SCHEME'
+  }

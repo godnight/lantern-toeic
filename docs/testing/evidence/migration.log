@@ -1,0 +1,1 @@
+PASS: empty in-memory SQLite schema creates profiles, attempts, checkins, recordings. No old-data or production migration executed.

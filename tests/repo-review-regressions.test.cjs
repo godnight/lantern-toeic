@@ -16,7 +16,7 @@ function load(file, imports, globals = {}) {
   vm.runInNewContext(code, {exports, require: name => {
     if (!(name in imports)) throw Error('Unexpected import: ' + name);
     return imports[name];
-  }, Date, Intl, Map, Set, structuredClone, crypto: {randomUUID}, Blob, URL, ...globals}, {filename: file});
+  }, Date, Intl, Map, Set, structuredClone, crypto: {randomUUID}, Blob, URL, AbortController, ...globals}, {filename: file});
   return exports;
 }
 
@@ -42,7 +42,7 @@ function environment({reverse = false} = {}) {
   };
   const toast = Object.assign(() => {}, {success: text => messages.success.push(text), error: text => messages.error.push(text)});
   const browser = {
-    document: {documentElement: {dataset: {}}, hidden: false},
+    document: {documentElement: {dataset: {},style:{setProperty(){}}}, hidden: false},
     window: {addEventListener: (name, fn) => listeners.set(name, fn), removeEventListener: name => listeners.delete(name), scrollTo() {}},
     navigator: {get onLine() {return online;}},
     localStorage, setInterval: () => 1, clearInterval() {}, setTimeout, clearTimeout,
@@ -108,7 +108,9 @@ test('storage quota failure keeps resource checkin open without a false success 
     '@/lib/native-host': {registerNativeBack: () => () => {}},
     '@/content/questions.json': {default: JSON.parse(fs.readFileSync(root + '/content/questions.json'))},
     '@/content/speaking.json': {default: JSON.parse(fs.readFileSync(root + '/content/speaking.json'))},
-    './learn/exam-collection':{},'./learn/resource-library': {default: 'ResourceLibrary'}, './learn/practice': {default: 'Practice'}, './learn/speaking': {default: 'SpeakingRoom'}
+    './learn/exam-collection':{},'./learn/resource-library': {default: 'ResourceLibrary'}, './learn/practice': {default: 'Practice'}, './learn/speaking': {default: 'SpeakingRoom'},
+    './learn/theme-library': {default:()=>null},
+    '@/art/themes.json': {default:JSON.parse(fs.readFileSync(root+'/art/themes.json','utf8'))},
   };
   for (const name of ['sidebar', 'dialog', 'tabs', 'select', 'radio-group', 'progress', 'sonner']) imports['@/components/ui/' + name] = stubs;
   const StudyApp = load('app/study-app.tsx', imports, h.browser).default;

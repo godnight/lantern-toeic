@@ -1,0 +1,404 @@
+{
+  "schemaVersion": 1,
+  "references": [
+    {
+      "id": "hk-key-art",
+      "theme": "hollow",
+      "title": "Hollow Knight — 官方主视觉 HK_header.jpg",
+      "category": "character",
+      "author": "Team Cherry",
+      "sourceUrl": "https://www.hollowknight.com/",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/7dc1dbea-b5fc-4c8f-8768-1a5c3ede53e3/HK_header.jpg",
+      "width": 1300,
+      "height": 740,
+      "resolutionSource": "官方页面 HTML 的 data-image-dimensions 属性",
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": "官网主视觉入口。主角主题由页面上下文确认；正式裁图前需视觉复核构图。"
+    },
+    {
+      "id": "hk-blue-cave",
+      "theme": "hollow",
+      "title": "Blue Cave — 官方场景截图",
+      "category": "scene",
+      "author": "Team Cherry",
+      "sourceUrl": "https://www.hollowknight.com/",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/6cdafaab-e95a-49c7-a045-4f21469bb327/Blue_Cave.jpg",
+      "width": 1920,
+      "height": 1080,
+      "resolutionSource": "官方页面 HTML 的 data-image-dimensions 属性",
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": ""
+    },
+    {
+      "id": "hk-mines",
+      "theme": "hollow",
+      "title": "Mines — 官方场景截图",
+      "category": "scene",
+      "author": "Team Cherry",
+      "sourceUrl": "https://www.hollowknight.com/",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/3d8baa3e-5b8a-4c13-9747-4e89fb6ed0e6/mines.jpg",
+      "width": 1920,
+      "height": 1080,
+      "resolutionSource": "官方页面 HTML 的 data-image-dimensions 属性",
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": ""
+    },
+    {
+      "id": "hk-lake-unn",
+      "theme": "hollow",
+      "title": "Lake of Unn — 官方场景截图",
+      "category": "scene",
+      "author": "Team Cherry",
+      "sourceUrl": "https://www.hollowknight.com/",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/1617763599729-KB821M5EQA818FABUXO3/lake_of_unn.jpg",
+      "width": 595,
+      "height": 335,
+      "resolutionSource": "官方页面 HTML 的 data-image-dimensions 属性",
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": "官网展示版本偏小，适合来源索引；正式选材优先找官方 press kit 的高清版本。"
+    },
+    {
+      "id": "hk-false-knight",
+      "theme": "hollow",
+      "title": "False Knight — 官方 Boss 截图",
+      "category": "boss",
+      "author": "Team Cherry",
+      "sourceUrl": "https://www.hollowknight.com/",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/1617763465032-T3M2QQ4KMOTWS3EW7FC8/false_knight.jpg",
+      "width": 595,
+      "height": 335,
+      "resolutionSource": "官方页面 HTML 的 data-image-dimensions 属性",
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": "官网展示版本偏小，适合来源索引。"
+    },
+    {
+      "id": "hk-grimm",
+      "theme": "hollow",
+      "title": "Grimm — 官方 Boss 截图",
+      "category": "boss",
+      "author": "Team Cherry",
+      "sourceUrl": "https://www.hollowknight.com/",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/3d24e1c8-d368-4b05-bb5f-00888e238d12/Grimm.jpg",
+      "width": 1920,
+      "height": 1080,
+      "resolutionSource": "官方页面 HTML 的 data-image-dimensions 属性",
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": ""
+    },
+    {
+      "id": "hk-paintmaster",
+      "theme": "hollow",
+      "title": "Paintmaster — 官方 Boss 截图",
+      "category": "boss",
+      "author": "Team Cherry",
+      "sourceUrl": "https://www.hollowknight.com/",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/aae3d1c6-1590-4b86-a56b-e8efcc543b6b/Paintmaster.jpg",
+      "width": 1920,
+      "height": 1080,
+      "resolutionSource": "官方页面 HTML 的 data-image-dimensions 属性",
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": ""
+    },
+    {
+      "id": "hk-white-palace",
+      "theme": "hollow",
+      "title": "White Palace — 官方场景截图",
+      "category": "scene",
+      "author": "Team Cherry",
+      "sourceUrl": "https://www.hollowknight.com/",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/64008652-cc73-42e3-a001-b65f33c0471b/white+palace.jpg",
+      "width": 1920,
+      "height": 1080,
+      "resolutionSource": "官方页面 HTML 的 data-image-dimensions 属性",
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": ""
+    },
+    {
+      "id": "hk-fan-grimm-luca",
+      "theme": "hollow",
+      "title": "Grimm - Hollow Knight Fan Art",
+      "category": "boss",
+      "author": "Luca Ferrari",
+      "sourceUrl": "https://lucaferrari7.artstation.com/projects/a0yGbR",
+      "imageUrl": null,
+      "width": null,
+      "height": null,
+      "resolutionSource": null,
+      "rightsStatus": "pending",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "not_available",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": "原作者身份及作品标题已由作品页确认；页面未提供本次可验证的图片直链。"
+    },
+    {
+      "id": "hk-fan-grimm-alice",
+      "theme": "hollow",
+      "title": "Hollow Knight - VS Grimm",
+      "category": "boss",
+      "author": "Alice Allaway",
+      "sourceUrl": "https://lind113.artstation.com/projects/e0YXbZ",
+      "imageUrl": null,
+      "width": null,
+      "height": null,
+      "resolutionSource": null,
+      "rightsStatus": "pending",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "not_available",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": "原作者身份及作品标题已由作品页确认；页面未提供本次可验证的图片直链。"
+    },
+    {
+      "id": "ss-key-art",
+      "theme": "silk",
+      "title": "Silksong — 官方主视觉 new-bg.jpg",
+      "category": "character",
+      "author": "Team Cherry",
+      "sourceUrl": "https://hollowknightsilksong.com/",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/1b547f53-e6f9-461e-b9df-0104e04726b5/new-bg.jpg",
+      "width": 1200,
+      "height": 675,
+      "resolutionSource": "官方页面 HTML 的 data-image-dimensions 属性",
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": "官网主视觉入口。主角主题由页面上下文确认；正式裁图前需视觉复核构图。"
+    },
+    {
+      "id": "ss-grotto",
+      "theme": "silk",
+      "title": "Grotto — 官方场景截图",
+      "category": "scene",
+      "author": "Team Cherry",
+      "sourceUrl": "https://hollowknightsilksong.com/",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/5b2edc7f-750c-4bcf-9216-e0cac388a585/01_grotto.png",
+      "width": 2560,
+      "height": 1440,
+      "resolutionSource": "官方页面 HTML 的 data-image-dimensions 属性",
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": ""
+    },
+    {
+      "id": "ss-coral",
+      "theme": "silk",
+      "title": "Coral — 官方场景截图",
+      "category": "scene",
+      "author": "Team Cherry",
+      "sourceUrl": "https://hollowknightsilksong.com/",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/d715d8b6-a0c0-4c48-a405-504f753809df/02_coral.png",
+      "width": 2560,
+      "height": 1440,
+      "resolutionSource": "官方页面 HTML 的 data-image-dimensions 属性",
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": ""
+    },
+    {
+      "id": "ss-peak",
+      "theme": "silk",
+      "title": "Peak — 官方场景截图",
+      "category": "scene",
+      "author": "Team Cherry",
+      "sourceUrl": "https://hollowknightsilksong.com/",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/2998be3f-3d43-4a34-b005-defe3159ae8c/09a_peak.png",
+      "width": 2560,
+      "height": 1440,
+      "resolutionSource": "官方页面 HTML 的 data-image-dimensions 属性",
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": ""
+    },
+    {
+      "id": "ss-chambers",
+      "theme": "silk",
+      "title": "Chambers — 官方场景截图",
+      "category": "scene",
+      "author": "Team Cherry",
+      "sourceUrl": "https://hollowknightsilksong.com/",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/4d780799-09ac-4678-980b-e3f8d6a9ffdf/03_chambers.png",
+      "width": 2560,
+      "height": 1440,
+      "resolutionSource": "官方页面 HTML 的 data-image-dimensions 属性",
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": ""
+    },
+    {
+      "id": "ss-greymoor",
+      "theme": "silk",
+      "title": "Greymoor — 官方场景截图",
+      "category": "scene",
+      "author": "Team Cherry",
+      "sourceUrl": "https://hollowknightsilksong.com/",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/fcf2e48f-017f-4d53-bb91-6a130b07d8bb/06_greymoor.png",
+      "width": 2560,
+      "height": 1440,
+      "resolutionSource": "官方页面 HTML 的 data-image-dimensions 属性",
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": ""
+    },
+    {
+      "id": "ss-lace",
+      "theme": "silk",
+      "title": "Lace — 官方 Boss 截图",
+      "category": "boss",
+      "author": "Team Cherry",
+      "sourceUrl": "https://hollowknightsilksong.com/",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/c5a909b7-cf12-4f86-916c-1fbe4e37ed7d/11_lace.png",
+      "width": 2560,
+      "height": 1440,
+      "resolutionSource": "官方页面 HTML 的 data-image-dimensions 属性",
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": ""
+    },
+    {
+      "id": "ss-fan-hornet-chibi",
+      "theme": "silk",
+      "title": "Silksong - Hornet [Fan-art]",
+      "category": "character",
+      "author": "Chibi Dormouse",
+      "sourceUrl": "https://chibidormouse.artstation.com/projects/VdNRxg",
+      "imageUrl": null,
+      "width": null,
+      "height": null,
+      "resolutionSource": null,
+      "rightsStatus": "pending",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "not_available",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": "原作者身份及作品标题已由作品页确认；页面未提供本次可验证的图片直链。"
+    },
+    {
+      "id": "ss-hornet-reveal",
+      "theme": "silk",
+      "title": "HOLLOW KNIGHT: SILKSONG REVEALED! — Hornet 官方介绍",
+      "category": "character",
+      "author": "Team Cherry",
+      "sourceUrl": "https://www.teamcherry.com.au/blog/hollow-knight-silksong-revealed",
+      "imageUrl": null,
+      "width": null,
+      "height": null,
+      "resolutionSource": null,
+      "rightsStatus": "link-only",
+      "checkedAt": "2026-09-08",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "not_collected",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "note": "官方角色与美术方向介绍入口；本文是早期公告，不应用其中的旧平台或敌人数量信息描述现状。"
+    }
+  ]
+}

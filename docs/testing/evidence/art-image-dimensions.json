@@ -1,0 +1,38 @@
+[
+  {
+    "path": "public/images/hollow-v2-wide.webp",
+    "width": 1672,
+    "height": 941,
+    "sha256": "132e486158c87217c8d58e4a2bce3a2096650b202ac50bb0c4c705d983acf72c"
+  },
+  {
+    "path": "public/images/hollow-v2-portrait.webp",
+    "width": 941,
+    "height": 1672,
+    "sha256": "433fafc52736e71824f460516a3d5bfd90fbf317fee055c0f9fe48ca8309b354"
+  },
+  {
+    "path": "public/images/lantern-blue-ruins.webp",
+    "width": 1672,
+    "height": 941,
+    "sha256": "834752ba2c4bee517217bbc4f9ae8dbe444a1a118855a9b4c162eedcbd2f0208"
+  },
+  {
+    "path": "public/images/silk-v2-wide.webp",
+    "width": 1672,
+    "height": 941,
+    "sha256": "866fa01ba2d42b48a6e320ed381f2c491d137383f4ca423c8ee90a6bb2e4646a"
+  },
+  {
+    "path": "public/images/silk-v2-portrait.webp",
+    "width": 941,
+    "height": 1672,
+    "sha256": "cddc3d9c8879d86ed059de497de6c1c61b7d9332a4f9cc59abeae1644c7b16e8"
+  },
+  {
+    "path": "public/images/lantern-crimson-bell-tower.webp",
+    "width": 1672,
+    "height": 941,
+    "sha256": "5b45e8a4bf6b45a245a9c58817abe9b84f91393385710f00b6639184ff35854f"
+  }
+]
