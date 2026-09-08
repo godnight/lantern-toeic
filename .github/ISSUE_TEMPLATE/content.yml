@@ -1,0 +1,24 @@
+name: 学习资料或题目改进
+description: 提交官方入口、原创内容或解析纠错
+labels: [enhancement]
+body:
+  - type: input
+    id: source
+    attributes:
+      label: 原始来源或现有题目ID
+    validations:
+      required: true
+  - type: textarea
+    id: change
+    attributes:
+      label: 学习用途与改进
+      description: 说明适用技能、错误依据和建议；样题与实际考题须明确区分。
+    validations:
+      required: true
+  - type: textarea
+    id: rights
+    attributes:
+      label: 作者、使用许可和审核状态
+      description: 原创或AI辅助要注明；外部资料默认仅收入口。公开可下载不等于可以转载。
+    validations:
+      required: true

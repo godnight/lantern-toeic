@@ -53,3 +53,6 @@ next-env.d.ts
 /mobile/ios-build/
 /mobile/ios-build-result.xcresult/
 /mobile/ios-build.log
+
+# Generated diagnostic reports (may contain environment metadata)
+/reports/

@@ -1,0 +1,23 @@
+name: 问题反馈
+description: 记录可复现的问题和实际影响
+labels: [bug]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 发生了什么
+      description: 写出操作步骤、实际结果和预期结果；请勿附私人录音、证件或令牌。
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 环境和版本
+      placeholder: 手机型号、系统版本、浏览器或App版本、源码SHA
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 复现证据
+      description: 脱敏截图或日志；是否影响学习记录，是否可重现。

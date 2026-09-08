@@ -1,0 +1,40 @@
+name: Core validation
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: core-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  core-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run validate:content
+      - run: npm run test:study
+      - run: npm run build
+      - name: Apply migrations to an empty local SQLite database
+        run: |
+          python3 - <<'PY'
+          import pathlib, sqlite3
+          db = sqlite3.connect(':memory:')
+          for migration in sorted(pathlib.Path('drizzle').glob('*.sql')):
+              db.executescript(migration.read_text())
+          required = {'profiles', 'attempts', 'checkins', 'recordings'}
+          tables = {r[0] for r in db.execute("select name from sqlite_master where type='table'")}
+          assert required <= tables
+          print('Local SQLite migration smoke check passed; not a production migration.')
+          PY

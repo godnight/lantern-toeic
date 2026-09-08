@@ -1,0 +1,815 @@
+[
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.iibc-global.org/toeic/test/lr/about/format.html",
+    "officialPastExamEvidence": null,
+    "id": "iibc-p1",
+    "title": "Part 1｜官方图片样题",
+    "provider": "IIBC / ETS",
+    "category": "official-sample",
+    "skills": [
+      "listening"
+    ],
+    "parts": [
+      1
+    ],
+    "language": "英文试题；日文导航",
+    "landingUrl": "https://www.iibc-global.org/toeic/test/lr/about/format/sample01.html",
+    "format": "html+audio",
+    "access": "free",
+    "description": "图片、官方听力播放入口和答题反馈。",
+    "usageSteps": [
+      "看图预测动作和位置。",
+      "在原站播放音频后作答。",
+      "核对答案，复听一处不确定的声音。"
+    ],
+    "sourceTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "sectionHeading": "リスニングセクション Part1",
+    "collectionScope": "selected-sample-items",
+    "accessNote": "免费原站样题；是题型示例，不是已确认的历届正式试卷。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.iibc-global.org/toeic/test/lr/about/format.html",
+    "officialPastExamEvidence": null,
+    "id": "iibc-p2",
+    "title": "Part 2｜官方问答样题",
+    "provider": "IIBC / ETS",
+    "category": "official-sample",
+    "skills": [
+      "listening"
+    ],
+    "parts": [
+      2
+    ],
+    "language": "英文试题；日文导航",
+    "landingUrl": "https://www.iibc-global.org/toeic/test/lr/about/format/sample02.html",
+    "format": "html+audio",
+    "access": "free",
+    "description": "四道官方问答样题，带音频和答题反馈。",
+    "usageSteps": [
+      "先听问题与三个回应。",
+      "在原站完成四题并核对。",
+      "重听错题，说明回应与问题的关系。"
+    ],
+    "sourceTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "sectionHeading": "リスニングセクション Part2",
+    "collectionScope": "selected-sample-items",
+    "accessNote": "免费原站样题；是题型示例，不是已确认的历届正式试卷。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.iibc-global.org/toeic/test/lr/about/format.html",
+    "officialPastExamEvidence": null,
+    "id": "iibc-p3",
+    "title": "Part 3｜官方对话样题",
+    "provider": "IIBC / ETS",
+    "category": "official-sample",
+    "skills": [
+      "listening"
+    ],
+    "parts": [
+      3
+    ],
+    "language": "英文试题；日文导航",
+    "landingUrl": "https://www.iibc-global.org/toeic/test/lr/about/format/sample03.html",
+    "format": "html+audio",
+    "access": "free",
+    "description": "官方对话题组及播放入口，每组选做三题。",
+    "usageSteps": [
+      "先阅读一组的三个问题。",
+      "听一次对话并作答。",
+      "复听定位主旨、细节与下一步行动。"
+    ],
+    "sourceTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "sectionHeading": "リスニングセクション Part3",
+    "collectionScope": "selected-sample-items",
+    "accessNote": "免费原站样题；是题型示例，不是已确认的历届正式试卷。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.iibc-global.org/toeic/test/lr/about/format.html",
+    "officialPastExamEvidence": null,
+    "id": "iibc-p4",
+    "title": "Part 4｜官方独白样题",
+    "provider": "IIBC / ETS",
+    "category": "official-sample",
+    "skills": [
+      "listening"
+    ],
+    "parts": [
+      4
+    ],
+    "language": "英文试题；日文导航",
+    "landingUrl": "https://www.iibc-global.org/toeic/test/lr/about/format/sample04.html",
+    "format": "html+audio",
+    "access": "free",
+    "description": "官方通知和独白题组及播放入口。",
+    "usageSteps": [
+      "选择一组独白题。",
+      "先读问题，再听一次并作答。",
+      "核对答案，归纳目的、时间与行动。"
+    ],
+    "sourceTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "sectionHeading": "リスニングセクション Part4",
+    "collectionScope": "selected-sample-items",
+    "accessNote": "免费原站样题；是题型示例，不是已确认的历届正式试卷。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.iibc-global.org/toeic/test/lr/about/format.html",
+    "officialPastExamEvidence": null,
+    "id": "iibc-p5",
+    "title": "Part 5｜官方短句填空样题",
+    "provider": "IIBC / ETS",
+    "category": "official-sample",
+    "skills": [
+      "reading"
+    ],
+    "parts": [
+      5
+    ],
+    "language": "英文试题；日文导航",
+    "landingUrl": "https://www.iibc-global.org/toeic/test/lr/about/format/sample05.html",
+    "format": "html",
+    "access": "free",
+    "description": "官方短句填空与答题反馈。",
+    "usageSteps": [
+      "限时完成页面前三题。",
+      "核对答案，说明空格的语法作用。",
+      "针对错题知识点自写一个新句子。"
+    ],
+    "sourceTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "sectionHeading": "リーディングセクション Part5",
+    "collectionScope": "selected-sample-items",
+    "accessNote": "免费原站样题；是题型示例，不是已确认的历届正式试卷。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.iibc-global.org/toeic/test/lr/about/format.html",
+    "officialPastExamEvidence": null,
+    "id": "iibc-p6",
+    "title": "Part 6｜官方邮件填空样题",
+    "provider": "IIBC / ETS",
+    "category": "official-sample",
+    "skills": [
+      "reading"
+    ],
+    "parts": [
+      6
+    ],
+    "language": "英文试题；日文导航",
+    "landingUrl": "https://www.iibc-global.org/toeic/test/lr/about/format/sample06.html",
+    "format": "html",
+    "access": "free",
+    "description": "一封邮件配四道篇章填空题。",
+    "usageSteps": [
+      "先读邮件确定目的。",
+      "结合前后句完成四题。",
+      "在原站核对，并解释一处衔接关系。"
+    ],
+    "sourceTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "sectionHeading": "リーディングセクション Part6",
+    "collectionScope": "selected-sample-items",
+    "accessNote": "免费原站样题；是题型示例，不是已确认的历届正式试卷。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.iibc-global.org/toeic/test/lr/about/format.html",
+    "officialPastExamEvidence": null,
+    "id": "iibc-p7-single",
+    "title": "Part 7-1｜官方单篇阅读样题",
+    "provider": "IIBC / ETS",
+    "category": "official-sample",
+    "skills": [
+      "reading"
+    ],
+    "parts": [
+      7
+    ],
+    "language": "英文试题；日文导航",
+    "landingUrl": "https://www.iibc-global.org/toeic/test/lr/about/format/sample07_01.html",
+    "format": "html",
+    "access": "free",
+    "description": "短广告与文章题组，练习细节和改写表达。",
+    "usageSteps": [
+      "选择一篇并先读问题。",
+      "阅读材料并完成该组。",
+      "核对答案，找到选项与原文的改写关系。"
+    ],
+    "sourceTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "sectionHeading": "リーディングセクション Part 7-1",
+    "collectionScope": "selected-sample-items",
+    "accessNote": "免费原站样题；是题型示例，不是已确认的历届正式试卷。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.iibc-global.org/toeic/test/lr/about/format.html",
+    "officialPastExamEvidence": null,
+    "id": "iibc-p7-messages",
+    "title": "Part 7-2｜官方聊天与通知样题",
+    "provider": "IIBC / ETS",
+    "category": "official-sample",
+    "skills": [
+      "reading"
+    ],
+    "parts": [
+      7
+    ],
+    "language": "英文试题；日文导航",
+    "landingUrl": "https://www.iibc-global.org/toeic/test/lr/about/format/sample07_02.html",
+    "format": "html",
+    "access": "free",
+    "description": "即时消息链与信息类单篇阅读题组。",
+    "usageSteps": [
+      "选择聊天或通知题组。",
+      "根据上下文判断说话意图与细节。",
+      "在原站核对，复盘一次定位过程。"
+    ],
+    "sourceTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "sectionHeading": "リーディングセクション Part 7-2",
+    "collectionScope": "selected-sample-items",
+    "accessNote": "免费原站样题；是题型示例，不是已确认的历届正式试卷。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.iibc-global.org/toeic/test/lr/about/format.html",
+    "officialPastExamEvidence": null,
+    "id": "iibc-p7-double",
+    "title": "Part 7-3｜官方双篇关联样题",
+    "provider": "IIBC / ETS",
+    "category": "official-sample",
+    "skills": [
+      "reading"
+    ],
+    "parts": [
+      7
+    ],
+    "language": "英文试题；日文导航",
+    "landingUrl": "https://www.iibc-global.org/toeic/test/lr/about/format/sample07_03.html",
+    "format": "html",
+    "access": "free",
+    "description": "广告与邮件的关联阅读，配五道题。",
+    "usageSteps": [
+      "先判断两份材料各自的用途。",
+      "完成五题，关联题回看两份材料。",
+      "在原站核对，记录一次跨文本核对的方法。"
+    ],
+    "sourceTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "sectionHeading": "リーディングセクション Part 7-3",
+    "collectionScope": "selected-sample-items",
+    "accessNote": "免费原站样题；是题型示例，不是已确认的历届正式试卷。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.iibc-global.org/toeic/test/lr/about/format.html",
+    "officialPastExamEvidence": null,
+    "id": "iibc-p7-triple",
+    "title": "Part 7-4｜官方三篇关联样题",
+    "provider": "IIBC / ETS",
+    "category": "official-sample",
+    "skills": [
+      "reading"
+    ],
+    "parts": [
+      7
+    ],
+    "language": "英文试题；日文导航",
+    "landingUrl": "https://www.iibc-global.org/toeic/test/lr/about/format/sample07_04.html",
+    "format": "html",
+    "access": "free",
+    "description": "广告、购物车与邮件三篇关联阅读，配五道题。",
+    "usageSteps": [
+      "浏览三份材料并确认关系。",
+      "逐题定位，核对日期、订单和偏好。",
+      "在原站核对答案，复盘跨材料推断。"
+    ],
+    "sourceTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "sectionHeading": "リーディングセクション Part 7-4",
+    "collectionScope": "selected-sample-items",
+    "accessNote": "免费原站样题；是题型示例，不是已确认的历届正式试卷。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.iibc-global.org/toeic/test/speaking/about/format/sampletest.html",
+    "officialPastExamEvidence": null,
+    "id": "iibc-speaking-sample",
+    "title": "Speaking｜官方口语样题播放器",
+    "provider": "IIBC / ETS",
+    "category": "official-sample",
+    "skills": [
+      "speaking"
+    ],
+    "parts": [],
+    "language": "英文任务；日文导航",
+    "landingUrl": "https://www.iibc-global.org/toeic/test/speaking/about/format/sampletest.html",
+    "format": "html+audio",
+    "access": "free",
+    "description": "官方口语样题入口；适合熟悉口语任务与参考回答，不是历届试卷。",
+    "usageSteps": [
+      "选择一种口语任务并阅读原站说明。",
+      "按原站计时独立回答一次。",
+      "听参考回答，只改进一个问题后再说一次。"
+    ],
+    "sourceTitle": "サンプルテスト｜TOEIC Speaking Test",
+    "collectionScope": "sample-player",
+    "accessNote": "页面可打开；交互播放器本轮未实播。"
+  },
+  {
+    "downloadUrl": "https://www.ets.org/content/dam/ets-org/pdfs/toeic/toeic-listening-reading-sample-test.pdf",
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "pdf-opened",
+    "rightsUrl": "https://www.ets.org/legal/permissions/how-to-request.html",
+    "officialPastExamEvidence": null,
+    "id": "ets-lr-sample",
+    "title": "TOEIC L&R｜官方样题PDF",
+    "provider": "ETS",
+    "category": "official-sample",
+    "skills": [
+      "listening",
+      "reading"
+    ],
+    "parts": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "language": "英文",
+    "landingUrl": "https://www.ets.org/toeic/test-takers/prepare.html",
+    "format": "pdf",
+    "access": "free",
+    "description": "官方免费听读样题PDF；文档并未宣称为某次历届正式试卷。",
+    "usageSteps": [
+      "从官方链接打开PDF，选择一个题型。",
+      "先独立作答，再查看文档中的说明或答案。",
+      "保留自己的学习笔记；听力播放使用官方网页入口。"
+    ],
+    "sourceTitle": "TOEIC Test Preparation Materials",
+    "downloadTitle": "TOEIC Listening & Reading Test Paper-deliverd testimng",
+    "pagesObserved": 34,
+    "collectionScope": "sample-document",
+    "accessNote": "本轮官方直链可按PDF打开；未把PDF保存或复制进本集合。"
+  },
+  {
+    "downloadUrl": "https://www.ets.org/content/dam/ets-org/pdfs/toeic/toeic-speaking-writing-sample-tests.pdf",
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "pdf-opened",
+    "rightsUrl": "https://www.ets.org/legal/permissions/how-to-request.html",
+    "officialPastExamEvidence": null,
+    "id": "ets-sw-sample",
+    "title": "TOEIC S&W｜官方样题PDF",
+    "provider": "ETS",
+    "category": "official-sample",
+    "skills": [
+      "speaking",
+      "writing"
+    ],
+    "parts": [],
+    "language": "英文",
+    "landingUrl": "https://www.ets.org/toeic/test-takers/prepare.html",
+    "format": "pdf",
+    "access": "free",
+    "description": "官方免费口语与写作样题PDF，练习任务要求和作答组织。",
+    "usageSteps": [
+      "从官方链接打开PDF，选择一个题型。",
+      "先独立作答，再查看文档中的说明或答案。",
+      "保留自己的学习笔记；听力播放使用官方网页入口。"
+    ],
+    "sourceTitle": "TOEIC Test Preparation Materials",
+    "downloadTitle": "TOEIC® Speaking and Writing Sample Tests",
+    "pagesObserved": 12,
+    "collectionScope": "sample-document",
+    "accessNote": "本轮官方直链可按PDF打开；未把PDF保存或复制进本集合。"
+  },
+  {
+    "downloadUrl": "https://www.ets.org/content/dam/ets-org/pdfs/toeic/toeic-listening-reading-test-examinee-handbook.pdf",
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "pdf-opened",
+    "rightsUrl": "https://www.ets.org/legal/permissions/how-to-request.html",
+    "officialPastExamEvidence": null,
+    "id": "ets-lr-handbook",
+    "title": "TOEIC L&R｜官方考生手册PDF",
+    "provider": "ETS",
+    "category": "official-preparation",
+    "skills": [
+      "listening",
+      "reading"
+    ],
+    "parts": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "language": "英文",
+    "landingUrl": "https://www.ets.org/toeic/test-takers/prepare.html",
+    "format": "pdf",
+    "access": "free",
+    "description": "官方听读考生手册，包含考试流程、说明与样题相关资料；不是历届试卷。",
+    "usageSteps": [
+      "只读与本次报考项目有关的说明。",
+      "核对题型、时间与作答要求。",
+      "记录一个需要练习的目标。"
+    ],
+    "sourceTitle": "TOEIC Test Preparation Materials",
+    "downloadTitle": "TOEIC EXAMINEE HANDBOOK L & R tests",
+    "pagesObserved": 42,
+    "collectionScope": "examinee-handbook",
+    "accessNote": "本轮官方直链可按PDF打开；未把PDF保存或复制进本集合。"
+  },
+  {
+    "downloadUrl": "https://www.ets.org/content/dam/ets-org/pdfs/toeic/toeic-speaking-writing-examinee-handbook.pdf",
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "pdf-opened",
+    "rightsUrl": "https://www.ets.org/legal/permissions/how-to-request.html",
+    "officialPastExamEvidence": null,
+    "id": "ets-sw-handbook",
+    "title": "TOEIC S&W｜官方考生手册PDF",
+    "provider": "ETS",
+    "category": "official-preparation",
+    "skills": [
+      "speaking",
+      "writing"
+    ],
+    "parts": [],
+    "language": "英文",
+    "landingUrl": "https://www.ets.org/toeic/test-takers/prepare.html",
+    "format": "pdf",
+    "access": "free",
+    "description": "官方口语写作考生手册，供核对题型、作答要求及流程。",
+    "usageSteps": [
+      "只读与本次报考项目有关的说明。",
+      "核对题型、时间与作答要求。",
+      "记录一个需要练习的目标。"
+    ],
+    "sourceTitle": "TOEIC Test Preparation Materials",
+    "downloadTitle": "TOEIC Examinee Handbook Speaking and Writing Tests",
+    "pagesObserved": 49,
+    "collectionScope": "examinee-handbook",
+    "accessNote": "本轮官方直链可按PDF打开；未把PDF保存或复制进本集合。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://exam.toeic.co.kr/content/common/realQuestion.php",
+    "officialPastExamEvidence": "原站标注“2026년 상반기 TOEIC 정기시험 실제 기출문제”与“실제기출문제 18차 공개”。",
+    "id": "korea-lr-released-questions",
+    "title": "韩国官方｜听读实际考题公开视频",
+    "provider": "韩国TOEIC委员会 / YBM / ETS",
+    "category": "official-past-paper",
+    "skills": [
+      "listening",
+      "reading"
+    ],
+    "parts": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "language": "英文考题；韩文界面与讲解",
+    "landingUrl": "https://exam.toeic.co.kr/content/common/realQuestion.php",
+    "format": "html+video",
+    "access": "free",
+    "description": "官方明确标注实际考过的听读选题；当前显示第18次公开与2026年上半年内容。是选题视频集合，非完整历届试卷PDF。",
+    "usageSteps": [
+      "在原站选择公开批次和Part。",
+      "观看题目时先暂停，独立作答后继续。",
+      "记录自己的错因与批次，不复制视频或题目。"
+    ],
+    "sourceTitle": "TOEIC 공식 사이트 실제기출문제",
+    "collectionScope": "released-past-exam-selected-items",
+    "accessNote": "免费原站视频入口；未发现完整历届卷PDF下载链接，视频未逐个实播。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://exam.toeic.co.kr/content/common/realQuestion.php?examCate=TOS",
+    "officialPastExamEvidence": "原站说明2025年下半年TOEIC S&W定期考试实际出题，标记第10次公开。",
+    "id": "korea-sw-released-questions",
+    "title": "韩国官方｜口语写作实际考题公开视频",
+    "provider": "韩国TOEIC委员会 / YBM / ETS",
+    "category": "official-past-paper",
+    "skills": [
+      "speaking",
+      "writing"
+    ],
+    "parts": [],
+    "language": "英文考题；韩文界面与讲解",
+    "landingUrl": "https://exam.toeic.co.kr/content/common/realQuestion.php?examCate=TOS",
+    "format": "html+video",
+    "access": "free",
+    "description": "官方明确标注2025年下半年实际考过的口语写作题，第10次公开。按任务类呈现视频，非完整历届试卷PDF。",
+    "usageSteps": [
+      "在原站选择口语或写作任务。",
+      "先自己回答，再看原站内容。",
+      "记录任务类型和自己的改进点。"
+    ],
+    "sourceTitle": "TOEIC 공식 사이트 실제기출문제",
+    "collectionScope": "released-past-exam-selected-items",
+    "accessNote": "免费原站视频入口；未发现完整历届卷PDF下载链接，视频未逐个实播。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.ets.org/legal/permissions/how-to-request.html",
+    "officialPastExamEvidence": null,
+    "id": "china-download-centre",
+    "title": "托业中国｜官方样题与手册下载索引",
+    "provider": "TOEIC中国官网 / ETS",
+    "category": "official-sample",
+    "skills": [
+      "listening",
+      "reading",
+      "speaking",
+      "writing"
+    ],
+    "parts": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "language": "中文索引；附件主要为英文",
+    "landingUrl": "https://www.test-toeic.cn/down.aspx",
+    "format": "html-download-index",
+    "access": "free",
+    "description": "官方中文下载页列出听读、口语写作样题与手册。附件返回通用二进制类型，本轮未确认附件内容与版本，优先使用已验证的ETS PDF。",
+    "usageSteps": [
+      "在原站查看附件标题，区分样题与考生手册。",
+      "需直接PDF时，使用本集合中已核验的ETS样题。",
+      "阅读前核对题型版本，不把旧版材料当现行完整模拟卷。"
+    ],
+    "sourceTitle": "托业样题下载_托业听读手册下载-托业商务英语官网",
+    "collectionScope": "download-index",
+    "accessNote": "索引页已验证；听读RAR与口语写作附件的内容核验失败，未收入downloadUrl。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.ets.org/legal/permissions/how-to-request.html",
+    "officialPastExamEvidence": null,
+    "id": "iibc-lr-book-12",
+    "title": "官方备考书｜公式TOEIC L&R 問題集12",
+    "provider": "IIBC / ETS",
+    "category": "official-preparation",
+    "skills": [
+      "listening",
+      "reading"
+    ],
+    "parts": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "language": "英文题目；日文说明与解析",
+    "landingUrl": "https://www.iibc-global.org/toeic/support/prep/lr_ud_12/pr.html",
+    "format": "book-or-official-app",
+    "access": "paid",
+    "description": "ETS按正式命题流程制作的两套练习，共400题，配官方说话人音频；“同流程制作”不等于已在历届考试使用。",
+    "usageSteps": [
+      "在官方介绍页核对书名、版本与适用内容。",
+      "已有正版书时选择一个Part或一套练习。",
+      "按原书说明完成、核对，再用配套音频复习。"
+    ],
+    "sourceTitle": "公式TOEIC Listening & Reading 問題集12",
+    "collectionScope": "official-practice-book",
+    "accessNote": "完整书籍/应用版收费；官方页面有介绍与试听入口。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.ets.org/legal/permissions/how-to-request.html",
+    "officialPastExamEvidence": null,
+    "id": "iibc-sw-guide",
+    "title": "官方备考书｜Speaking & Writing Guidebook",
+    "provider": "IIBC / ETS",
+    "category": "official-preparation",
+    "skills": [
+      "speaking",
+      "writing"
+    ],
+    "parts": [],
+    "language": "英文题目；日文说明与解析",
+    "landingUrl": "https://www.iibc-global.org/toeic/support/prep/sw_guide_02.html",
+    "format": "book+companion-audio",
+    "access": "paid",
+    "description": "ETS官方口语写作指南，提供任务说明、两套练习、参考回答与解说，音频可在官方渠道获取。",
+    "usageSteps": [
+      "核对官方书名和版本。",
+      "有正版书后先练一种任务，再看参考回答。",
+      "按官方配套音频编号复听并重做。"
+    ],
+    "sourceTitle": "公式TOEIC Speaking & Writing ガイドブック",
+    "collectionScope": "official-practice-book",
+    "accessNote": "完整书籍收费；未核实为历届实际试卷。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.ets.org/legal/permissions/how-to-request.html",
+    "officialPastExamEvidence": null,
+    "id": "iibc-book-audio",
+    "title": "IIBC｜正版官方教材配套音频入口",
+    "provider": "IIBC",
+    "category": "official-preparation",
+    "skills": [
+      "listening",
+      "reading",
+      "speaking",
+      "writing"
+    ],
+    "parts": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "language": "日文索引；英文音频",
+    "landingUrl": "https://www.iibc-global.org/toeic/support/prep/download_audios/pc.html",
+    "format": "html-audio-download-index",
+    "access": "free",
+    "description": "IIBC按书名提供官方教材音频下载按钮，含问题集12与口语写作指南。音频免费提供，完整题目仍在收费教材中。",
+    "usageSteps": [
+      "按自己持有的正版教材选择完全一致的书名。",
+      "在官方网页使用对应下载按钮。",
+      "对照教材题号复听；不要把音频重新发布到公共App。"
+    ],
+    "sourceTitle": "TOEIC 公式教材の音声ダウンロード（パソコン用）",
+    "collectionScope": "companion-audio-index",
+    "accessNote": "官方说明配套音频免费；这是教材音频入口，不是免费完整题库。未逐个下载或播放压缩包。"
+  },
+  {
+    "downloadUrl": null,
+    "rights": "link-only",
+    "verifiedAt": "2026-09-08",
+    "humanReviewed": false,
+    "mediaPlaybackVerified": false,
+    "landingCheck": "opened",
+    "downloadCheck": "not-applicable",
+    "rightsUrl": "https://www.ets.org/legal/permissions/how-to-request.html",
+    "officialPastExamEvidence": null,
+    "id": "korea-official-books",
+    "title": "韩国官方书目｜ETS定期考试真题集及备考书",
+    "provider": "韩国TOEIC委员会 / YBM / ETS",
+    "category": "official-preparation",
+    "skills": [
+      "listening",
+      "reading"
+    ],
+    "parts": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "language": "英文题目；韩文说明与解析",
+    "landingUrl": "https://exam.toeic.co.kr/book/index.php",
+    "format": "official-book-directory",
+    "access": "paid",
+    "description": "官方书目列出ETS定期考试真题集1000 Vol.5 LC/RC等正版出版物，同时包括其他备考书；不能把全目录都当成历届原卷。",
+    "usageSteps": [
+      "在官方书目确认具体书名及LC或RC册。",
+      "通过原站提供的正版渠道查看版本与费用。",
+      "已有正版书后按一组或一套练习维护个人完成记录。"
+    ],
+    "sourceTitle": "TOEIC 공식 사이트 시험준비 시험교재",
+    "collectionScope": "official-book-directory",
+    "accessNote": "官方目录免费查看，所列完整书籍收费；本集合不提供商业书籍扫描版。"
+  }
+]

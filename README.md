@@ -48,6 +48,9 @@ Web入口为 `app/page.tsx`，共享产品界面为 `app/study-app.tsx`。原生
 
 ## 长期维护
 
+- [项目维护手册](docs/MAINTENANCE.md)
+- [官方真题与样题资料集合](content/exams/README.md)
+- [本轮项目审查](docs/reviews/2026-09-08.md)
 - [固定团队与协作](docs/TEAM.md)
 - [项目状态与后续任务](docs/PROJECT_STATUS.md)
 - [架构与数据](docs/ARCHITECTURE.md)
