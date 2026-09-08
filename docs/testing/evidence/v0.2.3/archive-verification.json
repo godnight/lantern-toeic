@@ -1,0 +1,26 @@
+[
+  {
+    "file": "public/art-packs/silk-originals-v0.2.3.zip",
+    "bytes": 656492,
+    "sha256": "fabbb09256311f7b9c37efcb3ca3b4a68b9d49fac1921623de960dd6b776a5bb",
+    "entries": [
+      "lantern-crimson-bell-tower.webp",
+      "lantern-crimson-spire-mobile-v3.webp",
+      "manifest.json",
+      "README.txt"
+    ],
+    "verified": true
+  },
+  {
+    "file": "public/art-packs/hollow-originals-v0.2.3.zip",
+    "bytes": 672010,
+    "sha256": "c43c78ad460cdd30625593429008705fb91ba47389a52022b3f8f1f9fb646827",
+    "entries": [
+      "lantern-blue-ruins.webp",
+      "lantern-blue-bench-mobile-v3.webp",
+      "manifest.json",
+      "README.txt"
+    ],
+    "verified": true
+  }
+]

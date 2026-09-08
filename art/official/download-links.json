@@ -1,0 +1,46 @@
+[
+  {
+    "filename": "char_knight.png",
+    "sourcePage": "https://drive.google.com/file/d/1k3FSs12QYYDod-xGw_woI5KuqTOSMCUS/view",
+    "downloadUrl": "https://drive.usercontent.google.com/uc?id=1k3FSs12QYYDod-xGw_woI5KuqTOSMCUS&export=download",
+    "declaredBytes": 213610,
+    "pageHttpStatus": 200,
+    "downloadUrlVerification": "extracted_from_public_file_page",
+    "downloadExecuted": false,
+    "appUsePermission": "not_confirmed",
+    "checkedAt": "2026-09-08"
+  },
+  {
+    "filename": "hornet_large.png",
+    "sourcePage": "https://drive.google.com/file/d/1wf2gBtOZE-b7lIJzTtxmSdIeCWzJe-I8/view",
+    "downloadUrl": "https://drive.usercontent.google.com/uc?id=1wf2gBtOZE-b7lIJzTtxmSdIeCWzJe-I8&export=download",
+    "declaredBytes": 828155,
+    "pageHttpStatus": 200,
+    "downloadUrlVerification": "extracted_from_public_file_page",
+    "downloadExecuted": false,
+    "appUsePermission": "not_confirmed",
+    "checkedAt": "2026-09-08"
+  },
+  {
+    "filename": "Key Art Portrait Original.png",
+    "sourcePage": "https://drive.google.com/file/d/1k8ymQ6Wf2YFSV4YFg9DjVYq3ITktYUiX/view",
+    "downloadUrl": "https://drive.usercontent.google.com/uc?id=1k8ymQ6Wf2YFSV4YFg9DjVYq3ITktYUiX&export=download",
+    "declaredBytes": 15745781,
+    "pageHttpStatus": 200,
+    "downloadUrlVerification": "extracted_from_public_file_page",
+    "downloadExecuted": false,
+    "appUsePermission": "not_confirmed",
+    "checkedAt": "2026-09-08"
+  },
+  {
+    "filename": "Key Art_wide_with_logo.png",
+    "sourcePage": "https://drive.google.com/file/d/1opXKZA79pb0rZRQbnZ-0muKuAi38fd0i/view",
+    "downloadUrl": "https://drive.usercontent.google.com/uc?id=1opXKZA79pb0rZRQbnZ-0muKuAi38fd0i&export=download",
+    "declaredBytes": 17908522,
+    "pageHttpStatus": 200,
+    "downloadUrlVerification": "extracted_from_public_file_page",
+    "downloadExecuted": false,
+    "appUsePermission": "not_confirmed",
+    "checkedAt": "2026-09-08"
+  }
+]

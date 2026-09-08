@@ -14,6 +14,7 @@ for(const theme of catalogue.themes){
  assert(theme.name&&theme.direction&&theme.version);
  for(const color of theme.palette)assert.match(color,/^#[0-9a-f]{6}$/i);
  for(const path of [theme.image,theme.portrait].filter(Boolean))assert(theme.assets.some(a=>a.path===path),'Theme image missing from asset manifest');
+ if(theme.download){assert(theme.download.startsWith('/art-packs/')&&!theme.download.includes('..'));assert.equal(createHash('sha256').update(readFileSync(resolve(root,'public','.'+theme.download))).digest('hex'),theme.downloadSha256,'Stale theme archive');}
  const assetIds=new Set();
  for(const asset of theme.assets){
   assert(!assetIds.has(asset.id));assetIds.add(asset.id);

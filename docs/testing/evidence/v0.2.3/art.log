@@ -1,0 +1,6 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> lantern-toeic@0.2.3 validate:art
+> node scripts/validate-art.mjs
+
+Art catalogue verified: 3 themes, 8 bundled originals, 19 external references. This is not a visual or permission review.

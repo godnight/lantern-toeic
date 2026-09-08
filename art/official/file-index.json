@@ -1,0 +1,512 @@
+{
+  "hollow-characters": {
+    "folder": "https://drive.google.com/drive/folders/1edIKwseJidG4DtPUd5A3tcC9IEB6ccb-",
+    "status": 200,
+    "items": [
+      {
+        "id": "18AWjKbmFJCCXFVPViHAHC2bXujznLYeP",
+        "names": [
+          "boss_black_knight.png"
+        ]
+      },
+      {
+        "id": "16S0eoznVX2odk7bXrHZJ7d8KYKTSdoiD",
+        "names": [
+          "boss_broken_wanderer.png"
+        ]
+      },
+      {
+        "id": "1BXLlex_ySgz5QstwbXgAZWUS8WSzJjHv",
+        "names": [
+          "boss_brooding_mawlek.png"
+        ]
+      },
+      {
+        "id": "14VRNakCPR5P6WF7-BpVJrtmEhayl01l4",
+        "names": [
+          "boss_dung_defender.png"
+        ]
+      },
+      {
+        "id": "1dhP5DLVfkd24pGZ4jHhTwuubHrqx7NPR",
+        "names": [
+          "boss_false_knight.png"
+        ]
+      },
+      {
+        "id": "1eV9HgWu1cvaw2ug7A-MvWo1i19VluTe3",
+        "names": [
+          "boss_hornet_02.png"
+        ]
+      },
+      {
+        "id": "1SY_EXcxXITEIhfWPaCoTHw6YAurBnBGV",
+        "names": [
+          "boss_hornet.png"
+        ]
+      },
+      {
+        "id": "1e4c_3dqFtNpS7m3O38sugWMc__Iuhwk2",
+        "names": [
+          "boss_mantis_lords.png"
+        ]
+      },
+      {
+        "id": "1uqoNoDy8dTIbP9hBZPJUgXOVqpt6K_is",
+        "names": [
+          "boss_soul_master.png"
+        ]
+      },
+      {
+        "id": "1Hw5mRAx32oF_pbMyKi42E2rs_Sf0daVK",
+        "names": [
+          "char_knight_action.png"
+        ]
+      },
+      {
+        "id": "1k3FSs12QYYDod-xGw_woI5KuqTOSMCUS",
+        "names": [
+          "char_knight.png"
+        ]
+      },
+      {
+        "id": "1KIz8HV6hc8ZsJBaZJgZ6mMuGES8yN-6h",
+        "names": [
+          "char_knightling.png"
+        ]
+      },
+      {
+        "id": "16j5uLfiEUohUAJaJ3cVVtTIakW-gsgZd",
+        "names": [
+          "char_shade.png"
+        ]
+      },
+      {
+        "id": "1G5VpyVfVaxdGgaR4enPCZrJGZEVtgP8R",
+        "names": [
+          "city_of_tears_enemies.png"
+        ]
+      },
+      {
+        "id": "1jz31Ua7eOVgoUoxSOxHCX9aRVPOoVMmY",
+        "names": [
+          "knight_godmaster.png"
+        ]
+      },
+      {
+        "id": "1wSsUmXJER1bO3KUkU-4fCMfA46ymdL86",
+        "names": [
+          "npc_bertha.png"
+        ]
+      },
+      {
+        "id": "1L70koApRYD9J-hf5DculLg1ncWlTuFwn",
+        "names": [
+          "npc_cloth.png"
+        ]
+      },
+      {
+        "id": "1NZhG2WqkxQGigfVqcMKGtbGWC1X-YJgQ",
+        "names": [
+          "npc_elderbug.png"
+        ]
+      },
+      {
+        "id": "156cXQrwOQYNQ91HRJZK5oCQLZzG1x96w",
+        "names": [
+          "npc_grubfather.png"
+        ]
+      },
+      {
+        "id": "1KyhmnHm2TicdtfmkU_pV6LtAgE6UVxOH",
+        "names": [
+          "npc_mapper.png"
+        ]
+      },
+      {
+        "id": "114-odYT77x5Eov8hTlAkeh-qS-ef3Ilt",
+        "names": [
+          "npc_nailmaster.png"
+        ]
+      },
+      {
+        "id": "1AozXyRVbKbn2AQAxij0ckbtQnBoDewQB",
+        "names": [
+          "npc_nailsmith.png"
+        ]
+      },
+      {
+        "id": "1agvX9yZ7yw3MU86CvHw7IhL4Wecr07Ds",
+        "names": [
+          "npc_quirrel.png"
+        ]
+      },
+      {
+        "id": "1yRzrEU_zU5mdxV34SVf3UFf09zsUody_",
+        "names": [
+          "npc_zote.png"
+        ]
+      }
+    ]
+  },
+  "hollow-screenshots": {
+    "folder": "https://drive.google.com/drive/folders/1pbff5vOu-IE55URJ642F9hK45pocQA2j",
+    "status": 200,
+    "items": [
+      {
+        "id": "1dC5giGdhL4kNkeoMlTYEMu9N5mmAZYMu",
+        "names": [
+          "Blue_Cave.jpg"
+        ]
+      },
+      {
+        "id": "1BCyebIDBI_HeoLuerRwi6GQkbrSqkP1P",
+        "names": [
+          "City_of_Tears.jpg"
+        ]
+      },
+      {
+        "id": "1OlVodktoE2Vo75OXFkM3hyll7GoVCm2H",
+        "names": [
+          "city_royal.jpg"
+        ]
+      },
+      {
+        "id": "1sSfoFdOyw_nvh_9r6DntrzyQF7Au6NqN",
+        "names": [
+          "colosseum.jpg"
+        ]
+      },
+      {
+        "id": "1u3icmSMlE_9ytZ0kpBjygYPeW74immji",
+        "names": [
+          "Crossroads Entrance.jpg"
+        ]
+      },
+      {
+        "id": "1bcTf8WDqIB87N4-Xu6dJT92zzx90WlvN",
+        "names": [
+          "dirtmouth.jpg"
+        ]
+      },
+      {
+        "id": "1vZeDmyslS9ubJXGtLCZ25ZL5vAPRd-wy",
+        "names": [
+          "False_Knight.jpg"
+        ]
+      },
+      {
+        "id": "1xIjWmJikbkEq3h4ojZ-au7SBGqXgyr1Y",
+        "names": [
+          "false_knight(1).jpg"
+        ]
+      },
+      {
+        "id": "1TOq7bTUvUoGnf-_1SiawDrg8xmYOWTg-",
+        "names": [
+          "Grimm Tent.jpg"
+        ]
+      },
+      {
+        "id": "1pvd0aMgL2e20o32HlBUYFhpATLCX0yYB",
+        "names": [
+          "Grimm.jpg"
+        ]
+      },
+      {
+        "id": "1szYJykNWq6eNRGwg4JU0_4OuHu05Llxf",
+        "names": [
+          "HK_screens_0012_The_Abyss.jpg"
+        ]
+      },
+      {
+        "id": "11G0crNdYaWpuT8gPAK2qZlE89YCwq822",
+        "names": [
+          "Lake_of_Unn.jpg"
+        ]
+      },
+      {
+        "id": "1a8EbkxXPWMht3vA3sduX0OJJER1_sZHS",
+        "names": [
+          "mines.jpg"
+        ]
+      },
+      {
+        "id": "1c3MVCXzIaqGWVL_5y4H3rsMWjksr9Qo-",
+        "names": [
+          "Moss_charger.jpg"
+        ]
+      },
+      {
+        "id": "1Q5fgxcOEow0TlLFUhzPTOvmgxv1Bmsu_",
+        "names": [
+          "new_city_shot.jpg"
+        ]
+      },
+      {
+        "id": "1usYJf-sGEMzRsCiyiA1MVdWFNZx6oRd2",
+        "names": [
+          "Paintmaster.jpg"
+        ]
+      },
+      {
+        "id": "10hAiPJbr66js5UxHr7k2w3pDXa66KtgX",
+        "names": [
+          "quick_map.jpg"
+        ]
+      },
+      {
+        "id": "1I4N9Oct2zG6k-GQJ7Mpsq6YXc3GRiX5l",
+        "names": [
+          "relic_dealer.jpg"
+        ]
+      },
+      {
+        "id": "1LZLQGM1Njl0sZ8MYxj3KQlT_oOxYUkIe",
+        "names": [
+          "screen_charms.jpg"
+        ]
+      },
+      {
+        "id": "1gfqCov_KXu_mPEBmIoNimiEWLDIao9tj",
+        "names": [
+          "Screenshots_Hi_res_0007_6.png"
+        ]
+      },
+      {
+        "id": "12nElH_IYcelc-inghnoTcHqeuJDxVdoK",
+        "names": [
+          "Screenshots_Hi_res_0008_5.png"
+        ]
+      },
+      {
+        "id": "1vVDQs5dAZkY9LZF43m17fz3G8m_ALFlL",
+        "names": [
+          "Shade_Beast.jpg"
+        ]
+      },
+      {
+        "id": "1UFV1TWKJqposs7qSDveQtAy7_tijTNNO",
+        "names": [
+          "Teacher.jpg"
+        ]
+      },
+      {
+        "id": "1izeg1i7VFnIm4BqMZe6eGuhlU3TKtgZL",
+        "names": [
+          "The Hive.jpg"
+        ]
+      },
+      {
+        "id": "1halfO4DWP6Gw1WKTbDjVBVbsUdufmtp5",
+        "names": [
+          "white palace.jpg"
+        ]
+      }
+    ]
+  },
+  "hollow-grimm": {
+    "folder": "https://drive.google.com/drive/folders/1Y4-O1natXk3w-674k4g2dXxLe5JdX6qd",
+    "status": 200,
+    "items": [
+      {
+        "id": "1Nc31coOMjXBUMPzJS32koUcrtyGHgfZg",
+        "names": [
+          "Grimm_Troupe_A1.png"
+        ]
+      },
+      {
+        "id": "1B3aYpmXnF8tdE1fOhcrVru9TWy_ExKNd",
+        "names": [
+          "Grimm_Troupe_flyer.png"
+        ]
+      },
+      {
+        "id": "1pOB8bwCjQn5JMqMUIdf54oLF35fAkFAP",
+        "names": [
+          "Grimm_Troupe_Poster.png"
+        ]
+      },
+      {
+        "id": "1scQPgHeC4E1W-oVNqPSPqFPJUsIVyeFa",
+        "names": [
+          "Grimm_troupe_screen.png"
+        ]
+      }
+    ]
+  },
+  "silk-characters": {
+    "folder": "https://drive.google.com/drive/folders/1gjCKkQww45JAWMvmUXsbODrr-90Jw7pP",
+    "status": 200,
+    "items": [
+      {
+        "id": "1V4yYTg-vNyrVvV3PM2qRltfm8PjEg0gA",
+        "names": [
+          "boss_hunter_queen_carmelita.png"
+        ]
+      },
+      {
+        "id": "1CPBT8iH1_C52M4UjZLUa1EUgX0r3Pp_m",
+        "names": [
+          "boss_lace.png"
+        ]
+      },
+      {
+        "id": "1PwjaF_3636FLi0_BTfYHJqx-7DsuJa1o",
+        "names": [
+          "boss_phantom.png"
+        ]
+      },
+      {
+        "id": "1kAWF2crekM6gsv1gjhvTJvfhVmNBj4vk",
+        "names": [
+          "boss_trobbio.png"
+        ]
+      },
+      {
+        "id": "1wf2gBtOZE-b7lIJzTtxmSdIeCWzJe-I8",
+        "names": [
+          "hornet_large.png"
+        ]
+      },
+      {
+        "id": "1_BPJbkhSnG_cUW_l9lnzANftwIlEo15L",
+        "names": [
+          "npc_chapel_maid.png"
+        ]
+      },
+      {
+        "id": "1XGuDuFloNN5hn79vOVCi2D2JTcT7cJ6X",
+        "names": [
+          "npc_fleas.png"
+        ]
+      },
+      {
+        "id": "1voDbPW15IyEhLEkRg16Qo-Ct_XyxG8eF",
+        "names": [
+          "npc_forge_daughter.png"
+        ]
+      },
+      {
+        "id": "1eGNmKnXDzAEhuBg5-qkS9Beafj7YzUTo",
+        "names": [
+          "npc_garmond_and_zaza.png"
+        ]
+      },
+      {
+        "id": "1wGi6q8hOaUnHNzS1eZ33MXpP1UFxdJzK",
+        "names": [
+          "npc_grindle.png"
+        ]
+      },
+      {
+        "id": "1JbuBtgZhJaoW9eB_EUGnbDVDKZlnySv0",
+        "names": [
+          "npc_huntress.png"
+        ]
+      },
+      {
+        "id": "1rCuC5xLCm3OIKGNui3OhUY7pIPtgd4Sl",
+        "names": [
+          "npc_nuu.png"
+        ]
+      },
+      {
+        "id": "1IhIA3LzllgopPexUA5dDxDy-cmpC-JV9",
+        "names": [
+          "npc_shakra.png"
+        ]
+      },
+      {
+        "id": "1Ae5aeHg1cmdpBTbCfQ-hcZVpZUepXuFZ",
+        "names": [
+          "npc_sherma.png"
+        ]
+      },
+      {
+        "id": "1hyw3_U4-K8c6_B6IanA0dAd3LuhiGXno",
+        "names": [
+          "npc_shrine_guardian_seth.png"
+        ]
+      }
+    ]
+  },
+  "silk-screenshots": {
+    "folder": "https://drive.google.com/drive/folders/12-80w1sEwXid1gYvJI4BAJC2PhM05Idf",
+    "status": 200,
+    "items": [
+      {
+        "id": "1u_iGmmgFgWo6h1ztmRlR-4ZpeiARsEFN",
+        "names": [
+          "Ultrawide"
+        ]
+      },
+      {
+        "id": "1iZKMyc2feFF2l_0Ljv2NpuqPyJJeXKiq",
+        "names": [
+          "01_grotto.png"
+        ]
+      },
+      {
+        "id": "1zwYmAzTEjvnaxPFT6I51KEBR3ocsnF2x",
+        "names": [
+          "02_coral.png"
+        ]
+      },
+      {
+        "id": "1qk_ThFDIVZk_8hb2GXPIMtMZ-rJRp7ck",
+        "names": [
+          "03_chambers.png"
+        ]
+      },
+      {
+        "id": "1ELeDHr9aPNjwhkPIazvLNp3fN38SLXWI",
+        "names": [
+          "04_chorus.png"
+        ]
+      },
+      {
+        "id": "1fO5mBm0g75jlaxpHQspcJ3OT5tZPaP1I",
+        "names": [
+          "06_greymoor.png"
+        ]
+      },
+      {
+        "id": "1Ru9WXnq4XiskiXUtRKONgYiHtFLJMsNz",
+        "names": [
+          "07_clover.png"
+        ]
+      },
+      {
+        "id": "1uV7IyrB8nZ8GxxmNVeJ9Ir2EkUDiAwrW",
+        "names": [
+          "08_bellhart.png"
+        ]
+      },
+      {
+        "id": "1Oy0VXCpVeOiHTvzUy6RMKBIa4jeWbCcF",
+        "names": [
+          "09_volt.png"
+        ]
+      },
+      {
+        "id": "19yCQ-FCFbEvl2yGI3tFm_CH3a1N_GOBw",
+        "names": [
+          "09a_peak.png"
+        ]
+      },
+      {
+        "id": "16Z5ECq2e0TeBQr-GZh9m2OSQp4URs6cx",
+        "names": [
+          "010_bellbeast.png"
+        ]
+      },
+      {
+        "id": "1rMCAdPI6gvlCSrbVLVHGl3X3Ek1hueVa",
+        "names": [
+          "11_lace.png"
+        ]
+      }
+    ]
+  }
+}

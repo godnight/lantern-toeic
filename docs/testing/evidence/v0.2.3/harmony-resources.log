@@ -1,0 +1,6 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> lantern-toeic-harmony@0.2.3 check:web
+> node scripts/sync-web.mjs --check
+
+Verified 23 shared frontend assets for HarmonyOS. This is not an HAP compilation.
