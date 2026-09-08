@@ -42,3 +42,13 @@
 每项记录官方来源、样题/实际考题/备考分类、范围、格式、是否收费、下载链接、核验日期和使用范围。实际考题选题视频不能标为完整历年卷；公开下载只给官方链接，不自动转存到GitHub。未获转载许可的材料保持 `link-only`。
 
 新增资料先核对原站及具体附件，执行 `npm run validate:content`。每月可运行 `npm run check:resources` 生成链接检测报告；HTTP可达不代表视频能播、链接内容未换或已获转载授权，仍需人工核验。链接失效先保留条目和问题记录，再替换来源；已关联学习记录的ID不随意改名。
+
+## 版本管理
+
+- 版本采用 `MAJOR.MINOR.PATCH`：兼容修复更新PATCH；新增学习功能更新MINOR；破坏数据兼容时再考虑MAJOR。原生工程另有单调递增的构建号。
+- `release-manifest.json` 是本次准备发布的源码版本声明；根/mobile/harmony版本和发布说明必须一致。
+- 只有main上的版本声明变更会触发Source preview release：先在只读权限job验证源码，再以独立的contents:write job创建源码预发布与固定tag。此工作流不发布App商店、不部署Site、不上传假HAP。
+- tag不可移动或覆盖。已有同名tag指向不同提交时工作流失败，应修正并使用新版本号。v0.2.1先作为源码预览，后续功能在独立PR推进。
+- APK/HAP签名与真机状态独立记录；源码预发布不提升为“已可安装的鸿蒙版本”。
+
+CI首次运行已暴露并修正环境差异：根typecheck同时读取mobile/capacitor.config.ts，因此Core工作流必须安装根和mobile两份锁定依赖。
