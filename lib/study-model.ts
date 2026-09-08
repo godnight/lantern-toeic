@@ -24,9 +24,20 @@ export function reviewSchedule(attempts:Attempt[],now=Date.now()){
  }).sort((a,b)=>Number(b.wrong)-Number(a.wrong)||a.due-b.due);
 }
 export function chooseQuestions(questions:Question[],attempts:Attempt[],part:number|undefined,count:number){
- const pool=questions.filter(q=>!part||q.part===part);const byId=new Map(reviewSchedule(attempts).map(x=>[x.qid,x]));return [...pool].sort((a,b)=>{
+ if(!Number.isFinite(count)||count<=0)return [];
+ const pool=questions.filter(q=>!part||q.part===part);const byId=new Map(reviewSchedule(attempts).map(x=>[x.qid,x]));const ranked=[...pool].sort((a,b)=>{
  const rank=(q:Question)=>{const h=byId.get(q.id);return !h?1:h.wrong||h.isDue?0:2;};return rank(a)-rank(b)||(byId.get(a.id)?.due||0)-(byId.get(b.id)?.due||0);
- }).slice(0,count);
+ });
+ // The count is a target, not permission to split a shared conversation/passage.
+ // Keep the source order within a group even when a later item is due first.
+ const result:Question[]=[];const seen=new Set<string>();
+ for(const candidate of ranked){
+  if(seen.has(candidate.id))continue;
+  const unit=candidate.groupId?pool.filter(q=>q.part===candidate.part&&q.groupId===candidate.groupId):[candidate];
+  for(const q of unit){if(!seen.has(q.id)){result.push(q);seen.add(q.id);}}
+  if(result.length>=count)break;
+ }
+ return result;
 }
 export function getWeek(data:StudyData,today=dayKey(new Date(),data.profile.timezone)){
  const days=Array.from({length:7},(_,i)=>dayOffset(today,i-6));return days.map(date=>({date,minutes:data.checkins.filter(c=>c.date===date).reduce((n,c)=>n+c.minutes,0),started:data.checkins.some(c=>c.date===date)||data.attempts.some(a=>dayKey(a.createdAt,data.profile.timezone)===date)||data.recordings.some(r=>dayKey(r.createdAt,data.profile.timezone)===date)}));

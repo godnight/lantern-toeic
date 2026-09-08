@@ -23,6 +23,16 @@ const base = () => JSON.parse(JSON.stringify(model.EMPTY_DATA));
 const attempt = (id, createdAt, correct = true) => ({ id, qid: 'test-q', choice: correct ? 0 : 1, correct, createdAt, seconds: 4, mode: 'review' });
 const flush = () => new Promise(resolve => setImmediate(resolve));
 
+test('short sessions retain complete groups in source order and keep standalone tasks short', () => {
+  const questions=JSON.parse(fs.readFileSync(root+'/content/questions.json','utf8'));
+  const group=questions.filter(q=>q.part===3&&q.groupId===questions.find(x=>x.part===3).groupId);
+  const last=group.at(-1);
+  const attempts=[{...attempt('due-group','2026-01-01T10:00:00.000Z',false),qid:last.id}];
+  assert.deepEqual(Array.from(model.chooseQuestions(questions,attempts,3,1),q=>q.id),group.map(q=>q.id));
+  assert.equal(model.chooseQuestions(questions,[],2,1).length,1);
+  assert.equal(model.chooseQuestions(questions,[],3,0).length,0);
+});
+
 // Small hook runner: executes the real hook, retaining React-like hook slots and
 // effect cleanup across owner changes. It is a deterministic race harness, not a UI test.
 function hookHarness(sharedStorage = new Map(), options = {}) {
