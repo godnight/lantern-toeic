@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "candidates": [
+    {
+      "id": "ss-fan-last-judge-thomas",
+      "theme": "silksong",
+      "title": "Last Judge Silksong Fanart",
+      "category": [
+        "boss",
+        "illustration"
+      ],
+      "subjects": [
+        "Last Judge"
+      ],
+      "author": "Thomas Lewis",
+      "page_url": "https://thomaslewis12.artstation.com/projects/lGP1VJ",
+      "image_url": null,
+      "image_resolution": null,
+      "image_resolution_source": null,
+      "source_type": "fan_art_original_author_page",
+      "access_mode": "link_only",
+      "license_status": "pending",
+      "license_note": "未取得作者用于网页/APP的复制或改作许可；仅收录作者原页面链接。",
+      "verification": {
+        "page": "search_index_only_open_unavailable",
+        "image_url": "not_available",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": "搜索索引确认作品标题与作者；直开页面本次失败，需后续复核。"
+    }
+  ]
+}

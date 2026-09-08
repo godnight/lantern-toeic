@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "artVersion": "0.1.0",
+  "themes": [
+    {
+      "id": "hollow",
+      "slug": "hollow-knight",
+      "name": "深蓝圣巢",
+      "english": "HOLLOW KNIGHT",
+      "note": "幽蓝微光 · 安静专注",
+      "version": "1.1.0",
+      "image": "/images/lantern-blue-ruins.webp",
+      "portrait": "/images/hollow-v2-portrait.webp",
+      "palette": [
+        "#0c1119",
+        "#131b26",
+        "#bdd7e5",
+        "#91c7ad"
+      ],
+      "direction": "低处的微光、层叠洞窟与纤细铁艺。学习区域保持冷蓝、平整、清晰。",
+      "assets": [
+        {
+          "id": "hollow-v2-wide",
+          "title": "幽蓝遗迹 · 横版",
+          "path": "/images/hollow-v2-wide.webp",
+          "width": 1672,
+          "height": 941,
+          "sha256": "132e486158c87217c8d58e4a2bce3a2096650b202ac50bb0c4c705d983acf72c",
+          "kind": "generated",
+          "license": "CC-BY-4.0 (project-owned rights only)",
+          "author": "LANTERN视觉贡献者",
+          "createdAt": "2026-09-07",
+          "provenance": "docs/ART_DIRECTION_V2.json",
+          "status": "approved"
+        },
+        {
+          "id": "hollow-v2-portrait",
+          "title": "幽蓝遗迹 · 竖版",
+          "path": "/images/hollow-v2-portrait.webp",
+          "width": 941,
+          "height": 1672,
+          "sha256": "433fafc52736e71824f460516a3d5bfd90fbf317fee055c0f9fe48ca8309b354",
+          "kind": "generated",
+          "license": "CC-BY-4.0 (project-owned rights only)",
+          "author": "LANTERN视觉贡献者",
+          "createdAt": "2026-09-07",
+          "provenance": "docs/ART_DIRECTION_V2.json",
+          "status": "approved"
+        },
+        {
+          "id": "lantern-blue-ruins",
+          "title": "提灯遗迹 · 横版",
+          "path": "/images/lantern-blue-ruins.webp",
+          "width": 1672,
+          "height": 941,
+          "sha256": "834752ba2c4bee517217bbc4f9ae8dbe444a1a118855a9b4c162eedcbd2f0208",
+          "kind": "generated",
+          "license": "CC-BY-4.0 (project-owned rights only)",
+          "author": "LANTERN视觉贡献者",
+          "createdAt": "2026-09-08",
+          "provenance": "art/generation-2026-09-08.json",
+          "status": "approved",
+          "encoding": "WebP quality 94; original dimensions preserved"
+        }
+      ]
+    },
+    {
+      "id": "silk",
+      "slug": "silksong",
+      "name": "绯红丝歌",
+      "english": "SILKSONG",
+      "note": "绯红丝线 · 温暖前行",
+      "version": "1.1.0",
+      "image": "/images/lantern-crimson-bell-tower.webp",
+      "portrait": "/images/silk-v2-portrait.webp",
+      "palette": [
+        "#170f16",
+        "#251920",
+        "#e9cfaa",
+        "#c07487"
+      ],
+      "direction": "向上延伸的钟楼、丝线与象牙石柱。以深绯红衬托细金色线条。",
+      "assets": [
+        {
+          "id": "silk-v2-wide",
+          "title": "丝线钟楼 · 横版",
+          "path": "/images/silk-v2-wide.webp",
+          "width": 1672,
+          "height": 941,
+          "sha256": "866fa01ba2d42b48a6e320ed381f2c491d137383f4ca423c8ee90a6bb2e4646a",
+          "kind": "generated",
+          "license": "CC-BY-4.0 (project-owned rights only)",
+          "author": "LANTERN视觉贡献者",
+          "createdAt": "2026-09-07",
+          "provenance": "docs/ART_DIRECTION_V2.json",
+          "status": "approved"
+        },
+        {
+          "id": "silk-v2-portrait",
+          "title": "丝线钟楼 · 竖版",
+          "path": "/images/silk-v2-portrait.webp",
+          "width": 941,
+          "height": 1672,
+          "sha256": "cddc3d9c8879d86ed059de497de6c1c61b7d9332a4f9cc59abeae1644c7b16e8",
+          "kind": "generated",
+          "license": "CC-BY-4.0 (project-owned rights only)",
+          "author": "LANTERN视觉贡献者",
+          "createdAt": "2026-09-07",
+          "provenance": "docs/ART_DIRECTION_V2.json",
+          "status": "approved"
+        },
+        {
+          "id": "lantern-crimson-bell-tower",
+          "title": "绯红钟楼 · 横版",
+          "path": "/images/lantern-crimson-bell-tower.webp",
+          "width": 1672,
+          "height": 941,
+          "sha256": "5b45e8a4bf6b45a245a9c58817abe9b84f91393385710f00b6639184ff35854f",
+          "kind": "generated",
+          "license": "CC-BY-4.0 (project-owned rights only)",
+          "author": "LANTERN视觉贡献者",
+          "createdAt": "2026-09-08",
+          "provenance": "art/generation-2026-09-08.json",
+          "status": "approved",
+          "encoding": "WebP quality 94; original dimensions preserved"
+        }
+      ]
+    },
+    {
+      "id": "paper",
+      "slug": "daylight",
+      "name": "晨光书页",
+      "english": "DAYLIGHT",
+      "note": "明亮纸面 · 轻盈阅读",
+      "version": "1.0.0",
+      "image": null,
+      "portrait": null,
+      "palette": [
+        "#f1f4f7",
+        "#ffffff",
+        "#365976",
+        "#287151"
+      ],
+      "direction": "白天使用的纯色阅读主题，放大留白和文字对比。",
+      "assets": []
+    }
+  ]
+}

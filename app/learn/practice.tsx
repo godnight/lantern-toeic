@@ -7,7 +7,7 @@ import {RadioGroup,RadioGroupItem} from '@/components/ui/radio-group';
 import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from '@/components/ui/select';
 import {Progress} from '@/components/ui/progress';
 import {toast} from 'sonner';
-import {PARTS,normalizeText,type Question,type Attempt} from '@/lib/study-model';
+import {createId,PARTS,normalizeText,type Question,type Attempt} from '@/lib/study-model';
 export function SpeechPlayer({text,label='播放音频'}:{text:string;label?:string}){
  const [playing,setPlaying]=useState(false);const [rate,setRate]=useState('1');const utter=useRef<SpeechSynthesisUtterance|null>(null);
  useEffect(()=>()=>{if('speechSynthesis'in window)window.speechSynthesis.cancel();},[text]);
@@ -17,7 +17,7 @@ export function SpeechPlayer({text,label='播放音频'}:{text:string;label?:str
 export default function Practice({queue,attempts,onAttempt,onClose,onFinish}:{queue:Question[];attempts:Attempt[];onAttempt:(a:Attempt)=>boolean;onClose:()=>void;onFinish:(minutes:number)=>void}){
  const [index,setIndex]=useState(0);const [choice,setChoice]=useState('');const [submitted,setSubmitted]=useState(false);const [correct,setCorrect]=useState(0);const [finished,setFinished]=useState(false);const [dictation,setDictation]=useState('');const [dictationDone,setDictationDone]=useState(false);const start=useRef(Date.now());const qStart=useRef(Date.now());
  const initialAttempts=useRef(new Set(attempts.map(a=>a.qid)));const q=queue[index];const hadAttempt=initialAttempts.current.has(q?.id);const transcript=q?.transcript||q?.audioText||'';const sentence=transcript.split(/(?<=[.!?])\s+/)[0]||'';
- const submit=()=>{if(choice===''||submitted)return;const ok=Number(choice)===q.correctIndex;const a:Attempt={id:crypto.randomUUID(),qid:q.id,choice:Number(choice),correct:ok,createdAt:new Date().toISOString(),seconds:Math.min(7200,Math.round((Date.now()-qStart.current)/1000)),mode:hadAttempt?'review':'first'};if(!onAttempt(a))return;setSubmitted(true);if(ok)setCorrect(c=>c+1);};
+ const submit=()=>{if(choice===''||submitted)return;const ok=Number(choice)===q.correctIndex;const a:Attempt={id:createId(),qid:q.id,choice:Number(choice),correct:ok,createdAt:new Date().toISOString(),seconds:Math.min(7200,Math.round((Date.now()-qStart.current)/1000)),mode:hadAttempt?'review':'first'};if(!onAttempt(a))return;setSubmitted(true);if(ok)setCorrect(c=>c+1);};
  const next=()=>{if(index===queue.length-1){setFinished(true);return;}window.speechSynthesis?.cancel();setIndex(i=>i+1);setChoice('');setSubmitted(false);setDictation('');setDictationDone(false);qStart.current=Date.now();};
  if(!q)return null;
  return <Dialog open onOpenChange={open=>{if(!open)onClose();}}><DialogContent className="practice-dialog"><DialogHeader><DialogTitle>{finished?'这一小步，完成了。':`Part ${q.part} · ${PARTS[q.part-1]}`}</DialogTitle><DialogDescription>{finished?'保留这次收获，下一次从这里继续。':`原创起步包 · ${hadAttempt?'复练，首次答案已保留':'首次作答'} · ${index+1} / ${queue.length}`}</DialogDescription></DialogHeader>

@@ -1,6 +1,6 @@
 {
   "name": "lantern-toeic",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -16,7 +16,8 @@
     "test:study": "node --test tests/study-invariants.test.cjs tests/native-lifecycle.test.cjs tests/repo-review-regressions.test.cjs",
     "typecheck": "tsc --noEmit",
     "validate:content": "node scripts/validate-content.mjs",
-    "check:resources": "node scripts/check-resources.mjs"
+    "check:resources": "node scripts/check-resources.mjs",
+    "validate:art": "node scripts/validate-art.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

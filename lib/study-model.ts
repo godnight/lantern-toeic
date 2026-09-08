@@ -1,4 +1,12 @@
 export type Theme = 'hollow' | 'silk' | 'paper';
+// randomUUID is restricted to secure contexts in some browsers; getRandomValues
+// still provides cryptographic randomness in local HTTP development previews.
+export function createId():string {
+ if(typeof crypto.randomUUID==='function')return crypto.randomUUID();
+ const bytes=crypto.getRandomValues(new Uint8Array(16));bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
+ const hex=Array.from(bytes,n=>n.toString(16).padStart(2,'0')).join('');
+ return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+}
 export type Profile = { name: string; lrGoal: number; speakingGoal: number; examDate: string; dailyMinutes: number; timezone: string; theme: Theme; weeklyTarget: number; onboarded: boolean };
 export type Question = { id: string; part: number; title: string; groupId?: string; prompt: string; options: string[]; correctIndex: number; explanation: string; evidence: string; skill: string; difficulty: string; passage?: string; transcript?: string; audioText?: string; translation?: string; vocabulary?: {word:string;meaning:string;example:string}[]; image?: string };
 export type Speaking = { id: string; type: string; title: string; prompt: string; prepSeconds: number; answerSeconds: number; guide: string[]; sampleAnswer: string; passage?: string; image?: string };
@@ -38,6 +46,10 @@ export function chooseQuestions(questions:Question[],attempts:Attempt[],part:num
   if(result.length>=count)break;
  }
  return result;
+}
+export function expandQuestionGroups(questions:Question[],ids:Set<string>):Question[]{
+ const selected=questions.filter(q=>ids.has(q.id));const groups=new Set(selected.filter(q=>q.groupId).map(q=>q.part+':'+q.groupId));
+ return questions.filter(q=>ids.has(q.id)||(q.groupId&&groups.has(q.part+':'+q.groupId)));
 }
 export function getWeek(data:StudyData,today=dayKey(new Date(),data.profile.timezone)){
  const days=Array.from({length:7},(_,i)=>dayOffset(today,i-6));return days.map(date=>({date,minutes:data.checkins.filter(c=>c.date===date).reduce((n,c)=>n+c.minutes,0),started:data.checkins.some(c=>c.date===date)||data.attempts.some(a=>dayKey(a.createdAt,data.profile.timezone)===date)||data.recordings.some(r=>dayKey(r.createdAt,data.profile.timezone)===date)}));

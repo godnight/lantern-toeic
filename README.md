@@ -46,6 +46,8 @@ npm run build
 
 ## 长期维护
 
+- [独立美术库](art/README.md)：[空洞骑士](art/themes/hollow-knight/README.md)、[丝之歌](art/themes/silksong/README.md)；原作参考与应用素材分别管理。
+
 - [产品路线图与业界参考](docs/PRODUCT_ROADMAP.md)
 - [项目维护手册](docs/MAINTENANCE.md)
 - [官方真题与样题资料集合](content/exams/README.md)
@@ -56,3 +58,7 @@ npm run build
 - [贡献规则](CONTRIBUTING.md)
 
 代码采用MIT；本项目自有原创练习文本采用CC BY 4.0，详见 `LICENSE-CONTENT.md`。第三方依赖、商标及外部材料保留各自权利。项目为独立学习工具，与ETS、IIBC或Team Cherry无官方关联。
+
+## 跨端质量验证
+
+[测试设计（39个场景）](docs/testing/TEST_DESIGN.md) · [2026-09-08执行报告](docs/testing/TEST_EXECUTION_2026-09-08.md)。结果按源码、浏览器、编译和真机分层；Core CI包含构建后HTML/UI检查。
