@@ -163,7 +163,7 @@ test('an earlier recording save cannot mark the current recording as saved', asy
   const Room=load('app/learn/speaking.tsx',{
     react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stub,
     '@/components/ui/dialog':stub,'@/components/ui/checkbox':stub,
-    sonner:{toast:Object.assign(()=>{},{error(){},success(){}})},'./practice':stub
+    sonner:{toast:Object.assign(()=>{},{error(){},success(){}})},'./practice':stub,'@/lib/native-host':load('lib/native-host.ts')
   },{Blob,URL,MediaRecorder:Recorder,window:{MediaRecorder:Recorder},document:{hidden:false,addEventListener(){},removeEventListener(){}},navigator:{mediaDevices:{getUserMedia:async()=>({getTracks:()=>[{stop(){}}]})}},setInterval:()=>1,clearInterval(){}}).default;
   const prompt=JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8'))[0];
   function render(){cursor=0;const tree=Room({prompt,onClose(){},onFinish(){},onSave:()=>new Promise(resolve=>deferred.push(resolve))});const pending=effects;effects=[];pending.forEach(fn=>fn());return tree;}
@@ -209,7 +209,7 @@ test('background recording stop preserves elapsed time and pending save completi
   const Room=load('app/learn/speaking.tsx',{
     react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stub,
     '@/components/ui/dialog':stub,'@/components/ui/checkbox':stub,
-    sonner:{toast:Object.assign(()=>{},{error(){},success(){}})},'./practice':stub
+    sonner:{toast:Object.assign(()=>{},{error(){},success(){}})},'./practice':stub,'@/lib/native-host':load('lib/native-host.ts')
   },{Date:ClockDate,Blob,URL,MediaRecorder:Recorder,window:{MediaRecorder:Recorder},document,navigator:{mediaDevices:{getUserMedia:async()=>({getTracks:()=>[{stop(){}}]})}},setInterval:()=>1,clearInterval(){}}).default;
   const prompt=JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8'))[0];
   function render(){cursor=0;const tree=Room({prompt,onClose(){},onFinish(){},onSave:meta=>{saved.push(meta);return new Promise(resolve=>saveComplete=resolve);}});const pending=effects;effects=[];pending.forEach(fn=>fn());return tree;}
