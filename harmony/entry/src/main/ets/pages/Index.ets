@@ -58,20 +58,153 @@ function mimeType(path: string): string {
 @Entry
 @Component
 struct Index {
+  @StorageLink('lanternForeground') @Watch('onForegroundChanged')
+  private foreground: boolean = false;
+  @State private pageReady: boolean = false;
+  @State private bridgeReady: boolean = false;
+  @State private backPending: boolean = false;
   private controller: webview.WebviewController = new webview.WebviewController();
-  private requestingMicrophone: boolean = false;
-  private active: boolean = false;
+  private attached: boolean = false;
+  private alive: boolean = false;
+  private documentGeneration: number = 0;
+  private lifecycleGeneration: number = 0;
+  private bridgeSequence: number = 0;
+  private bridgeRetryTimer: number = -1;
+  private backSequence: number = 0;
+  private backTimer: number = -1;
+  private lastExitBackAt: number = 0;
+  private osPermissionBusy: boolean = false;
+  private pendingMicrophone: PermissionRequest | undefined = undefined;
+  private lastExternalUrl: string = '';
+  private lastExternalAt: number = 0;
 
   aboutToAppear(): void {
-    this.active = true;
+    this.alive = true;
   }
 
   aboutToDisappear(): void {
-    this.active = false;
+    this.alive = false;
+    this.lifecycleGeneration++;
+    this.documentGeneration++;
+    this.invalidateBridge();
+    this.cancelBack();
+    this.denyPendingMicrophone();
   }
 
   private context(): common.UIAbilityContext {
     return this.getUIContext().getHostContext() as common.UIAbilityContext;
+  }
+
+  private toast(message: string): void {
+    if (!this.alive || !this.foreground) {
+      return;
+    }
+    try {
+      this.getUIContext().getPromptAction().showToast({ message: message, duration: 1800 });
+    } catch {
+      console.warn('Unable to display native notification');
+    }
+  }
+
+  private isTrustedDocument(): boolean {
+    if (!this.alive || !this.attached) {
+      return false;
+    }
+    try {
+      return isAppUrl(this.controller.getUrl());
+    } catch {
+      return false;
+    }
+  }
+
+  private invalidateBridge(): void {
+    this.bridgeReady = false;
+    this.bridgeSequence++;
+    if (this.bridgeRetryTimer !== -1) {
+      clearTimeout(this.bridgeRetryTimer);
+      this.bridgeRetryTimer = -1;
+    }
+  }
+
+  private onForegroundChanged(): void {
+    // @Watch runs synchronously. Even a background/foreground round trip
+    // invalidates every earlier permission and Back callback.
+    this.lifecycleGeneration++;
+    this.cancelBack();
+    this.denyPendingMicrophone();
+    this.startBridgeSync();
+    if (this.attached) {
+      try {
+        if (this.foreground) {
+          this.controller.onActive();
+        } else {
+          // onInactive does not suspend JavaScript; recording finalization may run.
+          this.controller.onInactive();
+        }
+      } catch {
+        console.warn('Web activity update could not be delivered');
+      }
+    }
+  }
+
+  private startBridgeSync(): void {
+    this.invalidateBridge();
+    if (!this.pageReady || !this.isTrustedDocument()) {
+      return;
+    }
+    this.syncBridge(this.bridgeSequence, this.documentGeneration, this.lifecycleGeneration, 0);
+  }
+
+  private syncBridge(sequence: number, document: number, lifecycle: number, attempt: number): void {
+    if (sequence !== this.bridgeSequence || document !== this.documentGeneration ||
+      lifecycle !== this.lifecycleGeneration || !this.pageReady || !this.isTrustedDocument()) {
+      return;
+    }
+    const script: string = '(function(){try{' +
+      'var b=window.__LANTERN_HARMONY__;' +
+      'if(!b||typeof b.onAppState!=="function"||typeof b.onBackPress!=="function")return false;' +
+      'return b.onAppState(' + (this.foreground ? 'true' : 'false') + ')===true;' +
+      '}catch(e){return false;}})()';
+    try {
+      this.controller.runJavaScript(script, (error: BusinessError, result: string) => {
+        if (sequence !== this.bridgeSequence || document !== this.documentGeneration ||
+          lifecycle !== this.lifecycleGeneration || !this.isTrustedDocument()) {
+          return;
+        }
+        if (!error && result === 'true') {
+          this.bridgeReady = true;
+          return;
+        }
+        this.retryBridge(sequence, document, lifecycle, attempt);
+      });
+    } catch {
+      this.retryBridge(sequence, document, lifecycle, attempt);
+    }
+  }
+
+  private retryBridge(sequence: number, document: number, lifecycle: number, attempt: number): void {
+    if (attempt >= 19) {
+      this.toast('页面尚未就绪，请稍后再试');
+      return;
+    }
+    this.bridgeRetryTimer = setTimeout(() => {
+      this.bridgeRetryTimer = -1;
+      this.syncBridge(sequence, document, lifecycle, attempt + 1);
+    }, 100);
+  }
+
+  private pageBegin(): void {
+    this.documentGeneration++;
+    this.pageReady = false;
+    this.invalidateBridge();
+    this.cancelBack();
+    this.denyPendingMicrophone();
+  }
+
+  private pageEnd(url: string): void {
+    // onPageEnd concerns the main frame. Check the event and current URL.
+    this.pageReady = isAppUrl(url) && this.isTrustedDocument();
+    this.startBridgeSync();
   }
 
   private errorResponse(code: number, reason: string): WebResourceResponse {
@@ -128,28 +261,77 @@ struct Index {
     return response;
   }
 
+  private denyPendingMicrophone(): void {
+    const request: PermissionRequest | undefined = this.pendingMicrophone;
+    this.pendingMicrophone = undefined;
+    if (request) {
+      try {
+        request.deny();
+      } catch {
+        console.warn('Web microphone request already ended');
+      }
+    }
+  }
+
   private async requestMicrophone(request: PermissionRequest): Promise<void> {
     const origin: string = request.getOrigin();
     const resources: string[] = request.getAccessibleResource();
-    if ((origin !== APP_ORIGIN && origin !== APP_URL) || !this.active ||
-      this.requestingMicrophone || resources.length !== 1 ||
+    if ((origin !== APP_ORIGIN && origin !== APP_URL) || !this.foreground ||
+      !this.pageReady || !this.bridgeReady || !this.isTrustedDocument() ||
+      this.osPermissionBusy || resources.length !== 1 ||
       resources[0] !== ProtectedResourceType.AUDIO_CAPTURE) {
       request.deny();
       return;
     }
-    this.requestingMicrophone = true;
+    const document: number = this.documentGeneration;
+    const lifecycle: number = this.lifecycleGeneration;
+    this.osPermissionBusy = true;
+    this.pendingMicrophone = request;
     try {
       const result = await abilityAccessCtrl.createAtManager()
         .requestPermissionsFromUser(this.context(), ['ohos.permission.MICROPHONE']);
-      if (this.active && result.authResults.length === 1 && result.authResults[0] === 0) {
+      // Backgrounding can already have denied this exact request. Never answer twice.
+      if (this.pendingMicrophone !== request) {
+        return;
+      }
+      this.pendingMicrophone = undefined;
+      if (this.foreground && this.alive && this.pageReady && this.bridgeReady &&
+        AppStorage.get<boolean>('lanternForeground') === true &&
+        document === this.documentGeneration && lifecycle === this.lifecycleGeneration &&
+        this.isTrustedDocument() && result.authResults.length === 1 && result.authResults[0] === 0) {
         request.grant([ProtectedResourceType.AUDIO_CAPTURE]);
       } else {
         request.deny();
       }
     } catch {
-      request.deny();
+      if (this.pendingMicrophone === request) {
+        this.denyPendingMicrophone();
+      }
     } finally {
-      this.requestingMicrophone = false;
+      // Remains busy until the OS request settles, even if the Web request was cancelled.
+      this.osPermissionBusy = false;
+    }
+  }
+
+  private openExternal(destination: string): void {
+    if (!this.foreground || !this.pageReady || !this.bridgeReady || !this.isTrustedDocument() ||
+      isAppUrl(destination) || !/^https:\/\/[a-z0-9.-]+(?::[0-9]+)?(?:[/?#]|$)/i.test(destination)) {
+      return;
+    }
+    const now: number = Date.now();
+    if (this.lastExternalUrl === destination && now - this.lastExternalAt < 1000) {
+      return;
+    }
+    this.lastExternalUrl = destination;
+    this.lastExternalAt = now;
+    this.lastExitBackAt = 0;
+    try {
+      this.context().openLink(destination).catch((error: BusinessError) => {
+        this.toast('暂时无法打开链接');
+        console.warn('Unable to open external link: ' + error.code);
+      });
+    } catch {
+      this.toast('暂时无法打开链接');
     }
   }
 
@@ -158,27 +340,109 @@ struct Index {
     if (isAppUrl(destination)) {
       return false;
     }
-    // External HTTPS links opened by a tap leave the trusted app Web component.
-    // Other schemes, frames and script-triggered redirects remain blocked.
-    if (request.isMainFrame() && request.isRequestGesture() &&
-      /^https:\/\/[a-z0-9.-]+(?::[0-9]+)?(?:[/?#]|$)/i.test(destination)) {
-      this.context().openLink(destination).catch((error: BusinessError) => {
-        console.warn('Unable to open external link: ' + error.code);
-      });
+    if (request.isMainFrame() && request.isRequestGesture()) {
+      this.openExternal(destination);
     }
     return true;
   }
 
-  onBackPress(): boolean {
+  private handleNewWindow(event: OnWindowNewEvent): void {
+    // Acknowledge every popup request, including rejected requests, or ArkWeb may block.
+    event.handler.setWebController(null);
+    if (event.isUserTrigger) {
+      this.openExternal(event.targetUrl);
+    }
+  }
+
+  private cancelBack(): void {
+    this.backSequence++;
+    this.backPending = false;
+    this.lastExitBackAt = 0;
+    if (this.backTimer !== -1) {
+      clearTimeout(this.backTimer);
+      this.backTimer = -1;
+    }
+  }
+
+  private failedBack(): void {
+    this.cancelBack();
+    this.toast('页面暂未响应，请稍后再试');
+  }
+
+  private finishBack(): void {
     try {
       if (this.controller.accessBackward()) {
+        this.lastExitBackAt = 0;
         this.controller.backward();
-        return true;
+        return;
       }
+      const now: number = Date.now();
+      if (this.lastExitBackAt > 0 && now - this.lastExitBackAt <= 2000) {
+        this.lastExitBackAt = 0;
+        this.context().terminateSelf().catch((error: BusinessError) => {
+          this.toast('暂时无法退出，请稍后再试');
+          console.warn('Unable to terminate ability: ' + error.code);
+        });
+        return;
+      }
+      this.lastExitBackAt = now;
+      this.toast('再按一次返回退出');
     } catch {
-      // Before Web attachment, allow the system to handle Back.
+      this.failedBack();
     }
-    return false;
+  }
+
+  onBackPress(): boolean {
+    if (!this.foreground || this.backPending) {
+      return true;
+    }
+    if (!this.pageReady || !this.bridgeReady || !this.isTrustedDocument()) {
+      this.lastExitBackAt = 0;
+      this.startBridgeSync();
+      this.toast('页面尚未就绪，请稍后再试');
+      return true;
+    }
+    this.backPending = true;
+    const sequence: number = ++this.backSequence;
+    const document: number = this.documentGeneration;
+    const lifecycle: number = this.lifecycleGeneration;
+    this.backTimer = setTimeout(() => {
+      if (sequence === this.backSequence) {
+        this.failedBack();
+      }
+    }, 1500);
+    const script: string = '(function(){try{' +
+      'var b=window.__LANTERN_HARMONY__;' +
+      'if(!b||typeof b.onBackPress!=="function")return null;' +
+      'var r=b.onBackPress();return typeof r==="boolean"?r:null;' +
+      '}catch(e){return null;}})()';
+    try {
+      this.controller.runJavaScript(script, (error: BusinessError, result: string) => {
+        if (sequence !== this.backSequence || document !== this.documentGeneration ||
+          lifecycle !== this.lifecycleGeneration || !this.alive || !this.foreground) {
+          return;
+        }
+        if (this.backTimer !== -1) {
+          clearTimeout(this.backTimer);
+          this.backTimer = -1;
+        }
+        this.backPending = false;
+        if (error || !this.isTrustedDocument() || (result !== 'true' && result !== 'false')) {
+          this.failedBack();
+          return;
+        }
+        if (result === 'true') {
+          this.lastExitBackAt = 0;
+          return;
+        }
+        // Only an explicit, synchronous JS false permits native navigation or exit.
+        this.finishBack();
+      });
+    } catch {
+      this.failedBack();
+    }
+    // The asynchronous decision owns this Back press. Never let the system exit early.
+    return true;
   }
 
   build() {
@@ -186,15 +450,23 @@ struct Index {
       Web({ src: APP_URL, controller: this.controller })
         .width('100%')
         .height('100%')
+        .enabled(this.foreground && this.pageReady && this.bridgeReady && !this.backPending)
         .javaScriptAccess(true)
         .domStorageAccess(true)
         .fileAccess(false)
         .mixedMode(MixedMode.None)
         .geolocationAccess(false)
-        .multiWindowAccess(false)
+        .multiWindowAccess(true)
+        .allowWindowOpenMethod(false)
         .mediaPlayGestureAccess(true)
+        .onControllerAttached(() => {
+          this.attached = true;
+        })
+        .onPageBegin(() => this.pageBegin())
+        .onPageEnd((event) => this.pageEnd(event.url))
         .onInterceptRequest((event) => this.intercept(event.request))
         .onLoadIntercept((event) => this.handleNavigation(event.data))
+        .onWindowNew((event) => this.handleNewWindow(event))
         .onPermissionRequest((event) => {
           this.requestMicrophone(event.request);
         })

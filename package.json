@@ -13,7 +13,7 @@
     "test": "npm run build && node --test tests/*.test.mjs",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate",
-    "test:study": "node --test tests/study-invariants.test.cjs",
+    "test:study": "node --test tests/study-invariants.test.cjs tests/native-lifecycle.test.cjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
