@@ -1,0 +1,46 @@
+name: Source preview release
+on:
+  push:
+    branches: [main]
+    paths: [release-manifest.json]
+permissions:
+  contents: read
+concurrency:
+  group: source-preview-release
+  cancel-in-progress: false
+jobs:
+  verify-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm --prefix mobile ci
+      - run: npm run typecheck
+      - run: npm run validate:content
+      - run: npm run test:study
+      - run: npm run build
+  publish-source-preview:
+    needs: verify-release
+    if: github.repository == 'godnight/lantern-toeic' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Create an immutable source preview tag and release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/publish-source-release.mjs

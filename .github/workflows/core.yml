@@ -22,6 +22,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - run: npm --prefix mobile ci
       - run: npm run typecheck
       - run: npm run validate:content
       - run: npm run test:study
