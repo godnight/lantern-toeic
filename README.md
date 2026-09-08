@@ -32,13 +32,11 @@
 Node.js 22.13+。保留仓库已有的Vinext、Vite、Sites插件与绑定方式。
 
 ```bash
-npm ci
-npm run typecheck
-npm run test:study
+bash scripts/codex-setup.sh
 npm run build
 ```
 
-Web入口为 `app/page.tsx`，共享产品界面为 `app/study-app.tsx`。原生构建见 [原生工程说明](docs/NATIVE.md)。在不具备Sites运行环境时，先完成原生静态构建与核心模型检查；Web构建需按 `scripts/sites-env.sh` 配置其运行环境。
+初始化会安装根目录和mobile依赖并执行核心检查。Codex云端/桌面接续见 [Codex交接与环境设置](docs/CODEX_HANDOFF.md)。Web入口为 `app/page.tsx`，共享产品界面为 `app/study-app.tsx`。原生构建见 [原生工程说明](docs/NATIVE.md)。普通Linux可执行Web编译（需GNU `timeout`）；生产身份与D1/R2接入仍需要对应运行平台。
 
 ## 内容与质量边界
 
