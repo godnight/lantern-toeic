@@ -45,7 +45,7 @@ export default function StudyApp({owner,nativeMode=false}:{owner:string|null;nat
  const pickPart=(isListening:boolean)=>{const relevant=partStats.filter(x=>isListening?x.part<=4:x.part>4);const tried=relevant.filter(x=>x.total>0).sort((a,b)=>(a.rate||0)-(b.rate||0));if(tried[0]&&(tried[0].rate||0)<70)return tried[0].part;return relevant.find(x=>x.total===0)?.part||relevant[Math.floor(Date.now()/86400000)%relevant.length].part;};
  const listeningPart=pickPart(true),readingPart=pickPart(false);const oral=prompts[data.recordings.length%prompts.length];
  const startPart=(part?:number,count=100)=>{const q=chooseQuestions(questions,data.attempts,part,count);if(q.length)setQueue(q);};
- const startDaily=(minimum=false)=>{const q=minimum?chooseQuestions(questions,data.attempts,listeningPart,1):[...chooseQuestions(questions,data.attempts,listeningPart,Math.max(1,Math.round(profile.dailyMinutes/12))),...chooseQuestions(questions,data.attempts,readingPart,Math.max(2,Math.round(profile.dailyMinutes/8)))];setQueue(q);};
+ const startDaily=(minimum=false)=>{const q=minimum?chooseQuestions(questions,data.attempts,listeningPart<=2?listeningPart:2,1):[...chooseQuestions(questions,data.attempts,listeningPart,Math.max(1,Math.round(profile.dailyMinutes/12))),...chooseQuestions(questions,data.attempts,readingPart,Math.max(2,Math.round(profile.dailyMinutes/8)))];setQueue(q);};
  const finish=(n:number)=>{setQueue(null);setSpeaking(null);setMinutes(String(n));setNote('');setSelectedResource(null);setLoad('刚好');setCheckinOpen(true);};
  const changeTheme=(t:string)=>{if(!saveProfile({...profile,theme:t as Theme}))return;toast.success('主题已切换');};
  const openSettings=()=>{setDraft({...profile});setSettings(true);};
