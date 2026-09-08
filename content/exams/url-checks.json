@@ -1,0 +1,190 @@
+[
+  {
+    "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample01.html",
+    "status": "page-opened",
+    "observedTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample02.html",
+    "status": "page-opened",
+    "observedTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample03.html",
+    "status": "page-opened",
+    "observedTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample04.html",
+    "status": "page-opened",
+    "observedTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample05.html",
+    "status": "page-opened",
+    "observedTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample06.html",
+    "status": "page-opened",
+    "observedTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample07_01.html",
+    "status": "page-opened",
+    "observedTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample07_02.html",
+    "status": "page-opened",
+    "observedTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample07_03.html",
+    "status": "page-opened",
+    "observedTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample07_04.html",
+    "status": "page-opened",
+    "observedTitle": "サンプル問題｜TOEIC Listening & Reading Test",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.iibc-global.org/toeic/test/speaking/about/format/sampletest.html",
+    "status": "page-opened",
+    "observedTitle": "サンプルテスト｜TOEIC Speaking Test",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.ets.org/toeic/test-takers/prepare.html",
+    "status": "page-opened",
+    "observedTitle": "TOEIC Test Preparation Materials",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.ets.org/content/dam/ets-org/pdfs/toeic/toeic-listening-reading-sample-test.pdf",
+    "status": "pdf-opened",
+    "observedTitle": "TOEIC Listening & Reading Test Paper-deliverd testimng",
+    "observedPages": 34,
+    "checkedAt": "2026-09-08",
+    "method": "web.click from ETS preparation page",
+    "savedLocally": false
+  },
+  {
+    "url": "https://www.ets.org/content/dam/ets-org/pdfs/toeic/toeic-speaking-writing-sample-tests.pdf",
+    "status": "pdf-opened",
+    "observedTitle": "TOEIC® Speaking and Writing Sample Tests",
+    "observedPages": 12,
+    "checkedAt": "2026-09-08",
+    "method": "web.click from ETS preparation page",
+    "savedLocally": false
+  },
+  {
+    "url": "https://www.ets.org/content/dam/ets-org/pdfs/toeic/toeic-listening-reading-test-examinee-handbook.pdf",
+    "status": "pdf-opened",
+    "observedTitle": "TOEIC EXAMINEE HANDBOOK L & R tests",
+    "observedPages": 42,
+    "checkedAt": "2026-09-08",
+    "method": "web.click from ETS preparation page",
+    "savedLocally": false
+  },
+  {
+    "url": "https://www.ets.org/content/dam/ets-org/pdfs/toeic/toeic-speaking-writing-examinee-handbook.pdf",
+    "status": "pdf-opened",
+    "observedTitle": "TOEIC Examinee Handbook Speaking and Writing Tests",
+    "observedPages": 49,
+    "checkedAt": "2026-09-08",
+    "method": "web.click from ETS preparation page",
+    "savedLocally": false
+  },
+  {
+    "url": "https://exam.toeic.co.kr/content/common/realQuestion.php",
+    "status": "page-opened",
+    "observedTitle": "TOEIC 공식 사이트 실제기출문제",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://exam.toeic.co.kr/content/common/realQuestion.php?examCate=TOS",
+    "status": "page-opened",
+    "observedTitle": "TOEIC 공식 사이트 실제기출문제",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.test-toeic.cn/down.aspx",
+    "status": "page-opened",
+    "observedTitle": "托业样题下载_托业听读手册下载-托业商务英语官网",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.iibc-global.org/toeic/support/prep/lr_ud_12/pr.html",
+    "status": "page-opened",
+    "observedTitle": "公式TOEIC Listening & Reading 問題集12",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.iibc-global.org/toeic/support/prep/sw_guide_02.html",
+    "status": "page-opened",
+    "observedTitle": "公式TOEIC Speaking & Writing ガイドブック",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://www.iibc-global.org/toeic/support/prep/download_audios/pc.html",
+    "status": "page-opened",
+    "observedTitle": "TOEIC 公式教材の音声ダウンロード（パソコン用）",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  },
+  {
+    "url": "https://exam.toeic.co.kr/book/index.php",
+    "status": "page-opened",
+    "observedTitle": "TOEIC 공식 사이트 시험준비 시험교재",
+    "checkedAt": "2026-09-08",
+    "method": "web.open or web.click",
+    "mediaPlaybackVerified": false
+  }
+]
