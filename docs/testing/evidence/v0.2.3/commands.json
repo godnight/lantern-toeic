@@ -1,0 +1,62 @@
+[
+  {
+    "name": "art",
+    "exitCode": 0,
+    "command": [
+      "npm",
+      "run",
+      "validate:art"
+    ]
+  },
+  {
+    "name": "typecheck",
+    "exitCode": 0,
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ]
+  },
+  {
+    "name": "web",
+    "exitCode": 0,
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ]
+  },
+  {
+    "name": "mobile",
+    "exitCode": 0,
+    "command": [
+      "npm",
+      "--prefix",
+      "mobile",
+      "run",
+      "build"
+    ]
+  },
+  {
+    "name": "harmony-sync",
+    "exitCode": 0,
+    "command": [
+      "npm",
+      "--prefix",
+      "harmony",
+      "run",
+      "sync:web"
+    ]
+  },
+  {
+    "name": "harmony-resources",
+    "exitCode": 0,
+    "command": [
+      "npm",
+      "--prefix",
+      "harmony",
+      "run",
+      "check:web"
+    ]
+  }
+]
