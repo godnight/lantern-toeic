@@ -1,0 +1,7 @@
+Command: npm run typecheck
+Started: 2026-09-08T11:41:54.051432+00:00
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> lantern-toeic@0.2.2 typecheck
+> tsc --noEmit
+

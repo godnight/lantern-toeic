@@ -24,6 +24,8 @@ jobs:
       - name: Initialize dependencies and verify core behavior (shared with Codex)
         run: bash scripts/codex-setup.sh
       - run: npm run build
+      - name: Verify built HTML and UI component contracts
+        run: node --test tests/*.test.mjs
       - name: Apply migrations to an empty local SQLite database
         run: |
           python3 - <<'PY'

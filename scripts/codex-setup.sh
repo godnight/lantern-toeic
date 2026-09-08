@@ -22,5 +22,6 @@ npm ci --no-fund --no-audit
 npm --prefix mobile ci --no-fund --no-audit
 npm run typecheck
 npm run validate:content
+npm run validate:art
 npm run test:study
 echo 'LANTERN dependencies and core checks are ready. See docs/CODEX_HANDOFF.md for builds and remaining platform requirements.'

@@ -18,4 +18,4 @@ export async function POST(request:Request){const uid=await userId();if(!uid)ret
  if(body.type==='attempt'){const a=attempt.parse(body.data);const q=questions.find(q=>q.id===a.qid);if(!q||a.choice>=q.options.length)return privateJson({error:'题目或选项无效'},400);const prev=await db.select({id:attempts.id}).from(attempts).where(and(eq(attempts.userId,uid),eq(attempts.qid,a.qid))).limit(1);await db.insert(attempts).values({...a,userId:uid,correct:a.choice===q.correctIndex,mode:prev.length?'review':'first'}).onConflictDoNothing();return privateJson({ok:true});}
  if(body.type==='checkin'){const c=checkin.parse(body.data);await db.insert(checkins).values({id:c.id,userId:uid,body:JSON.stringify(c),createdAt:c.createdAt}).onConflictDoNothing();return privateJson({ok:true});}
  return privateJson({error:'未知操作'},400);
- }catch(e){return privateJson({error:e instanceof z.ZodError?'记录格式无效':'同步暂时不可用'},e instanceof z.ZodError?400:503);}}
+ }catch(e){return privateJson({error:(e instanceof z.ZodError||e instanceof SyntaxError)?'记录格式无效':'同步暂时不可用'},(e instanceof z.ZodError||e instanceof SyntaxError)?400:503);}}

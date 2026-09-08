@@ -120,6 +120,7 @@ function speakingHarness({ manualPermissions = false } = {}) {
   const jsx = (type, props) => ({ type, props });
   const stub = new Proxy({}, { get: (_, name) => String(name) });
   const Room = load('app/learn/speaking.tsx', {
+    '@/lib/study-model': load('lib/study-model.ts',{}),
     react, 'react/jsx-runtime': { jsx, jsxs: jsx, Fragment: 'fragment' }, 'lucide-react': stub,
     '@/components/ui/dialog': stub, '@/components/ui/checkbox': stub, './practice': stub,
     '@/lib/native-host': host.native,
@@ -230,6 +231,7 @@ test('failed recording save stays open when discard confirmation is declined', a
   h.click('结束录音');
   const saving = h.deliverStop();
   h.saves[0].reject(new Error('IndexedDB storage unavailable')); await saving;
+  assert.equal(h.button('再说一次').props.disabled, true, 'An unsaved clip cannot be overwritten by a new recording');
   h.setConfirmation(false); h.back();
   assert.equal(h.confirmCalls, 1);
   assert.equal(h.closed, 0, 'Declining discard must preserve the failed recording and retry path');
@@ -238,6 +240,7 @@ test('failed recording save stays open when discard confirmation is declined', a
   assert.equal(h.saves[1].meta.id, h.saves[0].meta.id);
   assert.equal(h.saves[1].blob, h.saves[0].blob, 'Retry must retain the original audio');
   h.saves[1].resolve(); await retry;
+  assert.equal(h.button('再说一次').props.disabled, false, 'A saved clip allows recording again');
   h.back();
   assert.equal(h.closed, 1);
   assert.equal(h.confirmCalls, 1, 'Successful retry removes the discard confirmation');

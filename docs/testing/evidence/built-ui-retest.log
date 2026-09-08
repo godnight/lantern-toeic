@@ -1,0 +1,15 @@
+Command: node --test tests/rendered-html.test.mjs tests/ui-components.test.mjs
+Started: 2026-09-08T11:44:12.206023+00:00
+✔ renders the production learning shell and install metadata (340.673456ms)
+✔ emits the catalog's animation and scrolling utilities (79.354437ms)
+✔ forwards progress semantics to the primitive (960.833973ms)
+✔ emits chart themes for the starter's media dark mode (692.36075ms)
+✔ renders sidebar skeletons deterministically (936.783393ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3505.610854

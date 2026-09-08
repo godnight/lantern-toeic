@@ -1,0 +1,88 @@
+[
+  {
+    "name": "typecheck",
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exitCode": 0,
+    "startedAt": "2026-09-08T11:41:54.051432+00:00"
+  },
+  {
+    "name": "art",
+    "command": [
+      "npm",
+      "run",
+      "validate:art"
+    ],
+    "exitCode": 0,
+    "startedAt": "2026-09-08T11:41:59.901351+00:00"
+  },
+  {
+    "name": "full-test",
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exitCode": 1,
+    "startedAt": "2026-09-08T11:42:00.581958+00:00"
+  },
+  {
+    "name": "built-ui-retest",
+    "command": [
+      "node",
+      "--test",
+      "tests/rendered-html.test.mjs",
+      "tests/ui-components.test.mjs"
+    ],
+    "exitCode": 0,
+    "startedAt": "2026-09-08T11:44:12.206023+00:00"
+  },
+  {
+    "name": "mobile",
+    "command": [
+      "npm",
+      "--prefix",
+      "mobile",
+      "run",
+      "build"
+    ],
+    "exitCode": 0,
+    "startedAt": "2026-09-08T11:44:15.992116+00:00"
+  },
+  {
+    "name": "harmony-sync",
+    "command": [
+      "npm",
+      "--prefix",
+      "harmony",
+      "run",
+      "sync:web"
+    ],
+    "exitCode": 0,
+    "startedAt": "2026-09-08T11:44:18.615924+00:00"
+  },
+  {
+    "name": "harmony-resources",
+    "command": [
+      "npm",
+      "--prefix",
+      "harmony",
+      "run",
+      "check:web"
+    ],
+    "exitCode": 0,
+    "startedAt": "2026-09-08T11:44:22.281022+00:00"
+  },
+  {
+    "name": "harmony-toolchain",
+    "command": [
+      "node",
+      "harmony/scripts/check-toolchain.mjs",
+      "--report-only"
+    ],
+    "exitCode": 0,
+    "startedAt": "2026-09-08T11:44:23.043482+00:00"
+  }
+]

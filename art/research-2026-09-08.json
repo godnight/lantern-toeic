@@ -1,0 +1,637 @@
+{
+  "schema_version": "1.0",
+  "catalogue_name": "Hollow Knight / Silksong art reference catalogue",
+  "researched_on": "2026-09-08",
+  "purpose": "独立美术参考库首批；供人工挑选后再设计网页/APP主题",
+  "storage_policy": "metadata_and_links_only_no_copyrighted_asset_copies",
+  "rights_reference": "https://www.teamcherry.com.au/faq",
+  "press_kits": [
+    {
+      "theme": "hollow-knight",
+      "title": "Press Kit (Hollow Knight)",
+      "page_url": "https://drive.google.com/drive/folders/1SPCRaalJJepKYOQ4fdxZEzqNukJiUQCo",
+      "discovered_from": "https://www.hollowknight.com/",
+      "verification": "official_link_confirmed_folder_contents_not_inspected"
+    },
+    {
+      "theme": "silksong",
+      "title": "Press Kit (Silksong)",
+      "page_url": "https://drive.google.com/drive/folders/1VE_YoUA36IwZRHnZhvEGUhqgU2GIEm4y",
+      "discovered_from": "https://hollowknightsilksong.com/",
+      "verification": "official_link_confirmed_folder_contents_not_inspected"
+    }
+  ],
+  "records": [
+    {
+      "id": "hk-key-art",
+      "theme": "hollow-knight",
+      "title": "Hollow Knight — 官方主视觉 HK_header.jpg",
+      "category": [
+        "protagonist",
+        "key_art"
+      ],
+      "subjects": [
+        "The Knight"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://www.hollowknight.com/",
+      "image_url": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/7dc1dbea-b5fc-4c8f-8768-1a5c3ede53e3/HK_header.jpg",
+      "image_resolution": {
+        "width": 1300,
+        "height": 740
+      },
+      "image_resolution_source": "官方页面 HTML 的 data-image-dimensions 属性",
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": "官网主视觉入口。主角主题由页面上下文确认；正式裁图前需视觉复核构图。"
+    },
+    {
+      "id": "hk-blue-cave",
+      "theme": "hollow-knight",
+      "title": "Blue Cave — 官方场景截图",
+      "category": [
+        "environment"
+      ],
+      "subjects": [
+        "Blue Cave"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://www.hollowknight.com/",
+      "image_url": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/6cdafaab-e95a-49c7-a045-4f21469bb327/Blue_Cave.jpg",
+      "image_resolution": {
+        "width": 1920,
+        "height": 1080
+      },
+      "image_resolution_source": "官方页面 HTML 的 data-image-dimensions 属性",
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "hk-mines",
+      "theme": "hollow-knight",
+      "title": "Mines — 官方场景截图",
+      "category": [
+        "environment"
+      ],
+      "subjects": [
+        "Mines"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://www.hollowknight.com/",
+      "image_url": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/3d8baa3e-5b8a-4c13-9747-4e89fb6ed0e6/mines.jpg",
+      "image_resolution": {
+        "width": 1920,
+        "height": 1080
+      },
+      "image_resolution_source": "官方页面 HTML 的 data-image-dimensions 属性",
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "hk-lake-unn",
+      "theme": "hollow-knight",
+      "title": "Lake of Unn — 官方场景截图",
+      "category": [
+        "environment"
+      ],
+      "subjects": [
+        "Lake of Unn"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://www.hollowknight.com/",
+      "image_url": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/1617763599729-KB821M5EQA818FABUXO3/lake_of_unn.jpg",
+      "image_resolution": {
+        "width": 595,
+        "height": 335
+      },
+      "image_resolution_source": "官方页面 HTML 的 data-image-dimensions 属性",
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": "官网展示版本偏小，适合来源索引；正式选材优先找官方 press kit 的高清版本。"
+    },
+    {
+      "id": "hk-false-knight",
+      "theme": "hollow-knight",
+      "title": "False Knight — 官方 Boss 截图",
+      "category": [
+        "boss"
+      ],
+      "subjects": [
+        "False Knight"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://www.hollowknight.com/",
+      "image_url": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/1617763465032-T3M2QQ4KMOTWS3EW7FC8/false_knight.jpg",
+      "image_resolution": {
+        "width": 595,
+        "height": 335
+      },
+      "image_resolution_source": "官方页面 HTML 的 data-image-dimensions 属性",
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": "官网展示版本偏小，适合来源索引。"
+    },
+    {
+      "id": "hk-grimm",
+      "theme": "hollow-knight",
+      "title": "Grimm — 官方 Boss 截图",
+      "category": [
+        "boss"
+      ],
+      "subjects": [
+        "Grimm"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://www.hollowknight.com/",
+      "image_url": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/3d24e1c8-d368-4b05-bb5f-00888e238d12/Grimm.jpg",
+      "image_resolution": {
+        "width": 1920,
+        "height": 1080
+      },
+      "image_resolution_source": "官方页面 HTML 的 data-image-dimensions 属性",
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "hk-paintmaster",
+      "theme": "hollow-knight",
+      "title": "Paintmaster — 官方 Boss 截图",
+      "category": [
+        "boss"
+      ],
+      "subjects": [
+        "Paintmaster"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://www.hollowknight.com/",
+      "image_url": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/aae3d1c6-1590-4b86-a56b-e8efcc543b6b/Paintmaster.jpg",
+      "image_resolution": {
+        "width": 1920,
+        "height": 1080
+      },
+      "image_resolution_source": "官方页面 HTML 的 data-image-dimensions 属性",
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "hk-white-palace",
+      "theme": "hollow-knight",
+      "title": "White Palace — 官方场景截图",
+      "category": [
+        "environment"
+      ],
+      "subjects": [
+        "White Palace"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://www.hollowknight.com/",
+      "image_url": "https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/64008652-cc73-42e3-a001-b65f33c0471b/white+palace.jpg",
+      "image_resolution": {
+        "width": 1920,
+        "height": 1080
+      },
+      "image_resolution_source": "官方页面 HTML 的 data-image-dimensions 属性",
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "hk-fan-grimm-luca",
+      "theme": "hollow-knight",
+      "title": "Grimm - Hollow Knight Fan Art",
+      "category": [
+        "boss",
+        "illustration"
+      ],
+      "subjects": [
+        "Grimm"
+      ],
+      "author": "Luca Ferrari",
+      "page_url": "https://lucaferrari7.artstation.com/projects/a0yGbR",
+      "image_url": null,
+      "image_resolution": null,
+      "image_resolution_source": null,
+      "source_type": "fan_art_original_author_page",
+      "access_mode": "link_only",
+      "license_status": "pending",
+      "license_note": "未取得作者用于网页/APP的复制或改作许可；仅收录作者原页面链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "not_available",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": "原作者身份及作品标题已由作品页确认；页面未提供本次可验证的图片直链。"
+    },
+    {
+      "id": "hk-fan-grimm-alice",
+      "theme": "hollow-knight",
+      "title": "Hollow Knight - VS Grimm",
+      "category": [
+        "protagonist",
+        "boss",
+        "illustration"
+      ],
+      "subjects": [
+        "The Knight",
+        "Grimm"
+      ],
+      "author": "Alice Allaway",
+      "page_url": "https://lind113.artstation.com/projects/e0YXbZ",
+      "image_url": null,
+      "image_resolution": null,
+      "image_resolution_source": null,
+      "source_type": "fan_art_original_author_page",
+      "access_mode": "link_only",
+      "license_status": "pending",
+      "license_note": "未取得作者用于网页/APP的复制或改作许可；仅收录作者原页面链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "not_available",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": "原作者身份及作品标题已由作品页确认；页面未提供本次可验证的图片直链。"
+    },
+    {
+      "id": "ss-key-art",
+      "theme": "silksong",
+      "title": "Silksong — 官方主视觉 new-bg.jpg",
+      "category": [
+        "protagonist",
+        "key_art"
+      ],
+      "subjects": [
+        "Hornet"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://hollowknightsilksong.com/",
+      "image_url": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/1b547f53-e6f9-461e-b9df-0104e04726b5/new-bg.jpg",
+      "image_resolution": {
+        "width": 1200,
+        "height": 675
+      },
+      "image_resolution_source": "官方页面 HTML 的 data-image-dimensions 属性",
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": "官网主视觉入口。主角主题由页面上下文确认；正式裁图前需视觉复核构图。"
+    },
+    {
+      "id": "ss-grotto",
+      "theme": "silksong",
+      "title": "Grotto — 官方场景截图",
+      "category": [
+        "environment"
+      ],
+      "subjects": [
+        "Grotto"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://hollowknightsilksong.com/",
+      "image_url": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/5b2edc7f-750c-4bcf-9216-e0cac388a585/01_grotto.png",
+      "image_resolution": {
+        "width": 2560,
+        "height": 1440
+      },
+      "image_resolution_source": "官方页面 HTML 的 data-image-dimensions 属性",
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "ss-coral",
+      "theme": "silksong",
+      "title": "Coral — 官方场景截图",
+      "category": [
+        "environment"
+      ],
+      "subjects": [
+        "Coral"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://hollowknightsilksong.com/",
+      "image_url": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/d715d8b6-a0c0-4c48-a405-504f753809df/02_coral.png",
+      "image_resolution": {
+        "width": 2560,
+        "height": 1440
+      },
+      "image_resolution_source": "官方页面 HTML 的 data-image-dimensions 属性",
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "ss-peak",
+      "theme": "silksong",
+      "title": "Peak — 官方场景截图",
+      "category": [
+        "environment"
+      ],
+      "subjects": [
+        "Peak"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://hollowknightsilksong.com/",
+      "image_url": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/2998be3f-3d43-4a34-b005-defe3159ae8c/09a_peak.png",
+      "image_resolution": {
+        "width": 2560,
+        "height": 1440
+      },
+      "image_resolution_source": "官方页面 HTML 的 data-image-dimensions 属性",
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "ss-chambers",
+      "theme": "silksong",
+      "title": "Chambers — 官方场景截图",
+      "category": [
+        "environment"
+      ],
+      "subjects": [
+        "Chambers"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://hollowknightsilksong.com/",
+      "image_url": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/4d780799-09ac-4678-980b-e3f8d6a9ffdf/03_chambers.png",
+      "image_resolution": {
+        "width": 2560,
+        "height": 1440
+      },
+      "image_resolution_source": "官方页面 HTML 的 data-image-dimensions 属性",
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "ss-greymoor",
+      "theme": "silksong",
+      "title": "Greymoor — 官方场景截图",
+      "category": [
+        "environment"
+      ],
+      "subjects": [
+        "Greymoor"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://hollowknightsilksong.com/",
+      "image_url": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/fcf2e48f-017f-4d53-bb91-6a130b07d8bb/06_greymoor.png",
+      "image_resolution": {
+        "width": 2560,
+        "height": 1440
+      },
+      "image_resolution_source": "官方页面 HTML 的 data-image-dimensions 属性",
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "ss-lace",
+      "theme": "silksong",
+      "title": "Lace — 官方 Boss 截图",
+      "category": [
+        "boss"
+      ],
+      "subjects": [
+        "Lace",
+        "Hornet"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://hollowknightsilksong.com/",
+      "image_url": "https://images.squarespace-cdn.com/content/v1/606d4bb793879d12d807d4c8/c5a909b7-cf12-4f86-916c-1fbe4e37ed7d/11_lace.png",
+      "image_resolution": {
+        "width": 2560,
+        "height": 1440
+      },
+      "image_resolution_source": "官方页面 HTML 的 data-image-dimensions 属性",
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "verified_in_page_html",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "ss-fan-hornet-chibi",
+      "theme": "silksong",
+      "title": "Silksong - Hornet [Fan-art]",
+      "category": [
+        "protagonist",
+        "illustration"
+      ],
+      "subjects": [
+        "Hornet"
+      ],
+      "author": "Chibi Dormouse",
+      "page_url": "https://chibidormouse.artstation.com/projects/VdNRxg",
+      "image_url": null,
+      "image_resolution": null,
+      "image_resolution_source": null,
+      "source_type": "fan_art_original_author_page",
+      "access_mode": "link_only",
+      "license_status": "pending",
+      "license_note": "未取得作者用于网页/APP的复制或改作许可；仅收录作者原页面链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "not_available",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": "原作者身份及作品标题已由作品页确认；页面未提供本次可验证的图片直链。"
+    },
+    {
+      "id": "ss-fan-last-judge-thomas",
+      "theme": "silksong",
+      "title": "Last Judge Silksong Fanart",
+      "category": [
+        "boss",
+        "illustration"
+      ],
+      "subjects": [
+        "Last Judge"
+      ],
+      "author": "Thomas Lewis",
+      "page_url": "https://thomaslewis12.artstation.com/projects/lGP1VJ",
+      "image_url": null,
+      "image_resolution": null,
+      "image_resolution_source": null,
+      "source_type": "fan_art_original_author_page",
+      "access_mode": "link_only",
+      "license_status": "pending",
+      "license_note": "未取得作者用于网页/APP的复制或改作许可；仅收录作者原页面链接。",
+      "verification": {
+        "page": "search_index_only_open_unavailable",
+        "image_url": "not_available",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": "搜索索引确认作品标题与作者；直开页面本次失败，需后续复核。"
+    },
+    {
+      "id": "ss-hornet-reveal",
+      "theme": "silksong",
+      "title": "HOLLOW KNIGHT: SILKSONG REVEALED! — Hornet 官方介绍",
+      "category": [
+        "protagonist",
+        "reference_page"
+      ],
+      "subjects": [
+        "Hornet"
+      ],
+      "author": "Team Cherry",
+      "author_role": "官方团队；官网列 Ari Gibson 为美术与环境创作者",
+      "page_url": "https://www.teamcherry.com.au/blog/hollow-knight-silksong-revealed",
+      "image_url": null,
+      "image_resolution": null,
+      "image_resolution_source": null,
+      "source_type": "official",
+      "access_mode": "link_only",
+      "license_status": "reference_only",
+      "license_note": "官方公开宣传素材。未发现授予第三方主题网页/APP复制、改作或再分发的通用许可；仅收录原页面与图片链接。",
+      "verification": {
+        "page": "verified_open",
+        "image_url": "not_collected",
+        "image_bytes": "not_downloaded",
+        "visual_review": "pending"
+      },
+      "notes": "官方角色与美术方向介绍入口；本文是早期公告，不应用其中的旧平台或敌人数量信息描述现状。"
+    }
+  ]
+}

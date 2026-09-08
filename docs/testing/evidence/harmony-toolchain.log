@@ -1,0 +1,21 @@
+Command: node harmony/scripts/check-toolchain.mjs --report-only
+Started: 2026-09-08T11:44:23.043482+00:00
+{
+  "checkedAt": "2026-09-08T11:44:23.281Z",
+  "tools": {
+    "hvigor": true,
+    "ohpm": false,
+    "hdc": false
+  },
+  "sdkDirectoryProvided": false,
+  "sdkDirectoryExists": false,
+  "missing": [
+    "ohpm",
+    "hdc",
+    "HarmonyOS SDK directory"
+  ],
+  "compiled": false,
+  "signed": false,
+  "deviceTested": false,
+  "note": "Only checks executable/directory presence. Use DevEco Studio to verify the SDK version, install dependencies, compile, sign and run on a device."
+}

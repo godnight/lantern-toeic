@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['harmony/**', 'app/**', 'lib/**', 'components/**', 'content/**', 'public/**', 'mobile/vite.config.ts', 'mobile/src/**', 'package-lock.json', '.github/workflows/harmony-web.yml']
+    paths: ['art/**', 'harmony/**', 'app/**', 'lib/**', 'components/**', 'content/**', 'public/**', 'mobile/vite.config.ts', 'mobile/src/**', 'package-lock.json', '.github/workflows/harmony-web.yml']
   pull_request:
-    paths: ['harmony/**', 'app/**', 'lib/**', 'components/**', 'content/**', 'public/**', 'mobile/vite.config.ts', 'mobile/src/**', 'package-lock.json', '.github/workflows/harmony-web.yml']
+    paths: ['art/**', 'harmony/**', 'app/**', 'lib/**', 'components/**', 'content/**', 'public/**', 'mobile/vite.config.ts', 'mobile/src/**', 'package-lock.json', '.github/workflows/harmony-web.yml']
 permissions:
   contents: read
 concurrency:

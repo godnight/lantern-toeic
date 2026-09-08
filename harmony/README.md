@@ -18,6 +18,8 @@ npm --prefix harmony run check:web
 
 ## 在 DevEco Studio 编译
 
+先运行 `node harmony/scripts/check-toolchain.mjs --sdk=/你的SDK目录`（在仓库根目录）。命令只检查工具及目录是否存在，缺项时退出码为2；它不认证SDK版本、不安装工具、不生成HAP。`--report-only` 可用于收集缺项报告。SDK目录也可通过本机 `LANTERN_HARMONY_SDK` 设置，不提交本机路径或签名材料。
+
 1. 使用 [DevEco Studio](https://developer.huawei.com/consumer/en/deveco-studio/) 打开本目录，安装匹配的 HarmonyOS SDK，完成工程依赖同步。
 2. 当前工程模型和编译/目标/兼容 SDK 基线为 `5.0.0(12)`，这不是最新 SDK 的声明。如果当前 IDE 要求升级工程模型或编译 SDK，通过其正常升级流程处理；提高最低兼容版本前先核对目标手机。
 3. 在工程签名设置中配置开发签名，选择已连接的鸿蒙手机或模拟器，构建并运行 `entry` 模块。
