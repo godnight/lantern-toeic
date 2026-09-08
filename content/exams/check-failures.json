@@ -1,0 +1,35 @@
+[
+  {
+    "url": "https://www.test-toeic.cn/download.aspx?file=%2Fupload%2Ffile%2F201908268054.rar",
+    "status": "tool-content-inspection-failed",
+    "message": "Web tool: (400) Unsupported content-type: application/octet-stream. Endpoint references RAR. Does not prove the download is broken.",
+    "sourceLandingUrl": "https://www.test-toeic.cn/down.aspx",
+    "observedLinkTitle": "TOEIC LR - Sample Test",
+    "checkedAt": "2026-09-08",
+    "catalogueAction": "Keep verified landing page only; do not label archive as verified PDF."
+  },
+  {
+    "url": "https://www.test-toeic.cn/download.aspx?file=%2Fupload%2Ffile%2F20230725949.pdf",
+    "status": "tool-content-inspection-failed",
+    "message": "Web tool: (400) Unsupported content-type: application/octet-stream. PDF filename observed, content/title could not be inspected.",
+    "sourceLandingUrl": "https://www.test-toeic.cn/down.aspx",
+    "observedLinkTitle": "TOEIC_SW_Sample_Tests",
+    "checkedAt": "2026-09-08",
+    "catalogueAction": "Keep verified landing page only; prefer ETS direct PDF."
+  },
+  {
+    "url": "https://www.test-toeic.cn/upload/file/20230725949.pdf",
+    "status": "tool-open-failed",
+    "message": "Web tool: URL is not safe to open (non-retryable error). This is a tool result, not a determination about the website's safety.",
+    "checkedAt": "2026-09-08",
+    "catalogueAction": "Excluded; no alternative retrieval attempted."
+  },
+  {
+    "url": "https://www.test-toeic.cn/experience.aspx",
+    "status": "opened-but-excluded-legacy-format",
+    "observedTitle": "托业考试样题,托业样题体验-托业英语官网",
+    "message": "Observed Part6 three-question groups and legacy numbering. Useful historic samples, but not appropriate to label as current full-format practice.",
+    "checkedAt": "2026-09-08",
+    "catalogueAction": "Excluded from recommended main collection; source note retained."
+  }
+]
