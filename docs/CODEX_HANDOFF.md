@@ -1,90 +1,97 @@
 # Codex 开发交接
 
-**最新：v0.2.4鸿蒙访问与账号边界**。HarmonyOS成为唯一主动维护的原生平台；Android/iOS冻结在v0.2.3。Web/PWA补齐鸿蒙安装说明，当前使用同一ChatGPT账号同步；鸿蒙原生仍为本机记录并可安全打开在线版。手机号登录推荐华为AGC，但缺项目配置与公开认证后端，不收集手机号或展示伪验证码。Harmony环境仍缺OHPM、HDC和SDK，未生成HAP。
+更新：2026-09-13。代码仓库：[godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)。当前只维护Web/PWA和HarmonyOS；Android/iOS工程、专用工作流及Capacitor已删除，旧源码留在Git历史。
 
-**最新接续提示（v0.2.4源码）：** 鸿蒙入口、平台范围与账号边界回归已加入，35项行为测试通过。`mobile/src`仅作为鸿蒙共享网页的历史命名构建入口，不继续维护Android/iOS。Web/PWA继续使用托管身份，鸿蒙原生继续使用device分区；AGC配置、短信与令牌验证未到位前不要添加假的手机号输入或验证码。后续优先完成RFC 0002、鸿蒙真实工具链、稳定签名与备份，以及 #8–#10 的v0.3数据与学习循环。
+## 先选对分支
 
-更新：2026-09-13。代码主仓库为 [godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)，开发从最新 `main` 创建任务分支。本文件负责传递项目上下文；仓库接入不会自动复制此前聊天、活跃代理或外部账号连接。
+本次交接的v0.2.4工作在 [PR #18](https://github.com/godnight/lantern-toeic/pull/18) 的 `feat/v0.2.4-mobile-access` 分支。交接时PR仍为Draft，`main`仍是v0.2.3（`0245ebb9e31690a3f7f612225c14ac519a3cf6fe`）。新任务先查看PR状态：
 
-## 接入 Codex
+- PR未合并：从PR分支接续，不能只检出main后重做或遗漏现有工作。
+- PR已合并：拉取最新main，再创建任务分支。
+- 不强推、不重写历史，不把聊天中的旧SHA当作永远不变的分支头。
 
-在 Codex 的环境设置中选择本仓库，设置 Node.js 22（至少 22.13.0），初始化脚本填写：
+最新工作已按职责拆分为手机访问、鸿蒙平台收敛、删除旧平台、交接与认证前置修正；最终提交与CI结果以PR页面为准。Draft表示手机号认证及HAP尚未完成，不表示现有网页不能使用。
+
+## 接续初始化
+
+先读 `AGENTS.md`、本文件、`README.md`、`docs/PROJECT_STATUS.md`、`docs/TEAM.md`、`docs/rfcs/`。使用Node.js 22.13+，在仓库根目录运行：
 
 ```bash
 bash scripts/codex-setup.sh
 ```
 
-脚本安装根目录与 mobile 的锁定依赖，然后运行类型、内容及行为检查。它按自身位置定位仓库，没有固定工作区路径，也不需要生产凭据或模型 API Key。初始化阶段需要访问 npm 依赖源；无须为后续所有任务打开无限制网络。缓存环境如更换锁文件，可再次运行该命令。完整 Web 构建另需 GNU `timeout`，推荐 Linux 环境。
+该脚本只安装根目录锁定依赖，执行类型、内容、素材及行为检查。`mobile/`保留鸿蒙共享网页入口，没有单独依赖安装。首次安装需访问锁文件对应的npm源；普通Linux构建另需GNU `timeout`。不需要生产凭据即可运行源码检查。新Codex环境的仓库访问和安装网络权限须在其运行环境中配置，不随克隆自动继承。
 
-当前交接尚未在用户的 Codex cloud 环境实际启动；环境创建和仓库选择须在该界面完成。初始化脚本也被本仓库 Core CI 使用，可以查看 PR 的干净 Ubuntu 验证结果。
+## 当前状态
 
-若使用桌面端或 CLI，克隆同一仓库，在该目录打开 Codex，再运行相同命令即可。桌面本地环境配置由应用设置界面生成，仓库未预造未知格式的环境配置。
-
-官方接入依据（2026-09-08 核对）：[Codex cloud](https://learn.chatgpt.com/docs/cloud)、[云环境设置](https://learn.chatgpt.com/docs/environments/cloud-environment)、[桌面本地环境](https://learn.chatgpt.com/docs/environments/local-environment)。
-
-## 当前可接续状态
-
-用户目标：做面向中文用户的托业学习教练，提供网页与手机 App，可配置目标、时间和考试日期；优先鸿蒙手机，具体机型和系统版本待确认。视觉要求简洁、精致，使用深蓝遗迹、绯红丝境与明亮阅读主题。学习需要低门槛启动、真实反馈、错题复习和可积累的资料，不累计补课债。
-
-| 项目 | 已完成 | 下一步或边界 |
+| 项目 | 已完成 | 未完成或边界 |
 |---|---|---|
-| 版本 | [v0.2.1 源码预发布](https://github.com/godnight/lantern-toeic/releases/tag/v0.2.1)，PR #7 已合并 | 没有 HAP 附件；不要移动已有 tag |
-| 网页 | 今日任务、练习解析、口语录音、复习、周复盘和资料书库 | 当前私有线上站点仍是 2026-09-07 发布的 v0.2.0；后续源码未自动部署 |
-| 题库与美术 | 68 道原创听读题、5 类口语任务、4 张高清主题图 | 内容待真人审校；听力用系统朗读；没有正式分数标定或 AI 口语评分 |
-| 官方集合 | 22 条：14 个样题/索引、6 个备考条目、2 个实际考题选题视频集合；含 4 个 ETS PDF 直链 | 第三方材料均为外链；未核实免费完整历届实际试卷 PDF；无转载权限声明 |
-| 鸿蒙 | ArkTS/ArkUI/ArkWeb 工程，离线资源、前后台/权限/返回处理、录音保存保护 | 当前环境缺 DevEco/HarmonyOS SDK、hvigor、ohpm、hdc，未编译、签名或真机验证 HAP |
-| Android/iOS归档 | v0.2.3以前的源码与历史CI记录保留 | 2026-09-13起不再主动维护、构建或发布 |
-| 验证 | v0.2.1 的类型、内容、18 项实际源码行为回归、Web/mobile 构建通过 | 这些不等于鸿蒙 SDK 或真机验收 |
-| GitHub 管理 | Core/三端工作流、贡献规则、Issue/PR 模板、CODEOWNERS、Dependabot、发布流程 | main 保护尚未启用；依赖仍有告警，见 #4/#5 |
+| Web/PWA | 今日任务、练习解析、口语录音、复习、周复盘、资料书库及鸿蒙桌面指引 | 目前用ChatGPT托管身份，手机号认证未实现 |
+| 在线版本 | 私有Site第4版已于2026-09-13发布；本轮再次核对仍是custom/owner | 本次删除平台和交接改动只更新GitHub，未重新发布Site；网页行为没有改动 |
+| 题库与美术 | 68道原创听读题、5类口语、22条官方资料；3主题、8幅原创图、19个外部参考 | 待真人审校；听力用系统朗读；没有正式分数标定或AI口语评分 |
+| HarmonyOS | ArkTS/ArkUI/ArkWeb工程、联网声明、本地资源、录音/权限/前后台/返回桥 | 原生仍本机存储；未生成、签名或真机验证HAP |
+| Android/iOS | 当前源码树已删除工程、工作流、配置和依赖 | 历史报告和旧Git提交只用于追溯 |
+| 验证 | 删除平台后类型、35项行为回归、鸿蒙共享构建与23项资源核对通过 | CI最终结论见PR；Web构建/5项产物检查的上轮证据见v0.2.4报告；旧全量Lint未通过 |
+| 手机号认证 | RFC记录候选架构、真实前置、用户与Codex分工；readiness缺项会阻止通过 | 中国大陆短信需额外短信服务；AGC配置、令牌后端、费用与设备验收尚未到位 |
+| GitHub流程 | Core、Harmony共享资源、源码预发布工作流，Issue/PR模板、CODEOWNERS | main分支保护和依赖问题仍由既有Issue跟踪，不假定设置已启用 |
 
-上线地址：[私有微光托业](https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site)。源码 release、网页部署、可安装二进制与真机验收分别记录，不能互相代替。
+在线地址：[微光托业](https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site)。Site第4版对应独立源提交 `7170d31e67795951d1d35e64427a6d611c670a74`，与当时GitHub `386b40312d64ca42c983535b3ebb8c2fe202042b` 的内容树一致。本次GitHub后续改动不冒充已部署。
 
-## 阅读与工程地图
-
-先读根目录 `AGENTS.md`，再读 `README.md`、`docs/PROJECT_STATUS.md`、`docs/TEAM.md`、`docs/MAINTENANCE.md`、`docs/PRODUCT_ROADMAP.md`。状态文档中的历史记录用于追溯，最新节优先。
+## 工程地图与验证
 
 | 路径 | 职责 |
 |---|---|
-| `app/study-app.tsx`、`app/learn/` | Web/移动端共享学习界面 |
-| `lib/`、`app/api/`、`drizzle/` | 学习模型、本机存储/同步、服务端与 SQL 迁移 |
-| `content/`、`public/` | 原创题库、官方入口目录与主题素材 |
-| `mobile/` | 历史命名的共享Vite静态入口；Android/iOS子目录为归档源码 |
-| `harmony/`、`lib/native-host.ts` | 鸿蒙 Stage 工程及共享生命周期桥接 |
-| `tests/`、`.github/workflows/` | 实际行为回归、构建与发布门禁 |
+| `app/study-app.tsx`、`app/learn/` | Web/鸿蒙共享学习界面 |
+| `lib/`、`app/api/`、`drizzle/` | 学习模型、本机存储/同步、身份边界、API及SQL迁移 |
+| `content/`、`art/`、`public/` | 原创题库、外链目录、素材及来源 |
+| `mobile/src/`、`mobile/vite.config.ts` | 鸿蒙共享Vite静态入口，读取根目录依赖 |
+| `harmony/`、`lib/native-host.ts` | 鸿蒙Stage工程和生命周期桥 |
+| `tests/`、`.github/workflows/` | 行为回归、资源检查、构建与发布 |
 
-## 常用验证
-
-首次运行初始化脚本；修改后按风险选择检查，不必重复安装：
+按改动风险运行，不重复无关全量检查：
 
 ```bash
 npm run typecheck
 npm run validate:content
+npm run validate:art
 npm run test:study
 npm run build
-npm --prefix mobile run build
+node --test tests/*.test.mjs
 npm --prefix harmony run sync:web
 npm --prefix harmony run check:web
+npm --prefix harmony run check:auth
+node harmony/scripts/check-toolchain.mjs --report-only
 ```
 
-最后两项准备/校验鸿蒙共享资源，不编译 ArkTS 或生成 HAP。Android 另需 JDK 21/SDK 36，iOS 需 macOS/Xcode，鸿蒙需 DevEco/HarmonyOS 工具链及开发者签名。详见 `docs/NATIVE.md`、`harmony/README.md`。Core CI 还用 Python 3 对空 SQLite 执行迁移冒烟检查。
+`check:auth`仅报告前置，不会发送短信；`require:auth`缺配置时返回2。AGC配置路径为 `harmony/AppScope/resources/rawfile/agconnect-services.json`，不提交Git。HAP还需DevEco/SDK/OHPM/HDC、签名及设备；共享网页检查不能代替这些验收。配置和区域要求见 [RFC 0002](rfcs/0002-phone-auth-and-online-data.md)。
 
-## 迁移边界与协作
+## 哪些已在GitHub，哪些不会随Git迁移
 
-Git 包含源码、素材、内容目录、SQL 迁移与团队职责；Issues/PR 讨论和检查记录保留在 GitHub，需要相应访问权限另行查看。线上 D1 学习记录、R2 录音、设备本机数据、私有网站身份、签名材料不会随 Git 被搬走。需要迁移部署或个人数据时另行制定备份与恢复方案，不能把它们提交到源码仓库。
+| 信息 | 位置与接续方式 |
+|---|---|
+| 源码、原创素材、题库、外链目录、SQL迁移、测试、需求决策与当前待办 | 仓库内；阅读本文件、RFC、路线图和状态文档即可接续 |
+| Issues、PR讨论、提交与CI日志 | GitHub在线记录；并非普通git clone中的文件 |
+| 这次聊天 | 未上传完整聊天；与开发有关的决定、状态及阻碍已整理进文档 |
+| commit-work skill | 已安装到当前Codex个人环境；新环境不会自动继承，核心提交规范已记录于CONTRIBUTING.md |
+| 学习记录与录音 | 生产D1/R2或设备localStorage/IndexedDB；不在Git。现有JSON导出不包含录音文件，迁移前另做音频备份 |
+| 账号连接、托管身份、短信密钥、签名、AGC配置 | 外部平台或安全环境；不在Git，也不应公开提交 |
+| SDK、依赖、生成网页资源、HAP | 按锁文件和脚本在目标环境重建；当前尚无HAP |
 
-保留 `.openai/hosting.json`、现有 Sites 插件及绑定。Web 构建可在普通 Linux 执行，生产身份与 D1/R2 接入仍依赖对应运行平台，不能伪造身份头来连接真实数据。若任务环境具备 Sites，遵守其技能及 checkout 所有者规则；缺少部署能力时可继续源码和静态构建，明确报告发布阻碍。
+因此GitHub足够接管源码开发，但不等于线上数据、外部权限、个人skill或手机环境已经搬迁。代码仓库公开，不放真实手机号、验证码、私密录音或密钥。
 
-团队角色按 `docs/TEAM.md` 延续；每次任务按需创建代理，角色文档不代表进程永久常驻。互相独立的任务使用独立分支/工作树，集成负责人审查共享模型改动。已有 Sites 源仓库与 GitHub 的提交历史不同，文件树一致；新 Codex 任务以 GitHub main 为起点，勿强推来统一历史。
+保留 `.openai/hosting.json` 及D1/R2绑定。已有Sites与GitHub源仓库历史不同，不强推统一历史；部署必须通过有权限的Sites环境同步、构建和发布。没有部署权限的Codex仍可开发和提交PR，不能声称代码push就更新了线上服务。
 
-## 下一轮优先顺序
+## 提交规范与后续任务
 
-1. [#1 鸿蒙 HAP](https://github.com/godnight/lantern-toeic/issues/1)：核实 SDK 环境，完成真实编译、签名与设备录音/返回/前后台验收。缺工具链时保留阻碍证据，不把共享资源包写成可安装 App。
-2. [#2 稳定签名与备份](https://github.com/godnight/lantern-toeic/issues/2)、[#3 同步可靠性](https://github.com/godnight/lantern-toeic/issues/3)：保护已学记录，处理永久错误及录音队列的有界重试。
-3. [#8 数据模型](https://github.com/godnight/lantern-toeic/issues/8) → [#9 错因与存疑](https://github.com/godnight/lantern-toeic/issues/9)、[#10 可恢复每日计划](https://github.com/godnight/lantern-toeic/issues/10)：按 v0.3 路线推进；先设计迁移/导入导出/同步，不添加游离于数据体系的新 localStorage 状态。
-4. [#4 依赖安全](https://github.com/godnight/lantern-toeic/issues/4)、[#5 仓库保护](https://github.com/godnight/lantern-toeic/issues/5)、[#6 内容审校与官方集合](https://github.com/godnight/lantern-toeic/issues/6)：维护已有追踪，避免重复建单。
+遵守 `CONTRIBUTING.md`：查看工作树和仓库约定、最少逻辑提交、明确文件暂存、检查差异和密钥、执行相关验证、PR记录真实边界。个人skill来源与固定版本见该文件；没安装skill也必须遵守仓库规范。
 
-每个可验收变更使用任务分支 → PR → 检查 → 审查 → 合并。版本发布遵循 `docs/MAINTENANCE.md`；只改交接/初始化说明时不修改 `release-manifest.json`，不生成重复版本。后续报告写明提交、验证、线上/安装状态和剩余阻碍。
+后续优先级：
 
-## 第一条任务可直接粘贴
+1. [RFC 0002](rfcs/0002-phone-auth-and-online-data.md)：先确定号码地区、供应商和HTTPS认证后端；用户负责本人账号/认证/计费/设备授权，Codex负责SDK、短信接口、令牌验证、数据隔离和测试。既有Site权限是否改为公开入口须另确认，不能因手机号登录而直接公开学习数据。
+2. [#1 鸿蒙HAP](https://github.com/godnight/lantern-toeic/issues/1)、[#2 签名与备份](https://github.com/godnight/lantern-toeic/issues/2)：获取可用工具链并完成编译、签名、覆盖升级与真机验收。
+3. [#3 同步](https://github.com/godnight/lantern-toeic/issues/3)、[#8 数据模型](https://github.com/godnight/lantern-toeic/issues/8)、[#9 错因](https://github.com/godnight/lantern-toeic/issues/9)、[#10 每日计划](https://github.com/godnight/lantern-toeic/issues/10)：先核对已修复部分，避免重做。
+4. [#4 依赖](https://github.com/godnight/lantern-toeic/issues/4)、[#5 仓库保护](https://github.com/godnight/lantern-toeic/issues/5)、[#6 内容审校](https://github.com/godnight/lantern-toeic/issues/6)：沿用现有追踪，不重复建单。
 
-> 接续 godnight/lantern-toeic。先读取 AGENTS.md 和 docs/CODEX_HANDOFF.md，核对最新 main 与已有 Issues。优先推进 #1 鸿蒙 HAP 编译与验收，先检查真实工具链；若环境缺失，记录具体阻碍并继续 #3 数据同步可靠性。按已有产品定位和维护规范做成可审查的小步 PR，完成相关验证，更新状态；不要把源码/资源检查称为 HAP 编译或真机通过。
+## 可直接交给Codex的任务
+
+> 接续 godnight/lantern-toeic。先核对PR #18；未合并时从 feat/v0.2.4-mobile-access 分支接续，已合并时从最新main开始。读取AGENTS.md、docs/CODEX_HANDOFF.md及docs/rfcs/。只维护HarmonyOS和Web/PWA，Android/iOS已删除。先核对手机号区域、真实短信服务与SDK前置，再推进认证/联网和HAP；缺外部环境时明确缺项并继续可独立完成的代码工作。按CONTRIBUTING.md拆分提交、运行相关验证、更新PR和交接状态。

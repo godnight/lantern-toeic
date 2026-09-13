@@ -11,16 +11,16 @@
 ## 决策
 
 1. 活跃客户端为 Web/PWA 与 HarmonyOS；HarmonyOS 是唯一主动维护的原生目标。
-2. `mobile/android` 与 `mobile/ios` 冻结在 v0.2.3，保留为历史源码，不再自动构建、升级依赖、发布或纳入当前版本验收。
+2. 按项目所有者后续“把Android/iOS的删掉”的要求，删除 `mobile/android`、`mobile/ios` 与 `mobile/capacitor.config.ts`；旧源码仅在Git历史保留，不重写历史。
 3. `mobile/src`、`mobile/vite.config.ts` 和对应锁文件暂时保留。它们虽然沿用历史目录名，但仍是 `harmony/scripts/sync-web.mjs` 构建鸿蒙 ArkWeb 内置资源的输入；后续可在无行为变化的独立重构中改名。
-4. Android/iOS GitHub Actions 仅保留手动历史兼容入口，避免普通 PR/main 提交继续消耗构建资源。Dependabot 不再更新 `/mobile` 中的 Capacitor 依赖。
+4. 删除Android/iOS GitHub Actions、Capacitor依赖及`cap sync/open`脚本；共享网页只使用根目录依赖，初始化不再额外安装`mobile`依赖。
 5. Web/PWA仍用于无需HAP即可从鸿蒙手机访问的在线形态；源码发布、Site部署、HAP编译签名与真机验收继续分开记录。
 
 ## 影响
 
 - 新功能只需验证 Web/PWA、鸿蒙共享资源，以及有SDK时的HAP/真机路径。
 - 历史Android APK和iOS模拟器结果仍可追溯，但不代表当前版本支持。
-- 共享构建包版本随当前源码前进；Android/iOS原生构建号保持冻结，避免制造仍在维护的假象。
+- 共享构建包版本随当前源码前进；当前源码树不再包含Android/iOS构建号或平台工程。
 
 ## 恢复其他平台
 

@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('..',import.meta.url));
 const args=process.argv.slice(2);
 const apiOrigin=args.find(value=>value.startsWith('--api-origin='))?.slice(13)||process.env.LANTERN_AUTH_API_ORIGIN||'';
-const configPath=resolve(root,'entry/src/main/resources/rawfile/agconnect-services.json');
+const configPath=resolve(root,'AppScope/resources/rawfile/agconnect-services.json');
 const packagePath=resolve(root,'entry/oh-package.json5');
 const packageSource=readFileSync(packagePath,'utf8');
 const apiOriginValid=/^https:\/\/[a-z0-9.-]+(?::[0-9]+)?$/i.test(apiOrigin);

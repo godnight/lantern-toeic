@@ -184,18 +184,10 @@ test('mobile access guidance distinguishes synchronized PWA and local native mod
 });
 
 test('active native maintenance is Harmony-only and phone auth remains fail-closed', () => {
-  const androidWorkflow = fs.readFileSync(root + '/.github/workflows/android-debug.yml', 'utf8');
-  const iosWorkflow = fs.readFileSync(root + '/.github/workflows/ios-simulator.yml', 'utf8');
-  for (const workflow of [androidWorkflow, iosWorkflow]) {
-    assert.match(workflow, /Archived .* build|Archived Android debug APK/);
-    assert.match(workflow, /on:\n  workflow_dispatch:/);
-    assert.doesNotMatch(workflow, /\n  (?:push|pull_request):/);
+  for (const removed of ['mobile/android', 'mobile/ios', 'mobile/capacitor.config.ts', '.github/workflows/android-debug.yml', '.github/workflows/ios-simulator.yml']) {
+    assert.equal(fs.existsSync(root + '/' + removed), false, removed + ' must remain removed');
   }
-  const androidBuild = fs.readFileSync(root + '/mobile/android/app/build.gradle', 'utf8');
-  const iosBuild = fs.readFileSync(root + '/mobile/ios/App/App.xcodeproj/project.pbxproj', 'utf8');
-  assert.match(androidBuild, /versionCode 4\s+versionName "0\.2\.3"/);
-  assert.match(iosBuild, /CURRENT_PROJECT_VERSION = 4;/);
-  assert.match(iosBuild, /MARKETING_VERSION = 0\.2\.3;/);
+  assert.doesNotMatch(fs.readFileSync(root + '/mobile/package.json', 'utf8'), /capacitor|cap (?:sync|open)/);
   assert.match(fs.readFileSync(root + '/harmony/entry/src/main/module.json5', 'utf8'), /ohos\.permission\.INTERNET/);
   assert.match(fs.readFileSync(root + '/harmony/.gitignore', 'utf8'), /agconnect-services\.json/);
   assert.match(fs.readFileSync(root + '/docs/rfcs/0002-phone-auth-and-online-data.md', 'utf8'), /等待外部配置/);

@@ -9,3 +9,12 @@
 提交时说明问题、行为变化、验证证据、尚未验证的平台。主题需覆盖暗色、绯红和亮色，避免靠缩小字体容纳布局。新功能保持中文界面自然，英文练习不被翻译提前泄题。
 
 日常采用 Issue → 短分支 → PR审查 → Core validation → 合并 → 版本记录，详见 [维护手册](docs/MAINTENANCE.md)。内容改动执行 `npm run validate:content`；`npm run test:study` 执行实际学习数据与原生生命周期行为回归。
+
+## 提交与RFC约定
+
+- 提交前检查分支、工作树和仓库指令，保留无关修改；按最少的逻辑单元拆分提交，相关修复与验证一起提交。
+- 明确暂存文件或代码片段，检查暂存差异、格式、调试输出和凭据；运行相关验证，不能跳过钩子或把未运行的检查写成通过。
+- 沿用本仓库的`feat`、`fix`、`chore`、`docs`等提交前缀；PR说明问题、行为变化、验证和未完成边界。
+- 平台范围、身份认证、持久化与数据迁移等架构决策先写`docs/rfcs/NNNN-topic.md`：状态、背景、目标、方案/替代方案、影响、外部前置和验收。已接受决策变化时记录新用户指令或新RFC。
+
+当前Codex个人环境安装了[commit-work](https://github.com/jMerta/codex-skills/tree/929ed6ca7e088bb4aca1bc7ea577caddaf75aabf/commit-work)，固定来源提交为`929ed6ca7e088bb4aca1bc7ea577caddaf75aabf`。新环境不会随仓库克隆自动安装；如需使用，先阅读并按该环境支持的skill安装方式安装。上面的规范直接保存在仓库，因此不依赖个人skill才能接续开发。

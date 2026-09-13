@@ -22,7 +22,6 @@
 |---|---|---|
 | 网页 / 鸿蒙PWA | 私有网站身份、D1学习记录、R2录音、本机离线队列、恢复联网同步；内置鸿蒙添加桌面指引 | 首次打开需要网络；当前使用同一ChatGPT账号同步；手机号登录尚待真实认证服务；麦克风与系统朗读需设备支持 |
 | HarmonyOS原生工程 | ArkTS / ArkUI / ArkWeb封装共享React界面，原生资源包、本机记录、后台录音保护与联网权限 | 当前没有HAP；真实联网账号同步和手机号注册登录须完成AGC/短信认证配置、SDK编译和真机验收 |
-| Android / iOS归档 | 保留截至v0.2.3的Capacitor源码与历史构建记录 | 2026-09-13起不主动升级、构建或发布，不属于当前支持范围 |
 
 鸿蒙原生接入位于 `harmony/`，使用ArkTS / ArkUI / ArkWeb复用共享网页资源，目标HarmonyOS 5及更新版本；它是唯一主动维护的原生目标。当前仅工程与资源准备，HAP编译、签名、真实手机号认证及真机验收尚未完成，详见 [鸿蒙工程说明](harmony/README.md) 与 [平台范围RFC](docs/rfcs/0001-harmony-only-platform.md)。
 
@@ -37,7 +36,7 @@ bash scripts/codex-setup.sh
 npm run build
 ```
 
-初始化会安装根目录和mobile依赖并执行核心检查。Codex云端/桌面接续见 [Codex交接与环境设置](docs/CODEX_HANDOFF.md)。Web入口为 `app/page.tsx`，共享产品界面为 `app/study-app.tsx`。原生构建见 [原生工程说明](docs/NATIVE.md)。普通Linux可执行Web编译（需GNU `timeout`）；生产身份与D1/R2接入仍需要对应运行平台。
+初始化只安装根目录依赖并执行核心检查；`mobile/`保留鸿蒙共享网页入口，没有独立运行依赖。Android/iOS工程、专用工作流和Capacitor已删除，旧源码可从Git历史追溯。Codex接续分支和环境设置见 [Codex交接说明](docs/CODEX_HANDOFF.md)。Web入口为 `app/page.tsx`，共享产品界面为 `app/study-app.tsx`。原生构建见 [原生工程说明](docs/NATIVE.md)。普通Linux可执行Web编译（需GNU `timeout`）；生产身份与D1/R2接入仍需要对应运行平台。
 
 ## 内容与质量边界
 

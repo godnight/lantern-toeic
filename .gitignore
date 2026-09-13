@@ -42,17 +42,8 @@ next-env.d.ts
 /work/
 /mobile/node_modules/
 /mobile/dist/
-/mobile/android/.gradle/
-/mobile/android/build/
-/mobile/android/app/build/
-/mobile/android/local.properties
-/mobile/ios/App/build/
 
 *.tsbuildinfo
-
-/mobile/ios-build/
-/mobile/ios-build-result.xcresult/
-/mobile/ios-build.log
 
 # Generated diagnostic reports (may contain environment metadata)
 /reports/
