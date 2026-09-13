@@ -1,45 +1,8 @@
-# Unsigned simulator compilation only; does not produce an iPhone installation package.
-name: iOS simulator build
+# Archived compatibility workflow. iOS is not an actively maintained target.
+name: Archived iOS simulator build
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'app/**'
-      - 'art/**'
-      - 'components/**'
-      - 'hooks/**'
-      - 'lib/**'
-      - 'content/**'
-      - 'public/**'
-      - 'mobile/**'
-      - 'build/**'
-      - 'tests/**'
-      - 'scripts/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'tsconfig.json'
-      - '.openai/hosting.json'
-      - '.github/workflows/ios-simulator.yml'
-  pull_request:
-    paths:
-      - 'app/**'
-      - 'art/**'
-      - 'components/**'
-      - 'hooks/**'
-      - 'lib/**'
-      - 'content/**'
-      - 'public/**'
-      - 'mobile/**'
-      - 'build/**'
-      - 'tests/**'
-      - 'scripts/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'tsconfig.json'
-      - '.openai/hosting.json'
-      - '.github/workflows/ios-simulator.yml'
 
 permissions:
   contents: read

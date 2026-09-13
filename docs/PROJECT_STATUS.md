@@ -1,5 +1,11 @@
 # 项目状态
 
+## v0.2.4 鸿蒙访问与账号边界（2026-09-13）
+
+项目原生平台收敛为HarmonyOS；Android/iOS冻结在v0.2.3，自动PR/main构建与`/mobile`依赖更新停止，历史源码保留。Web/PWA安装说明聚焦HarmonyOS，沿用私有Site的ChatGPT身份及D1/R2同步；鸿蒙原生容器仍只保存在本机，并提供安全的在线同步版入口。决策见 `docs/rfcs/0001-harmony-only-platform.md`。
+
+手机号注册登录推荐华为AGC，但项目尚无AGC应用配置、短信模板/配额、令牌验证后端或公开登录入口授权，因此没有收集手机号，也没有把演示输入框当成真实验证码登录。源码行为回归增至35项，源码门禁、生产构建与浏览器验收边界见 `docs/testing/TEST_EXECUTION_v0.2.4.md`。Harmony检查仍缺OHPM、HDC及SDK目录，没有生成、签名或真机验证HAP；认证前置与验收见 `docs/rfcs/0002-phone-auth-and-online-data.md`。
+
 ## v0.2.3 美术改版（2026-09-08）
 
 v0.2.2已通过Core/Android/iOS/Harmony四类检查，PR #15合并，源码预览发布。新美术版共8幅原创图、2个可下载ZIP与独立官方参考目录，已重做网页和APP共享主题。浏览器检查与安装包状态见docs/testing/TEST_EXECUTION_v0.2.3.md。线上Site尚未更新；鸿蒙HAP未编译签名、未真机验收。

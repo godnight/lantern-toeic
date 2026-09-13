@@ -1,6 +1,6 @@
 {
-  "version": "0.2.3",
+  "version": "0.2.4",
   "prerelease": true,
-  "notes": "docs/releases/v0.2.3.md",
+  "notes": "docs/releases/v0.2.4.md",
   "nativeHapAvailable": false
 }
