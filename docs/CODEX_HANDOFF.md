@@ -4,13 +4,13 @@
 
 ## 先选对分支
 
-本次交接的v0.2.4工作在 [PR #18](https://github.com/godnight/lantern-toeic/pull/18) 的 `feat/v0.2.4-mobile-access` 分支。交接时PR仍为Draft，`main`仍是v0.2.3（`0245ebb9e31690a3f7f612225c14ac519a3cf6fe`）。新任务先查看PR状态：
+v0.2.4 的 [PR #18](https://github.com/godnight/lantern-toeic/pull/18) 已于 2026-09-13 合并，合并提交为 `9229c112737f3a69bfcd4eeab4dd7f3073e44bc7`。本轮 Issue #8 数据基础工作使用 `feat/study-data-v2`；接续时查看该分支的 PR 状态：
 
 - PR未合并：从PR分支接续，不能只检出main后重做或遗漏现有工作。
 - PR已合并：拉取最新main，再创建任务分支。
 - 不强推、不重写历史，不把聊天中的旧SHA当作永远不变的分支头。
 
-最新工作已按职责拆分为手机访问、鸿蒙平台收敛、删除旧平台、交接与认证前置修正；最终提交与CI结果以PR页面为准。Draft表示手机号认证及HAP尚未完成，不表示现有网页不能使用。
+PR #18 完成平台收敛和交接，手机号认证与 HAP 仍由独立任务跟进。最终提交与 CI 结果以 PR 页面为准，不再沿用“main 仍是 v0.2.3”的旧交接说明。
 
 ## 接续初始化
 
@@ -27,15 +27,16 @@ bash scripts/codex-setup.sh
 | 项目 | 已完成 | 未完成或边界 |
 |---|---|---|
 | Web/PWA | 今日任务、练习解析、口语录音、复习、周复盘、资料书库及鸿蒙桌面指引 | 目前用ChatGPT托管身份，手机号认证未实现 |
-| 在线版本 | 私有Site第4版已于2026-09-13发布；本轮再次核对仍是custom/owner | 本次删除平台和交接改动只更新GitHub，未重新发布Site；网页行为没有改动 |
+| 在线版本 | 原私有 Site 地址及 custom/owner 权限保持；发布前已核实第 4 版成功 | 本轮版本以 Sites 实际部署状态及 PR 交付记录为准，GitHub 合并不等于部署 |
 | 题库与美术 | 68道原创听读题、5类口语、22条官方资料；3主题、8幅原创图、19个外部参考 | 待真人审校；听力用系统朗读；没有正式分数标定或AI口语评分 |
 | HarmonyOS | ArkTS/ArkUI/ArkWeb工程、联网声明、本地资源、录音/权限/前后台/返回桥 | 原生仍本机存储；未生成、签名或真机验证HAP |
 | Android/iOS | 当前源码树已删除工程、工作流、配置和依赖 | 历史报告和旧Git提交只用于追溯 |
-| 验证 | 删除平台后类型、35项行为回归、鸿蒙共享构建与23项资源核对通过 | CI最终结论见PR；Web构建/5项产物检查的上轮证据见v0.2.4报告；旧全量Lint未通过 |
+| 数据基础 | schemaVersion=2、标记/任务的离线日志与服务端同步、幂等 JSON 备份恢复、追加式 SQL 迁移 | 错因/任务编辑和备份恢复界面仍未提供；录音备份无音频文件 |
+| 验证 | 数据基础本地类型、43 项行为回归、Web 构建、5 项产物检查、鸿蒙共享构建及 23 项资源核对通过 | CI 最终结论见 PR；旧全量 Lint 未通过；手机设备需单独验收 |
 | 手机号认证 | RFC记录候选架构、真实前置、用户与Codex分工；readiness缺项会阻止通过 | 中国大陆短信需额外短信服务；AGC配置、令牌后端、费用与设备验收尚未到位 |
 | GitHub流程 | Core、Harmony共享资源、源码预发布工作流，Issue/PR模板、CODEOWNERS | main分支保护和依赖问题仍由既有Issue跟踪，不假定设置已启用 |
 
-在线地址：[微光托业](https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site)。Site第4版对应独立源提交 `7170d31e67795951d1d35e64427a6d611c670a74`，与当时GitHub `386b40312d64ca42c983535b3ebb8c2fe202042b` 的内容树一致。本次GitHub后续改动不冒充已部署。
+在线地址：[微光托业](https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site)。手机使用系统浏览器并登录有权限的同一 ChatGPT 账号。Site 第 4 版的历史源提交为 `7170d31e67795951d1d35e64427a6d611c670a74`；本轮先同步 PR #18，再实现数据基础。Sites 与 GitHub 保留各自提交历史，发布记录单独核对。
 
 ## 工程地图与验证
 
@@ -65,6 +66,8 @@ node harmony/scripts/check-toolchain.mjs --report-only
 
 `check:auth`仅报告前置，不会发送短信；`require:auth`缺配置时返回2。AGC配置路径为 `harmony/AppScope/resources/rawfile/agconnect-services.json`，不提交Git。HAP还需DevEco/SDK/OHPM/HDC、签名及设备；共享网页检查不能代替这些验收。配置和区域要求见 [RFC 0002](rfcs/0002-phone-auth-and-online-data.md)。
 
+Windows 本轮用 Node 24.13.1、`npm ci` 安装锁定依赖，通过 Git Bash 执行现有 `scripts/build-verified.sh` 完成 Web 构建；无需改写项目构建脚本。当前机器未找到 DevEco、SDK、OHPM、HDC 和 Java，没有生成 HAP。
+
 ## 哪些已在GitHub，哪些不会随Git迁移
 
 | 信息 | 位置与接续方式 |
@@ -89,9 +92,9 @@ node harmony/scripts/check-toolchain.mjs --report-only
 
 1. [RFC 0002](rfcs/0002-phone-auth-and-online-data.md)：先确定号码地区、供应商和HTTPS认证后端；用户负责本人账号/认证/计费/设备授权，Codex负责SDK、短信接口、令牌验证、数据隔离和测试。既有Site权限是否改为公开入口须另确认，不能因手机号登录而直接公开学习数据。
 2. [#1 鸿蒙HAP](https://github.com/godnight/lantern-toeic/issues/1)、[#2 签名与备份](https://github.com/godnight/lantern-toeic/issues/2)：获取可用工具链并完成编译、签名、覆盖升级与真机验收。
-3. [#3 同步](https://github.com/godnight/lantern-toeic/issues/3)、[#8 数据模型](https://github.com/godnight/lantern-toeic/issues/8)、[#9 错因](https://github.com/godnight/lantern-toeic/issues/9)、[#10 每日计划](https://github.com/godnight/lantern-toeic/issues/10)：先核对已修复部分，避免重做。
+3. [#8 数据模型](https://github.com/godnight/lantern-toeic/issues/8) 本轮实现，先读 [RFC 0003](rfcs/0003-study-data-v2.md) 及关联 PR；继续 [#9 错因界面](https://github.com/godnight/lantern-toeic/issues/9)、[#10 每日计划](https://github.com/godnight/lantern-toeic/issues/10)。[#3 同步](https://github.com/godnight/lantern-toeic/issues/3) 已关闭，真实跨设备同步、下载及 PWA 验收继续跟踪 [#17](https://github.com/godnight/lantern-toeic/issues/17)。
 4. [#4 依赖](https://github.com/godnight/lantern-toeic/issues/4)、[#5 仓库保护](https://github.com/godnight/lantern-toeic/issues/5)、[#6 内容审校](https://github.com/godnight/lantern-toeic/issues/6)：沿用现有追踪，不重复建单。
 
 ## 可直接交给Codex的任务
 
-> 接续 godnight/lantern-toeic。先核对PR #18；未合并时从 feat/v0.2.4-mobile-access 分支接续，已合并时从最新main开始。读取AGENTS.md、docs/CODEX_HANDOFF.md及docs/rfcs/。只维护HarmonyOS和Web/PWA，Android/iOS已删除。先核对手机号区域、真实短信服务与SDK前置，再推进认证/联网和HAP；缺外部环境时明确缺项并继续可独立完成的代码工作。按CONTRIBUTING.md拆分提交、运行相关验证、更新PR和交接状态。
+> 接续 godnight/lantern-toeic。PR #18 已合并；先核对 feat/study-data-v2 的 PR，未合并从该分支接续，已合并从最新 main 开始。读取 AGENTS.md、docs/CODEX_HANDOFF.md 及 docs/rfcs/。只维护 HarmonyOS 和 Web/PWA。数据基础已实现，继续错因/计划界面时复用现有操作日志、版本合并及 API，不重做迁移。手机号认证与 HAP 仍需真实服务和工具链。按 CONTRIBUTING.md 提交、验证和更新交接。

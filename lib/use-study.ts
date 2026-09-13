@@ -1,8 +1,9 @@
 'use client';
 import {useState,useEffect,useRef,useCallback} from 'react';
 import {toast} from 'sonner';
-import {createId,EMPTY_DATA,mergeData,uniqueById,type StudyData,type Profile,type Attempt,type Checkin,type Recording} from './study-model';
-type Op={id:string;owner:string|null;type:'profile'|'attempt'|'checkin';data:Profile|Attempt|Checkin};
+import {createId,EMPTY_DATA,migrateStudyData,mergeData,mergeMutableRecords,validQuestionMark,validResourceTask,compareMutableRecords,uniqueById,type StudyData,type Profile,type Attempt,type Checkin,type Recording,type QuestionMark,type ResourceTask} from './study-model';
+import {restoreStudyBackup} from './study-backup';
+type Op={id:string;owner:string|null;type:'profile'|'attempt'|'checkin'|'questionMark'|'resourceTask';data:Profile|Attempt|Checkin|QuestionMark|ResourceTask};
 function openAudioDB():Promise<IDBDatabase>{return new Promise((resolve,reject)=>{const r=indexedDB.open('lantern-audio',1);r.onupgradeneeded=()=>r.result.createObjectStore('audio');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 export async function putAudio(key:string,blob:Blob){const db=await openAudioDB();return new Promise<void>((resolve,reject)=>{const tx=db.transaction('audio','readwrite');tx.objectStore('audio').put(blob,key);tx.oncomplete=()=>{db.close();resolve();};tx.onerror=()=>{db.close();reject(tx.error);};});}
 export async function getAudio(key:string):Promise<Blob|undefined>{const db=await openAudioDB();return new Promise((resolve,reject)=>{const tx=db.transaction('audio');const r=tx.objectStore('audio').get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);tx.oncomplete=()=>db.close();});}
@@ -11,9 +12,12 @@ export async function getAudio(key:string):Promise<Blob|undefined>{const db=awai
 function journal(key:string):Op[]{const result:Op[]=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k?.startsWith(key+':op:')){try{result.push(JSON.parse(localStorage.getItem(k)||''));}catch{}}}return result;}
 function readSnapshot(key:string):StudyData{
  const parse=(name:string)=>{try{return JSON.parse(localStorage.getItem(name)||'null');}catch{return null;}};
- const raw=parse(key)?.data;const d:StudyData=structuredClone(EMPTY_DATA);
- if(raw){if(raw.profile&&typeof raw.profile.name==='string')d.profile={...d.profile,...raw.profile};for(const name of ['attempts','checkins','recordings'] as const)if(Array.isArray(raw[name]))(d[name] as Array<{id:string}>)=raw[name].filter((x:{id?:unknown})=>x&&typeof x.id==='string');}
+ const requiredSchema=parse(key+':required-schema');if(requiredSchema)migrateStudyData(requiredSchema);
+ const raw=parse(key)?.data;const d=migrateStudyData(raw);
  for(const op of journal(key)){
+  // Acknowledged operations also repair a summary that lost a cross-tab race.
+  if(op?.type==='questionMark'&&validQuestionMark(op.data)){d.questionMarks=mergeMutableRecords([...d.questionMarks,op.data]);continue;}
+  if(op?.type==='resourceTask'&&validResourceTask(op.data)){d.resourceTasks=mergeMutableRecords([...d.resourceTasks,op.data]);continue;}
   if(!op?.data||typeof (op.data as Attempt).id!=='string')continue;
   if(op.type==='attempt'&&!d.attempts.some(a=>a.id===(op.data as Attempt).id))d.attempts=uniqueById([...d.attempts,op.data as Attempt]);
   if(op.type==='checkin'&&!d.checkins.some(c=>c.id===(op.data as Checkin).id))d.checkins=uniqueById([...d.checkins,op.data as Checkin]);
@@ -25,11 +29,12 @@ function readSnapshot(key:string):StudyData{
 export type SyncIssue={id:string;kind:'op'|'recording'|'session';status:'waiting'|'blocked'|'auth'|'missing';attempts:number;nextRetryAt:number;reason:string};
 function syncIssues(key:string):SyncIssue[]{const result:SyncIssue[]=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k?.startsWith(key+':sync:')){try{const item=JSON.parse(localStorage.getItem(k)||'');const complete=item.kind==='op'?localStorage.getItem(key+':ack:'+item.id):item.kind==='recording'?JSON.parse(localStorage.getItem(key+':recording:'+item.id)||'null')?.uploaded:false;if(!complete)result.push(item);}catch{}}}return result;}
 export function useStudy(owner:string|null){
- const key='lantern-v1-'+(owner||'device');const generation=useRef(0);const activeKey=useRef(key);const syncing=useRef(false);const dirty=useRef(false);const retryTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
+ const key='lantern-v1-'+(owner||'device');const generation=useRef(0);const activeKey=useRef(key);const syncing=useRef(false);const dirty=useRef(false);const readOnly=useRef(false);const retryTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const [data,setData]=useState<StudyData>(EMPTY_DATA);const current=useRef(data);const [ready,setReady]=useState(false);const [sync,setSync]=useState<'loading'|'synced'|'local'|'pending'|'blocked'>('loading');const [issues,setIssues]=useState<SyncIssue[]>([]);
- const persist=useCallback((d:StudyData)=>{if(activeKey.current!==key)return;const stored=readSnapshot(key);const next=mergeData(stored,d);current.current=next;setData(next);try{localStorage.setItem(key,JSON.stringify({data:next}));}catch{toast.error('本机存储空间不足，请导出学习记录');}},[key]);
+ const persist=useCallback((d:StudyData)=>{if(activeKey.current!==key||readOnly.current)return;const stored=readSnapshot(key);const next=mergeData(stored,d);current.current=next;setData(next);try{localStorage.setItem(key,JSON.stringify({data:next}));}catch{toast.error('本机存储空间不足，请导出学习记录');}},[key]);
  const syncNow=useCallback(async function runSync(){
-  if(activeKey.current!==key)return;if(syncing.current){dirty.current=true;return;}
+  if(activeKey.current!==key||readOnly.current)return;if(syncing.current){dirty.current=true;return;}
+  try{readSnapshot(key);}catch{readOnly.current=true;setSync('blocked');toast.error('学习记录版本较新，请更新应用后继续');return;}
   const gen=generation.current;const valid=()=>gen===generation.current&&activeKey.current===key;
   if(retryTimer.current){clearTimeout(retryTimer.current);retryTimer.current=null;}
   if(!owner){setSync('local');return;}
@@ -58,12 +63,18 @@ export function useStudy(owner:string|null){
   try{
    for(let round=0;round<3;round++){
     dirty.current=false;
+    const waitingForCheckin:Op[]=[];
     for(const op of pending()){
+     // A task may link to a checkin restored or created in the same offline batch.
+     // Wait for its acknowledgement instead of turning a temporary upload failure
+     // into a permanently rejected dependent task.
+     if(op.type==='resourceTask'&&pending().some(parent=>parent.type==='checkin'&&(parent.data as Checkin).id===(op.data as ResourceTask).checkinId)){waitingForCheckin.push(op);continue;}
      if(!valid())return;if(!eligible('op',op.id))continue;if(budget--<=0){dirty.current=true;break;}
      let r:Response;try{r=(await request('/api/study',{method:'POST',headers:{'Content-Type':'application/json','X-Lantern-Owner':owner},body:JSON.stringify(op.type==='profile'?{...op,data:readSnapshot(key).profile}:op)})).response;}catch{if(!valid())return;failure('op',op.id,0);continue;}
      if(!valid())return;if(!r.ok){if([401,403,409].includes(r.status)){failure('session','account',r.status);stopped=true;break;}failure('op',op.id,r.status,undefined,r.headers?.get('Retry-After'));continue;}
      localStorage.setItem(key+':ack:'+op.id,'1');clear('op',op.id);
     }
+    if(waitingForCheckin.some(op=>!pending().some(parent=>parent.type==='checkin'&&(parent.data as Checkin).id===(op.data as ResourceTask).checkinId)))dirty.current=true;
     if(stopped||!valid())break;
     persist(mergeData(current.current,readSnapshot(key)));
     for(const rec of current.current.recordings.filter(x=>!x.uploaded)){
@@ -81,6 +92,11 @@ export function useStudy(owner:string|null){
     if(!r.ok){failure('session','account',r.status,undefined,r.headers?.get('Retry-After'));stopped=true;break;}
     const remote=payload as StudyData & {owner:string;hasProfile:boolean};if(!valid())return;
     if(remote.owner!==owner){failure('session','account',409);stopped=true;break;}
+    try{migrateStudyData(remote);}catch{
+     readOnly.current=true;setSync('blocked');setIssues([{id:'schema',kind:'session',status:'blocked',attempts:0,nextRetryAt:0,reason:'云端学习记录版本较新，请更新应用后继续'}]);
+     try{localStorage.setItem(key+':required-schema',JSON.stringify({schemaVersion:remote.schemaVersion}));}catch{toast.error('无法保存版本保护状态，请先更新应用再重新打开');}
+     toast.error('云端学习记录版本较新，请更新应用；本机记录已保留');return;
+    }
     clear('session','account');
     // A remote acknowledgement repairs stale per-recording metadata as well as the snapshot.
     for(const rec of remote.recordings.filter(r=>r.uploaded)){localStorage.setItem(key+':recording:'+rec.id,JSON.stringify(rec));clear('recording',rec.id);}
@@ -91,7 +107,7 @@ export function useStudy(owner:string|null){
    }
   }catch{if(valid()){try{failure('session','account',0);}catch{toast.error('本机存储不足，同步未完成，请导出学习记录');}}}
   finally{
-   if(valid()){
+   if(valid()&&!readOnly.current){
     syncing.current=false;updateStatus();
     const list=syncIssues(key);const session=state('session','account');
     const next=session?(session.status==='waiting'?session.nextRetryAt:Infinity):Math.min(...list.filter(x=>x.status==='waiting').map(x=>x.nextRetryAt),dirty.current?Date.now()+100:Infinity);
@@ -100,17 +116,58 @@ export function useStudy(owner:string|null){
   }
  },[owner,key,persist]);
  useEffect(()=>{
-  generation.current++;activeKey.current=key;syncing.current=false;dirty.current=false;setReady(false);const saved=readSnapshot(key);current.current=saved;setData(saved);setIssues(syncIssues(key));setReady(true);void syncNow();
-  const online=()=>void syncNow();const changed=(e:StorageEvent)=>{if(e.key?.startsWith(key)){const latest=readSnapshot(key);current.current=latest;setData(latest);setIssues(syncIssues(key));if(e.key.startsWith(key+':op:')||e.key.startsWith(key+':recording:'))void syncNow();}};
+  generation.current++;activeKey.current=key;syncing.current=false;dirty.current=false;readOnly.current=false;setReady(false);
+  current.current=structuredClone(EMPTY_DATA);setData(current.current);
+  const load=()=>{try{const saved=readSnapshot(key);current.current=saved;setData(saved);setIssues(syncIssues(key));return true;}catch{readOnly.current=true;generation.current++;setSync('blocked');toast.error('学习记录版本不受支持，请更新应用；原始记录已保留');return false;}};
+  const loaded=load();setReady(true);if(loaded)void syncNow();
+  const online=()=>void syncNow();const changed=(e:StorageEvent)=>{if(e.key?.startsWith(key)){if(!load())return;if(e.key.startsWith(key+':op:')||e.key.startsWith(key+':recording:'))void syncNow();}};
   window.addEventListener('online',online);window.addEventListener('focus',online);window.addEventListener('storage',changed);
   return()=>{generation.current++;dirty.current=false;if(retryTimer.current)clearTimeout(retryTimer.current);retryTimer.current=null;window.removeEventListener('online',online);window.removeEventListener('focus',online);window.removeEventListener('storage',changed);};
  },[key,syncNow,persist]);
  const retryIssue=(issue:SyncIssue)=>{if(activeKey.current!==key)return;try{localStorage.removeItem(key+':sync:'+issue.kind+':'+issue.id);setIssues(syncIssues(key));void syncNow();}catch{toast.error('本机存储不可用，请保留记录后重试');}};
- const enqueue=(type:Op['type'],value:Op['data'],d:StudyData):boolean=>{if(activeKey.current!==key)return false;const op:Op={id:createId(),owner,type,data:value};try{localStorage.setItem(key+':op:'+op.id,JSON.stringify(op));if(type==='profile')localStorage.setItem(key+':profile',JSON.stringify(value));}catch{toast.error('本机存储不足，记录尚未保存');return false;}persist(d);setSync('pending');void syncNow();return true;};
+ const enqueue=(type:Op['type'],value:Op['data'],d:StudyData):boolean=>{if(activeKey.current!==key||readOnly.current)return false;const op:Op={id:createId(),owner,type,data:value};try{readSnapshot(key);localStorage.setItem(key+':op:'+op.id,JSON.stringify(op));if(type==='profile')localStorage.setItem(key+':profile',JSON.stringify(value));}catch{toast.error('本机存储不可用或记录版本不兼容，记录尚未保存');return false;}persist(d);setSync('pending');void syncNow();return true;};
  const saveProfile=(p:Profile)=>enqueue('profile',p,{...current.current,profile:p});
  const addAttempt=(a:Attempt)=>enqueue('attempt',a,{...current.current,attempts:uniqueById([...current.current.attempts,a])});
  const addCheckin=(c:Checkin)=>enqueue('checkin',c,{...current.current,checkins:uniqueById([...current.current.checkins,c])});
- const addRecording=async(r:Recording,blob:Blob)=>{const gen=generation.current;await putAudio(key+':'+r.id,blob);localStorage.setItem(key+':recording:'+r.id,JSON.stringify(r));if(gen!==generation.current||activeKey.current!==key)return;persist({...current.current,recordings:[...current.current.recordings,r]});setSync('pending');void syncNow();};
+ const editableSnapshot=()=>{try{return readSnapshot(key);}catch{readOnly.current=true;setSync('blocked');toast.error('学习记录版本不兼容或本机存储不可用，请更新应用后重试');return null;}};
+ const saveQuestionMark=(value:Omit<QuestionMark,'revision'|'mutationId'|'updatedAt'>):boolean=>{
+  if(activeKey.current!==key||readOnly.current)return false;
+  const latest=editableSnapshot();if(!latest)return false;const prior=latest.questionMarks.find(mark=>mark.qid===value.qid);
+  const mark:QuestionMark={...value,revision:(prior?.revision||0)+1,mutationId:createId(),updatedAt:new Date().toISOString()};
+  if(!validQuestionMark(mark))return false;
+  return enqueue('questionMark',mark,{...latest,questionMarks:mergeMutableRecords([...latest.questionMarks,mark])});
+ };
+ const saveResourceTask=(value:Omit<ResourceTask,'revision'|'mutationId'|'updatedAt'>):boolean=>{
+  if(activeKey.current!==key||readOnly.current)return false;
+  const latest=editableSnapshot();if(!latest)return false;const prior=latest.resourceTasks.find(task=>task.id===value.id);
+  const task:ResourceTask={...value,revision:(prior?.revision||0)+1,mutationId:createId(),updatedAt:new Date().toISOString()};
+  if(!validResourceTask(task))return false;
+  return enqueue('resourceTask',task,{...latest,resourceTasks:mergeMutableRecords([...latest.resourceTasks,task])});
+ };
+ const restoreBackup=(value:unknown,restoreProfile=false):boolean=>{
+  if(activeKey.current!==key||readOnly.current)return false;
+  try{
+   const before=readSnapshot(key);const restored=restoreStudyBackup(before,value,restoreProfile);
+   const pendingRestore:Array<[Op['type'],Op['data']]>=[];
+   for(const item of restored.attempts)if(!before.attempts.some(old=>old.id===item.id))pendingRestore.push(['attempt',item]);
+   for(const item of restored.checkins)if(!before.checkins.some(old=>old.id===item.id))pendingRestore.push(['checkin',item]);
+   for(const item of restored.questionMarks){const old=before.questionMarks.find(old=>old.qid===item.qid);if(!old||compareMutableRecords(item,old)>0)pendingRestore.push(['questionMark',item]);}
+   for(const item of restored.resourceTasks){const old=before.resourceTasks.find(old=>old.id===item.id);if(!old||compareMutableRecords(item,old)>0)pendingRestore.push(['resourceTask',item]);}
+   if(restoreProfile)pendingRestore.push(['profile',restored.profile]);
+   // Journal each record before replacing the summary; partial restores can retry.
+   for(const [type,item] of pendingRestore){const op:Op={id:createId(),owner,type,data:item};localStorage.setItem(key+':op:'+op.id,JSON.stringify(op));}
+   for(const item of restored.recordings)if(!before.recordings.some(old=>old.id===item.id))localStorage.setItem(key+':recording:'+item.id,JSON.stringify(item));
+   if(restoreProfile)localStorage.setItem(key+':profile',JSON.stringify(restored.profile));
+   persist(restored);setSync('pending');void syncNow();return true;
+  }catch{toast.error('恢复未完成，请保留备份后重试；已保存记录不会丢失');return false;}
+ };
+ const addRecording=async(r:Recording,blob:Blob)=>{
+  if(activeKey.current!==key||readOnly.current||!editableSnapshot())throw Error('当前学习记录不可写入');
+  const gen=generation.current;await putAudio(key+':'+r.id,blob);
+  if(gen!==generation.current||activeKey.current!==key||readOnly.current)throw Error('账号或记录版本已变化，请保留录音后重试');
+  const latest=editableSnapshot();if(!latest)throw Error('当前学习记录不可写入');
+  localStorage.setItem(key+':recording:'+r.id,JSON.stringify(r));persist({...latest,recordings:uniqueById([...latest.recordings,r])});setSync('pending');void syncNow();
+ };
  const recordingUrl=async(r:Recording)=>{const blob=await getAudio(key+':'+r.id);if(blob)return URL.createObjectURL(blob);if(owner&&r.uploaded)return '/api/recordings?id='+encodeURIComponent(r.id);throw Error('找不到这段本机录音，也没有已确认的云端副本');};
- return {data,ready,sync,issues,syncNow,retryIssue,saveProfile,addAttempt,addCheckin,addRecording,recordingUrl};
+ return {data,ready,sync,issues,syncNow,retryIssue,saveProfile,addAttempt,addCheckin,saveQuestionMark,saveResourceTask,restoreBackup,addRecording,recordingUrl};
 }

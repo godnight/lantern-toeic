@@ -19,9 +19,82 @@ function load(file, imports = {}, globals = {}) {
   return exports;
 }
 const model = load('lib/study-model.ts');
+const backup = load('lib/study-backup.ts', {'./study-model':model,zod:require('zod')});
 const base = () => JSON.parse(JSON.stringify(model.EMPTY_DATA));
 const attempt = (id, createdAt, correct = true) => ({ id, qid: 'test-q', choice: correct ? 0 : 1, correct, createdAt, seconds: 4, mode: 'review' });
 const flush = () => new Promise(resolve => setImmediate(resolve));
+
+test('mutable offline journals preserve cancellation after acknowledgement, stale snapshots and old server responses',async()=>{
+ const storage=new Map();const first=hookHarness(storage),second=hookHarness(storage);
+ first.render();second.render();await flush();
+ const a=first.render(),b=second.render();
+ assert.equal(a.saveQuestionMark({qid:'q1',flagged:true,reason:'listening',note:''}),true);
+ assert.equal(b.saveQuestionMark({qid:'q2',flagged:true,reason:null,note:'guess'}),true);
+ assert.equal(b.saveQuestionMark({qid:'q1',flagged:false,reason:'listening',note:''}),true);
+ const taskId=randomUUID();const task={id:taskId,resourceId:'resource-1',plannedDate:'2026-01-01',status:'planned',minutes:5,checkinId:null};
+ a.saveResourceTask(task);b.saveResourceTask({...task,status:'cancelled'});
+ const operations=[...storage.entries()].filter(([key])=>key.includes(':op:')).map(([,value])=>JSON.parse(value));
+ for(const op of operations)storage.set('lantern-v1-alice:ack:'+op.id,'1');
+ storage.set('lantern-v1-alice',JSON.stringify({data:{...base(),questionMarks:[],resourceTasks:[]}}));
+ const reloaded=hookHarness(storage,{remote:{questionMarks:undefined,resourceTasks:undefined}});reloaded.render();await flush();
+ reloaded.setOnline(true);await reloaded.render().syncNow();
+ const data=reloaded.render().data;
+ assert.equal(data.questionMarks.length,2);assert.equal(data.questionMarks.find(item=>item.qid==='q1').flagged,false);
+ assert.equal(data.resourceTasks[0].status,'cancelled');
+ assert.equal(reloaded.render().saveQuestionMark({qid:'q1',flagged:true,reason:null,note:''}),true);
+ assert.equal(reloaded.render().data.questionMarks.find(item=>item.qid==='q1').revision,3);
+ const events=await first.pump(100);assert.equal(events.pending,0);
+});
+
+test('future local and remote schemas preserve original bytes and reject writes without leaking a previous account',async()=>{
+ const key='lantern-v1-bob';const raw=JSON.stringify({data:{...base(),schemaVersion:3}});
+ const storage=new Map([[key,raw]]);const h=hookHarness(storage);h.render('alice');await flush();
+ h.render('alice').addAttempt(attempt('alice-only','2026-01-01T00:00:00.000Z'));
+ h.render('bob');await flush();const bob=h.render('bob');
+ assert.equal(bob.data.attempts.length,0);assert.equal(bob.addCheckin({id:'blocked'}),false);assert.equal(storage.get(key),raw);
+ const remoteStorage=new Map();const audio=new Map();const other=hookHarness(remoteStorage,{audio});other.render();await flush();
+ const future=hookHarness(remoteStorage,{remote:{schemaVersion:3,recordings:[{id:'remote',uploaded:true}]}});
+ future.render();await flush();future.setOnline(true);await future.render().syncNow();
+ assert.equal(future.render().saveQuestionMark({qid:'q',flagged:true,reason:null,note:''}),false);
+ assert.equal(future.render().sync,'blocked');assert.equal(remoteStorage.has('lantern-v1-alice:recording:remote'),false);
+ const count=future.requests.length;await future.render().syncNow();assert.equal(future.requests.length,count);
+ await assert.rejects(other.render().addRecording({id:'blocked-audio'},new Blob(['audio'])),/不可写入/);
+ assert.equal(audio.size,0);assert.equal(remoteStorage.has('lantern-v1-alice:recording:blocked-audio'),false,'Recording must check the durable guard before audio and metadata writes');
+ assert.equal(other.render().saveQuestionMark({qid:'q',flagged:true,reason:null,note:''}),false,'An open tab must check the durable guard before editing');
+ const reloaded=hookHarness(remoteStorage);reloaded.setOnline(true);reloaded.render();await flush();
+ assert.equal(reloaded.render().addAttempt(attempt('blocked','2026-01-01T00:00:00.000Z')),false);assert.equal(reloaded.requests.length,0,'Reload must not POST old-format data before GET');
+ const midStorage=new Map();const midAudio=new Map();const originalSet=midAudio.set.bind(midAudio);
+ midAudio.set=(key,value)=>{midStorage.set('lantern-v1-alice:required-schema',JSON.stringify({schemaVersion:3}));return originalSet(key,value);};
+ const mid=hookHarness(midStorage,{audio:midAudio});mid.render();await flush();
+ await assert.rejects(mid.render().addRecording({id:'mid-audio'},new Blob(['audio'])),/不可写入/);
+ assert.equal(midStorage.has('lantern-v1-alice:recording:mid-audio'),false,'A version change during IndexedDB storage must stop metadata and snapshot writes');
+});
+
+test('a restored task waits for its checkin retry even when the task journal is enumerated first',async()=>{
+ let checkinAttempts=0;const h=hookHarness(new Map(),{handle:async(url,init,request)=>{
+  if(request.body?.type==='checkin'){checkinAttempts++;return {ok:checkinAttempts>1,status:checkinAttempts>1?200:503};}
+ }});
+ h.render();await flush();const api=h.render();const checkinId=randomUUID();
+ api.saveResourceTask({id:randomUUID(),resourceId:'resource-1',plannedDate:'2026-01-01',status:'completed',minutes:5,checkinId});
+ api.addCheckin({id:checkinId,date:'2026-01-01',minutes:5,load:'轻',note:'',createdAt:'2026-01-01T00:00:00.000Z'});
+ h.setOnline(true);await api.syncNow();assert.equal(h.requests.filter(item=>item.body?.type==='resourceTask').length,0);
+ const issue=h.render().issues[0];h.storage.set('lantern-v1-alice:sync:op:'+issue.id,JSON.stringify({...issue,nextRetryAt:0}));
+ await h.render().syncNow();
+ assert.equal(h.requests.filter(item=>item.body?.type==='resourceTask').length,1);assert.equal(h.render().issues.length,0);
+});
+
+test('restore queues each new record once, retains audio uncertainty and never sends another account operations',async()=>{
+ const h=hookHarness();h.render();await flush();
+ const data=base();data.attempts=[{...attempt(randomUUID(),'2026-01-01T00:00:00.000Z'),qid:'q1'}];
+ data.questionMarks=[{qid:'q1',flagged:false,reason:null,note:'',revision:2,mutationId:randomUUID(),updatedAt:'2026-01-01T00:00:00.000Z'}];
+ data.recordings=[{id:randomUUID(),title:'Practice',promptId:'p1',mime:'audio/webm',duration:5,createdAt:'2026-01-01T00:00:00.000Z',uploaded:true}];
+ const source=backup.createStudyBackup(data);assert.equal(h.render().restoreBackup(source),true);
+ const ops=()=>[...h.storage.keys()].filter(key=>key.includes(':op:')).length;
+ const count=ops();assert.equal(h.render().restoreBackup(source),true);assert.equal(ops(),count);
+ assert.equal(h.render().data.recordings[0].uploaded,false);assert.equal(h.render().data.questionMarks[0].flagged,false);
+ h.setOnline(true);h.render('bob');await flush();await h.render('bob').syncNow();
+ assert.equal(h.requests.some(item=>item.owner==='bob'&&item.body?.type==='questionMark'),false);
+});
 
 test('record ids remain valid when a browser exposes getRandomValues without randomUUID',()=>{
  const fallback=load('lib/study-model.ts',{}, {crypto:{getRandomValues:array=>require('node:crypto').randomFillSync(array)}});
@@ -79,7 +152,7 @@ function hookHarness(sharedStorage = new Map(), options = {}) {
     useEffect(fn,deps) { const i=cursor++; if (!slots[i] || !same(slots[i].deps,deps)) { const old=slots[i]; slots[i]={deps}; effects.push(()=>{old?.cleanup?.(); slots[i].cleanup=fn();}); } }
   };
   const navigator = {get onLine(){return online;}};
-  const study = load('lib/use-study.ts', {react, sonner: {toast:{error(){}}}, './study-model':model}, {
+  const study = load('lib/use-study.ts', {react, sonner: {toast:{error(){}}}, './study-model':model,'./study-backup':backup}, {
     navigator,
     localStorage,
     setTimeout:(fn,ms)=>{const id=++timerId;timers.set(id,{fn,ms});return id;},clearTimeout:id=>timers.delete(id),
