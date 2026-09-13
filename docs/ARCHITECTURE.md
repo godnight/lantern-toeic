@@ -8,11 +8,17 @@
 
 服务端只使用托管层转发的`oai-authenticated-user-id`作为用户标识。`/api/study`与`/api/recordings`拒绝无身份请求；变更还校验请求来源与客户端期望用户。客户端不自行创建可信身份。
 
-D1包含profile、attempt、checkin、recording元数据；R2保存用户隔离路径下的录音。数据迁移位于drizzle目录，逻辑绑定为DB和BUCKET。
+D1包含profile、attempt、checkin、recording元数据及question_marks、resource_tasks；R2保存用户隔离路径下的录音。数据迁移位于drizzle目录，逻辑绑定为DB和BUCKET。
 
 本机保存用户分区的快照、不可变操作与ack；录音Blob保存在IndexedDB。恢复联网或重新聚焦时同步。操作独立存储防止多个标签页互相覆盖，服务器重新计算答案正确性，首次统计按作答时间排序。账号切换使旧请求失效；服务端期望用户检查防止队列串号。
 
 录音保留实际createdAt，上传时间另记。个人JSON导出不包含音频文件，当前版本尚无完整音频备份/恢复、删除账号或迁移UI。
+
+## 数据版本与可修改实体
+
+StudyData 使用 schemaVersion=2；旧快照通过纯函数补字段，既有记录 ID、首答、分钟和 note 保留。标记与资源任务按 revision、取消优先、mutationId、规范化内容的顺序合并，同一规则用于本机操作日志、备份恢复和数据库原子 upsert。新表以用户及实体 ID 为复合主键，取消状态作为记录保留。远端未来版本会写入账号分区的最低版本要求，阻止刷新及其他标签页继续用旧代码上传。
+
+JSON 导出包含新实体；代码恢复接口幂等合并，录音仅恢复元数据，不信任导入的 uploaded 标记。资源任务的 minutes 不计入实际学习时长，实际时长仍来自 checkins；带 checkinId 的任务等待父记录确认后同步。标记/任务编辑、完整今日计划及恢复界面分别后续实现，细节见 [RFC 0003](rfcs/0003-study-data-v2.md)。
 
 ## 离线边界
 

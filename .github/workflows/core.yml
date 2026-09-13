@@ -33,7 +33,7 @@ jobs:
           db = sqlite3.connect(':memory:')
           for migration in sorted(pathlib.Path('drizzle').glob('*.sql')):
               db.executescript(migration.read_text())
-          required = {'profiles', 'attempts', 'checkins', 'recordings'}
+          required = {'profiles', 'attempts', 'checkins', 'recordings', 'question_marks', 'resource_tasks'}
           tables = {r[0] for r in db.execute("select name from sqlite_master where type='table'")}
           assert required <= tables
           print('Local SQLite migration smoke check passed; not a production migration.')

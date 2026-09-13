@@ -8,6 +8,13 @@
       "when": 1788750178892,
       "tag": "0000_spotty_stellaris",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1789305304732,
+      "tag": "0001_study_data_v2",
+      "breakpoints": true
     }
   ]
 }

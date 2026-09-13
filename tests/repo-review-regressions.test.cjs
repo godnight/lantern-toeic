@@ -32,6 +32,7 @@ function environment({reverse = false} = {}) {
     useEffect(fn, deps) {const i = cursor++; if (!slots[i] || !same(slots[i].deps, deps)) {const old = slots[i]; slots[i] = {deps}; effects.push(() => {old?.cleanup?.(); slots[i].cleanup = fn();});}}
   };
   const model = load('lib/study-model.ts', {});
+  const backup = load('lib/study-backup.ts', {'./study-model':model,zod:require('zod')});
   remote = structuredClone(model.EMPTY_DATA);
   const localStorage = {
     get length() {return storage.size;},
@@ -56,10 +57,10 @@ function environment({reverse = false} = {}) {
       return {ok: true, json: async () => ({...structuredClone(remote), owner: 'alice', hasProfile: true})};
     }
   };
-  const study = load('lib/use-study.ts', {react, sonner: {toast}, './study-model': model}, browser);
+  const study = load('lib/use-study.ts', {react, sonner: {toast}, './study-model': model,'./study-backup':backup}, browser);
   const render = () => {cursor = 0; const value = renderer(); const pending = effects; effects = []; pending.forEach(run => run()); return value;};
   return {
-    react, model, browser, toast, messages, storage, study, render,
+    react, model, backup, browser, toast, messages, storage, study, render,
     get latest() {return latest;},
     useStudy(owner) {latest = study.useStudy(owner); return latest;},
     setRenderer(fn) {renderer = fn;},
@@ -104,7 +105,7 @@ test('storage quota failure keeps resource checkin open without a false success 
   const imports = {
     react: h.react, 'react/jsx-runtime': {jsx, jsxs: jsx, Fragment: 'fragment'},
     'lucide-react': stubs, sonner: {toast: h.toast},
-    '@/lib/use-study': {useStudy: owner => h.useStudy(owner)}, '@/lib/study-model': h.model,
+    '@/lib/use-study': {useStudy: owner => h.useStudy(owner)}, '@/lib/study-model': h.model, '@/lib/study-backup': h.backup,
     '@/lib/native-host': {registerNativeBack: () => () => {}},
     '@/content/questions.json': {default: JSON.parse(fs.readFileSync(root + '/content/questions.json'))},
     '@/content/speaking.json': {default: JSON.parse(fs.readFileSync(root + '/content/speaking.json'))},
@@ -146,7 +147,7 @@ test('mobile access guidance distinguishes synchronized PWA and local native mod
     const imports = {
       react: h.react, 'react/jsx-runtime': {jsx, jsxs: jsx, Fragment: 'fragment'},
       'lucide-react': stubs, sonner: {toast: h.toast},
-      '@/lib/use-study': {useStudy: owner => h.useStudy(owner)}, '@/lib/study-model': h.model,
+      '@/lib/use-study': {useStudy: owner => h.useStudy(owner)}, '@/lib/study-model': h.model, '@/lib/study-backup': h.backup,
       '@/lib/native-host': {registerNativeBack: () => () => {}},
       '@/content/questions.json': {default: JSON.parse(fs.readFileSync(root + '/content/questions.json'))},
       '@/content/speaking.json': {default: JSON.parse(fs.readFileSync(root + '/content/speaking.json'))},
