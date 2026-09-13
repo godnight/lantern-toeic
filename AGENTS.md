@@ -2,9 +2,11 @@
 
 先读取README.md、docs/PROJECT_STATUS.md和docs/TEAM.md，再接续当前阶段。用户目标、考期与预算是可编辑配置，不写死在学习算法中。
 
-Codex新环境接续时同时读取docs/CODEX_HANDOFF.md。初始化执行`bash scripts/codex-setup.sh`，会安装根目录与mobile依赖并检查类型、内容和行为；构建与平台工具链要求见交接文档。GitHub main为后续开发基线，按任务分支和PR提交。
+Codex新环境接续时同时读取docs/CODEX_HANDOFF.md，先核对其中未合并PR和接续分支，避免仅检出旧main而遗漏工作。初始化执行`bash scripts/codex-setup.sh`，只安装根目录锁定依赖并检查类型、内容、素材和行为；构建与平台工具链要求见交接文档。合并后的GitHub main为后续基线，按任务分支和PR提交。
 
-保持Web/PWA与mobile共享React业务和学习模型。使用现有Sites运行时、D1/R2绑定及迁移，遵守当前环境的Sites所有者规则。不要绕过身份或将凭据写进源码。仅集成负责人修改当前Sites checkout；独立子代理产出内容/素材或只读审查。
+活跃客户端为Web/PWA与HarmonyOS；`mobile/src`和`mobile/vite.config.ts`暂作为鸿蒙内置网页的共享构建入口，只使用根目录依赖。Android/iOS工程、工作流和Capacitor依赖已删除，历史只在Git提交中保留；除非用户明确恢复支持，不重新引入。保持Web/PWA与鸿蒙共享React业务和学习模型。使用现有Sites运行时、D1/R2绑定及迁移，遵守当前环境的Sites所有者规则。不要绕过身份或将凭据写进源码。仅集成负责人修改当前Sites checkout；独立子代理产出内容/素材或只读审查。
+
+手机号登录必须接入真实认证供应商并验证服务端令牌；未配置供应商、短信模板、滥用防护和公开认证入口时保持关闭。不得提交`agconnect-services.json`、短信密钥、签名材料或真实手机号，不得用固定验证码或仅前端状态冒充登录。平台与认证决策见`docs/rfcs/`。
 
 重要不变量：首次与复练记录并存；客户端成绩由服务端校验；用户数据隔离；提前反复作答不升复习间隔；录音保留练习发生时间；不伪造分数、基线、训练历史或AI审核。
 

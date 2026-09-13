@@ -17,9 +17,8 @@ if (different !== -1 && current[different] < minimum[different]) {
 }
 NODE
 
-# Root typechecking includes mobile/capacitor.config.ts, so both installs are needed.
+# Harmony's shared Vite frontend uses the root lockfile; no second install is needed.
 npm ci --no-fund --no-audit
-npm --prefix mobile ci --no-fund --no-audit
 npm run typecheck
 npm run validate:content
 npm run validate:art
