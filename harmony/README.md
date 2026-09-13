@@ -2,7 +2,11 @@
 
 本目录是 Stage 模型的 ArkTS / ArkUI / ArkWeb 工程基础，目标兼容 HarmonyOS 5.0 / API 12 及以上。学习界面、题库和主题复用已有 React 前端；原生容器处理本地资源、麦克风授权、外部链接和返回键。
 
+自2026-09-13起，HarmonyOS是项目唯一主动维护的原生平台；Android/iOS工程、工作流和Capacitor依赖已删除，旧源码只在Git历史保留。平台决策见 [RFC 0001](../docs/rfcs/0001-harmony-only-platform.md)，真实手机号注册登录及联网数据方案见 [RFC 0002](../docs/rfcs/0002-phone-auth-and-online-data.md)。
+
 **当前没有可安装的 HAP。** 已验证共享前端构建和资源复制，尚未运行 HarmonyOS SDK 的 ArkTS 编译、资源编译、签名或真机验收。`HarmonyOS shared asset check` 工作流生成的文件只是网页资源，不能安装到手机。
+
+工程已声明 `ohos.permission.INTERNET`，但当前学习数据仍是本机模式；权限声明本身不等于认证或云同步。手机号入口要等真实AGC项目配置、短信服务和令牌验证到位后才启用，不放固定验证码或纯前端假登录。
 
 ## 准备共享资源
 
@@ -12,9 +16,12 @@
 npm ci
 npm --prefix harmony run sync:web
 npm --prefix harmony run check:web
+npm --prefix harmony run check:auth
 ```
 
 脚本构建 `mobile/dist` 并同步至 `entry/src/main/resources/rawfile/web/`，按字节核对每个文件及其 SHA-256 清单。生成目录不进入 Git。原生模式不注册网页 Service Worker；网页安装清单、离线兜底页和 Service Worker 文件不打入原生容器。
+
+`check:auth`只报告AGC配置、SDK声明和HTTPS认证API地址是否齐备；`require:auth -- --api-origin=https://...`在缺项时退出2。按[官方SDK集成指南](https://developer.huawei.com/consumer/cn/doc/doccenter-submission/agc-help-auth-integration-sdk-0000002236337006)，真实`agconnect-services.json`放在`AppScope/resources/rawfile/`且已被Git忽略；旧entry路径也保留忽略，避免误提交。该检查通过仍不等于短信、令牌验证或真机通过。中国大陆短信需额外短信服务和发送接口，不能仅靠AGC配置文件上线；详见RFC 0002。
 
 ## 在 DevEco Studio 编译
 
@@ -25,7 +32,7 @@ npm --prefix harmony run check:web
 3. 在工程签名设置中配置开发签名，选择已连接的鸿蒙手机或模拟器，构建并运行 `entry` 模块。
 4. 编译成功后再做下列设备验收；完成前不把工程标记为已交付的鸿蒙安装包。
 
-当前工作环境没有 DevEco Studio、HarmonyOS SDK、Hvigor、OHPM 和 HDC。仓库不包含 SDK、签名私钥、证书、设备授权文件或本机路径。实际签名配置应保留在开发者本地，不提交凭据。
+上轮工具检查能找到Hvigor启动入口，但缺少完整SDK、OHPM和HDC；新环境应重新运行工具链检查。仓库不包含SDK、签名私钥、证书、设备授权文件或本机路径。实际签名配置应保留在开发者本地，不提交凭据。
 
 ## 容器边界
 

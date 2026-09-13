@@ -1,10 +1,12 @@
 {
   "name": "lantern-toeic-harmony",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "private": true,
   "type": "module",
   "scripts": {
     "sync:web": "npm --prefix ../mobile run build && node scripts/sync-web.mjs",
-    "check:web": "node scripts/sync-web.mjs --check"
+    "check:web": "node scripts/sync-web.mjs --check",
+    "check:auth": "node scripts/check-auth-readiness.mjs --report-only",
+    "require:auth": "node scripts/check-auth-readiness.mjs"
   }
 }

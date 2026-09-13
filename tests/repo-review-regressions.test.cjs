@@ -138,3 +138,57 @@ test('storage quota failure keeps resource checkin open without a false success 
   assert.ok(retained, 'Leave the draft open for retry');
   assert.equal(nodes(retained, n => n.type === 'textarea')[0].props.value, 'Keep my takeaway when storage fails');
 });
+
+test('mobile access guidance distinguishes synchronized PWA and local native modes', async () => {
+  const createApp = h => {
+    const jsx = (type, props) => ({type, props});
+    const stubs = new Proxy({}, {get: (_, name) => String(name)});
+    const imports = {
+      react: h.react, 'react/jsx-runtime': {jsx, jsxs: jsx, Fragment: 'fragment'},
+      'lucide-react': stubs, sonner: {toast: h.toast},
+      '@/lib/use-study': {useStudy: owner => h.useStudy(owner)}, '@/lib/study-model': h.model,
+      '@/lib/native-host': {registerNativeBack: () => () => {}},
+      '@/content/questions.json': {default: JSON.parse(fs.readFileSync(root + '/content/questions.json'))},
+      '@/content/speaking.json': {default: JSON.parse(fs.readFileSync(root + '/content/speaking.json'))},
+      './learn/exam-collection': {}, './learn/resource-library': {default: 'ResourceLibrary'}, './learn/practice': {default: 'Practice'}, './learn/speaking': {default: 'SpeakingRoom'},
+      './learn/theme-library': {default: () => null},
+      '@/art/themes.json': {default: JSON.parse(fs.readFileSync(root + '/art/themes.json', 'utf8'))},
+    };
+    for (const name of ['sidebar', 'dialog', 'tabs', 'select', 'radio-group', 'progress', 'sonner']) imports['@/components/ui/' + name] = stubs;
+    return load('app/study-app.tsx', imports, h.browser).default;
+  };
+  const openInstall = (h, StudyApp, owner, nativeMode) => {
+    h.setRenderer(() => StudyApp({owner, nativeMode}));
+    h.render();
+    let tree = h.render();
+    const button = nodes(tree, n => n.type === 'button' && n.props?.['aria-label'] === '安装手机应用')[0];
+    assert.ok(button, 'Find the mobile access control');
+    button.props.onClick();
+    tree = h.render();
+    return nodes(tree, n => n.type === 'Dialog' && n.props.open && textOf(n).includes(nativeMode ? '原生预览' : '鸿蒙桌面'))[0];
+  };
+
+  const web = environment();
+  const webDialog = openInstall(web, createApp(web), 'alice', false);
+  assert.match(textOf(webDialog), /HarmonyOS \/ 鸿蒙/);
+  assert.doesNotMatch(textOf(webDialog), /Android|iPhone/);
+  assert.match(textOf(webDialog), /ChatGPT 账号/);
+  assert.match(textOf(webDialog), /账号同步已开启/);
+
+  const native = environment();
+  const nativeDialog = openInstall(native, createApp(native), null, true);
+  assert.match(textOf(nativeDialog), /本机模式/);
+  const onlineLink = nodes(nativeDialog, n => n.type === 'a' && textOf(n).includes('打开同步网页版'))[0];
+  assert.equal(onlineLink.props.href, 'https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site');
+  assert.equal(onlineLink.props.rel, 'noopener noreferrer');
+});
+
+test('active native maintenance is Harmony-only and phone auth remains fail-closed', () => {
+  for (const removed of ['mobile/android', 'mobile/ios', 'mobile/capacitor.config.ts', '.github/workflows/android-debug.yml', '.github/workflows/ios-simulator.yml']) {
+    assert.equal(fs.existsSync(root + '/' + removed), false, removed + ' must remain removed');
+  }
+  assert.doesNotMatch(fs.readFileSync(root + '/mobile/package.json', 'utf8'), /capacitor|cap (?:sync|open)/);
+  assert.match(fs.readFileSync(root + '/harmony/entry/src/main/module.json5', 'utf8'), /ohos\.permission\.INTERNET/);
+  assert.match(fs.readFileSync(root + '/harmony/.gitignore', 'utf8'), /agconnect-services\.json/);
+  assert.match(fs.readFileSync(root + '/docs/rfcs/0002-phone-auth-and-online-data.md', 'utf8'), /等待外部配置/);
+});
