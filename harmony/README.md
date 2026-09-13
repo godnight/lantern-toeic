@@ -21,7 +21,7 @@ npm --prefix harmony run check:auth
 
 脚本构建 `mobile/dist` 并同步至 `entry/src/main/resources/rawfile/web/`，按字节核对每个文件及其 SHA-256 清单。生成目录不进入 Git。原生模式不注册网页 Service Worker；网页安装清单、离线兜底页和 Service Worker 文件不打入原生容器。
 
-`check:auth`只报告AGC配置、SDK声明和HTTPS认证API地址是否齐备；`require:auth -- --api-origin=https://...`在缺项时退出2。真实`agconnect-services.json`放在`entry/src/main/resources/rawfile/`且已被Git忽略，不要用示例值代替控制台下载文件。该检查通过仍不等于短信、令牌验证或真机通过。
+`check:auth`只报告AGC配置、SDK声明和HTTPS认证API地址是否齐备；`require:auth -- --api-origin=https://...`在缺项时退出2。按[官方SDK集成指南](https://developer.huawei.com/consumer/cn/doc/doccenter-submission/agc-help-auth-integration-sdk-0000002236337006)，真实`agconnect-services.json`放在`AppScope/resources/rawfile/`且已被Git忽略；旧entry路径也保留忽略，避免误提交。该检查通过仍不等于短信、令牌验证或真机通过。中国大陆短信需额外短信服务和发送接口，不能仅靠AGC配置文件上线；详见RFC 0002。
 
 ## 在 DevEco Studio 编译
 
@@ -32,7 +32,7 @@ npm --prefix harmony run check:auth
 3. 在工程签名设置中配置开发签名，选择已连接的鸿蒙手机或模拟器，构建并运行 `entry` 模块。
 4. 编译成功后再做下列设备验收；完成前不把工程标记为已交付的鸿蒙安装包。
 
-当前工作环境没有 DevEco Studio、HarmonyOS SDK、Hvigor、OHPM 和 HDC。仓库不包含 SDK、签名私钥、证书、设备授权文件或本机路径。实际签名配置应保留在开发者本地，不提交凭据。
+上轮工具检查能找到Hvigor启动入口，但缺少完整SDK、OHPM和HDC；新环境应重新运行工具链检查。仓库不包含SDK、签名私钥、证书、设备授权文件或本机路径。实际签名配置应保留在开发者本地，不提交凭据。
 
 ## 容器边界
 

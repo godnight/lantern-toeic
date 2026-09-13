@@ -2,7 +2,7 @@
 
 - 状态：等待外部配置
 - 提议日期：2026-09-13
-- 推荐方案：[华为 AppGallery Connect（AGC）认证](https://developer.huawei.com/consumer/cn/market/prod-detail/4951c61695934e528cdf607cffa4e697/2adce9bbd4cb42d58a87e6add45594b3?origin=template)
+- 候选方案：华为AppGallery Connect（AGC）认证；需先确认手机号区域和短信服务可用性，尚未完成供应商开通。
 
 ## 目标
 
@@ -10,7 +10,7 @@
 
 ## 推荐架构
 
-1. 鸿蒙端使用官方 `@hw-agconnect/auth` SDK，通过 `agconnect-services.json` 初始化，申请手机号验证码并以 `autoCreateUser` 完成注册/登录。
+1. 鸿蒙端使用官方 `@hw-agconnect/auth` SDK，通过 `AppScope/resources/rawfile/agconnect-services.json` 初始化。验证码与首次注册/后续登录按当前SDK文档实现并实际编译核对，不仅照搬历史示例。
 2. 学习数据以AGC稳定用户ID分区，不用明文手机号作为记录owner。日志、导出和分析不保存完整手机号。
 3. 客户端只保存短期用户令牌；服务端或AGC云能力必须验证令牌、签发者、受众和有效期，再允许读取D1/R2或等价用户数据。客户端不得自填owner或携带短信密钥。
 4. 短信发送启用冷却、每日限额、失败上限、服务端风控和通用错误文案；验证码、访问令牌、刷新令牌、短信密钥及真实手机号不得写入Git、日志或测试夹具。
@@ -18,10 +18,12 @@
 
 ## 上线前置
 
+2026-09-13核对[华为认证服务应用场景](https://developer.huawei.com/consumer/cn/doc/doccenter-submission/agc-help-auth-applicationscenarios-0000002271416133)：中国大陆短信需要开发者另行购买第三方短信服务，并向AGC提供发送接口。只开AGC或下载配置文件不能完成大陆手机号登录。具体号码地区、数据处理位置、供应商资质/签名/模板及费用，应在开发接入前核实。
+
 以下外部条件目前均未提供，因而本RFC不能进入“已实现”：
 
 - 华为开发者/AppGallery Connect项目，已启用认证服务与手机号登录；
-- 与 `com.lantern.toeic` 匹配的真实 `agconnect-services.json`；
+- 与 `com.lantern.toeic` 匹配的真实 `agconnect-services.json`，按官方指南置于 `harmony/AppScope/resources/rawfile/`，不进入Git；
 - 可用的短信区域、签名/模板、配额与测试号码策略；
 - 决定数据后端使用AGC云能力，或提供可公开到达且能验证AGC令牌的API；
 - DevEco Studio、HarmonyOS SDK、OHPM、HDC、开发签名和授权测试手机；
@@ -40,3 +42,16 @@
 在前置条件到位前，应用继续显示真实边界：Web/PWA使用现有ChatGPT身份，鸿蒙原生仅本机保存。项目不会生成固定验证码、跳过短信发送、仅以本地布尔值切换登录态，或把私有Site会话复制进HAP。
 
 实现时以华为开发者页面和 [AppGallery Connect 官方HarmonyOS示例](https://github.com/AppGalleryConnect/agc-HarmonyOS-demos) 为准；第三方教程只能用于发现资料，不能代替当前SDK文档与真实编译。
+
+## 用户与Codex分工
+
+| 工作 | 用户需参与的部分 | Codex可完成的部分 |
+|---|---|---|
+| 开发者与短信账号 | 本人登录、按供应商要求完成身份认证、服务开通及计费确认 | 准备设置步骤、检查非敏感配置及服务区域 |
+| 项目与服务配置 | 安全授予所选项目/后端权限，提供控制台配置；密钥放环境秘密存储 | 配置SDK、实现短信发送接口、登录/退出、令牌校验与逐用户授权 |
+| 数据与联网 | 决定手机账号的公开入口和已有数据迁移范围 | 设计账号绑定、离线队列隔离、同步、录音接口与迁移测试 |
+| 安装与验收 | 手机连接/授权、真实收码、确认设备体验；签名账号操作 | 在可用DevEco/SDK环境编译HAP、运行自动检查、修复设备反馈 |
+
+账号验证、付款和手机现场操作不能由代码替代。获得配置与可用环境后，Codex可继续实现；当前不要求把配置、签名或完整手机号贴到聊天或公开仓库。
+
+官方技术入口：[SDK集成与配置路径](https://developer.huawei.com/consumer/cn/doc/doccenter-submission/agc-help-auth-integration-sdk-0000002236337006)、[手机号认证](https://developer.huawei.com/consumer/cn/doc/app/agc-help-auth-login-phone-0000002271416141)。

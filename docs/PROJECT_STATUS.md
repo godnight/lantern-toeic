@@ -1,5 +1,15 @@
 # 项目状态
 
+## v0.2.4 删除旧平台与Codex交接（2026-09-13，最新）
+
+按用户要求从当前源码树删除Android/iOS工程、专用工作流、Capacitor配置/依赖和过时构建步骤；旧源码只在Git历史保留。`mobile/`仍用于鸿蒙共享网页，不需要第二套依赖安装。删除后类型、35项行为回归、鸿蒙构建及23项资源逐字节核对通过。
+
+最新工作在PR #18的`feat/v0.2.4-mobile-access`分支，交接时仍为Draft、main仍为v0.2.3；新Codex须先核对PR状态，按`docs/CODEX_HANDOFF.md`选择分支。已将提交/RFC规范、接续提示、数据与权限边界写入仓库。个人commit-work skill不随clone自动安装，但核心规则和固定来源已记录于CONTRIBUTING.md。
+
+手机号认证仍未实现。官方资料核对发现，中国大陆短信需要另接短信服务；修正AGC配置检查为`harmony/AppScope/resources/rawfile/agconnect-services.json`并保留旧路径忽略。用户需负责本人账号/身份认证、开通计费、授权及手机收码；Codex可在配置和环境到位后完成SDK、接口、令牌校验、隔离及测试，详见RFC 0002。
+
+Site第4版已于上轮发布，本轮再次核对仍为原URL、custom/owner权限；删除平台与交接文件的后续源码未重新发布Site，也不改变网页行为。源码接续不包含D1/R2实际数据、手机本机记录、短信/签名材料或平台账号连接。以下均为历史记录，当前状态以本节及PR最终检查为准。
+
 ## v0.2.4 鸿蒙访问与账号边界（2026-09-13）
 
 项目原生平台收敛为HarmonyOS；Android/iOS冻结在v0.2.3，自动PR/main构建与`/mobile`依赖更新停止，历史源码保留。Web/PWA安装说明聚焦HarmonyOS，沿用私有Site的ChatGPT身份及D1/R2同步；鸿蒙原生容器仍只保存在本机，并提供安全的在线同步版入口。决策见 `docs/rfcs/0001-harmony-only-platform.md`。
