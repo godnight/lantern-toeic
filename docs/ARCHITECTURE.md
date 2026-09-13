@@ -2,7 +2,7 @@
 
 ## 共享产品
 
-`app/study-app.tsx`和`app/learn/`为React界面；`lib/study-model.ts`为纯学习逻辑；`content/`为版本化原创练习。Web由Vinext渲染，mobile由Vite静态构建后进入Capacitor。
+`app/study-app.tsx`和`app/learn/`为React界面；`lib/study-model.ts`为纯学习逻辑；`content/`为版本化原创练习。Web由Vinext渲染；`mobile/`是鸿蒙共享网页的Vite入口，构建后由`harmony/scripts/sync-web.mjs`打入ArkWeb本地资源。Android/iOS工程和Capacitor依赖已删除。
 
 ## Web身份与存储
 

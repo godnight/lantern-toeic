@@ -2,7 +2,7 @@
 
 本目录是 Stage 模型的 ArkTS / ArkUI / ArkWeb 工程基础，目标兼容 HarmonyOS 5.0 / API 12 及以上。学习界面、题库和主题复用已有 React 前端；原生容器处理本地资源、麦克风授权、外部链接和返回键。
 
-自2026-09-13起，HarmonyOS是项目唯一主动维护的原生平台；Android/iOS源码冻结为历史。平台决策见 [RFC 0001](../docs/rfcs/0001-harmony-only-platform.md)，真实手机号注册登录及联网数据方案见 [RFC 0002](../docs/rfcs/0002-phone-auth-and-online-data.md)。
+自2026-09-13起，HarmonyOS是项目唯一主动维护的原生平台；Android/iOS工程、工作流和Capacitor依赖已删除，旧源码只在Git历史保留。平台决策见 [RFC 0001](../docs/rfcs/0001-harmony-only-platform.md)，真实手机号注册登录及联网数据方案见 [RFC 0002](../docs/rfcs/0002-phone-auth-and-online-data.md)。
 
 **当前没有可安装的 HAP。** 已验证共享前端构建和资源复制，尚未运行 HarmonyOS SDK 的 ArkTS 编译、资源编译、签名或真机验收。`HarmonyOS shared asset check` 工作流生成的文件只是网页资源，不能安装到手机。
 

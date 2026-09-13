@@ -4,7 +4,7 @@
 
 Codex新环境接续时同时读取docs/CODEX_HANDOFF.md。初始化执行`bash scripts/codex-setup.sh`，会安装根目录与共享网页构建依赖并检查类型、内容和行为；构建与平台工具链要求见交接文档。GitHub main为后续开发基线，按任务分支和PR提交。
 
-活跃客户端为Web/PWA与HarmonyOS；`mobile/src`和`mobile/vite.config.ts`暂作为鸿蒙内置网页的共享构建入口。`mobile/android`与`mobile/ios`是截至v0.2.3的归档源码，除非用户明确恢复支持，不升级、不发布、不作为当前门禁。保持Web/PWA与鸿蒙共享React业务和学习模型。使用现有Sites运行时、D1/R2绑定及迁移，遵守当前环境的Sites所有者规则。不要绕过身份或将凭据写进源码。仅集成负责人修改当前Sites checkout；独立子代理产出内容/素材或只读审查。
+活跃客户端为Web/PWA与HarmonyOS；`mobile/src`和`mobile/vite.config.ts`暂作为鸿蒙内置网页的共享构建入口，只使用根目录依赖。Android/iOS工程、工作流和Capacitor依赖已删除，历史只在Git提交中保留；除非用户明确恢复支持，不重新引入。保持Web/PWA与鸿蒙共享React业务和学习模型。使用现有Sites运行时、D1/R2绑定及迁移，遵守当前环境的Sites所有者规则。不要绕过身份或将凭据写进源码。仅集成负责人修改当前Sites checkout；独立子代理产出内容/素材或只读审查。
 
 手机号登录必须接入真实认证供应商并验证服务端令牌；未配置供应商、短信模板、滥用防护和公开认证入口时保持关闭。不得提交`agconnect-services.json`、短信密钥、签名材料或真实手机号，不得用固定验证码或仅前端状态冒充登录。平台与认证决策见`docs/rfcs/`。
 
