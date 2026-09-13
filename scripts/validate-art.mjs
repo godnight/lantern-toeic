@@ -32,4 +32,18 @@ for(const item of references){
  for(const url of [item.sourceUrl,item.imageUrl].filter(Boolean))assert.equal(new URL(url).protocol,'https:');
  assert(item.title&&item.author&&item.checkedAt&&['link-only','pending'].includes(item.rightsStatus));
 }
-console.log(`Art catalogue verified: ${ids.size} themes, ${count} bundled originals, ${references.length} external references. This is not a visual or permission review.`);
+const maps=JSON.parse(readFileSync(resolve(root,'art/map-scenes.json'),'utf8'));
+const supplied=JSON.parse(readFileSync(resolve(root,'art/map-art-provenance.json'),'utf8'));
+const mapPaths=new Set();
+for(const asset of supplied.assets){
+ assert(asset.path.startsWith('/images/maps/')&&!asset.path.includes('..'));
+ assert(!mapPaths.has(asset.path));mapPaths.add(asset.path);
+ assert(asset.width>0&&asset.height>0&&asset.sourceSha256&&asset.sourceFile);
+ const bytes=readFileSync(resolve(root,'public','.'+asset.path));
+ assert.equal(createHash('sha256').update(bytes).digest('hex'),asset.sha256,'Stale supplied-art derivative: '+asset.id);
+ assert.equal(bytes.length,asset.bytes);
+}
+assert.deepEqual(Object.keys(maps.views).sort(),['today','train','review','progress','resources'].sort());
+for(const scene of Object.values(maps.views))for(const path of [scene.image,scene.mobile,scene.thumbnail])assert(mapPaths.has(path),'Untracked map scene');
+for(const path of [...maps.taskImages,maps.restImage])assert(mapPaths.has(path),'Untracked supporting scene');
+console.log(`Art catalogue verified: ${ids.size} themes, ${count} bundled originals, ${references.length} external references, ${mapPaths.size} supplied map derivatives. This is not a visual or permission review.`);
