@@ -111,6 +111,7 @@ test('storage quota failure keeps resource checkin open without a false success 
     '@/content/speaking.json': {default: JSON.parse(fs.readFileSync(root + '/content/speaking.json'))},
     './learn/exam-collection':{},'./learn/resource-library': {default: 'ResourceLibrary'}, './learn/practice': {default: 'Practice'}, './learn/speaking': {default: 'SpeakingRoom'},
     './learn/theme-library': {default:()=>null},
+    '@/art/map-scenes.json': {default: JSON.parse(fs.readFileSync(root+'/art/map-scenes.json','utf8'))},
     '@/art/themes.json': {default:JSON.parse(fs.readFileSync(root+'/art/themes.json','utf8'))},
   };
   for (const name of ['sidebar', 'dialog', 'tabs', 'select', 'radio-group', 'progress', 'sonner']) imports['@/components/ui/' + name] = stubs;
@@ -153,7 +154,8 @@ test('mobile access guidance distinguishes synchronized PWA and local native mod
       '@/content/speaking.json': {default: JSON.parse(fs.readFileSync(root + '/content/speaking.json'))},
       './learn/exam-collection': {}, './learn/resource-library': {default: 'ResourceLibrary'}, './learn/practice': {default: 'Practice'}, './learn/speaking': {default: 'SpeakingRoom'},
       './learn/theme-library': {default: () => null},
-      '@/art/themes.json': {default: JSON.parse(fs.readFileSync(root + '/art/themes.json', 'utf8'))},
+      '@/art/map-scenes.json': {default: JSON.parse(fs.readFileSync(root+'/art/map-scenes.json','utf8'))},
+    '@/art/themes.json': {default: JSON.parse(fs.readFileSync(root + '/art/themes.json', 'utf8'))},
     };
     for (const name of ['sidebar', 'dialog', 'tabs', 'select', 'radio-group', 'progress', 'sonner']) imports['@/components/ui/' + name] = stubs;
     return load('app/study-app.tsx', imports, h.browser).default;
