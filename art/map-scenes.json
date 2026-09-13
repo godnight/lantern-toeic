@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "views": {
+    "today": {"name":"绿径","english":"GREENPATH","image":"/images/maps/greenpath.webp","mobile":"/images/maps/greenpath-mobile.webp","thumbnail":"/images/maps/greenpath-thumb.webp","accent":"#b8d7bd","position":"58% 50%","chapter":"01","description":"从一小步开始，走进今天的旅程。"},
+    "train": {"name":"水晶山峰","english":"CRYSTAL PEAK","image":"/images/maps/crystal-peak.webp","mobile":"/images/maps/crystal-peak-mobile.webp","thumbnail":"/images/maps/crystal-peak-thumb.webp","accent":"#ceb9ed","position":"65% 50%","chapter":"02","description":"听、读、说，在每一次练习里打磨自己。"},
+    "review": {"name":"泪水之城","english":"CITY OF TEARS","image":"/images/maps/city-of-tears.webp","mobile":"/images/maps/city-of-tears-mobile.webp","thumbnail":"/images/maps/city-of-tears-thumb.webp","accent":"#b2cce8","position":"60% 50%","chapter":"03","description":"循着记忆的回声，把学过的变成熟悉的。"},
+    "progress": {"name":"白色宫殿","english":"WHITE PALACE","image":"/images/maps/white-palace.webp","mobile":"/images/maps/white-palace-mobile.webp","thumbnail":"/images/maps/white-palace-thumb.webp","accent":"#e5d7af","position":"62% 50%","chapter":"04","description":"走过的每一程，都有迹可循。"},
+    "resources": {"name":"灰沼","english":"GREYMOOR","image":"/images/maps/greymoor.webp","mobile":"/images/maps/greymoor-mobile.webp","thumbnail":"/images/maps/greymoor-thumb.webp","accent":"#bed0c9","position":"62% 50%","chapter":"05","description":"在文字与声音之间，发现下一份学习材料。"}
+  },
+  "taskImages": ["/images/maps/listening.webp", "/images/maps/reading.webp", "/images/maps/speaking.webp"],
+  "restImage": "/images/maps/dirtmouth.webp"
+}
