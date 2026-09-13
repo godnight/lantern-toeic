@@ -1,4 +1,6 @@
-# 微光托业：Android / iOS 工程与构建
+# 微光托业：Android / iOS 归档工程
+
+> 2026-09-13起，Android与iOS不再主动维护，源码和历史流程只为追溯保留。不要为当前版本升级依赖、运行自动发布或报告平台支持。唯一主动维护的原生目标是HarmonyOS，决策见 [RFC 0001](rfcs/0001-harmony-only-platform.md)。下文保留的是v0.2.3历史构建说明。
 
 本仓库同时保留网页版与原生客户端。原生端是 `mobile/` 下的 Vite + Capacitor 工程，复用 `app/study-app.tsx`、练习组件和学习数据模型。它将本地前端资源打包进 App，不在 WebView 中加载远程 Site。
 

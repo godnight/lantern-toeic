@@ -1,45 +1,8 @@
-# Builds a debug-signed internal test APK; no Site or store deployment.
-name: Android debug APK
+# Archived compatibility workflow. Android is not an actively maintained target.
+name: Archived Android debug APK
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'app/**'
-      - 'art/**'
-      - 'components/**'
-      - 'hooks/**'
-      - 'lib/**'
-      - 'content/**'
-      - 'public/**'
-      - 'mobile/**'
-      - 'build/**'
-      - 'tests/**'
-      - 'scripts/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'tsconfig.json'
-      - '.openai/hosting.json'
-      - '.github/workflows/android-debug.yml'
-  pull_request:
-    paths:
-      - 'app/**'
-      - 'art/**'
-      - 'components/**'
-      - 'hooks/**'
-      - 'lib/**'
-      - 'content/**'
-      - 'public/**'
-      - 'mobile/**'
-      - 'build/**'
-      - 'tests/**'
-      - 'scripts/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'tsconfig.json'
-      - '.openai/hosting.json'
-      - '.github/workflows/android-debug.yml'
 
 permissions:
   contents: read

@@ -1,10 +1,10 @@
 # Codex 开发交接
 
-**最新：v0.2.4手机访问与账号边界**。Web/PWA补齐鸿蒙、Android和iPhone安装说明，使用同一ChatGPT账号同步；原生仍为本机记录并可安全打开在线版。未配置短信供应商，不收集手机号或展示伪验证码；Harmony环境仍缺OHPM、HDC和SDK，未生成HAP。最终状态见同名发布与测试文档。
+**最新：v0.2.4鸿蒙访问与账号边界**。HarmonyOS成为唯一主动维护的原生平台；Android/iOS冻结在v0.2.3。Web/PWA补齐鸿蒙安装说明，当前使用同一ChatGPT账号同步；鸿蒙原生仍为本机记录并可安全打开在线版。手机号登录推荐华为AGC，但缺项目配置与公开认证后端，不收集手机号或展示伪验证码。Harmony环境仍缺OHPM、HDC和SDK，未生成HAP。
 
-**最新接续提示（v0.2.4源码）：** 手机入口与账号边界回归已加入，34项行为测试通过。Web/PWA继续使用托管身份，原生继续使用device分区；未选择短信供应商前不要添加假的手机号输入或验证码。后续优先继续鸿蒙真实工具链、稳定签名与备份，以及 #8–#10 的v0.3数据与学习循环。下面的v0.2.1表格保留为历史交接基线，最新行为参见PROJECT_STATUS最上节。
+**最新接续提示（v0.2.4源码）：** 鸿蒙入口、平台范围与账号边界回归已加入，35项行为测试通过。`mobile/src`仅作为鸿蒙共享网页的历史命名构建入口，不继续维护Android/iOS。Web/PWA继续使用托管身份，鸿蒙原生继续使用device分区；AGC配置、短信与令牌验证未到位前不要添加假的手机号输入或验证码。后续优先完成RFC 0002、鸿蒙真实工具链、稳定签名与备份，以及 #8–#10 的v0.3数据与学习循环。
 
-更新：2026-09-12。代码主仓库为 [godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)，开发从最新 `main` 创建任务分支。本文件负责传递项目上下文；仓库接入不会自动复制此前聊天、活跃代理或外部账号连接。
+更新：2026-09-13。代码主仓库为 [godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)，开发从最新 `main` 创建任务分支。本文件负责传递项目上下文；仓库接入不会自动复制此前聊天、活跃代理或外部账号连接。
 
 ## 接入 Codex
 
@@ -33,7 +33,7 @@ bash scripts/codex-setup.sh
 | 题库与美术 | 68 道原创听读题、5 类口语任务、4 张高清主题图 | 内容待真人审校；听力用系统朗读；没有正式分数标定或 AI 口语评分 |
 | 官方集合 | 22 条：14 个样题/索引、6 个备考条目、2 个实际考题选题视频集合；含 4 个 ETS PDF 直链 | 第三方材料均为外链；未核实免费完整历届实际试卷 PDF；无转载权限声明 |
 | 鸿蒙 | ArkTS/ArkUI/ArkWeb 工程，离线资源、前后台/权限/返回处理、录音保存保护 | 当前环境缺 DevEco/HarmonyOS SDK、hvigor、ohpm、hdc，未编译、签名或真机验证 HAP |
-| Android/iOS | GitHub CI 的 debug APK 与 iOS 无签名模拟器编译通过 | 稳定签名、设备验收及完整备份待完成；原生尚为本机记录，无云端登录/同步 |
+| Android/iOS归档 | v0.2.3以前的源码与历史CI记录保留 | 2026-09-13起不再主动维护、构建或发布 |
 | 验证 | v0.2.1 的类型、内容、18 项实际源码行为回归、Web/mobile 构建通过 | 这些不等于鸿蒙 SDK 或真机验收 |
 | GitHub 管理 | Core/三端工作流、贡献规则、Issue/PR 模板、CODEOWNERS、Dependabot、发布流程 | main 保护尚未启用；依赖仍有告警，见 #4/#5 |
 
@@ -48,7 +48,7 @@ bash scripts/codex-setup.sh
 | `app/study-app.tsx`、`app/learn/` | Web/移动端共享学习界面 |
 | `lib/`、`app/api/`、`drizzle/` | 学习模型、本机存储/同步、服务端与 SQL 迁移 |
 | `content/`、`public/` | 原创题库、官方入口目录与主题素材 |
-| `mobile/` | Vite 静态入口、Capacitor Android/iOS 工程 |
+| `mobile/` | 历史命名的共享Vite静态入口；Android/iOS子目录为归档源码 |
 | `harmony/`、`lib/native-host.ts` | 鸿蒙 Stage 工程及共享生命周期桥接 |
 | `tests/`、`.github/workflows/` | 实际行为回归、构建与发布门禁 |
 

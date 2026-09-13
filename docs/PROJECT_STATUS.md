@@ -1,10 +1,10 @@
 # 项目状态
 
-## v0.2.4 手机访问与账号边界（2026-09-12）
+## v0.2.4 鸿蒙访问与账号边界（2026-09-13）
 
-Web/PWA安装说明覆盖HarmonyOS、Android和iPhone，沿用私有Site的ChatGPT身份及D1/R2同步；原生Android/iOS/Harmony容器仍只保存在本机，并提供安全的在线同步版入口。项目未配置短信服务商或手机号认证后端，因此没有收集手机号，也没有把演示输入框当成真实验证码登录。
+项目原生平台收敛为HarmonyOS；Android/iOS冻结在v0.2.3，自动PR/main构建与`/mobile`依赖更新停止，历史源码保留。Web/PWA安装说明聚焦HarmonyOS，沿用私有Site的ChatGPT身份及D1/R2同步；鸿蒙原生容器仍只保存在本机，并提供安全的在线同步版入口。决策见 `docs/rfcs/0001-harmony-only-platform.md`。
 
-源码行为回归增至34项，源码门禁、生产构建与浏览器验收边界见 `docs/testing/TEST_EXECUTION_v0.2.4.md`；实时上线状态以Site部署记录为准。Harmony检查仍缺OHPM、HDC及SDK目录，没有生成、签名或真机验证HAP；要继续原生手机号登录与HAP交付，需先提供认证供应商方案、DevEco/SDK、签名配置及测试设备。
+手机号注册登录推荐华为AGC，但项目尚无AGC应用配置、短信模板/配额、令牌验证后端或公开登录入口授权，因此没有收集手机号，也没有把演示输入框当成真实验证码登录。源码行为回归增至35项，源码门禁、生产构建与浏览器验收边界见 `docs/testing/TEST_EXECUTION_v0.2.4.md`。Harmony检查仍缺OHPM、HDC及SDK目录，没有生成、签名或真机验证HAP；认证前置与验收见 `docs/rfcs/0002-phone-auth-and-online-data.md`。
 
 ## v0.2.3 美术改版（2026-09-08）
 

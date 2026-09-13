@@ -165,12 +165,13 @@ test('mobile access guidance distinguishes synchronized PWA and local native mod
     assert.ok(button, 'Find the mobile access control');
     button.props.onClick();
     tree = h.render();
-    return nodes(tree, n => n.type === 'Dialog' && n.props.open && textOf(n).includes(nativeMode ? '原生预览' : '手机'))[0];
+    return nodes(tree, n => n.type === 'Dialog' && n.props.open && textOf(n).includes(nativeMode ? '原生预览' : '鸿蒙桌面'))[0];
   };
 
   const web = environment();
   const webDialog = openInstall(web, createApp(web), 'alice', false);
   assert.match(textOf(webDialog), /HarmonyOS \/ 鸿蒙/);
+  assert.doesNotMatch(textOf(webDialog), /Android|iPhone/);
   assert.match(textOf(webDialog), /ChatGPT 账号/);
   assert.match(textOf(webDialog), /账号同步已开启/);
 
@@ -180,4 +181,22 @@ test('mobile access guidance distinguishes synchronized PWA and local native mod
   const onlineLink = nodes(nativeDialog, n => n.type === 'a' && textOf(n).includes('打开同步网页版'))[0];
   assert.equal(onlineLink.props.href, 'https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site');
   assert.equal(onlineLink.props.rel, 'noopener noreferrer');
+});
+
+test('active native maintenance is Harmony-only and phone auth remains fail-closed', () => {
+  const androidWorkflow = fs.readFileSync(root + '/.github/workflows/android-debug.yml', 'utf8');
+  const iosWorkflow = fs.readFileSync(root + '/.github/workflows/ios-simulator.yml', 'utf8');
+  for (const workflow of [androidWorkflow, iosWorkflow]) {
+    assert.match(workflow, /Archived .* build|Archived Android debug APK/);
+    assert.match(workflow, /on:\n  workflow_dispatch:/);
+    assert.doesNotMatch(workflow, /\n  (?:push|pull_request):/);
+  }
+  const androidBuild = fs.readFileSync(root + '/mobile/android/app/build.gradle', 'utf8');
+  const iosBuild = fs.readFileSync(root + '/mobile/ios/App/App.xcodeproj/project.pbxproj', 'utf8');
+  assert.match(androidBuild, /versionCode 4\s+versionName "0\.2\.3"/);
+  assert.match(iosBuild, /CURRENT_PROJECT_VERSION = 4;/);
+  assert.match(iosBuild, /MARKETING_VERSION = 0\.2\.3;/);
+  assert.match(fs.readFileSync(root + '/harmony/entry/src/main/module.json5', 'utf8'), /ohos\.permission\.INTERNET/);
+  assert.match(fs.readFileSync(root + '/harmony/.gitignore', 'utf8'), /agconnect-services\.json/);
+  assert.match(fs.readFileSync(root + '/docs/rfcs/0002-phone-auth-and-online-data.md', 'utf8'), /等待外部配置/);
 });

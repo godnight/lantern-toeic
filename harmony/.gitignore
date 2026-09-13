@@ -4,6 +4,7 @@ build/
 entry/build/
 entry/oh_modules/
 entry/src/main/resources/rawfile/web/
+entry/src/main/resources/rawfile/agconnect-services.json
 local.properties
 *.p12
 *.p7b
