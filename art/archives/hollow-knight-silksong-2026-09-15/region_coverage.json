@@ -1,0 +1,2359 @@
+{
+  "region_count": 51,
+  "no_independent_boss_region_count": 7,
+  "regions": [
+    {
+      "id": "HK-01",
+      "game": "Hollow Knight",
+      "region": "德特茅斯",
+      "region_en": "Dirtmouth",
+      "notes": "剧团帐篷与布蕾塔地下室为支线/梦境战斗，不画成镇街日常。",
+      "source": "https://hollowknight.wiki/w/Dirtmouth",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_德特茅斯/HK-01_scene_01_井畔沉灯.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_德特茅斯/HK-01_scene_02_墓园尽头的微光.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/K01_德特茅斯·灯下休憩.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_德特茅斯/HK-01_protagonist_02_向井下跃落.png"
+          ],
+          "completed_new_images": 1
+        },
+        "boss": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/B01_格林·赤焰登场.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_德特茅斯/HK-01_boss_02_梦魇之王的红焰.png"
+          ],
+          "completed_new_images": 1
+        }
+      }
+    },
+    {
+      "id": "HK-02",
+      "game": "Hollow Knight",
+      "region": "遗忘十字路",
+      "region_en": "Forgotten Crossroads",
+      "notes": "感染十字路是后期状态；黑卵神殿并入本区域，辐光战斗画面为梦境。",
+      "source": "https://hollowknight.wiki/w/Forgotten_Crossroads",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_遗忘十字路/HK-02_scene_01_黑卵神殿外庭.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_遗忘十字路/HK-02_scene_02_交错隧道与旧站.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_遗忘十字路/HK-02_protagonist_01_石阶上的初行.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_遗忘十字路/HK-02_protagonist_02_橙光封住的旧路.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/B04_辐光·金色天幕.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_遗忘十字路/HK-02_boss_02_黑卵中的锁链.png"
+          ],
+          "completed_new_images": 1
+        }
+      }
+    },
+    {
+      "id": "HK-03",
+      "game": "Hollow Knight",
+      "region": "绿径",
+      "region_en": "Greenpath",
+      "notes": "无眼位于子区石之庇护所；乌恩不是区域Boss。",
+      "source": "https://hollowknight.wiki/w/Greenpath",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/M01_绿径·苔光湖谷.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_绿径/HK-03_scene_02_被叶脉吞没的高桥.png"
+          ],
+          "completed_new_images": 1
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/K02_绿径·叶间飞跃.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_绿径/HK-03_protagonist_02_掠过苔桥.png"
+          ],
+          "completed_new_images": 1
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_绿径/HK-03_boss_01_红披风下的针锋.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_绿径/HK-03_boss_02_苔团冲出古道.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "HK-04",
+      "game": "Hollow Knight",
+      "region": "真菌荒地",
+      "region_en": "Fungal Wastes",
+      "notes": "螳螂领主在螳螂村；蘑菇巨人是精英/小Boss，不冒充正式领主。",
+      "source": "https://hollowknight.wiki/w/Fungal_Wastes",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_真菌荒地/HK-04_scene_01_孢子穹顶.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_真菌荒地/HK-04_scene_02_螳螂村的空座.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/K05_真菌荒地·蘑菇弹跳.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_真菌荒地/HK-04_protagonist_02_弹起的紫色弧线.png"
+          ],
+          "completed_new_images": 1
+        },
+        "boss": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/B02_螳螂领主·三影锋芒.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_真菌荒地/HK-04_boss_02_胡长老的环幕.png"
+          ],
+          "completed_new_images": 1
+        }
+      }
+    },
+    {
+      "id": "HK-05",
+      "game": "Hollow Knight",
+      "region": "泪水之城",
+      "region_en": "City of Tears",
+      "notes": "包含灵魂圣所、守望者尖塔与爱之塔。",
+      "source": "https://hollowknight.wiki/w/City_of_Tears",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/M02_泪水之城·雨幕群塔.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_泪水之城/HK-05_scene_02_灵魂圣所的高窗.png"
+          ],
+          "completed_new_images": 1
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/K03_泪水之城·檐下听雨.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_泪水之城/HK-05_protagonist_02_穿越雨中升降架.png"
+          ],
+          "completed_new_images": 1
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_泪水之城/HK-05_boss_01_灵魂大师降临.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_泪水之城/HK-05_boss_02_守望者的重甲.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "HK-06",
+      "game": "Hollow Knight",
+      "region": "水晶山峰",
+      "region_en": "Crystal Peak",
+      "notes": "米拉实际站在遗忘十字路靠近水晶山峰的入口。",
+      "source": "https://hollowknight.wiki/w/Crystal_Peak",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/M03_水晶山峰·紫晶矿脉.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_水晶山峰/HK-06_scene_02_圣巢之冠的晨辉.png"
+          ],
+          "completed_new_images": 1
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/K04_水晶山峰·矿道滑行.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_水晶山峰/HK-06_protagonist_02_结晶冲刺.png"
+          ],
+          "completed_new_images": 1
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_水晶山峰/HK-06_boss_01_占据长椅的守卫.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_水晶山峰/HK-06_boss_02_狂怒的折射光.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "HK-07",
+      "game": "Hollow Knight",
+      "region": "深邃巢穴",
+      "region_en": "Deepnest",
+      "notes": "赫拉是守梦者；翼之诺斯克专属神居变体。",
+      "source": "https://hollowknight.wiki/w/Deepnest",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_深邃巢穴/HK-07_scene_01_蛛丝吞没的回廊.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_深邃巢穴/HK-07_scene_02_废弃电车的余温.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_深邃巢穴/HK-07_protagonist_01_提灯下的一小片安全.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_深邃巢穴/HK-07_protagonist_02_越过黑暗的裂口.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_深邃巢穴/HK-07_boss_01_诺斯克褪去伪装.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_深邃巢穴/HK-07_boss_02_加利安与旋转巨镰.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "HK-08",
+      "game": "Hollow Knight",
+      "region": "雾之峡谷",
+      "region_en": "Fog Canyon",
+      "notes": "乌姆在教师档案馆；莫诺蒙不是可正常交战Boss。",
+      "source": "https://hollowknight.wiki/w/Fog_Canyon",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_雾之峡谷/HK-08_scene_01_雾中水母群.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_雾之峡谷/HK-08_scene_02_教师档案馆的密室.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/K06_雾之峡谷·浮光探路.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_雾之峡谷/HK-08_protagonist_02_穿行透明伞影.png"
+          ],
+          "completed_new_images": 1
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_雾之峡谷/HK-08_boss_01_档案馆中的乌姆.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_雾之峡谷/HK-08_boss_02_雷光贯穿水面.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "HK-09",
+      "game": "Hollow Knight",
+      "region": "古老盆地",
+      "region_en": "Ancient Basin",
+      "notes": "失落近亲为破碎容器的梦境版本。",
+      "source": "https://hollowknight.wiki/w/Ancient_Basin",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_古老盆地/HK-09_scene_01_盆地旧站的回声.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_古老盆地/HK-09_scene_02_失落宫门的根痕.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/K07_古老盆地·微光相逢.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_古老盆地/HK-09_protagonist_02_君主之翼初展.png"
+          ],
+          "completed_new_images": 1
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_古老盆地/HK-09_boss_01_破碎容器的踉跄.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_古老盆地/HK-09_boss_02_梦中的失落近亲.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "HK-10",
+      "game": "Hollow Knight",
+      "region": "呼啸悬崖",
+      "region_en": "Howling Cliffs",
+      "notes": "戈布为梦境战士；格林剧团召唤点在此，Boss主战场在德特茅斯。",
+      "source": "https://hollowknight.wiki/w/Howling_Cliffs",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_呼啸悬崖/HK-10_scene_01_风从王国外吹来.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_呼啸悬崖/HK-10_scene_02_熄灭的剧团灯笼.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/K08_呼啸悬崖·风中远眺.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_呼啸悬崖/HK-10_protagonist_02_逆风跃上石脊.png"
+          ],
+          "completed_new_images": 1
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_呼啸悬崖/HK-10_boss_01_戈布的山巅梦影.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_呼啸悬崖/HK-10_boss_02_八方梦矛.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "HK-11",
+      "game": "Hollow Knight",
+      "region": "王国边缘",
+      "region_en": "Kingdom's Edge",
+      "notes": "黄蜂哨兵在蜕壳/王之印记一带；愚人斗兽场单列。",
+      "source": "https://hollowknight.wiki/w/Kingdom's_Edge",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_王国边缘/HK-11_scene_01_灰白飘落的边疆.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_王国边缘/HK-11_scene_02_蜕壳中的王道.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_王国边缘/HK-11_protagonist_01_白灰落在披风上.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_王国边缘/HK-11_protagonist_02_踏向蜕壳深处.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_王国边缘/HK-11_boss_01_王之印记前的守关者.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_王国边缘/HK-11_boss_02_马科斯的梦盾.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "HK-12",
+      "game": "Hollow Knight",
+      "region": "王后花园",
+      "region_en": "Queen's Gardens",
+      "notes": "叛徒领主与马尔穆；白色夫人、克洛丝另归NPC。",
+      "source": "https://hollowknight.wiki/w/Queen's_Gardens",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_王后花园/HK-12_scene_01_玻璃穹顶下的荒园.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_王后花园/HK-12_scene_02_白根守住的庭院.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_王后花园/HK-12_protagonist_01_花窗下的长椅.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_王后花园/HK-12_protagonist_02_荆棘间的一次腾跃.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_王后花园/HK-12_boss_01_叛徒领主的侧刃.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_王后花园/HK-12_boss_02_马尔穆的花间梦.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "HK-13",
+      "game": "Hollow Knight",
+      "region": "安息之地",
+      "region_en": "Resting Grounds",
+      "notes": "泽若为梦境战士；蓝湖并入本区域。",
+      "source": "https://hollowknight.wiki/w/Resting_Grounds",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_安息之地/HK-13_scene_01_守梦者碑前的暮光.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_安息之地/HK-13_scene_02_蓝湖的无声天幕.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_安息之地/HK-13_protagonist_01_墓道里的引路光.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_安息之地/HK-13_protagonist_02_梦之钉映亮旧碑.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_安息之地/HK-13_boss_01_泽若的双钉守望.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_安息之地/HK-13_boss_02_四钉交错的梦战.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "HK-14",
+      "game": "Hollow Knight",
+      "region": "皇家水道",
+      "region_en": "Royal Waterways",
+      "notes": "白色防御者为梦境；垃圾坑与伊斯玛树林并入本区域。",
+      "source": "https://hollowknight.wiki/w/Royal_Waterways",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_皇家水道/HK-14_scene_01_拱渠深处的滴水.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_皇家水道/HK-14_scene_02_伊斯玛树林的绿光.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_皇家水道/HK-14_protagonist_01_狭窄检修道.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_皇家水道/HK-14_protagonist_02_穿过伊斯玛的酸湖.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_皇家水道/HK-14_boss_01_粪骑士的豪爽登场.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_皇家水道/HK-14_boss_02_白色防御者的旧梦.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "HK-15",
+      "game": "Hollow Knight",
+      "region": "蜂巢",
+      "region_en": "The Hive",
+      "notes": "维斯帕女王不是可战斗Boss。",
+      "source": "https://hollowknight.wiki/w/The_Hive",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_蜂巢/HK-15_scene_01_金色六角穹顶.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_蜂巢/HK-15_scene_02_封存的蜜色王室.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_蜂巢/HK-15_protagonist_01_蜜蜡桥上的小白影.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_蜂巢/HK-15_protagonist_02_跃过碎裂蜂房.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_蜂巢/HK-15_boss_01_蜂巢骑士守御.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_蜂巢/HK-15_boss_02_金色剑光与蜂群.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "HK-16",
+      "game": "Hollow Knight",
+      "region": "白色宫殿",
+      "region_en": "White Palace",
+      "notes": "无独立命名Boss；国王模具是敌人，苍白之王是剧情遗体。Boss配额不适用。",
+      "source": "https://hollowknight.wiki/w/White_Palace",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/M04_白色宫殿·云上庭院.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_白色宫殿/HK-16_scene_02_荆棘与锯轮之庭.png"
+          ],
+          "completed_new_images": 1
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_白色宫殿/HK-16_protagonist_01_王座前的小小来客.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_白色宫殿/HK-16_protagonist_02_刀轮之间的银白跳跃.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 0,
+          "existing": 0,
+          "credited": 0,
+          "missing": 0,
+          "existing_paths": [],
+          "new_paths": [],
+          "completed_new_images": 0
+        }
+      }
+    },
+    {
+      "id": "HK-17",
+      "game": "Hollow Knight",
+      "region": "深渊",
+      "region_en": "The Abyss (Hollow Knight)",
+      "notes": "无实际发布的独立Boss；灯塔Boss与深渊扩展属未实现内容。不要将纯粹容器配为深渊Boss。",
+      "source": "https://hollowknight.wiki/w/The_Abyss_(Hollow_Knight)",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 3,
+          "credited": 2,
+          "missing": 0,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/04_深渊/A01_黑潮灯塔.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/04_深渊/A02_虚空之门.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/04_深渊/A03_静默黑海.png"
+          ],
+          "new_paths": [],
+          "completed_new_images": 0
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 2,
+          "credited": 2,
+          "missing": 0,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/04_深渊/A04_小骑士·微光独行.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/04_深渊/A05_小骑士·虚空觉醒.png"
+          ],
+          "new_paths": [],
+          "completed_new_images": 0
+        },
+        "boss": {
+          "target": 0,
+          "existing": 0,
+          "credited": 0,
+          "missing": 0,
+          "existing_paths": [],
+          "new_paths": [],
+          "completed_new_images": 0
+        }
+      }
+    },
+    {
+      "id": "HK-18",
+      "game": "Hollow Knight",
+      "region": "愚人斗兽场",
+      "region_en": "Colosseum of Fools",
+      "notes": "以神之驯服者、奥波路波作为优先主体；蒂索不是实际Boss。",
+      "source": "https://hollowknight.wiki/w/Colosseum_of_Fools",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_愚人斗兽场/HK-18_scene_01_巨壳中的空场.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_愚人斗兽场/HK-18_scene_02_斗士休息室.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/K10_竞技场·英姿落地.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_愚人斗兽场/HK-18_protagonist_02_尖刺上方的骨钉弧.png"
+          ],
+          "completed_new_images": 1
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_愚人斗兽场/HK-18_boss_01_神之驯服者与巨兽.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_愚人斗兽场/HK-18_boss_02_奥波路波的双重包围.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "HK-19",
+      "game": "Hollow Knight",
+      "region": "神居",
+      "region_en": "Godhome",
+      "notes": "列出本区专属/变体代表；此外几乎所有Boss均可在此重战，重复Boss不逐个复列。",
+      "source": "https://hollowknight.wiki/w/Godhome",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_神居/HK-19_scene_01_云海上的万神殿.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/补充_神居/HK-19_scene_02_诸神雕像的长廊.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_神居/HK-19_protagonist_01_拾级登向金色梦境.png",
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/02_小骑士场景/补充_神居/HK-19_protagonist_02_云上试炼前的停步.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/B03_纯粹容器·无声锋芒.png"
+          ],
+          "new_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/03_Boss/补充_神居/HK-19_boss_02_无上辐光的日轮.png"
+          ],
+          "completed_new_images": 1
+        }
+      }
+    },
+    {
+      "id": "SS-01",
+      "game": "Silksong",
+      "region": "苔藓洞窟",
+      "region_en": "Moss Grotto",
+      "notes": "含废弃教堂 Ruined Chapel；初战苔藓之母在教堂地下，Act 3另有黑丝版本。",
+      "source": "https://hollowknight.wiki/w/Moss_Grotto",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/SM01_苔藓洞窟·萤光湖庭.png"
+          ],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_苔藓洞窟/SS-01_scene_02_苔藓洞窟·废堂之下.png"
+          ],
+          "completed_new_images": 1
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/SH01_黄蜂女·苔庭初行.png"
+          ],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_苔藓洞窟/SS-01_protagonist_02_黄蜂女·跃向旧堂.png"
+          ],
+          "completed_new_images": 1
+        },
+        "boss": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/SB05_苔藓之母·翠羽振翅.png"
+          ],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_苔藓洞窟/SS-01_boss_02_苔藓之母·横掠石厅.png"
+          ],
+          "completed_new_images": 1
+        }
+      }
+    },
+    {
+      "id": "SS-02",
+      "game": "Silksong",
+      "region": "骸底镇",
+      "region_en": "Bone Bottom",
+      "notes": "骷髅暴君为完成髓骨洞窟同Boss后的条件再战；Summoned Saviour 在骸冢，仅钢铁之魂模式支线可战。",
+      "source": "https://hollowknight.wiki/w/Bone_Bottom",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_骸底镇/SS-02_scene_01_骸底镇·骨拱灯市.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_骸底镇/SS-02_scene_02_骸底镇·苔乡旧阶.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_骸底镇/SS-02_protagonist_01_黄蜂女·长椅歇脚.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_骸底镇/SS-02_protagonist_02_黄蜂女·跨过骨桥.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_骸底镇/SS-02_boss_01_骷髅暴君·镇口巨影.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_骸底镇/SS-02_boss_02_骷髅暴君·踏碎营地.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-03",
+      "game": "Silksong",
+      "region": "髓骨洞窟",
+      "region_en": "The Marrow",
+      "notes": "钟兽的原始Boss战在本区；后续钟道交通图不能一律当成本区。",
+      "source": "https://hollowknight.wiki/w/The_Marrow",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_髓骨洞窟/SS-03_scene_01_髓骨洞窟·群骸大道.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_髓骨洞窟/SS-03_scene_02_髓骨洞窟·钟道空厅.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_髓骨洞窟/SS-03_protagonist_01_黄蜂女·循骨而上.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_髓骨洞窟/SS-03_protagonist_02_黄蜂女·红花借力.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/SB02_钟兽·古钟轰鸣.png"
+          ],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_髓骨洞窟/SS-03_boss_02_骷髅暴君·骨冠怒跃.png"
+          ],
+          "completed_new_images": 1
+        }
+      }
+    },
+    {
+      "id": "SS-04",
+      "game": "Silksong",
+      "region": "深坞",
+      "region_en": "Deep Docks",
+      "notes": "蕾丝第一次战斗；本区为熔岩、锻造、升降机与铜铁设施。",
+      "source": "https://hollowknight.wiki/w/Deep_Docks",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 2,
+          "credited": 2,
+          "missing": 0,
+          "existing_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/SM03_深坞·炉火与铜桥.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/04_幽暗场景/SD02_深坞余烬·寂静炉心.png"
+          ],
+          "new_paths": [],
+          "completed_new_images": 0
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_深坞/SS-04_protagonist_01_黄蜂女·炉旁整针.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_深坞/SS-04_protagonist_02_黄蜂女·索桥疾跃.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/SB01_蕾丝·白刃圆舞.png"
+          ],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_深坞/SS-04_boss_02_蕾丝·炉光旋步.png"
+          ],
+          "completed_new_images": 1
+        }
+      }
+    },
+    {
+      "id": "SS-05",
+      "game": "Silksong",
+      "region": "远野",
+      "region_en": "Far Fields",
+      "notes": "后两项属于Act 3；不要把发售前珊瑚森林直接当远野。",
+      "source": "https://hollowknight.wiki/w/Far_Fields",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_远野/SS-05_scene_01_远野·风起草脊.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_远野/SS-05_scene_02_远野·旧兽与热风.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_远野/SS-05_protagonist_01_黄蜂女·红草听风.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_远野/SS-05_protagonist_02_黄蜂女·披风逐流.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_远野/SS-05_boss_01_第四圣咏团·熔谷巨躯.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_远野/SS-05_boss_02_第四圣咏团·重击断台.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-06",
+      "game": "Silksong",
+      "region": "猎者小径",
+      "region_en": "Hunter's March",
+      "notes": "正式Boss在子区野兽教堂；Skarrgard为精英敌人，不把它写成最终区域Boss。",
+      "source": "https://hollowknight.wiki/w/Hunter's_March",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_猎者小径/SS-06_scene_01_猎者小径·赤巢长廊.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_猎者小径/SS-06_scene_02_猎者小径·野兽空堂.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_猎者小径/SS-06_protagonist_01_黄蜂女·收针入猎径.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_猎者小径/SS-06_protagonist_02_黄蜂女·掠过尖骨.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_猎者小径/SS-06_boss_01_野蛮兽蝇·骨堂振翅.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_猎者小径/SS-06_boss_02_野蛮兽蝇·裂风俯冲.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-07",
+      "game": "Silksong",
+      "region": "钟心镇",
+      "region_en": "Bellhart",
+      "notes": "包含丝咒侵蚀及解放后的镇景。",
+      "source": "https://hollowknight.wiki/w/Bellhart",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_钟心镇/SS-07_scene_01_钟心镇·金钟人家.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_钟心镇/SS-07_scene_02_钟心镇·静封丝巷.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/SH04_黄蜂女·雨棚小憩.png"
+          ],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_钟心镇/SS-07_protagonist_02_黄蜂女·挑开镇中丝.png"
+          ],
+          "completed_new_images": 1
+        },
+        "boss": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/SB04_寡妇·银丝奏鸣.png"
+          ],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_钟心镇/SS-07_boss_02_寡妇·丝弦疾落.png"
+          ],
+          "completed_new_images": 1
+        }
+      }
+    },
+    {
+      "id": "SS-08",
+      "game": "Silksong",
+      "region": "壳木林",
+      "region_en": "Shellwood",
+      "notes": "Boss在女巫教堂一带；树木、枝条与神龛场景。",
+      "source": "https://hollowknight.wiki/w/Shellwood",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_壳木林/SS-08_scene_01_壳木林·盘根天穹.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_壳木林/SS-08_scene_02_壳木林·古墓湿阶.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_壳木林/SS-08_protagonist_01_黄蜂女·根桥独行.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_壳木林/SS-08_protagonist_02_黄蜂女·攀入枝巢.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_壳木林/SS-08_boss_01_碎枝女巫·高枝守门.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_壳木林/SS-08_boss_02_碎枝女巫·荆壁骤起.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-09",
+      "game": "Silksong",
+      "region": "灰沼",
+      "region_en": "Greymoor",
+      "notes": "沙克拉为Act 2支线后的友好决斗；Crawfather在Craw Lake/法庭，Act 3。",
+      "source": "https://hollowknight.wiki/w/Greymoor",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 3,
+          "credited": 2,
+          "missing": 0,
+          "existing_paths": [
+            "空洞骑士与丝之歌_素材25张_含深渊/素材/01_地图场景/M05_灰沼·钟塔迷雾.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/SM05_灰沼·风铃远城.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/04_幽暗场景/SD01_灰沼夜色·孤灯丝雨.png"
+          ],
+          "new_paths": [],
+          "completed_new_images": 0
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_灰沼/SS-09_protagonist_01_黄蜂女·半途之家.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_灰沼/SS-09_protagonist_02_黄蜂女·逐铃穿雾.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_灰沼/SS-09_boss_01_沼翼兽·塔前遮天.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_灰沼/SS-09_boss_02_沼翼兽·裂雾低掠.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-10",
+      "game": "Silksong",
+      "region": "沙噬虫道",
+      "region_en": "Wormways",
+      "notes": "Boss为Act 3炼金支线；其余时期主要是探索与精英战。",
+      "source": "https://hollowknight.wiki/w/Wormways",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_沙噬虫道/SS-10_scene_01_沙噬虫道·回旋石腹.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_沙噬虫道/SS-10_scene_02_沙噬虫道·炼金微光.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_沙噬虫道/SS-10_protagonist_01_黄蜂女·俯身过虫道.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_沙噬虫道/SS-10_protagonist_02_黄蜂女·取样之前.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_沙噬虫道/SS-10_boss_01_赞戈·蓝质复醒.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_沙噬虫道/SS-10_boss_02_赞戈·流质飞溅.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-11",
+      "game": "Silksong",
+      "region": "风蚀长阶",
+      "region_en": "Blasted Steps",
+      "notes": "Last Judge在巨扉圣门前，本区归属；Lost Garmond仅Act 3，区别于正常骑士与坐骑。",
+      "source": "https://hollowknight.wiki/w/Blasted_Steps",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_风蚀长阶/SS-11_scene_01_风蚀长阶·朝圣之路.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_风蚀长阶/SS-11_scene_02_风蚀长阶·飞舟风口.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_风蚀长阶/SS-11_protagonist_01_黄蜂女·攀向巨扉.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_风蚀长阶/SS-11_protagonist_02_黄蜂女·环间纵身.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/SB03_最终审判者·焰轮守门.png"
+          ],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_风蚀长阶/SS-11_boss_02_最终审判者·焰链横扫.png"
+          ],
+          "completed_new_images": 1
+        }
+      }
+    },
+    {
+      "id": "SS-12",
+      "game": "Silksong",
+      "region": "罪途",
+      "region_en": "Sinner's Road",
+      "notes": "卢戈利为后期开启的支线Boss。",
+      "source": "https://hollowknight.wiki/w/Sinner's_Road",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_罪途/SS-12_scene_01_罪途·悬笼暗街.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_罪途/SS-12_scene_02_罪途·旧厨铜锣.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_罪途/SS-12_protagonist_01_黄蜂女·笼下潜行.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_罪途/SS-12_protagonist_02_黄蜂女·迷口听声.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_罪途/SS-12_boss_01_失格大厨·敲锣登场.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_罪途/SS-12_boss_02_失格大厨·长勺破浪.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-13",
+      "game": "Silksong",
+      "region": "腐汁泽",
+      "region_en": "Bilewater",
+      "notes": "Phantom在废鸣管风琴 Exhaust Organ；Groal在腐安乡 Bilehaven。",
+      "source": "https://hollowknight.wiki/w/Bilewater",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_腐汁泽/SS-13_scene_01_腐汁泽·废鸣远廓.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_腐汁泽/SS-13_scene_02_腐汁泽·高脚隐乡.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_腐汁泽/SS-13_protagonist_01_黄蜂女·浊泽寻桥.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_腐汁泽/SS-13_protagonist_02_黄蜂女·管风琴下.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_腐汁泽/SS-13_boss_01_幻影·旧面守琴.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_腐汁泽/SS-13_boss_02_幻影·长针穿汽.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-14",
+      "game": "Silksong",
+      "region": "圣堡工厂",
+      "region_en": "Underworks",
+      "notes": "未发现独立命名Boss；敌群挑战不等于区域Boss。Boss配额不适用。",
+      "source": "https://hollowknight.wiki/w/Underworks",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_圣堡工厂/SS-14_scene_01_圣堡工厂·蒸汽深层.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_圣堡工厂/SS-14_scene_02_圣堡工厂·熔釜旧室.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_圣堡工厂/SS-14_protagonist_01_黄蜂女·检修道独行.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_圣堡工厂/SS-14_protagonist_02_黄蜂女·穿过蒸汽隙.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 0,
+          "existing": 0,
+          "credited": 0,
+          "missing": 0,
+          "existing_paths": [],
+          "new_paths": [],
+          "completed_new_images": 0
+        }
+      }
+    },
+    {
+      "id": "SS-15",
+      "game": "Silksong",
+      "region": "卡拉卡沙川",
+      "region_en": "Sands of Karak",
+      "notes": "后两项分别在电荷巢穴与珊瑚尖塔记忆；发售前Coral Forest/Red Coral Gorge相关景观应归到珊瑚尖塔创作。",
+      "source": "https://hollowknight.wiki/w/Sands_of_Karak",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_卡拉卡沙川/SS-15_scene_01_卡拉卡沙川·枯海珊阶.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_卡拉卡沙川/SS-15_scene_02_卡拉卡沙川·珊塔旧梦.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_卡拉卡沙川/SS-15_protagonist_01_黄蜂女·沙脊望塔.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_卡拉卡沙川/SS-15_protagonist_02_黄蜂女·电巢探路.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_卡拉卡沙川/SS-15_boss_01_伏特维姆·天花巢群.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_卡拉卡沙川/SS-15_boss_02_伏特维姆·落雷电柱.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-16",
+      "game": "Silksong",
+      "region": "罪石牢狱",
+      "region_en": "The Slab",
+      "notes": "First Sinner与The Wailing Mother支线Broodmother均有真实战场。",
+      "source": "https://hollowknight.wiki/w/The_Slab",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_罪石牢狱/SS-16_scene_01_罪石牢狱·锁井深处.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_罪石牢狱/SS-16_scene_02_罪石牢狱·初罪封室.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_罪石牢狱/SS-16_protagonist_01_黄蜂女·囚笼间隙.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_罪石牢狱/SS-16_protagonist_02_黄蜂女·封室之前.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_罪石牢狱/SS-16_boss_01_第一罪人·狱中织影.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_罪石牢狱/SS-16_boss_02_第一罪人·炽符回旋.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-17",
+      "game": "Silksong",
+      "region": "雪灵山",
+      "region_en": "Mount Fay",
+      "notes": "Pinstress是Act 3战斗；雪灵Fayforn为高峰角色，并非Boss。",
+      "source": "https://hollowknight.wiki/w/Mount_Fay",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_雪灵山/SS-17_scene_01_雪灵山·天风尽处.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_雪灵山/SS-17_scene_02_雪灵山·冰晶脉窟.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_雪灵山/SS-17_protagonist_01_黄蜂女·雪岭候风.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_雪灵山/SS-17_protagonist_02_黄蜂女·冰洞回跃.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_雪灵山/SS-17_boss_01_针师·雪峰相候.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_雪灵山/SS-17_boss_02_针师·金针落雪.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-18",
+      "game": "Silksong",
+      "region": "腐殖渠",
+      "region_en": "Putrified Ducts",
+      "notes": "无独立命名Boss；含苍湖 Pale Lake、蚤托邦 Fleatopia，适合跳蚤队伍与营地单独创作。",
+      "source": "https://hollowknight.wiki/w/Putrified_Ducts",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_腐殖渠/SS-18_scene_01_腐殖渠·旧管深绿.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_腐殖渠/SS-18_scene_02_腐殖渠·苍湖静岸.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_腐殖渠/SS-18_protagonist_01_黄蜂女·沿渠寻光.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_腐殖渠/SS-18_protagonist_02_黄蜂女·苍湖听线.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 0,
+          "existing": 0,
+          "credited": 0,
+          "missing": 0,
+          "existing_paths": [],
+          "new_paths": [],
+          "completed_new_images": 0
+        }
+      }
+    },
+    {
+      "id": "SS-19",
+      "game": "Silksong",
+      "region": "迷瘴",
+      "region_en": "The Mist",
+      "notes": "无独立命名Boss；迷路/导航区域，Boss配额不适用。",
+      "source": "https://hollowknight.wiki/w/The_Mist",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_迷瘴/SS-19_scene_01_迷瘴·无尽笼廊.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_迷瘴/SS-19_scene_02_迷瘴·废鸣将近.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_迷瘴/SS-19_protagonist_01_黄蜂女·驻足迷路.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_迷瘴/SS-19_protagonist_02_黄蜂女·循声出瘴.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 0,
+          "existing": 0,
+          "credited": 0,
+          "missing": 0,
+          "existing_paths": [],
+          "new_paths": [],
+          "completed_new_images": 0
+        }
+      }
+    },
+    {
+      "id": "SS-20",
+      "game": "Silksong",
+      "region": "火灵竹丛",
+      "region_en": "Wisp Thicket",
+      "notes": "从灰沼隐藏入口进入；在世界缩略图中依附灰沼，但独立列为素材区域。",
+      "source": "https://hollowknight.wiki/w/Wisp_Thicket",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_火灵竹丛/SS-20_scene_01_火灵竹丛·幽火深径.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_火灵竹丛/SS-20_scene_02_火灵竹丛·焚祭空坛.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_火灵竹丛/SS-20_protagonist_01_黄蜂女·暗竹微焰.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_火灵竹丛/SS-20_protagonist_02_黄蜂女·提灯离坛.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_火灵竹丛/SS-20_boss_01_焰父·众火之像.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_火灵竹丛/SS-20_boss_02_焰父·焚身升光.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-21",
+      "game": "Silksong",
+      "region": "阿特拉织巢",
+      "region_en": "Weavenest Atla",
+      "notes": "双苔藓之母战斗；Eva是NPC。泛称织巢遗迹的旧图不能未经核对强行归此。",
+      "source": "https://hollowknight.wiki/w/Weavenest_Atla",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_阿特拉织巢/SS-21_scene_01_阿特拉织巢·苔门遗构.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_阿特拉织巢/SS-21_scene_02_阿特拉织巢·铁壳工坊.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_阿特拉织巢/SS-21_protagonist_01_黄蜂女·拨弦开织门.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_阿特拉织巢/SS-21_protagonist_02_黄蜂女·穿行旧工坊.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_阿特拉织巢/SS-21_boss_01_双苔藓之母·织巢栖息.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_阿特拉织巢/SS-21_boss_02_双苔藓之母·交错振翼.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-22",
+      "game": "Silksong",
+      "region": "翠庭",
+      "region_en": "Verdania",
+      "notes": "正式Boss战发生在失落的翠庭 Lost Verdania记忆；现实废墟与繁盛记忆建议各一张。",
+      "source": "https://hollowknight.wiki/w/Verdania",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_翠庭/SS-22_scene_01_翠庭·王国余绿.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_翠庭/SS-22_scene_02_翠庭·失落春庭.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_翠庭/SS-22_protagonist_01_黄蜂女·废庭轻步.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_翠庭/SS-22_protagonist_02_黄蜂女·逐光过翠境.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_翠庭/SS-22_boss_01_三叶舞者·旧王双影.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_翠庭/SS-22_boss_02_三叶舞者·合旋花庭.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-23",
+      "game": "Silksong",
+      "region": "深渊",
+      "region_en": "The Abyss (Silksong)",
+      "notes": "与HK深渊分游戏建目录；Lost Lace为Act 3结局Boss，含阿布索隆织巢子区。",
+      "source": "https://hollowknight.wiki/w/The_Abyss_(Silksong)",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_深渊/SS-23_scene_01_丝歌深渊·潜钟尽头.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_深渊/SS-23_scene_02_丝歌深渊·阿布索隆遗门.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_深渊/SS-23_protagonist_01_黄蜂女·潜钟下行.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_深渊/SS-23_protagonist_02_黄蜂女·丝升破暗.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_深渊/SS-23_boss_01_迷失蕾丝·黑丝复醒.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_深渊/SS-23_boss_02_迷失蕾丝·暗潮俯坠.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-24",
+      "game": "Silksong",
+      "region": "赤红忆境",
+      "region_en": "Red Memory",
+      "notes": "无独立命名Boss；属于黄蜂的过去记忆，Boss配额不适用。",
+      "source": "https://hollowknight.wiki/w/Red_Memory",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_赤红忆境/SS-24_scene_01_赤红忆境·织村旧梦.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_赤红忆境/SS-24_scene_02_赤红忆境·蜜光旧日.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_赤红忆境/SS-24_protagonist_01_黄蜂女·红线寻家.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_赤红忆境/SS-24_protagonist_02_黄蜂女·苍宫回望.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 0,
+          "existing": 0,
+          "credited": 0,
+          "missing": 0,
+          "existing_paths": [],
+          "new_paths": [],
+          "completed_new_images": 0
+        }
+      }
+    },
+    {
+      "id": "SS-25",
+      "game": "Silksong",
+      "region": "摇篮圣所",
+      "region_en": "The Cradle",
+      "notes": "蕾丝第二战与丝母主战场；无名镇 Nameless Town作为本区子场景，后续可单独扩展。",
+      "source": "https://hollowknight.wiki/w/The_Cradle",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_摇篮圣所/SS-25_scene_01_摇篮圣所·白花天阶.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_摇篮圣所/SS-25_scene_02_摇篮圣所·空织机之巅.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_摇篮圣所/SS-25_protagonist_01_黄蜂女·白花望归.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_摇篮圣所/SS-25_protagonist_02_黄蜂女·登临丝穹.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_摇篮圣所/SS-25_boss_01_蕾丝·白花再会.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_摇篮圣所/SS-25_boss_02_丝母·穹顶苏醒.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-26",
+      "game": "Silksong",
+      "region": "圣歌回廊（圣咏殿）",
+      "region_en": "Choral Chambers",
+      "notes": "旧目录圣歌回廊对应Choral Chambers，游戏简中名圣咏殿。噬钟兽为Act 3首次使用任一钟道的流动遭遇，可发生在此区圣堡钟道，非本区独占Boss。",
+      "source": "https://hollowknight.wiki/w/Choral_Chambers",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 1,
+          "credited": 1,
+          "missing": 1,
+          "existing_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/SM04_圣歌回廊·金色穹顶.png"
+          ],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_圣歌回廊（圣咏殿）/SS-26_scene_02_圣咏殿·盟地灯廊.png"
+          ],
+          "completed_new_images": 1
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_圣歌回廊（圣咏殿）/SS-26_protagonist_01_黄蜂女·圣廊行旅.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_圣歌回廊（圣咏殿）/SS-26_protagonist_02_黄蜂女·钟道起跃.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_圣歌回廊（圣咏殿）/SS-26_boss_01_噬钟兽·圣堡钟道侵入.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_圣歌回廊（圣咏殿）/SS-26_boss_02_噬钟兽·环躯锁道.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-27",
+      "game": "Silksong",
+      "region": "机枢核心",
+      "region_en": "Cogwork Core",
+      "notes": "机械舞者主战场；Second Sentinel可作为NPC出现，真正战斗在高庭。",
+      "source": "https://hollowknight.wiki/w/Cogwork_Core",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_机枢核心/SS-27_scene_01_机枢核心·万齿回环.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_机枢核心/SS-27_scene_02_机枢核心·升降静室.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_机枢核心/SS-27_protagonist_01_黄蜂女·齿轮间停步.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_机枢核心/SS-27_protagonist_02_黄蜂女·机枢飞线.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_机枢核心/SS-27_boss_01_机械舞者·双影开幕.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_机枢核心/SS-27_boss_02_机械舞者·交刃回旋.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-28",
+      "game": "Silksong",
+      "region": "巨扉圣门",
+      "region_en": "Grand Gate",
+      "notes": "两项Boss均属Act 3；Last Judge属于紧邻的风蚀长阶。",
+      "source": "https://hollowknight.wiki/w/Grand_Gate",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_巨扉圣门/SS-28_scene_01_巨扉圣门·天平长桥.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_巨扉圣门/SS-28_scene_02_巨扉圣门·树心秘龛.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_巨扉圣门/SS-28_protagonist_01_黄蜂女·穿过巨门.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_巨扉圣门/SS-28_protagonist_02_黄蜂女·向树心低吟.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_巨扉圣门/SS-28_boss_01_圣所守护者·金针铜盾.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_巨扉圣门/SS-28_boss_02_尼蕾丝·花心旧忆.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-29",
+      "game": "Silksong",
+      "region": "高庭",
+      "region_en": "High Halls",
+      "notes": "大议厅 The Forum是敌群挑战，不虚构同名Boss。",
+      "source": "https://hollowknight.wiki/w/High_Halls",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_高庭/SS-29_scene_01_高庭·烛台与高穹.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_高庭/SS-29_scene_02_高庭·寂静议厅.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_高庭/SS-29_protagonist_01_黄蜂女·高廊缓行.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_高庭/SS-29_protagonist_02_黄蜂女·议厅独奏.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_高庭/SS-29_boss_01_第二哨兵·剪刃守庭.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_高庭/SS-29_boss_02_第二哨兵·剪光凌空.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-30",
+      "game": "Silksong",
+      "region": "忆廊",
+      "region_en": "Memorium",
+      "notes": "无独立命名Boss；用记忆结构、档案与主角探索，Boss配额不适用。",
+      "source": "https://hollowknight.wiki/w/Memorium",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_忆廊/SS-30_scene_01_忆廊·封存的原野.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_忆廊/SS-30_scene_02_忆廊·失声鸟庭.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_忆廊/SS-30_protagonist_01_黄蜂女·假林观微.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_忆廊/SS-30_protagonist_02_黄蜂女·跃上标本层.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 0,
+          "existing": 0,
+          "credited": 0,
+          "missing": 0,
+          "existing_paths": [],
+          "new_paths": [],
+          "completed_new_images": 0
+        }
+      }
+    },
+    {
+      "id": "SS-31",
+      "game": "Silksong",
+      "region": "低语书库",
+      "region_en": "Whispering Vaults",
+      "notes": "骑士与坐骑在书库屋顶友好决斗；Trobbio及其变体在子区剧台 The Stage。",
+      "source": "https://hollowknight.wiki/w/Whispering_Vaults",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_低语书库/SS-31_scene_01_低语书库·藏卷回廊.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_低语书库/SS-31_scene_02_低语书库·剧台空幕.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_低语书库/SS-31_protagonist_01_黄蜂女·卷架寻声.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_低语书库/SS-31_protagonist_02_黄蜂女·屋顶远望.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_低语书库/SS-31_boss_01_加蒙德与扎扎·屋顶邀战.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_低语书库/SS-31_boss_02_特罗比奥·红翼登台.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    },
+    {
+      "id": "SS-32",
+      "game": "Silksong",
+      "region": "白愈厅",
+      "region_en": "Whiteward",
+      "notes": "应突出医护、白色病厅与解缚躯体，不把寡妇误配到此。",
+      "source": "https://hollowknight.wiki/w/Whiteward",
+      "categories": {
+        "scene": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_白愈厅/SS-32_scene_01_白愈厅·空床长廊.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/01_地图场景/补充_白愈厅/SS-32_scene_02_白愈厅·弃丝深井.png"
+          ],
+          "completed_new_images": 2
+        },
+        "protagonist": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_白愈厅/SS-32_protagonist_01_黄蜂女·白厅轻行.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/02_黄蜂女场景/补充_白愈厅/SS-32_protagonist_02_黄蜂女·弃丝井沿.png"
+          ],
+          "completed_new_images": 2
+        },
+        "boss": {
+          "target": 2,
+          "existing": 0,
+          "credited": 0,
+          "missing": 2,
+          "existing_paths": [],
+          "new_paths": [
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_白愈厅/SS-32_boss_01_解缚者·弃丝成躯.png",
+            "丝之歌25张_小骑士黄蜂女联动5张/素材/丝之歌/03_Boss/补充_白愈厅/SS-32_boss_02_解缚者·破井疾涌.png"
+          ],
+          "completed_new_images": 2
+        }
+      }
+    }
+  ]
+}
