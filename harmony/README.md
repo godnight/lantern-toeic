@@ -4,7 +4,7 @@
 
 自2026-09-13起，HarmonyOS是项目唯一主动维护的原生平台；Android/iOS工程、工作流和Capacitor依赖已删除，旧源码只在Git历史保留。平台决策见 [RFC 0001](../docs/rfcs/0001-harmony-only-platform.md)，真实手机号注册登录及联网数据方案见 [RFC 0002](../docs/rfcs/0002-phone-auth-and-online-data.md)。
 
-**当前没有可安装的 HAP。** 已验证共享前端构建和资源复制，尚未运行 HarmonyOS SDK 的 ArkTS 编译、资源编译、签名或真机验收。`HarmonyOS shared asset check` 工作流生成的文件只是网页资源，不能安装到手机。
+**2026-09-15 已使用官方 HarmonyOS SDK 完成 ArkTS、资源编译及 HAP 打包，产出未签名调试包。** 仍未签名或在设备上运行，不能直接交给商业鸿蒙手机安装。`HarmonyOS shared asset check` 工作流生成的文件仍只是网页资源和脚本检查，不能代替本地原生编译；实际证据见 [编译记录](../docs/testing/HARMONY_OFFLINE_BUILD.md)。
 
 工程已声明 `ohos.permission.INTERNET`，但当前学习数据仍是本机模式；权限声明本身不等于认证或云同步。手机号入口要等真实AGC项目配置、短信服务和令牌验证到位后才启用，不放固定验证码或纯前端假登录。
 
@@ -28,11 +28,32 @@ npm --prefix harmony run check:auth
 先运行 `node harmony/scripts/check-toolchain.mjs --sdk=/你的SDK目录`（在仓库根目录）。命令只检查工具及目录是否存在，缺项时退出码为2；它不认证SDK版本、不安装工具、不生成HAP。`--report-only` 可用于收集缺项报告。SDK目录也可通过本机 `LANTERN_HARMONY_SDK` 设置，不提交本机路径或签名材料。
 
 1. 使用 [DevEco Studio](https://developer.huawei.com/consumer/en/deveco-studio/) 打开本目录，安装匹配的 HarmonyOS SDK，完成工程依赖同步。
-2. 当前工程模型和编译/目标/兼容 SDK 基线为 `5.0.0(12)`，这不是最新 SDK 的声明。如果当前 IDE 要求升级工程模型或编译 SDK，通过其正常升级流程处理；提高最低兼容版本前先核对目标手机。
+2. 当前编译 SDK 为 `5.1.0(18)`；目标及最低兼容版本仍为 `5.0.0(12)`。已用 5.1.0.125 Release SDK 编译通过；提高最低兼容版本前仍须核对目标手机。
 3. 在工程签名设置中配置开发签名，选择已连接的鸿蒙手机或模拟器，构建并运行 `entry` 模块。
 4. 编译成功后再做下列设备验收；完成前不把工程标记为已交付的鸿蒙安装包。
 
-上轮工具检查能找到Hvigor启动入口，但缺少完整SDK、OHPM和HDC；新环境应重新运行工具链检查。仓库不包含SDK、签名私钥、证书、设备授权文件或本机路径。实际签名配置应保留在开发者本地，不提交凭据。
+旧工具检查曾把工程内 `hvigor/` 目录误判为启动程序，现已要求普通可执行文件，并增加回归测试。工具存在仍不等于编译通过。仓库不包含 SDK、签名私钥、证书、设备授权文件或本机路径，实际签名配置保留在开发者本地。
+
+## Linux / WSL 构建未签名离线包
+
+已验证组合为官方 Command Line Tools linux-x64 5.1.0.840、其中的 HarmonyOS SDK 5.1.0.125 / API 18、Hvigor 5.18.5、OHPM 5.1.3，以及 OpenJDK 21。工具来自 [华为公开目录](https://repo.huaweicloud.com/harmonyos/ohpm/5.1.0/)，下载后先核对官方 `.sha256`。下载校验值和环境说明见编译记录。
+
+先在根目录运行 `npm --prefix harmony run sync:web`，然后在 Linux / WSL 中：
+
+```sh
+export JAVA_HOME=/你的JDK目录
+export LANTERN_HARMONY_CLT=/你的工具链/command-line-tools
+bash harmony/scripts/build-offline.sh
+```
+
+脚本先检查共享资源是否与 `mobile/dist` 一致，再复制到全新 ASCII 临时目录编译，避免 Hvigor 拒绝中文工程路径以及旧文件混入包体。只支持未配置签名的源码工程，不复制签名和 AGC 材料。退出时清理临时目录，结果保留在被 Git 忽略的 `harmony/build/offline/`，可通过 `LANTERN_HARMONY_OUTPUT` 更改输出目录。
+
+产物包含 `entry-default-unsigned.hap`、`build.log` 和 `package-verification.json`。校验器检查原生字节码、应用标识、API 兼容级别，以及每个网页资源与当前源清单的字节和 SHA-256。报告不声称验证过签名或设备。单独复核：
+
+```sh
+python3 harmony/scripts/verify-hap.py harmony/build/offline/entry-default-unsigned.hap \
+  --web harmony/entry/src/main/resources/rawfile/web
+```
 
 ## 容器边界
 

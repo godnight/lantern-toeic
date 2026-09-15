@@ -464,7 +464,9 @@ struct Index {
         })
         .onPageBegin(() => this.pageBegin())
         .onPageEnd((event) => this.pageEnd(event.url))
-        .onInterceptRequest((event) => this.intercept(event.request))
+        // SDK 18 documents null as pass-through, but its callback type omits null.
+        // Keep that runtime behavior for blob audio and other non-bundled resources.
+        .onInterceptRequest((event) => this.intercept(event.request)!)
         .onLoadIntercept((event) => this.handleNavigation(event.data))
         .onWindowNew((event) => this.handleNewWindow(event))
         .onPermissionRequest((event) => {

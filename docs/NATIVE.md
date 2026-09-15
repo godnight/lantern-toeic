@@ -10,7 +10,7 @@ npm --prefix harmony run sync:web
 npm --prefix harmony run check:web
 ```
 
-这只构建并核对鸿蒙网页资源。HAP编译、签名、安装和真机验收需要DevEco Studio、HarmonyOS SDK及授权设备。工程声明联网权限，但原生学习数据仍保存在本机，手机号认证和跨设备同步尚待实现。
+以上命令只构建并核对鸿蒙网页资源。2026-09-15 已另用官方 SDK 实际编译出未签名 HAP；可复用 `harmony/scripts/build-offline.sh` 在 Linux / WSL 重建。签名、安装及设备验收仍未完成，见[编译记录](testing/HARMONY_OFFLINE_BUILD.md)。工程声明联网权限，但原生学习数据仍保存在本机，手机号认证和跨设备同步尚待实现。
 
 - [鸿蒙构建、权限与设备验收](../harmony/README.md)
 - [平台范围RFC](rfcs/0001-harmony-only-platform.md)

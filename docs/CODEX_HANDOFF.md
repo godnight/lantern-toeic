@@ -1,10 +1,10 @@
 # Codex 开发交接
 
-更新：2026-09-13。代码仓库：[godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)。当前只维护Web/PWA和HarmonyOS；Android/iOS工程、专用工作流及Capacitor已删除，旧源码留在Git历史。
+更新：2026-09-15。代码仓库：[godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)。当前只维护Web/PWA和HarmonyOS；Android/iOS工程、专用工作流及Capacitor已删除，旧源码留在Git历史。
 
 ## 先选对分支
 
-v0.2.4 的 [PR #18](https://github.com/godnight/lantern-toeic/pull/18) 已于 2026-09-13 合并，合并提交为 `9229c112737f3a69bfcd4eeab4dd7f3073e44bc7`。Issue #8 数据基础已由 PR #20 合并（main `3ab8f725d78712f7cf59196118fd34823d1b16c9`），Site 第 5 版发布成功。本轮地图改版使用 `feat/map-worlds`；接续时查看该分支的 PR 状态：
+PR #18 平台收敛、PR #20 数据基础、PR #21 地图改版和 PR #22 去地名文案均已合并。2026-09-15 核实 GitHub main 为 `f860663b53a4d29edf0097c7afdd06cca9964ee7`。本轮鸿蒙离线包工作使用 `feat/harmony-offline-hap`；接续时查看该分支的 PR 状态：
 
 - PR未合并：从PR分支接续，不能只检出main后重做或遗漏现有工作。
 - PR已合并：拉取最新main，再创建任务分支。
@@ -29,11 +29,11 @@ bash scripts/codex-setup.sh
 | Web/PWA | 今日任务、练习解析、口语录音、复习、周复盘、资料书库及鸿蒙桌面指引 | 目前用ChatGPT托管身份，手机号认证未实现 |
 | 在线版本 | 原私有 Site 地址及 custom/owner 权限保持；发布前已核实第 4 版成功 | 本轮版本以 Sites 实际部署状态及 PR 交付记录为准，GitHub 合并不等于部署 |
 | 题库与美术 | 68道原创听读题、5类口语、22条官方资料；3主题、8幅原创图、19个外部参考 | 待真人审校；听力用系统朗读；没有正式分数标定或AI口语评分 |
-| HarmonyOS | ArkTS/ArkUI/ArkWeb工程、联网声明、本地资源、录音/权限/前后台/返回桥 | 原生仍本机存储；未生成、签名或真机验证HAP |
+| HarmonyOS | 官方SDK已编译未签名HAP、原生字节码、195项内置资源；153段离线音频及播放器保护 | 原生仍本机存储；签名、模拟器/手机运行和录音验收未完成 |
 | Android/iOS | 当前源码树已删除工程、工作流、配置和依赖 | 历史报告和旧Git提交只用于追溯 |
 | 栏目地图 | 五栏独立地图、统一状态栏、缩略图导航、场景行程卡；320/390/1440px 浏览器检查 | 使用用户素材派生图，来源见 art/MAP_LAYOUT.md；真机另验 |
 | 数据基础 | schemaVersion=2、标记/任务的离线日志与服务端同步、幂等 JSON 备份恢复、追加式 SQL 迁移 | 错因/任务编辑和备份恢复界面仍未提供；录音备份无音频文件 |
-| 验证 | 本地类型、43 项行为回归、Web 构建、5 项产物检查、鸿蒙共享构建及 42 项资源核对通过 | CI 最终结论见 PR；旧全量 Lint 未通过；手机设备需单独验收 |
+| 验证 | 类型、48项行为回归、Web构建及5项产物检查、195项原生资源核对、实际HAP编译；另有8项构建辅助脚本回归 | CI最终结论见PR；旧全量Lint未通过；手机设备需单独验收 |
 | 手机号认证 | RFC记录候选架构、真实前置、用户与Codex分工；readiness缺项会阻止通过 | 中国大陆短信需额外短信服务；AGC配置、令牌后端、费用与设备验收尚未到位 |
 | GitHub流程 | Core、Harmony共享资源、源码预发布工作流，Issue/PR模板、CODEOWNERS | main分支保护和依赖问题仍由既有Issue跟踪，不假定设置已启用 |
 
@@ -67,7 +67,7 @@ node harmony/scripts/check-toolchain.mjs --report-only
 
 `check:auth`仅报告前置，不会发送短信；`require:auth`缺配置时返回2。AGC配置路径为 `harmony/AppScope/resources/rawfile/agconnect-services.json`，不提交Git。HAP还需DevEco/SDK/OHPM/HDC、签名及设备；共享网页检查不能代替这些验收。配置和区域要求见 [RFC 0002](rfcs/0002-phone-auth-and-online-data.md)。
 
-Windows 本轮用 Node 24.13.1、`npm ci` 安装锁定依赖，通过 Git Bash 执行现有 `scripts/build-verified.sh` 完成 Web 构建；无需改写项目构建脚本。当前机器未找到 DevEco、SDK、OHPM、HDC 和 Java，没有生成 HAP。
+Windows 用 Node 24.13.1 和根目录锁定依赖，Git Bash 执行现有 Web 构建。2026-09-15 已在 WSL Ubuntu 安装官方 Linux CLT 5.1.0.840 / HarmonyOS SDK 5.1.0.125，用 OpenJDK 21 编译出未签名 HAP。`harmony/scripts/build-offline.sh` 自动在 ASCII 临时目录构建并核对包体；环境变量和官方校验值见 [编译记录](testing/HARMONY_OFFLINE_BUILD.md)。当前缺的是签名及可运行的模拟器/手机环境，不再缺少编译 SDK。
 
 ## 哪些已在GitHub，哪些不会随Git迁移
 
@@ -79,7 +79,7 @@ Windows 本轮用 Node 24.13.1、`npm ci` 安装锁定依赖，通过 Git Bash �
 | commit-work skill | 已安装到当前Codex个人环境；新环境不会自动继承，核心提交规范已记录于CONTRIBUTING.md |
 | 学习记录与录音 | 生产D1/R2或设备localStorage/IndexedDB；不在Git。现有JSON导出不包含录音文件，迁移前另做音频备份 |
 | 账号连接、托管身份、短信密钥、签名、AGC配置 | 外部平台或安全环境；不在Git，也不应公开提交 |
-| SDK、依赖、生成网页资源、HAP | 按锁文件和脚本在目标环境重建；当前尚无HAP |
+| SDK、依赖、生成网页资源、HAP | SDK不进Git；按文档重建，已有未签名HAP及校验报告保存在本机构建输出目录 |
 
 因此GitHub足够接管源码开发，但不等于线上数据、外部权限、个人skill或手机环境已经搬迁。代码仓库公开，不放真实手机号、验证码、私密录音或密钥。
 
@@ -91,11 +91,11 @@ Windows 本轮用 Node 24.13.1、`npm ci` 安装锁定依赖，通过 Git Bash �
 
 后续优先级：
 
-1. [RFC 0002](rfcs/0002-phone-auth-and-online-data.md)：先确定号码地区、供应商和HTTPS认证后端；用户负责本人账号/认证/计费/设备授权，Codex负责SDK、短信接口、令牌验证、数据隔离和测试。既有Site权限是否改为公开入口须另确认，不能因手机号登录而直接公开学习数据。
-2. [#1 鸿蒙HAP](https://github.com/godnight/lantern-toeic/issues/1)、[#2 签名与备份](https://github.com/godnight/lantern-toeic/issues/2)：获取可用工具链并完成编译、签名、覆盖升级与真机验收。
+1. 用户最新优先级是离线版。[#1 鸿蒙HAP](https://github.com/godnight/lantern-toeic/issues/1)、[#2 签名与备份](https://github.com/godnight/lantern-toeic/issues/2)：编译已通过，继续配置官方模拟器/签名，验证断网启动、听力、记录和录音持久化、导出与覆盖升级。用户需提供手机信息及本人华为账号/设备授权。
+2. [RFC 0002](rfcs/0002-phone-auth-and-online-data.md)：手机号及联网版独立跟进，先确定号码地区、供应商和HTTPS认证后端。用户负责本人账号/认证/计费，Codex负责SDK、短信接口、令牌验证、数据隔离和测试。既有Site权限是否改为公开入口须另确认，不能因手机号登录而直接公开学习数据。
 3. [#8 数据模型](https://github.com/godnight/lantern-toeic/issues/8) 本轮实现，先读 [RFC 0003](rfcs/0003-study-data-v2.md) 及关联 PR；继续 [#9 错因界面](https://github.com/godnight/lantern-toeic/issues/9)、[#10 每日计划](https://github.com/godnight/lantern-toeic/issues/10)。[#3 同步](https://github.com/godnight/lantern-toeic/issues/3) 已关闭，真实跨设备同步、下载及 PWA 验收继续跟踪 [#17](https://github.com/godnight/lantern-toeic/issues/17)。
 4. [#4 依赖](https://github.com/godnight/lantern-toeic/issues/4)、[#5 仓库保护](https://github.com/godnight/lantern-toeic/issues/5)、[#6 内容审校](https://github.com/godnight/lantern-toeic/issues/6)：沿用现有追踪，不重复建单。
 
 ## 可直接交给Codex的任务
 
-> 接续 godnight/lantern-toeic。PR #18 已合并；先核对 feat/map-worlds 的 PR，未合并从该分支接续，已合并从最新 main 开始。读取 AGENTS.md、docs/CODEX_HANDOFF.md 及 docs/rfcs/。只维护 HarmonyOS 和 Web/PWA。数据基础已实现，继续错因/计划界面时复用现有操作日志、版本合并及 API，不重做迁移。手机号认证与 HAP 仍需真实服务和工具链。按 CONTRIBUTING.md 提交、验证和更新交接。
+> 接续 godnight/lantern-toeic。先核对 feat/harmony-offline-hap 的 PR，未合并从该分支接续，已合并从最新 main 开始。读取 AGENTS.md、本交接及 docs/testing/HARMONY_OFFLINE_BUILD.md。只维护 HarmonyOS 和 Web/PWA。优先交付离线版：官方 SDK 已实际生成未签名 HAP，153 段内置语音已接入；继续模拟器/手机运行、签名、断网学习与持久化验收。手机号和云同步不阻塞离线开发。按 CONTRIBUTING.md 提交、验证和更新交接。

@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['art/**', 'harmony/**', 'app/**', 'lib/**', 'components/**', 'content/**', 'public/**', 'mobile/vite.config.ts', 'mobile/src/**', 'package-lock.json', '.github/workflows/harmony-web.yml']
+    paths: ['art/**', 'harmony/**', 'app/**', 'lib/**', 'components/**', 'content/**', 'public/**', 'mobile/**', 'package-lock.json', '.github/workflows/harmony-web.yml']
   pull_request:
-    paths: ['art/**', 'harmony/**', 'app/**', 'lib/**', 'components/**', 'content/**', 'public/**', 'mobile/vite.config.ts', 'mobile/src/**', 'package-lock.json', '.github/workflows/harmony-web.yml']
+    paths: ['art/**', 'harmony/**', 'app/**', 'lib/**', 'components/**', 'content/**', 'public/**', 'mobile/**', 'package-lock.json', '.github/workflows/harmony-web.yml']
 permissions:
   contents: read
 concurrency:
@@ -24,6 +24,10 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - name: Check native build helpers (no SDK compilation)
+        run: |
+          node --test harmony/tests/toolchain.test.mjs
+          python3 -B -m unittest discover -s harmony/tests -p 'test_*.py'
       - run: npm --prefix harmony run sync:web
       - run: npm --prefix harmony run check:web
       - name: Upload verified web resources (not an installable HAP)
