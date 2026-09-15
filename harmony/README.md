@@ -62,6 +62,7 @@ python3 harmony/scripts/verify-hap.py harmony/build/offline/entry-default-unsign
 - 允许 DOM 存储，禁用文件访问、混合内容与位置访问。外部 HTTPS 链接交给系统处理，系统可能打开浏览器或匹配的应用。
 - 原生返回键先询问 React：处理录音、关闭弹窗、退出练习或回到首页；页面明确表示没有待处理内容后，才查询 Web 历史或双击返回退出。桥接未就绪、异常或超时都阻止直接退出。
 - 本机学习记录与网页账号尚不互通；删除应用可能丢失本机进度与录音。没有把网页身份或令牌注入原生容器。
+- 已接入实例级 `WebDownloadDelegate`，将记录 JSON、复盘 Markdown、录音兜底下载和两份内置素材包保存到系统 `Download/com.lantern.toeic/`。只接收可信本地页面的已知文件名/MIME或固定 rawfile 素材，不增加任意 JavaScript 文件系统桥或存储权限。使用 API 12 的 Picker DOWNLOAD 模式取得下载目录，随机文件名避免正常重试覆盖旧导出；目标路径和实际字节数核对后才提示成功。换页/销毁取消当前任务，旧回调不能写入新页面的任务。SDK 编译与8项源码回归通过，文件管理器可见性及真实录音下载仍待设备验收。
 
 ## 真机验收待办
 

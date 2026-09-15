@@ -4,7 +4,7 @@
 
 ## 先选对分支
 
-PR #18 平台收敛、PR #20 数据基础、PR #21 地图改版和 PR #22 去地名文案均已合并。2026-09-15 核实 GitHub main 为 `f860663b53a4d29edf0097c7afdd06cca9964ee7`。本轮鸿蒙离线包工作使用 `feat/harmony-offline-hap`；接续时查看该分支的 PR 状态：
+PR #18 平台收敛、PR #20 数据基础、PR #21 地图改版、PR #22 去地名文案及 PR #24 离线HAP/内置语音均已合并。PR #24 合并后 GitHub main 为 `a7e7d06a395e3ceec184c589e53e0b45769a96d4`。本轮导出落盘修复使用 `fix/harmony-native-exports`；接续时查看该分支的 PR 状态：
 
 - PR未合并：从PR分支接续，不能只检出main后重做或遗漏现有工作。
 - PR已合并：拉取最新main，再创建任务分支。
@@ -29,7 +29,7 @@ bash scripts/codex-setup.sh
 | Web/PWA | 今日任务、练习解析、口语录音、复习、周复盘、资料书库及鸿蒙桌面指引 | 目前用ChatGPT托管身份，手机号认证未实现 |
 | 在线版本 | 原私有 Site 地址及 custom/owner 权限保持；发布前已核实第 4 版成功 | 本轮版本以 Sites 实际部署状态及 PR 交付记录为准，GitHub 合并不等于部署 |
 | 题库与美术 | 68道原创听读题、5类口语、22条官方资料；3主题、8幅原创图、19个外部参考 | 待真人审校；听力用系统朗读；没有正式分数标定或AI口语评分 |
-| HarmonyOS | 官方SDK已编译未签名HAP、原生字节码、195项内置资源；153段离线音频及播放器保护 | 原生仍本机存储；签名、模拟器/手机运行和录音验收未完成 |
+| HarmonyOS | 官方SDK已编译未签名HAP、195项资源、153段离线音频；新增系统下载目录导出及8项回归 | 原生仍本机存储；签名、模拟器/手机运行、文件管理器可见性和录音验收未完成 |
 | Android/iOS | 当前源码树已删除工程、工作流、配置和依赖 | 历史报告和旧Git提交只用于追溯 |
 | 栏目地图 | 五栏独立地图、统一状态栏、缩略图导航、场景行程卡；320/390/1440px 浏览器检查 | 使用用户素材派生图，来源见 art/MAP_LAYOUT.md；真机另验 |
 | 数据基础 | schemaVersion=2、标记/任务的离线日志与服务端同步、幂等 JSON 备份恢复、追加式 SQL 迁移 | 错因/任务编辑和备份恢复界面仍未提供；录音备份无音频文件 |
@@ -98,4 +98,4 @@ Windows 用 Node 24.13.1 和根目录锁定依赖，Git Bash 执行现有 Web �
 
 ## 可直接交给Codex的任务
 
-> 接续 godnight/lantern-toeic。先核对 feat/harmony-offline-hap 的 PR，未合并从该分支接续，已合并从最新 main 开始。读取 AGENTS.md、本交接及 docs/testing/HARMONY_OFFLINE_BUILD.md。只维护 HarmonyOS 和 Web/PWA。优先交付离线版：官方 SDK 已实际生成未签名 HAP，153 段内置语音已接入；继续模拟器/手机运行、签名、断网学习与持久化验收。手机号和云同步不阻塞离线开发。按 CONTRIBUTING.md 提交、验证和更新交接。
+> 接续 godnight/lantern-toeic。先核对 fix/harmony-native-exports 的 PR，未合并从该分支接续，已合并从最新 main 开始。读取 AGENTS.md、本交接及 docs/testing/HARMONY_OFFLINE_BUILD.md。只维护 HarmonyOS 和 Web/PWA。优先交付离线版：官方 SDK 已实际生成未签名 HAP，153段语音与系统下载目录导出已接入；继续模拟器/手机运行、签名、断网学习、文件导出及持久化验收。手机号和云同步不阻塞离线开发。按 CONTRIBUTING.md 提交、验证和更新交接。

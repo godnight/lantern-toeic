@@ -20,13 +20,17 @@
 
 2026-09-13核对[华为认证服务应用场景](https://developer.huawei.com/consumer/cn/doc/doccenter-submission/agc-help-auth-applicationscenarios-0000002271416133)：中国大陆短信需要开发者另行购买第三方短信服务，并向AGC提供发送接口。只开AGC或下载配置文件不能完成大陆手机号登录。具体号码地区、数据处理位置、供应商资质/签名/模板及费用，应在开发接入前核实。
 
-以下外部条件目前均未提供，因而本RFC不能进入“已实现”：
+2026-09-15 更新：本机已安装官方 Linux CLT 5.1.0.840（包含 SDK、OHPM、HDC），并在 WSL 完成未签名 HAP 编译，见[编译记录](../testing/HARMONY_OFFLINE_BUILD.md)。编译环境已具备，不应继续将“缺 SDK”列为手机号开发的阻碍。Windows DevEco/模拟器、签名与手机运行验收仍未完成。
+
+认证代码仍待实现：原生入口没有登录用户，未引入 AGC 认证 SDK；现有服务端只接受网站托管身份，尚未提供 AGC 令牌校验、原生 HTTPS 数据入口和账号映射。Web 已有的存储与同步基础不能直接视为原生云同步。
+
+以下外部条件仍需提供，因而本RFC不能进入“已实现”：
 
 - 华为开发者/AppGallery Connect项目，已启用认证服务与手机号登录；
 - 与 `com.lantern.toeic` 匹配的真实 `agconnect-services.json`，按官方指南置于 `harmony/AppScope/resources/rawfile/`，不进入Git；
 - 可用的短信区域、签名/模板、配额与测试号码策略；
 - 决定数据后端使用AGC云能力，或提供可公开到达且能验证AGC令牌的API；
-- DevEco Studio、HarmonyOS SDK、OHPM、HDC、开发签名和授权测试手机；
+- 本人华为账号的开发签名和授权测试手机；模拟器验收还需配置可运行的模拟器环境；
 - 若沿用当前Site作为登录入口，项目所有者明确同意把当前仅所有者可见的Site改成公开登录壳。未取得该确认前保持现有访问策略。
 
 ## 验收

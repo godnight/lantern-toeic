@@ -2,6 +2,10 @@
 
 核查日期：2026-09-15。任务分支：`feat/harmony-offline-hap`。本记录只把实际执行过的层级写为通过。
 
+后续 `fix/harmony-native-exports` 增加下载目录导出，实际编译产物为 14,986,806 字节，SHA-256 `f12c9a2e0e7da1c8c82adad5b0006a6693091af3bfc33cfd7bba1ebad50d4773`。共享资源保持195项。8项新增源码回归通过，API 12 的 Download Picker 与 ArkWeb 下载代理经 API 18 SDK 编译通过；签名、文件管理器可见性和手机运行仍待验收。
+
+实现参考官方 [API 12 下载指南](https://github.com/openharmony/docs/blob/OpenHarmony-5.0.0-Release/zh-cn/application-dev/web/web-download.md) 与 [保存用户文件](https://github.com/openharmony/docs/blob/OpenHarmony-5.0.0-Release/zh-cn/application-dev/file-management/save-user-file.md)。只指定本地下载目录，不引入任意文件写入桥；已知 rawfile 素材直接复制，避免请求虚拟域名的网络服务器。下文保留 PR #24 首次完整离线音频包的编译记录。
+
 ## 环境与来源
 
 - Windows 11 中已有 WSL Ubuntu 24.04，使用 Linux x64 工具链编译；Windows 原生 DevEco/模拟器尚未配置。
