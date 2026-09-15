@@ -12,3 +12,5 @@ local.properties
 *.cer
 *.jks
 *.keystore
+*.csr
+__pycache__/
