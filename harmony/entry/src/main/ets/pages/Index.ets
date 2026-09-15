@@ -1,6 +1,7 @@
 import { abilityAccessCtrl, common } from '@kit.AbilityKit';
 import { webview } from '@kit.ArkWeb';
 import { BusinessError } from '@kit.BasicServicesKit';
+import { NativeDownloads } from '../NativeDownloads';
 
 // This is an intercepted local origin. No server or certificate is required.
 const APP_ORIGIN: string = 'https://lantern.local';
@@ -64,6 +65,7 @@ struct Index {
   @State private bridgeReady: boolean = false;
   @State private backPending: boolean = false;
   private controller: webview.WebviewController = new webview.WebviewController();
+  private downloads: NativeDownloads | undefined = undefined;
   private attached: boolean = false;
   private alive: boolean = false;
   private documentGeneration: number = 0;
@@ -84,6 +86,7 @@ struct Index {
 
   aboutToDisappear(): void {
     this.alive = false;
+    this.downloads?.invalidate();
     this.lifecycleGeneration++;
     this.documentGeneration++;
     this.invalidateBridge();
@@ -194,6 +197,7 @@ struct Index {
   }
 
   private pageBegin(): void {
+    this.downloads?.invalidate();
     this.documentGeneration++;
     this.pageReady = false;
     this.invalidateBridge();
@@ -461,6 +465,11 @@ struct Index {
         .mediaPlayGestureAccess(true)
         .onControllerAttached(() => {
           this.attached = true;
+          this.downloads?.invalidate();
+          this.downloads = new NativeDownloads(() => this.context(),
+            () => this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
+            (message: string) => this.toast(message));
+          this.downloads.attach(this.controller);
         })
         .onPageBegin(() => this.pageBegin())
         .onPageEnd((event) => this.pageEnd(event.url))
