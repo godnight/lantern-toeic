@@ -1,0 +1,3491 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-15T02:40:13.8282337Z",
+  "sourceFiles": {
+    "questions": {
+      "path": "content/questions.json",
+      "sha256": "66058c0ab98cca00a76af9cf69a8c79cdf35d008f2b934ec9bb303986feb08f4"
+    },
+    "speaking": {
+      "path": "content/speaking.json",
+      "sha256": "7907afee50105a91eb60d5adaeb60b41f03e76d62ef919c549c4b18ecd0cf7ef"
+    }
+  },
+  "textPolicy": "Exact source strings; no whitespace, punctuation or pronunciation normalization. Sentence splitting matches practice.tsx /(?<=[.!?])\\s+/.",
+  "voice": {
+    "engine": "System.Speech / Windows SAPI",
+    "name": "Microsoft Zira Desktop",
+    "locale": "en-US",
+    "rate": 0,
+    "volume": 100
+  },
+  "format": {
+    "container": "MP3",
+    "channels": 1,
+    "bitrateKbps": 64,
+    "sampleRateHz": 22050
+  },
+  "generation": {
+    "networkServiceUsed": false,
+    "systemSpeechAssembly": "System.Speech, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+    "voiceDescription": "Microsoft Zira Desktop - English (United States)",
+    "ffmpeg": "ffmpeg version 8.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers"
+  },
+  "clips": [
+    {
+      "text": "Should we send the samples by courier or by regular mail?",
+      "textSha256": "005e6c3063b2bf77276622b7559ee78e3e4527b1443e4b8a872e160a480a355f",
+      "file": "005e6c3063b2bf772766.mp3",
+      "bytes": 32435,
+      "sha256": "67c1d37be56c143af1d951af71016827ef8b1357ca392472c1e9bcdb148a751c",
+      "durationSeconds": 3.963719,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-04",
+          "part": 2,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "When does the training session begin?",
+      "textSha256": "01fe2908020e302a96fc49fbab77199d52dedd9a5dba113ca0c539e7e5c66baa",
+      "file": "01fe2908020e302a96fc.mp3",
+      "bytes": 21568,
+      "sha256": "495fa906d59c59da31d1ac9adc7a420086e03cfc2a1b8dd70077f7d78ae482f1",
+      "durationSeconds": 2.594059,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-01",
+          "part": 2,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "I'm not sure; ask the information desk.",
+      "textSha256": "037f37423e6976afd79f070ecad60c0d88b052414f0650cfbc8eca06a0a473d8",
+      "file": "037f37423e6976afd79f.mp3",
+      "bytes": 30346,
+      "sha256": "0be7ad2e069fe440cac4e29b53c5786a5654b8683a5ab7dabef66379df6de6a0",
+      "durationSeconds": 3.68898,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-08",
+          "part": 2,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "Who is updating the visitor map?",
+      "textSha256": "04f4b70f9c47050281960094fcd949daeca85261eb95306d8c09dbb3d7a8146f",
+      "file": "04f4b70f9c4705028196.mp3",
+      "bytes": 20941,
+      "sha256": "5dfaf7feac8015fd0a8c7db705366c3dfa9b300931fa3fd8c1aeab041c3545a4",
+      "durationSeconds": 2.509887,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-08",
+          "part": 2,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "Everyone in the room is standing.",
+      "textSha256": "05bf7b32af74f62223d74278c493536c6017bee89145d1daf616ed6f17c7d15c",
+      "file": "05bf7b32af74f62223d7.mp3",
+      "bytes": 20315,
+      "sha256": "c1dc0f8ebe483f53ca348ffc734c83a659807eb7d40e267e464d2ae9516c38be",
+      "durationSeconds": 2.444127,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p1-01",
+          "part": 1,
+          "index": 9
+        }
+      ]
+    },
+    {
+      "text": "Two people are carrying a table.",
+      "textSha256": "05c7ed0a5bade7e9ee2784c167c309698096c40ec871ce14a4effead497d22fc",
+      "file": "05c7ed0a5bade7e9ee27.mp3",
+      "bytes": 20941,
+      "sha256": "c2ad56c276df1a8f91d01ac32496c63807ba8d860612e267c4435310dea271e9",
+      "durationSeconds": 2.524127,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p1-01",
+          "part": 1,
+          "index": 5
+        }
+      ]
+    },
+    {
+      "text": "Because the ground-floor training room is being painted, the session will take place in Room 305 on the third floor.",
+      "textSha256": "0949d0ed477681e57999b2d9b56221360982352a97ff46d0932bb43af82424a0",
+      "file": "0949d0ed477681e57999.mp3",
+      "bytes": 62110,
+      "sha256": "6176778dc0de9578c4271942105f772dc679e2aeec5ac0946289c57aaca98720",
+      "durationSeconds": 7.663129,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-01",
+          "part": 4,
+          "index": 2
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-02",
+          "part": 4,
+          "index": 2
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-03",
+          "part": 4,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "Nora: They can use the tablets from the equipment room.",
+      "textSha256": "0a468f659348b6d2104a4563f0432155b4a11e3e9ba28add09ea1d49be5471fb",
+      "file": "0a468f659348b6d2104a.mp3",
+      "bytes": 32435,
+      "sha256": "e59df570c86f838a0805f08e55d342ff27356eda7e33c5baae6ed78071a55b74",
+      "durationSeconds": 3.963719,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-01",
+          "part": 3,
+          "index": 8
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-02",
+          "part": 3,
+          "index": 8
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-03",
+          "part": 3,
+          "index": 8
+        }
+      ]
+    },
+    {
+      "text": "At half past nine.",
+      "textSha256": "0a717803f29ed73f74d82e6be4a34dab401b6f1b76c03b3c23f023751c908c9a",
+      "file": "0a717803f29ed73f74d8.mp3",
+      "bytes": 16971,
+      "sha256": "47ff6470e3ebc198672ea349da6640df231a33398db421a23d47f5b4c87b9957",
+      "durationSeconds": 2.014286,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-01",
+          "part": 2,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "Places on the tour are limited, so please reserve yours at the front desk before noon on Saturday.",
+      "textSha256": "0a9ce5ca82cacb0343fa81d7b3a6645e104ae3cd961854c7ac7fec5bb6abeb6e",
+      "file": "0a9ce5ca82cacb0343fa.mp3",
+      "bytes": 51244,
+      "sha256": "8091b0d99a894fa37d3a3a8c8bec5f103e59825ef716e5de86f54b4d96f3233e",
+      "durationSeconds": 6.303265,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-04",
+          "part": 4,
+          "index": 4
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-05",
+          "part": 4,
+          "index": 4
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-06",
+          "part": 4,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "Why was the team briefing moved to Thursday?",
+      "textSha256": "0f546fc74e3191c20393101544ec9ae0dfb7f481cda3a9bbfc205d0e2a86b5dd",
+      "file": "0f546fc74e3191c20393.mp3",
+      "bytes": 24703,
+      "sha256": "f83e222531bb03285059b1b299756c886c02e66e6989c55322f27d981dc55fbe",
+      "durationSeconds": 2.980091,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-06",
+          "part": 2,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "Sam: About five minutes through the main hall.",
+      "textSha256": "0ffdcb87e44810231be624ca01a8f87a9ba26b7b52dd0588ac63e42878fda18b",
+      "file": "0ffdcb87e44810231be6.mp3",
+      "bytes": 29719,
+      "sha256": "aa141fd15c4ca24f1208881bb77d1b6ca45e2994e103af4e72656992c084f535",
+      "durationSeconds": 3.62907,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-04",
+          "part": 3,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-05",
+          "part": 3,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-06",
+          "part": 3,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "Sam: Yes, beside the information desk.",
+      "textSha256": "10a33583d9592b539275b336d78b8e84854d4e500779b72e152f6ca876c826a1",
+      "file": "10a33583d9592b539275.mp3",
+      "bytes": 34525,
+      "sha256": "47403e77aa625f3e6196dc6160012eea9e1762bcf2d2a38c26e01ae77a4ebde6",
+      "durationSeconds": 4.223991,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-04",
+          "part": 3,
+          "index": 11
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-05",
+          "part": 3,
+          "index": 11
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-06",
+          "part": 3,
+          "index": 11
+        }
+      ]
+    },
+    {
+      "text": "Leo: I'll do that now.",
+      "textSha256": "124e8941853d386a0e660e08de91009cf61b50041055885fc18d288430d1b6ba",
+      "file": "124e8941853d386a0e66.mp3",
+      "bytes": 20106,
+      "sha256": "b0dda25d1faa98e26a7d141baa44f31b3e01d7ffb8be226eac62ed776b010f4b",
+      "durationSeconds": 2.405397,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-01",
+          "part": 3,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-02",
+          "part": 3,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-03",
+          "part": 3,
+          "index": 5
+        }
+      ]
+    },
+    {
+      "text": "The pickup point moved to the west exit this week because of construction.",
+      "textSha256": "12a1153fc9a92287cd598e8b47447b0079dec45314c5849b817753eae1674841",
+      "file": "12a1153fc9a92287cd59.mp3",
+      "bytes": 37869,
+      "sha256": "82948fc46538bb6325942cdbe70ed06a55fce758726bac67d315cf80b4cbc516",
+      "durationSeconds": 4.638776,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-04",
+          "part": 3,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-05",
+          "part": 3,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-06",
+          "part": 3,
+          "index": 3
+        }
+      ]
+    },
+    {
+      "text": "I'll also put the download link on the welcome slide.",
+      "textSha256": "12b40c0325b348a4710d4abfe92aa3977717ddcb7c9ac041f8969949bf3ee622",
+      "file": "12b40c0325b348a4710d.mp3",
+      "bytes": 29510,
+      "sha256": "c0461cfb52b00fafb7a91e4867bd3c3bc820316421500c00fe6ad8f56a0f1796",
+      "durationSeconds": 3.593741,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-01",
+          "part": 3,
+          "index": 11
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-02",
+          "part": 3,
+          "index": 11
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-03",
+          "part": 3,
+          "index": 11
+        }
+      ]
+    },
+    {
+      "text": "Thank you for visiting the Riverton History Center.",
+      "textSha256": "147d9d34a0029d1331bbb9857454584462fec1c4e6fec252c9803aa613a39892",
+      "file": "147d9d34a0029d1331bb.mp3",
+      "bytes": 27420,
+      "sha256": "7c27e99f30cfaa7940d4edef31f66e8aa4040158065beb07d1da73d71a15bb42",
+      "durationSeconds": 3.328662,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-04",
+          "part": 4,
+          "index": 0
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-05",
+          "part": 4,
+          "index": 0
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-06",
+          "part": 4,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "Yes, I bought one yesterday.",
+      "textSha256": "185e2122a49263147bfe5579c3b376e819d009b6e20c54f24e79abda761a80e5",
+      "file": "185e2122a49263147bfe.mp3",
+      "bytes": 23449,
+      "sha256": "6eded4cd3b28299ec63e286a88e365bbaa2a373e173741ae557b674079f9b5d8",
+      "durationSeconds": 2.844172,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-02",
+          "part": 2,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "If you requested an accessible workstation when you registered, it has already been reserved.",
+      "textSha256": "18754c87189dd34c7041b66909ab9ce5f864b83e78df669a6ecd08c4ee1aff03",
+      "file": "18754c87189dd34c7041.mp3",
+      "bytes": 48109,
+      "sha256": "a4ffe70cd519a6ee502e0c1eec37592216d17b8aaa2a9e98cf14d98a8c077e33",
+      "durationSeconds": 5.928299,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-01",
+          "part": 4,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-02",
+          "part": 4,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-03",
+          "part": 4,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "Maya: Leo, our product demonstration is at two, but the projector in Room B isn't working.\nLeo: The support team can't fix it until tomorrow. Room D has a working projector, and it's free this afternoon.\nMaya: Great. Please book Room D for one thirty so we can set up before the clients arrive.\nLeo: I'll do that now. Could you email the clients about the room change?\nMaya: Of course. I'll send the message before lunch.",
+      "textSha256": "1935c17708c726884ac9b7de1ffe990930fa116d3051a4e186c5e5c817623e4e",
+      "file": "1935c17708c726884ac9.mp3",
+      "bytes": 266075,
+      "sha256": "275c0d315f7ab35fe7c3a004d2cbb33316bb82676c3da21e002e68093b932d2a",
+      "durationSeconds": 33.151519,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p3-01",
+          "part": 3
+        },
+        {
+          "kind": "listening",
+          "id": "p3-02",
+          "part": 3
+        },
+        {
+          "kind": "listening",
+          "id": "p3-03",
+          "part": 3
+        }
+      ]
+    },
+    {
+      "text": "I'll email them in ten minutes.",
+      "textSha256": "1d58b3ecea409bad214b5693cb40ef08737f03c9965b761fefd3c6a17a4bf757",
+      "file": "1d58b3ecea409bad214b.mp3",
+      "bytes": 20524,
+      "sha256": "31b3b354b34ac2e3bb4631a131f3a783c2172ca064af2c95ef4ccde7acfc6c5a",
+      "durationSeconds": 2.479138,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-02",
+          "part": 2,
+          "index": 5
+        }
+      ]
+    },
+    {
+      "text": "Please book Room D for one thirty so we can set up before the clients arrive.",
+      "textSha256": "21176d06fd22bab08759cc9fa06e928d510e82c4f1e948ea59ee42c5cee0f661",
+      "file": "21176d06fd22bab08759.mp3",
+      "bytes": 40377,
+      "sha256": "26687131a5e314a39d90e905f8d471c087a714bb0f78f8b012ba251ed176e757",
+      "durationSeconds": 4.958549,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-01",
+          "part": 3,
+          "index": 4
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-02",
+          "part": 3,
+          "index": 4
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-03",
+          "part": 3,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "Evan: Not yet.",
+      "textSha256": "23b4ab397ce21713e1af19b49a1af4992c5def09d15eb82fb61d389fdd006ca9",
+      "file": "23b4ab397ce21713e1af.mp3",
+      "bytes": 18852,
+      "sha256": "9621fbb0e08dc94de0e7ca5b7fc2082127b3a1b26acf06f2182c68e9e08145f0",
+      "durationSeconds": 2.254331,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-01",
+          "part": 3,
+          "index": 2
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-02",
+          "part": 3,
+          "index": 2
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-03",
+          "part": 3,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "My confirmation email says the hotel shuttle leaves Central Station at four thirty this afternoon, but I can't find the pickup sign.",
+      "textSha256": "2465e0f34afe730dcf42557714e6ae81d36b1230e366c27e775ce353dd685a86",
+      "file": "2465e0f34afe730dcf42.mp3",
+      "bytes": 67544,
+      "sha256": "878c87c211db8f6d163059fdaec45f00c01f15c0bb848c0be7eb800b1c73ac9a",
+      "durationSeconds": 8.358141,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-04",
+          "part": 3,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-05",
+          "part": 3,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-06",
+          "part": 3,
+          "index": 1
+        }
+      ]
+    },
+    {
+      "text": "Didn't you reserve a table for the project lunch? A. Yes, for six people at twelve thirty. B. The reservation desk is made of wood. C. I prefer the table near the window.",
+      "textSha256": "26132324aeee95616393568ab97dbce2936353a0c94ec6897043d4ebac8af338",
+      "file": "26132324aeee95616393.mp3",
+      "bytes": 102444,
+      "sha256": "79fc6013e211debff54c910218d80ddce55a11e5965eb5a22e21acedb8205fc0",
+      "durationSeconds": 12.712381,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p2-v2-07",
+          "part": 2
+        }
+      ]
+    },
+    {
+      "text": "Sam: You're at the east exit, aren't you?",
+      "textSha256": "2701de7efdf79432153795223423da5599c8cbff73d178e6545acfcb82fe86fe",
+      "file": "2701de7efdf794321537.mp3",
+      "bytes": 31599,
+      "sha256": "fc96338da4cf06c000afbe0a838902e7d89a6da7e914371da6706a9835126e12",
+      "durationSeconds": 3.859002,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-04",
+          "part": 3,
+          "index": 2
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-05",
+          "part": 3,
+          "index": 2
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-06",
+          "part": 3,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "Why was the team briefing moved to Thursday? A. In the small conference room. B. Thursday is the day after Wednesday. C. The team leader is traveling on Wednesday.",
+      "textSha256": "281619b53c1388fda2fa3e4247cfd06103ed8dd745a5c60faf28fdfe5eb7f0b4",
+      "file": "281619b53c1388fda2fa.mp3",
+      "bytes": 93666,
+      "sha256": "63a1c67f3ea6b32081679a274ce69d3e73da8ecb6c6ef3add40d4f8f1388e6b9",
+      "durationSeconds": 11.602585,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p2-v2-06",
+          "part": 2
+        }
+      ]
+    },
+    {
+      "text": "There's an unopened pack in the cabinet.",
+      "textSha256": "2a0e85ea4ba3933a75848e0007ac79ad024647bfe9abc69466d04f8d1ca4e6a8",
+      "file": "2a0e85ea4ba3933a7584.mp3",
+      "bytes": 22613,
+      "sha256": "34192a9dabacbd77a84c76f589298c12a80979c707d1630a3fb6b5dd904c3055",
+      "durationSeconds": 2.718912,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-03",
+          "part": 2,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "The start time is still nine thirty.",
+      "textSha256": "2fe4511d0b08ffd812cd5f791d3f071d3af377f63417c162ae132078d91e8a10",
+      "file": "2fe4511d0b08ffd812cd.mp3",
+      "bytes": 22195,
+      "sha256": "c1971e1b3b2c40b888e081e57914bad7b3baabd35729e090b4403a7a124633ce",
+      "durationSeconds": 2.679093,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-01",
+          "part": 4,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-02",
+          "part": 4,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-03",
+          "part": 4,
+          "index": 3
+        }
+      ]
+    },
+    {
+      "text": "A laptop computer is open on the table.",
+      "textSha256": "30f7a535459e930ba1dc45f8e78d75a4095e2bcafd24a5983453b20c34f5318a",
+      "file": "30f7a535459e930ba1dc.mp3",
+      "bytes": 25957,
+      "sha256": "8abf2dc2180f256688f1db9465661b45631e66202c673ee1d9c5846f904bec06",
+      "durationSeconds": 3.153923,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p1-01",
+          "part": 1,
+          "index": 7
+        }
+      ]
+    },
+    {
+      "text": "The ten o'clock building tour will begin fifteen minutes late today because our guide is assisting a school group.",
+      "textSha256": "324e11fad1558cbcc421be0bce66f94c22bd0587e00f9d5883ab1c0067809194",
+      "file": "324e11fad1558cbcc421.mp3",
+      "bytes": 52079,
+      "sha256": "008cc891c782ed5e43113f1f26f04efe4c13f951d29e533d227e6a2cfccce5f5",
+      "durationSeconds": 6.418367,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-01",
+          "part": 4,
+          "index": 2
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-02",
+          "part": 4,
+          "index": 2
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-03",
+          "part": 4,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "Didn't you reserve a table for the project lunch?",
+      "textSha256": "331eea09be080af08fa3b3b8f3fafbffabc6e6399aa11ccf4ffb397faf9ed5d3",
+      "file": "331eea09be080af08fa3.mp3",
+      "bytes": 27002,
+      "sha256": "837905c1a0d0f1b261c374a5c7fdee24621d275cc177a9607575b4b3f8a280c2",
+      "durationSeconds": 3.2839,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-07",
+          "part": 2,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "The printer is out of paper again. A. I printed the report yesterday. B. The shop closes at six. C. There's an unopened pack in the cabinet.",
+      "textSha256": "332bcdc8245646b1b3274cda03198901bb483e47481c3786151ed78fe6ca310e",
+      "file": "332bcdc8245646b1b327.mp3",
+      "bytes": 87397,
+      "sha256": "43f21e79961b64ad183114803f9393ec86edd6472fea6edce7eb9302eab51b45",
+      "durationSeconds": 10.837687,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p2-v2-03",
+          "part": 2
+        }
+      ]
+    },
+    {
+      "text": "Welcome to the Harbor Design Museum.",
+      "textSha256": "3390761d2609b8446a2925da61f0b96174dcd5fe682cc664a03c2d65f6168dbc",
+      "file": "3390761d2609b8446a29.mp3",
+      "bytes": 22613,
+      "sha256": "527a2f4a25d7716f69fddabf1f10fe3b1e07936e3f6b6a90f99e9fd420015953",
+      "durationSeconds": 2.723946,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-01",
+          "part": 4,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-02",
+          "part": 4,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-03",
+          "part": 4,
+          "index": 1
+        }
+      ]
+    },
+    {
+      "text": "Look at the photograph. Choose the best description. A. A woman is drinking from a cup. B. Some people are waiting in a line. C. A laptop screen is being cleaned. D. Two people are seated at a table.",
+      "textSha256": "3526ab8b8089cc3c9dae2a3ee2d5bb3a01be70240b09e02d3513cacd5e73fd01",
+      "file": "3526ab8b8089cc3c9dae.mp3",
+      "bytes": 125431,
+      "sha256": "87965c0a00f64f2329393f1359e21a451ef162d8bed677e01541b6c43553afd0",
+      "durationSeconds": 15.577007,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p1-02",
+          "part": 1
+        }
+      ]
+    },
+    {
+      "text": "In the meeting room.",
+      "textSha256": "35bc2f7fcb1a3b6b6b0c4586e7ee2b692c7a1d09942de6e70878e9a144ee4c89",
+      "file": "35bc2f7fcb1a3b6b6b0c.mp3",
+      "bytes": 14672,
+      "sha256": "72f2cee29dbc30b87244e3c79e4d3bbe41281fb3e7fdc6426c57e5478cd5beb9",
+      "durationSeconds": 1.739274,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-01",
+          "part": 2,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "This picture shows a small meeting in an office. A woman is standing beside a whiteboard and holding a marker. Two other people are seated at a table. There is a closed laptop on the table, and I can also see cups. The people appear to be discussing something together.",
+      "textSha256": "3763b14bedf45d8ce84ec970c1927f4250d39417fa1b60cfdc09bac2a740cf08",
+      "file": "3763b14bedf45d8ce84e.mp3",
+      "bytes": 145284,
+      "sha256": "2c952bd3612a5381f1b936a17f74d8e7ddc1ab90ff78962bd6f50da756c8c524",
+      "durationSeconds": 18.066032,
+      "references": [
+        {
+          "kind": "sampleAnswer",
+          "id": "speaking-picture-01"
+        }
+      ]
+    },
+    {
+      "text": "The email was sent this morning.",
+      "textSha256": "3842a898d8a88c5ada79171ad6d9e360b75878aca84e89132b11e18dfb0c1542",
+      "file": "3842a898d8a88c5ada79.mp3",
+      "bytes": 20733,
+      "sha256": "b1f6fe8d4305393c494ca2ebf0c4d2468447b0d7d502d4a33676eafcd968e7b1",
+      "durationSeconds": 2.489116,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-04",
+          "part": 2,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "A guided tour will begin at two in the afternoon and last forty minutes.",
+      "textSha256": "3c453814909c0b0ec3dc9c4db0474e0cb8c51e5b217ecd3f912af9b31832d2b7",
+      "file": "3c453814909c0b0ec3dc.mp3",
+      "bytes": 37033,
+      "sha256": "8918f8040014936273be6a1e04e0fb3f8e1a7de939ea6b378a025b4cdd8c741b",
+      "durationSeconds": 4.533605,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-04",
+          "part": 4,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-05",
+          "part": 4,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-06",
+          "part": 4,
+          "index": 3
+        }
+      ]
+    },
+    {
+      "text": "Lena: Hello.",
+      "textSha256": "3e6f4f998d0f116d78ed42c08d4ed9c85ec060320967c0ed9ce684475dcd58ab",
+      "file": "3e6f4f998d0f116d78ed.mp3",
+      "bytes": 17389,
+      "sha256": "ba8e6b3020929ca0137e8311ea2c0a8d1d78bf050d72456894e455ea8acc066b",
+      "durationSeconds": 2.069342,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-04",
+          "part": 3,
+          "index": 0
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-05",
+          "part": 3,
+          "index": 0
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-06",
+          "part": 3,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "Yes, for six people at twelve thirty.",
+      "textSha256": "3e80c7071dde25068dddb655153a4434bc34c1f4e5bff131777e8825176a3901",
+      "file": "3e80c7071dde25068ddd.mp3",
+      "bytes": 28047,
+      "sha256": "6cea1900f7e3c498c5f6aa8115912d3017f1feb5245ca426dd204a75bc8173aa",
+      "durationSeconds": 3.414014,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-07",
+          "part": 2,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "Maya emailed it to you this morning.",
+      "textSha256": "429b30bbe4a7823c0b0255f62d945c24cdf1e10be7909bdc24a75f88e4ae010d",
+      "file": "429b30bbe4a7823c0b02.mp3",
+      "bytes": 22195,
+      "sha256": "c9a592178515ba071226dcf49f04b775d3f9adc1652010f53a6eb5d8b7d91891",
+      "durationSeconds": 2.669025,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-02",
+          "part": 2,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "Lena: Hello. My confirmation email says the hotel shuttle leaves Central Station at four thirty this afternoon, but I can't find the pickup sign.\nSam: You're at the east exit, aren't you? The pickup point moved to the west exit this week because of construction.\nLena: Yes, I'm by the east exit. How long does it take to walk to the west side?\nSam: About five minutes through the main hall. It's four ten now, so you have plenty of time.\nLena: Good. I have a large suitcase. Is there a lift on the way?\nSam: Yes, beside the information desk. I'll tell the driver to look for you at the west exit.\nLena: Thank you. I'll head there now.",
+      "textSha256": "439a94369bbd08d2e702ef6c80b0c837685663119033945a9c3faec6354c6fee",
+      "file": "439a94369bbd08d2e702.mp3",
+      "bytes": 410897,
+      "sha256": "df0d3c3588170b4d7fe28ec0457b26cd29df6071eccbaa4dfcc2c0fcf8eabfa7",
+      "durationSeconds": 51.273197,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p3-v2-04",
+          "part": 3
+        },
+        {
+          "kind": "listening",
+          "id": "p3-v2-05",
+          "part": 3
+        },
+        {
+          "kind": "listening",
+          "id": "p3-v2-06",
+          "part": 3
+        }
+      ]
+    },
+    {
+      "text": "I usually bring my lunch from home.",
+      "textSha256": "45eb103791b3872978b8b0c23127b4f3b2a8d3660cf0d87519bd1fcc7193bf03",
+      "file": "45eb103791b3872978b8.mp3",
+      "bytes": 23867,
+      "sha256": "a74c25caa1312b42729071f6e9ff838dbb5b8c09307f51625a01892bad811752",
+      "durationSeconds": 2.875601,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-02",
+          "part": 2,
+          "index": 7
+        }
+      ]
+    },
+    {
+      "text": "Where can I recharge my travel card? A. At the machine beside the ticket office. B. It takes about fifteen minutes. C. The next train goes to Northbridge.",
+      "textSha256": "4887916ca0f9876485329c45e676e82441538332911c5a3da78d311952d46723",
+      "file": "4887916ca0f987648532.mp3",
+      "bytes": 93666,
+      "sha256": "c1a3ce5039fb58e8bd1d590647670bea892ab33a81d272d383ca5df3ace73722",
+      "durationSeconds": 11.607664,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p2-v2-01",
+          "part": 2
+        }
+      ]
+    },
+    {
+      "text": "Evan: Yes.",
+      "textSha256": "4951c398473090f68ef6c054a3cf58938cc9fda9ae9792208c14bbefbd7ab712",
+      "file": "4951c398473090f68ef6.mp3",
+      "bytes": 17598,
+      "sha256": "4e3e62874875b0bcb34bd7d221098603fbb62592e6a4c6d936fdfa27213e977c",
+      "durationSeconds": 2.09932,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-01",
+          "part": 3,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-02",
+          "part": 3,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-03",
+          "part": 3,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "Will you take the train or drive to the conference?",
+      "textSha256": "4a146756f0d4d4ce50b162deeae5730fbf94aa4a569f60d3989556d5786b0c97",
+      "file": "4a146756f0d4d4ce50b1.mp3",
+      "bytes": 28047,
+      "sha256": "288b3e8793af298b1ffd2e7bc36637f9156cc68dab1c6437e7ec102dc85543eb",
+      "durationSeconds": 3.413923,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-05",
+          "part": 2,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "Maya: Leo, our product demonstration is at two, but the projector in Room B isn't working.",
+      "textSha256": "4ab054b5ff2184b4ff7f0041b1c97738c52c19def28eafc02e75c33f167c1768",
+      "file": "4ab054b5ff2184b4ff7f.mp3",
+      "bytes": 56886,
+      "sha256": "e1686f83a8e7a6215f6d52f12b176f06e0714a3530b658a87aabbd284c8a6761",
+      "durationSeconds": 7.023447,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-01",
+          "part": 3,
+          "index": 0
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-02",
+          "part": 3,
+          "index": 0
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-03",
+          "part": 3,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "Leo: The support team can't fix it until tomorrow.",
+      "textSha256": "4b64384f1d41c6ec86e7ae61d12c6ffbeac730bbc5ccbfa185353cbda4346d5e",
+      "file": "4b64384f1d41c6ec86e7.mp3",
+      "bytes": 33271,
+      "sha256": "a29b0fbc325ba651714859fc9dd188101241535c1489e618ff60f146674759e6",
+      "durationSeconds": 4.068889,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-01",
+          "part": 3,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-02",
+          "part": 3,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-03",
+          "part": 3,
+          "index": 1
+        }
+      ]
+    },
+    {
+      "text": "Could you reserve a room for our meeting? A. Sure. How many people are coming? B. The room has large windows. C. I enjoyed meeting her.",
+      "textSha256": "4cb4b756aa9219681faa396c1c7a1ce7e39c95a960d97bffe455aa220801d6a3",
+      "file": "4cb4b756aa9219681faa.mp3",
+      "bytes": 90741,
+      "sha256": "1d214c3c30290f1bf4af1a196b7535204ce5e741f6b4002371dfab2c46ea3c3e",
+      "durationSeconds": 11.253107,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p2-03",
+          "part": 2
+        }
+      ]
+    },
+    {
+      "text": "This is a message for everyone registered for tomorrow's customer-service training at Greenway Learning Center.",
+      "textSha256": "57dd7e190405d5ad30475ba2e1fefb490b43d157833b3dff79667b94a22cd653",
+      "file": "57dd7e190405d5ad3047.mp3",
+      "bytes": 49572,
+      "sha256": "3e01ecc73223794fb8d0b3721fea1aad8718c04edbcc3c6e3dd42d619a6041d9",
+      "durationSeconds": 6.102993,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-01",
+          "part": 4,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-02",
+          "part": 4,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-03",
+          "part": 4,
+          "index": 1
+        }
+      ]
+    },
+    {
+      "text": "Please note that the café will close at three for maintenance, but drinking water will remain available beside the main entrance.",
+      "textSha256": "58e336287cefb05096c25a9d26d6d26899da71619d8a20c97d69792fea0ad34d",
+      "file": "58e336287cefb05096c2.mp3",
+      "bytes": 60648,
+      "sha256": "c13b3d71c431a5e4331354d7de11e8607cdcf213f76eda9935c8491bac630f1e",
+      "durationSeconds": 7.473152,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-04",
+          "part": 4,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-05",
+          "part": 4,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-06",
+          "part": 4,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "About twenty employees.",
+      "textSha256": "5c0bc1a39918b9f2ec2cb6617b9be83f49fb51a8246839613b9c8ba3f89fd7e5",
+      "file": "5c0bc1a39918b9f2ec2c.mp3",
+      "bytes": 19479,
+      "sha256": "454ba6fed0a17541a5bcb5c75842440ad148d706f1e83ea14d2c260819a644ef",
+      "durationSeconds": 2.349161,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-01",
+          "part": 2,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "A woman is drinking from a cup.",
+      "textSha256": "5dca81af2438fd8dca0888f575f32de1851dd203bcc329263d174223ece153cd",
+      "file": "5dca81af2438fd8dca08.mp3",
+      "bytes": 21150,
+      "sha256": "1303325e288da4ca879304ce025ade62e25eb20ff40f7718d302a20a82ecbe45",
+      "durationSeconds": 2.559002,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p1-02",
+          "part": 1,
+          "index": 3
+        }
+      ]
+    },
+    {
+      "text": "Why was the delivery delayed? A. The loading dock is downstairs. B. There was a problem with the truck. C. Two boxes of office supplies.",
+      "textSha256": "5ee39de71ddb9150f0120938baa559d8ceeec37c20ce6b4e90b17064c9457d66",
+      "file": "5ee39de71ddb9150f012.mp3",
+      "bytes": 85516,
+      "sha256": "22803ed8b74525b6ebce59a95b64eb371fcc0db3d637af0bcb11af6c18cd8198",
+      "durationSeconds": 10.597642,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p2-04",
+          "part": 2
+        }
+      ]
+    },
+    {
+      "text": "Could you reserve a room for our meeting?",
+      "textSha256": "605358b366aa50226a3ea4efea8fe7728eacba400be8ed04d04b212f30608457",
+      "file": "605358b366aa50226a3e.mp3",
+      "bytes": 21777,
+      "sha256": "67873d2e1eb389628304670086740e77ffe0b63bd1ad2cdf5efdd170cf5da4f2",
+      "durationSeconds": 2.619093,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-03",
+          "part": 2,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "I'll head there now.",
+      "textSha256": "60ae42790778a70bdd821b2736063facbd13676bed24a945667918eea52387da",
+      "file": "60ae42790778a70bdd82.mp3",
+      "bytes": 14254,
+      "sha256": "d6422ff75ad256cbe827f993e1ad6b15f1749e747b8a56f0d37665083a5d5f54",
+      "durationSeconds": 1.689252,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-04",
+          "part": 3,
+          "index": 14
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-05",
+          "part": 3,
+          "index": 14
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-06",
+          "part": 3,
+          "index": 14
+        }
+      ]
+    },
+    {
+      "text": "Please take a seat over there.",
+      "textSha256": "61f0884e5e885da606858a2f5dff3d00fb8bfd7a33dfe74959e74b821e8854a9",
+      "file": "61f0884e5e885da60685.mp3",
+      "bytes": 19688,
+      "sha256": "462281a97f16d38b18408e5cf07a25a76811a9f6b630b221b821445448827855",
+      "durationSeconds": 2.354104,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-05",
+          "part": 2,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "Is there a lift on the way?",
+      "textSha256": "621aafe223a9b6ba4340683c7d8b2914806d28f3e8042ccae15449befff98e35",
+      "file": "621aafe223a9b6ba4340.mp3",
+      "bytes": 17180,
+      "sha256": "75c4ff09abee2cdb4b7da3a62f53b9b850aaadcd188c8a889b5912be70e00752",
+      "durationSeconds": 2.059184,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-04",
+          "part": 3,
+          "index": 10
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-05",
+          "part": 3,
+          "index": 10
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-06",
+          "part": 3,
+          "index": 10
+        }
+      ]
+    },
+    {
+      "text": "Could you send the meeting notes before lunch? A. The meeting room is on the third floor. B. Certainly. I'll email them in ten minutes. C. I usually bring my lunch from home.",
+      "textSha256": "62eaf3de6cbf50e486f78be3cf1b9c58c400252bc0bfd68f250ef54141866dc2",
+      "file": "62eaf3de6cbf50e486f7.mp3",
+      "bytes": 105160,
+      "sha256": "b5746fb1d1774c24484de126c7a6dfade2559a6c0ae0f986ae124a67a39b61d6",
+      "durationSeconds": 13.037732,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p2-v2-02",
+          "part": 2
+        }
+      ]
+    },
+    {
+      "text": "I have a large suitcase.",
+      "textSha256": "62ef0d0051eca8e23a9381aad85e24a361f08869fe90b6f6fad05b8c9a163861",
+      "file": "62ef0d0051eca8e23a93.mp3",
+      "bytes": 19270,
+      "sha256": "f6d621f1195ada394ea2673bdb4ca036ae25ba303d0d325a0004b665be5fe8d0",
+      "durationSeconds": 2.304263,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-04",
+          "part": 3,
+          "index": 9
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-05",
+          "part": 3,
+          "index": 9
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-06",
+          "part": 3,
+          "index": 9
+        }
+      ]
+    },
+    {
+      "text": "Choose the best description.",
+      "textSha256": "6a421a7c8b726cbfbf343f157ef43e9d58921449ff8882db8edceffccb53e0cd",
+      "file": "6a421a7c8b726cbfbf34.mp3",
+      "bytes": 18852,
+      "sha256": "0b3467c9dfecefd0bdeec09e3e182590f2d06619fbef1e1b44fcae0e7a943e27",
+      "durationSeconds": 2.264082,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p1-01",
+          "part": 1,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p1-02",
+          "part": 1,
+          "index": 1
+        }
+      ]
+    },
+    {
+      "text": "Thank you for your patience.",
+      "textSha256": "6b5e88495ca2ad54d1040392353483576388731e42d2172b8a199fa8e5e47f6f",
+      "file": "6b5e88495ca2ad54d104.mp3",
+      "bytes": 19270,
+      "sha256": "b2661a1bf16365b0dde58e54284f7270566e384c986d5d2ae220ada0280ef955",
+      "durationSeconds": 2.309116,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-01",
+          "part": 4,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-02",
+          "part": 4,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-03",
+          "part": 4,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "How many people are coming?",
+      "textSha256": "6da6135d10048a1c198cf4cf08d17df282ac534f5cbce838006e3396a5ec8e47",
+      "file": "6da6135d10048a1c198c.mp3",
+      "bytes": 18852,
+      "sha256": "37debf8735ed5c67e79d546394bb90a2c8aeb6678c057c63e8c8714b037ff10b",
+      "durationSeconds": 2.259229,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-03",
+          "part": 2,
+          "index": 3
+        }
+      ]
+    },
+    {
+      "text": "A woman is standing beside a whiteboard.",
+      "textSha256": "6dc1483ab1b15b77ad9326aa6bcaabef68b2531d60f39dd95c05aa61b3da7b70",
+      "file": "6dc1483ab1b15b77ad93.mp3",
+      "bytes": 23658,
+      "sha256": "221f12b688d34e2f15bc1b29b4f1819494a6bcc5105ced3c2a000a2fc2eb9e90",
+      "durationSeconds": 2.849478,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p1-01",
+          "part": 1,
+          "index": 3
+        }
+      ]
+    },
+    {
+      "text": "Some people are waiting in a line.",
+      "textSha256": "6edf41a2532f5a7bcc2b278fdf8322506056a930cff59e298850639b09f9f363",
+      "file": "6edf41a2532f5a7bcc2b.mp3",
+      "bytes": 21359,
+      "sha256": "597fbebe24bff12c5332d55965b6ae3440a209b546e835d0cc23ffcf259d2e78",
+      "durationSeconds": 2.574059,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p1-02",
+          "part": 1,
+          "index": 5
+        }
+      ]
+    },
+    {
+      "text": "Will you take the train or drive to the conference? A. The conference starts on Monday. B. Please take a seat over there. C. I haven't decided yet.",
+      "textSha256": "6f5cb322718ec8cd2b053f62dcd9a1f2d9c2315e438d67d58fdbeaefb9e4f9ad",
+      "file": "6f5cb322718ec8cd2b05.mp3",
+      "bytes": 90114,
+      "sha256": "c843a67d5585639399407993245c5303dca12a6573c0a8442e2b5b72b4fd3e1c",
+      "durationSeconds": 11.162676,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p2-05",
+          "part": 2
+        }
+      ]
+    },
+    {
+      "text": "It's four ten now, so you have plenty of time.",
+      "textSha256": "709b07410babcd0de77d2f7c6e42bd786df2f086e16e5bfb44b849671929e710",
+      "file": "709b07410babcd0de77d.mp3",
+      "bytes": 31599,
+      "sha256": "82e4ca9227ded3be9b4a8a128dd7fb7b6a0b6c7f08f5c6871e47f3b6366586ba",
+      "durationSeconds": 3.853968,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-04",
+          "part": 3,
+          "index": 7
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-05",
+          "part": 3,
+          "index": 7
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-06",
+          "part": 3,
+          "index": 7
+        }
+      ]
+    },
+    {
+      "text": "Yes, the samples are blue.",
+      "textSha256": "72baadb406fda3de8a0ab4d0a101a99fb8d956cf754290648a07347197420186",
+      "file": "72baadb406fda3de8a0a.mp3",
+      "bytes": 22404,
+      "sha256": "b01fbf4e34d237f0b2ea19f23960c9a89d96cc5d7d669678428c6f7350666aa5",
+      "durationSeconds": 2.714195,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-04",
+          "part": 2,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "Please upload the file while I ask reception to bring the tablets here.",
+      "textSha256": "73224f8ee64a2c8a492073cccccf71db045289f45f9a9eed74f187df41fe179d",
+      "file": "73224f8ee64a2c8a4920.mp3",
+      "bytes": 38496,
+      "sha256": "ce10ab438110a0dfbf6d08664c9ae188e3932cc49f399f474b862c18f557388c",
+      "durationSeconds": 4.723492,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-01",
+          "part": 3,
+          "index": 9
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-02",
+          "part": 3,
+          "index": 9
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-03",
+          "part": 3,
+          "index": 9
+        }
+      ]
+    },
+    {
+      "text": "When does the training session begin? A. In the meeting room. B. At half past nine. C. About twenty employees.",
+      "textSha256": "7520772502b5911f1de35ab51400332ac22966ba366b83e3b865ea8f039aab40",
+      "file": "7520772502b5911f1de3.mp3",
+      "bytes": 75485,
+      "sha256": "663a41cb8bf8a7a6e8c8890a565116cca1dab0b0ca77d3872d9aef9fc742f9f6",
+      "durationSeconds": 9.333288,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p2-01",
+          "part": 2
+        }
+      ]
+    },
+    {
+      "text": "Attention, library visitors. Starting next Monday, our second-floor reading room will open at eight in the morning, one hour earlier than usual. This change will give students and other visitors more quiet study time. Please remember that food is not permitted in the reading room. Drinks in containers with lids are welcome. If you need assistance, speak to a member of staff at the front desk.",
+      "textSha256": "75a3f801301be16261012bfde1f51c721b45905217fdc60ee04d33da32f766e2",
+      "file": "75a3f801301be1626101.mp3",
+      "bytes": 211322,
+      "sha256": "7ed135be07a66f1bbe7825dd73af9902baeaa94ab7b923783d3a8311d15c176c",
+      "durationSeconds": 26.329615,
+      "references": [
+        {
+          "kind": "sampleAnswer",
+          "id": "speaking-read-01"
+        }
+      ]
+    },
+    {
+      "text": "Two boxes of office supplies.",
+      "textSha256": "77c62bf51ca16de4b04903b457a0f8f72016b1adf7913822c64d847b3d453046",
+      "file": "77c62bf51ca16de4b049.mp3",
+      "bytes": 21986,
+      "sha256": "9e80c158a1da0014bc6fa10386a9dd68d694b06728b4e8d6443581886c0cffda",
+      "durationSeconds": 2.659048,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-04",
+          "part": 2,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "Where can I find the updated price list? A. The prices are quite reasonable. B. Yes, I bought one yesterday. C. Maya emailed it to you this morning.",
+      "textSha256": "7d6e121ead76155b0998bc340a9f2d7854adb499ca01734a1c9169dc8e5b9ce5",
+      "file": "7d6e121ead76155b0998.mp3",
+      "bytes": 94920,
+      "sha256": "859e81296216d016ca8a129ce963071b03884e195fffb687804f93a2d782d3cf",
+      "durationSeconds": 11.762721,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p2-02",
+          "part": 2
+        }
+      ]
+    },
+    {
+      "text": "Two people are seated at a table.",
+      "textSha256": "809b87876db98cbc5f1579829bbee1d51decd50382f5538bdecd9c840ea4adcd",
+      "file": "809b87876db98cbc5f15.mp3",
+      "bytes": 21150,
+      "sha256": "85bc1292029ea2d17fdd5b5c588e53f752f5a50b0d69a420a2de5149e43243a7",
+      "durationSeconds": 2.554104,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p1-02",
+          "part": 1,
+          "index": 9
+        }
+      ]
+    },
+    {
+      "text": "Printed workbooks and tablets will be provided, so you only need to bring a pen.",
+      "textSha256": "81702d7b92a114660b4ea8be3606abc5e3eaf0a0d08a2766b8c2ad5b58350630",
+      "file": "81702d7b92a114660b4e.mp3",
+      "bytes": 43302,
+      "sha256": "258e914656337bc1905ed2f8c7621079deda17e84de2330124d5733d4c64f97d",
+      "durationSeconds": 5.318413,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-01",
+          "part": 4,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-02",
+          "part": 4,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-03",
+          "part": 4,
+          "index": 5
+        }
+      ]
+    },
+    {
+      "text": "Nora: Evan, the customer-service workshop starts at ten.",
+      "textSha256": "821e15098d591f8daf7abf4833c921c55ef5b5efc888e4b42ff1998e0f35724a",
+      "file": "821e15098d591f8daf7a.mp3",
+      "bytes": 40168,
+      "sha256": "170f1e163b7d9c5e4301a9db26ff98d29a9e90f3f2d0ea4f3a99ab3d04c95ce5",
+      "durationSeconds": 4.913651,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-01",
+          "part": 3,
+          "index": 0
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-02",
+          "part": 3,
+          "index": 0
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-03",
+          "part": 3,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "Twenty, including two for the reception desk.",
+      "textSha256": "82f9d17f73f9b8d83bd0d64567afae83cdb0cb6a961c3d99030d319ee9efb785",
+      "file": "82f9d17f73f9b8d83bd0.mp3",
+      "bytes": 30764,
+      "sha256": "2840c9d7bde3dcfe22288418579f0c0a38610e717900fe440dfd2180e1ebc2f3",
+      "durationSeconds": 3.738912,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-05",
+          "part": 2,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "Lena: Good.",
+      "textSha256": "83537bb3748e9ff5a135932f7a1d4b1044ec5a6c9e279353e2978a3c61470e27",
+      "file": "83537bb3748e9ff5a135.mp3",
+      "bytes": 16762,
+      "sha256": "ca8e74598c69a35551304b1707e95e8f15b40c573681c238e169ffa3077ec90c",
+      "durationSeconds": 1.989388,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-04",
+          "part": 3,
+          "index": 8
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-05",
+          "part": 3,
+          "index": 8
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-06",
+          "part": 3,
+          "index": 8
+        }
+      ]
+    },
+    {
+      "text": "Where can I find the updated price list?",
+      "textSha256": "876dc067966b4364de98294d366e8593dcb55467f47ebcb439a37dd5119de0af",
+      "file": "876dc067966b4364de98.mp3",
+      "bytes": 25957,
+      "sha256": "102da91ffd814e505f7a40ad992280809241b9c2d0da77303a52d4d15c393bd8",
+      "durationSeconds": 3.1439,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-02",
+          "part": 2,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "Lena: Yes, I'm by the east exit.",
+      "textSha256": "8929326203ed7cd732a8bdd63330ce73518a71d506b58f0c1a5857e6f34cb0b4",
+      "file": "8929326203ed7cd732a8.mp3",
+      "bytes": 30137,
+      "sha256": "0acb19d37cf48a741f54a45c1329adb5012ebe34229cf18ee69c99ff3c43d40c",
+      "durationSeconds": 3.664082,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-04",
+          "part": 3,
+          "index": 4
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-05",
+          "part": 3,
+          "index": 4
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-06",
+          "part": 3,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "Could you email the clients about the room change?",
+      "textSha256": "8e428b48034d54b76a706663f7e19d46a5358260eb241b1dcb24cd494fcd545e",
+      "file": "8e428b48034d54b76a70.mp3",
+      "bytes": 27420,
+      "sha256": "dfaabb9ce5f9166a43597bd562333311b481a3470bcfac1d6b64737db898de2d",
+      "durationSeconds": 3.338957,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-01",
+          "part": 3,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-02",
+          "part": 3,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-03",
+          "part": 3,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "I haven't decided yet.",
+      "textSha256": "8ed6c1d96ffeabd1ac50a99f26deb0674bb688e6426f62192446c300bc0657ef",
+      "file": "8ed6c1d96ffeabd1ac50.mp3",
+      "bytes": 18016,
+      "sha256": "b2a4d2224948cab78b0e22de609ce786c98fc2a46a418f9abbb7f9a2bd1a0ced",
+      "durationSeconds": 2.15415,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-05",
+          "part": 2,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "Good afternoon. This is a message for everyone registered for tomorrow's customer-service training at Greenway Learning Center. Because the ground-floor training room is being painted, the session will take place in Room 305 on the third floor. The start time is still nine thirty. Please arrive fifteen minutes early to collect your visitor badge in the lobby. Printed workbooks and tablets will be provided, so you only need to bring a pen. If you requested an accessible workstation when you registered, it has already been reserved. For any questions about the room change, call our reception team before five today.",
+      "textSha256": "8fbb778cc9b0e4b46777da4eb2fd095ca47ac78de28541444ca1a061120b9fe7",
+      "file": "8fbb778cc9b0e4b46777.mp3",
+      "bytes": 320200,
+      "sha256": "6de18bcc13f667fd65f4f37e75597e0587c5de91fc9105b64b4cdf3e06b5c810",
+      "durationSeconds": 39.927256,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p4-v2-01",
+          "part": 4
+        },
+        {
+          "kind": "listening",
+          "id": "p4-v2-02",
+          "part": 4
+        },
+        {
+          "kind": "listening",
+          "id": "p4-v2-03",
+          "part": 4
+        }
+      ]
+    },
+    {
+      "text": "The guide was written last year.",
+      "textSha256": "90bb2694511ffdca6c05aabc7b27e55ee2100c59b71deb6936fa6e14aa00c204",
+      "file": "90bb2694511ffdca6c05.mp3",
+      "bytes": 20106,
+      "sha256": "e44198f76e6433acdf5bce224f1c4d536bcb82467143e2e01c8b7acfe46d9d1b",
+      "durationSeconds": 2.414059,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-05",
+          "part": 2,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "To keep the galleries quiet, please set your phones to silent mode.",
+      "textSha256": "91e2029fb59e0adb31646426ea1c8f2110acaa9d5fbd13f53172b5871abce5af",
+      "file": "91e2029fb59e0adb3164.mp3",
+      "bytes": 38496,
+      "sha256": "28c597dbcc33ba6214362a74fe21780d45930aee66df9d78e9a06d55477cf418",
+      "durationSeconds": 4.704172,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-01",
+          "part": 4,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-02",
+          "part": 4,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-03",
+          "part": 4,
+          "index": 5
+        }
+      ]
+    },
+    {
+      "text": "The shop closes at six.",
+      "textSha256": "95427caadcb15b3f297c470bac71ad7091c23111612595c92b91d466befe7dd7",
+      "file": "95427caadcb15b3f297c.mp3",
+      "bytes": 20106,
+      "sha256": "fc1020c4b4581eee73cf318161c0fe846f1d46b7801acb3003ac76d3d50eadb3",
+      "durationSeconds": 2.424218,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-03",
+          "part": 2,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "Room D has a working projector, and it's free this afternoon.",
+      "textSha256": "95d9e04c8013053926f77ee4dac3f91bebb6e2da78bab0d5f8b4e0f8ac30a8a9",
+      "file": "95d9e04c8013053926f7.mp3",
+      "bytes": 35361,
+      "sha256": "f0867765cb12abf2b123ce5b5f3532eecad98a7e70f0c6522d405e32d1ff43ef",
+      "durationSeconds": 4.318549,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-01",
+          "part": 3,
+          "index": 2
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-02",
+          "part": 3,
+          "index": 2
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-03",
+          "part": 3,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "The email-writing session starts at nine thirty in the morning. The presenter is Nina Brooks.",
+      "textSha256": "992772718f0a76dc3349c3fdc69aed983f2af51eb6bfc5f7955e0d2936b0a4bc",
+      "file": "992772718f0a76dc3349.mp3",
+      "bytes": 51661,
+      "sha256": "2b782de170c6e18368ec9af9c9fad015e9bd3592ff4c46578ace19157712768d",
+      "durationSeconds": 6.363311,
+      "references": [
+        {
+          "kind": "sampleAnswer",
+          "id": "speaking-information-01"
+        }
+      ]
+    },
+    {
+      "text": "The reservation desk is made of wood.",
+      "textSha256": "9f1c0c8d39ba72d79a8f3a2c53ac408e31e25f722a9acc86b998ef3a6e8e94cb",
+      "file": "9f1c0c8d39ba72d79a8f.mp3",
+      "bytes": 23240,
+      "sha256": "8e8324e1be282f6c2436f1663242c06fd1b5df02354c5cdc4ca032b7cbd16ffe",
+      "durationSeconds": 2.80898,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-07",
+          "part": 2,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "Maya: Great.",
+      "textSha256": "a0efbd87ac8f7698352d5770628c7dfde5ae277cffbf84abdc7cc769d5f62c22",
+      "file": "a0efbd87ac8f7698352d.mp3",
+      "bytes": 17598,
+      "sha256": "f013682aa559f668931dc95e2b83692624b618bed2056d921c56c00e193cff13",
+      "durationSeconds": 2.099365,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-01",
+          "part": 3,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-02",
+          "part": 3,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-03",
+          "part": 3,
+          "index": 3
+        }
+      ]
+    },
+    {
+      "text": "Where can I recharge my travel card?",
+      "textSha256": "a27d4048a7ef9bcab6b081964176206cb322b7df3b17b950c46da3dab0577109",
+      "file": "a27d4048a7ef9bcab6b0.mp3",
+      "bytes": 23031,
+      "sha256": "da35175f676312bf04be329b99735d496203eb2ff873c40b439506bbaef07e95",
+      "durationSeconds": 2.778957,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-01",
+          "part": 2,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "The next train goes to Northbridge.",
+      "textSha256": "a3b9df79de0d897e79275b9157f7045dbd27202f8722ac1481d4c66a9af9b139",
+      "file": "a3b9df79de0d897e7927.mp3",
+      "bytes": 22613,
+      "sha256": "ef552858162b518c2b3fa3da7f3de3890a1a7c96b1ab7cc73bbed8312011b619",
+      "durationSeconds": 2.724036,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-01",
+          "part": 2,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "Have the printed handouts arrived?",
+      "textSha256": "a4ec8a30d07f0b943957f7e40995273674570d5263ade2292a8f8fadf836d684",
+      "file": "a4ec8a30d07f0b943957.mp3",
+      "bytes": 22195,
+      "sha256": "a0ecc0ae78ef25243d87215b81cba72e7946912bb8e1de62772def557248bc95",
+      "durationSeconds": 2.674104,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-01",
+          "part": 3,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-02",
+          "part": 3,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-03",
+          "part": 3,
+          "index": 1
+        }
+      ]
+    },
+    {
+      "text": "Good morning, visitors. Welcome to the Harbor Design Museum. The ten o'clock building tour will begin fifteen minutes late today because our guide is assisting a school group. Please meet at the information desk at ten fifteen. Your ticket also includes the photography exhibition on the second floor, which you are welcome to visit while you wait. To keep the galleries quiet, please set your phones to silent mode. Thank you for your patience.",
+      "textSha256": "a5e049944f547b0c7f7d2f8fe948a80e4dd89bac588953e29e9ae4f1c5da5468",
+      "file": "a5e049944f547b0c7f7d.mp3",
+      "bytes": 237862,
+      "sha256": "923325a38d1a30feb0f1f5810ebff0749e40222493051f0d78f2795260f6ed36",
+      "durationSeconds": 29.644444,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p4-01",
+          "part": 4
+        },
+        {
+          "kind": "listening",
+          "id": "p4-02",
+          "part": 4
+        },
+        {
+          "kind": "listening",
+          "id": "p4-03",
+          "part": 4
+        }
+      ]
+    },
+    {
+      "text": "The prices are quite reasonable.",
+      "textSha256": "a7c719a2e1773da5afbf095f071b76677e535252a6ed1dcad51da6f7b89ec858",
+      "file": "a7c719a2e1773da5afbf.mp3",
+      "bytes": 20733,
+      "sha256": "25825432208fc60fb62d82621c235757383bcf0a650c5ee280cb6493ff81e16b",
+      "durationSeconds": 2.483991,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-02",
+          "part": 2,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "How long does it take to walk to the west side?",
+      "textSha256": "a7f074e9e90909a01631423ebbaf6b5c9080beb16a3be474cdf9ecebcc71779c",
+      "file": "a7f074e9e90909a01631.mp3",
+      "bytes": 26375,
+      "sha256": "d826bee9814f2863b21cd4d1cb2451c20417651fb470962998f05bb58012a3f1",
+      "durationSeconds": 3.18907,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-04",
+          "part": 3,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-05",
+          "part": 3,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-06",
+          "part": 3,
+          "index": 5
+        }
+      ]
+    },
+    {
+      "text": "Visitors enter through the side door.",
+      "textSha256": "a8d1b7fc3e01fabff8fffd5169e9bc4259c4cc0fcef5c42506b7ca56cb477c20",
+      "file": "a8d1b7fc3e01fabff8ff.mp3",
+      "bytes": 21986,
+      "sha256": "a2aad955c4039ade4ce7bd0c6634d2530b3605c308e7efd04a9b049700e00b51",
+      "durationSeconds": 2.643991,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-05",
+          "part": 2,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "A laptop screen is being cleaned.",
+      "textSha256": "aa4b84d0d049331a19ceb1c7646ad89a84739e6cf60b9fe03d09b99ad5080822",
+      "file": "aa4b84d0d049331a19ce.mp3",
+      "bytes": 23031,
+      "sha256": "25d5a3946e7ac989716ee378f26405cc94189fc69f0d16698a9f797efea2ac56",
+      "durationSeconds": 2.779048,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p1-02",
+          "part": 1,
+          "index": 7
+        }
+      ]
+    },
+    {
+      "text": "C.",
+      "textSha256": "acbbb708385721a6275edb28b2265071ab2c596d66c45e0f095ca22a55c6fb7d",
+      "file": "acbbb708385721a6275e.mp3",
+      "bytes": 10284,
+      "sha256": "9dca1c07d399b2c530a381de797e70a30683b3b0d6bdbbce5517d4e4bcb65946",
+      "durationSeconds": 1.189433,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p1-01",
+          "part": 1,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p1-02",
+          "part": 1,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-01",
+          "part": 2,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-02",
+          "part": 2,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-03",
+          "part": 2,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-04",
+          "part": 2,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-05",
+          "part": 2,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-01",
+          "part": 2,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-02",
+          "part": 2,
+          "index": 6
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-03",
+          "part": 2,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-04",
+          "part": 2,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-05",
+          "part": 2,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-06",
+          "part": 2,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-07",
+          "part": 2,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-08",
+          "part": 2,
+          "index": 5
+        }
+      ]
+    },
+    {
+      "text": "I can upload it to the training portal now, but some participants may not have brought a laptop.",
+      "textSha256": "ae289cdad08de68aeef348c492a6fb2ccf8e292efe2077e696d86d338d68ba6e",
+      "file": "ae289cdad08de68aeef3.mp3",
+      "bytes": 47900,
+      "sha256": "96a00604493604619bd3ccfac525bd744de0fc1115690cc8a426bda6bfa6efd2",
+      "durationSeconds": 5.879683,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-01",
+          "part": 3,
+          "index": 7
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-02",
+          "part": 3,
+          "index": 7
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-03",
+          "part": 3,
+          "index": 7
+        }
+      ]
+    },
+    {
+      "text": "The conference starts on Monday.",
+      "textSha256": "b0ad02bf43c53f0bbe87ec21df010c017bc875f4db344ca0fa9d540602253949",
+      "file": "b0ad02bf43c53f0bbe87.mp3",
+      "bytes": 21359,
+      "sha256": "fd7f4938b870b4663a4eb291cbe7b375404c8af85008a0c1febfb45bca16e629",
+      "durationSeconds": 2.569025,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-05",
+          "part": 2,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "Good afternoon.",
+      "textSha256": "b2a872e9f53a0e3a6416aa8db9cde6cab4b53123e351ba0274615c5556b83bfc",
+      "file": "b2a872e9f53a0e3a6416.mp3",
+      "bytes": 14672,
+      "sha256": "f3e9196c27fc45c85d15a7711d1a1d4625cc8e8b2fb6069d08b4643f6089fa7c",
+      "durationSeconds": 1.744308,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-01",
+          "part": 4,
+          "index": 0
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-02",
+          "part": 4,
+          "index": 0
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-03",
+          "part": 4,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "We look forward to welcoming you.",
+      "textSha256": "b75235ce884caad9f82d6ff658562cd41fba3606b57885278fcf888959a6af81",
+      "file": "b75235ce884caad9f82d.mp3",
+      "bytes": 21150,
+      "sha256": "22c576749b2798cc8f7139751e106549428ac3fd01ceec7c2d460e7a72f82cf6",
+      "durationSeconds": 2.538912,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-04",
+          "part": 4,
+          "index": 7
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-05",
+          "part": 4,
+          "index": 7
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-06",
+          "part": 4,
+          "index": 7
+        }
+      ]
+    },
+    {
+      "text": "How many copies of the visitor guide should I make?",
+      "textSha256": "b871a1c6c43e5fcbb809743b7646aff25e696fce041f8a3624d629251bc38803",
+      "file": "b871a1c6c43e5fcbb809.mp3",
+      "bytes": 27838,
+      "sha256": "cdbf105d51073b903d20ef8b95d0fced7a8aaddd553a197a67fdd2a6ab4ccb5b",
+      "durationSeconds": 3.378866,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-05",
+          "part": 2,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "Nora: Evan, the customer-service workshop starts at ten. Have the printed handouts arrived?\nEvan: Not yet. The print shop says its delivery van is delayed and won't reach us until eleven.\nNora: We can't keep the participants waiting. Do you have the final PDF?\nEvan: Yes. I can upload it to the training portal now, but some participants may not have brought a laptop.\nNora: They can use the tablets from the equipment room. Please upload the file while I ask reception to bring the tablets here.\nEvan: All right. I'll also put the download link on the welcome slide.",
+      "textSha256": "ba39f6a5690c7b9f604ca9f9aec20ec3a96d1bfea8abe5fdb9cc8fc2070e5b79",
+      "file": "ba39f6a5690c7b9f604c.mp3",
+      "bytes": 348830,
+      "sha256": "54f54504f7a281bbbc4cc69cbed4644ead4b18f3c759b249c647e9fa0b301763",
+      "durationSeconds": 43.51737,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p3-v2-01",
+          "part": 3
+        },
+        {
+          "kind": "listening",
+          "id": "p3-v2-02",
+          "part": 3
+        },
+        {
+          "kind": "listening",
+          "id": "p3-v2-03",
+          "part": 3
+        }
+      ]
+    },
+    {
+      "text": "After the tour, visitors can try our new digital map table in the east gallery.",
+      "textSha256": "bd6d2f103bda8f8bebaf712e746bd10731e136e6a688a372ce1e18e047702f9c",
+      "file": "bd6d2f103bda8f8bebaf.mp3",
+      "bytes": 44556,
+      "sha256": "72f89cba5c064b7e155f7f591ab3971ebe0278bae1ae69e17783c58930aeff20",
+      "durationSeconds": 5.463583,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-04",
+          "part": 4,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-05",
+          "part": 4,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-06",
+          "part": 4,
+          "index": 5
+        }
+      ]
+    },
+    {
+      "text": "B.",
+      "textSha256": "be651d5a8e97690fbb1fafd9b89ea7bb5458b27b1d24a449c67ca762317ac1df",
+      "file": "be651d5a8e97690fbb1f.mp3",
+      "bytes": 9866,
+      "sha256": "7fe6524f07aaf549c7b2c38b6d8c2c97df308a21c6edd657a6e733b14e6ffbbc",
+      "durationSeconds": 1.134422,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p1-01",
+          "part": 1,
+          "index": 4
+        },
+        {
+          "kind": "sentence",
+          "id": "p1-02",
+          "part": 1,
+          "index": 4
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-01",
+          "part": 2,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-02",
+          "part": 2,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-03",
+          "part": 2,
+          "index": 4
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-04",
+          "part": 2,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-05",
+          "part": 2,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-01",
+          "part": 2,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-02",
+          "part": 2,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-03",
+          "part": 2,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-04",
+          "part": 2,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-05",
+          "part": 2,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-06",
+          "part": 2,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-07",
+          "part": 2,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-08",
+          "part": 2,
+          "index": 3
+        }
+      ]
+    },
+    {
+      "text": "There was a problem with the truck.",
+      "textSha256": "be9f8d211b01435079811eb5c23d04be1d4b28ed00906212f68c9d227f8b2fb5",
+      "file": "be9f8d211b0143507981.mp3",
+      "bytes": 20106,
+      "sha256": "5100a268113d07cf00427065fb1948c91dee926a175a4edbd09c581dcbb2ce60",
+      "durationSeconds": 2.419002,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-04",
+          "part": 2,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "Sure.",
+      "textSha256": "c10c037156053bfe962132f8eb70e273899bcbf44d3db5e8d88a465a07e84d9e",
+      "file": "c10c037156053bfe9621.mp3",
+      "bytes": 11746,
+      "sha256": "43a4b5445837cf2bffb89e48b9c4f8310394952a44c08dfc473bb0ea3e54f12c",
+      "durationSeconds": 1.369388,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-03",
+          "part": 2,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "Admission to the exhibition is free.",
+      "textSha256": "c35bf16bbb53f8073d08dc9318ab6d9ae39a1a2bf434437d2f4f3f0f83ee7d85",
+      "file": "c35bf16bbb53f8073d08.mp3",
+      "bytes": 22404,
+      "sha256": "6d1e9b4fff5be1ee406bc943eb4c3d6ab5f6c728aebeea1b24f96df38628fec5",
+      "durationSeconds": 2.714059,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-04",
+          "part": 4,
+          "index": 2
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-05",
+          "part": 4,
+          "index": 2
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-06",
+          "part": 4,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "This Saturday, we are opening our new Local Journeys exhibition, featuring maps and travel diaries donated by residents.",
+      "textSha256": "c3b12c995cf9c3ba8876d91fa8b131f9d79569b00c0307c96f4cc6318db27a7f",
+      "file": "c3b12c995cf9c3ba8876.mp3",
+      "bytes": 65245,
+      "sha256": "a3156baf1d15f31bf6c3ffb300aa25a4af32ceacdc7f5c8e5fd4b54b133835bf",
+      "durationSeconds": 8.067891,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-04",
+          "part": 4,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-05",
+          "part": 4,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-06",
+          "part": 4,
+          "index": 1
+        }
+      ]
+    },
+    {
+      "text": "Look at the photograph. Choose the best description. A. A woman is standing beside a whiteboard. B. Two people are carrying a table. C. A laptop computer is open on the table. D. Everyone in the room is standing.",
+      "textSha256": "c4eaa4590ffe698febbf3e55dbc4ed359359de29b3aa0c3e9e52dff8ae6add17",
+      "file": "c4eaa4590ffe698febbf.mp3",
+      "bytes": 130029,
+      "sha256": "349222c3b5a786dc41cdf3b2a961f3b612939d8352a7ce8307a6b9bab94bdde7",
+      "durationSeconds": 16.161814,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p1-01",
+          "part": 1
+        }
+      ]
+    },
+    {
+      "text": "The loading dock is downstairs.",
+      "textSha256": "c774472ff7611ef3615021829060b2a9253edb6df1461083590801d8d7963931",
+      "file": "c774472ff7611ef36150.mp3",
+      "bytes": 21359,
+      "sha256": "27ebe429631b75fecec6032c54066674ad000b6650d40409d67c8e87c513ba65",
+      "durationSeconds": 2.579048,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-04",
+          "part": 2,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "I prefer to study for a short time every day. First, it is easier to fit a short lesson into my schedule. For example, I can practice listening for ten minutes after dinner, even on a busy day. Second, daily practice helps me remember new expressions. If I learn a phrase on Monday and use it again on Tuesday, it becomes more familiar. A long weekly session can be useful for a practice test, but I may feel tired and lose concentration. For these reasons, I would choose short daily lessons and add an occasional longer session when I have more time.",
+      "textSha256": "c9a0cd247dd00ec2f48b8a1d2c0a1b3c92755e7464eb4b2532757c637892d19d",
+      "file": "c9a0cd247dd00ec2f48b.mp3",
+      "bytes": 302019,
+      "sha256": "8e21020334729d98bd3233fbaee9a90a936047928d3fddb8349c94e0085117b1",
+      "durationSeconds": 37.657914,
+      "references": [
+        {
+          "kind": "sampleAnswer",
+          "id": "speaking-opinion-01"
+        }
+      ]
+    },
+    {
+      "text": "Do you have the final PDF?",
+      "textSha256": "c9fbfd9b4f7abb7fa473ccb14c02e2f217d9bfb747764b6b9a6770c4eccae51b",
+      "file": "c9fbfd9b4f7abb7fa473.mp3",
+      "bytes": 21359,
+      "sha256": "51f158847fe2ad4d2d3c24ae5ecfc79b64e4107cf04fd38d29a6447586df4ed1",
+      "durationSeconds": 2.569116,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-01",
+          "part": 3,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-02",
+          "part": 3,
+          "index": 5
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-03",
+          "part": 3,
+          "index": 5
+        }
+      ]
+    },
+    {
+      "text": "Your ticket also includes the photography exhibition on the second floor, which you are welcome to visit while you wait.",
+      "textSha256": "ccd768c18a05daa32eb3b1760825459f111edfdededc092bd102551c63fc9387",
+      "file": "ccd768c18a05daa32eb3.mp3",
+      "bytes": 59185,
+      "sha256": "ec29306c06fd6290f9c7f29a2853427b354a3ac1b5c065c393b7c664eb35f82b",
+      "durationSeconds": 7.313061,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-01",
+          "part": 4,
+          "index": 4
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-02",
+          "part": 4,
+          "index": 4
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-03",
+          "part": 4,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "Maya: Of course.",
+      "textSha256": "cd4412b571d825ffea6b24615bb46ba04e99d13a615ad40fd3f30bc72738d402",
+      "file": "cd4412b571d825ffea6b.mp3",
+      "bytes": 19270,
+      "sha256": "5f25b656153a6b59bf17c67e1eb47416ccac409b25105917bd31c799eaab5c6d",
+      "durationSeconds": 2.314286,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-01",
+          "part": 3,
+          "index": 7
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-02",
+          "part": 3,
+          "index": 7
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-03",
+          "part": 3,
+          "index": 7
+        }
+      ]
+    },
+    {
+      "text": "It takes about fifteen minutes.",
+      "textSha256": "cf71c148b468162d365184f06a4839181f48be17eb4503ae53688d9ca787c148",
+      "file": "cf71c148b468162d3651.mp3",
+      "bytes": 21568,
+      "sha256": "5e8b00d0acbd1b8a7175a87bba9da600069b64f930c66d96563a571c4aea4233",
+      "durationSeconds": 2.589116,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-01",
+          "part": 2,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "Could you send the meeting notes before lunch?",
+      "textSha256": "cf8951af748af5d3dc6b0e92770bbc31f024e4934e862e91bdd74e66b4accc90",
+      "file": "cf8951af748af5d3dc6b.mp3",
+      "bytes": 24703,
+      "sha256": "67fe82bd6c4e82693334d1a0dea263d9428f789faa6e5eb7f84e39bcdbcc11e3",
+      "durationSeconds": 2.998957,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-02",
+          "part": 2,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "Please meet at the information desk at ten fifteen.",
+      "textSha256": "cfa5de45a25908086ec2b840f70b64016d131160e5ff54b82165dc80e19b97b6",
+      "file": "cfa5de45a25908086ec2.mp3",
+      "bytes": 29510,
+      "sha256": "82e064e7b5af6ac1d6fd16f635a6dc02c9668a8ca8082bb97b84af22f308a226",
+      "durationSeconds": 3.593741,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-01",
+          "part": 4,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-02",
+          "part": 4,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-03",
+          "part": 4,
+          "index": 3
+        }
+      ]
+    },
+    {
+      "text": "The map shows all three floors.",
+      "textSha256": "cfd4b329725ae7ad79b79d9e948eabc3cc92847a37660d7c947cc6fce3d9349f",
+      "file": "cfd4b329725ae7ad79b7.mp3",
+      "bytes": 21777,
+      "sha256": "d912b397bcc8973eeb3142a95dabdf15517cfa039b330f8fea8db0d64af801ac",
+      "durationSeconds": 2.629206,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-08",
+          "part": 2,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "Look at the photograph.",
+      "textSha256": "d1a920da4a04ffb4e0a6f73e62e19af597c8620cf39d072b0ef6df1038e66ceb",
+      "file": "d1a920da4a04ffb4e0a6.mp3",
+      "bytes": 16971,
+      "sha256": "6f5365cc66ec5cd3308e396c758144916ebe39953ff076fcdf13f4fe6a75ec59",
+      "durationSeconds": 2.034104,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p1-01",
+          "part": 1,
+          "index": 0
+        },
+        {
+          "kind": "sentence",
+          "id": "p1-02",
+          "part": 1,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "The visitors arrived by bus.",
+      "textSha256": "d3205d9ebe738765d20be5670df5ee0a30b2a1223e100e84c8b44a0b7da23a95",
+      "file": "d3205d9ebe738765d20b.mp3",
+      "bytes": 20733,
+      "sha256": "39ef2d09f8c5864216ed74d0d2885ab1bb3a4d3ce5cc182680d2d66a9fe6d525",
+      "durationSeconds": 2.494014,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-08",
+          "part": 2,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "At the machine beside the ticket office.",
+      "textSha256": "d69a888fdff4cc29640069c1cb051b09656db0a4d3a8e1f89fa9a9fbe29cb8e4",
+      "file": "d69a888fdff4cc296400.mp3",
+      "bytes": 24076,
+      "sha256": "8f9c33419a04b3c56774910eddebc0ed7bee193121688acb8f8ef82bbf021e01",
+      "durationSeconds": 2.90898,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-01",
+          "part": 2,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "I usually study English after dinner. I study at the desk in my bedroom because it is quiet and I can concentrate there.",
+      "textSha256": "d6ca0de5fb7f6fb14da7a33f6a84637e6906cfb655a0afb611663787f7560d58",
+      "file": "d6ca0de5fb7f6fb14da7.mp3",
+      "bytes": 64827,
+      "sha256": "d64e4ec39b06ef17926e8a0f698cc6e3546a05890513feaa6f7b355e1b6b8290",
+      "durationSeconds": 8.012834,
+      "references": [
+        {
+          "kind": "sampleAnswer",
+          "id": "speaking-respond-01"
+        }
+      ]
+    },
+    {
+      "text": "The meeting room is on the third floor.",
+      "textSha256": "d740cad31044d1f80692832d927baa1979bd5265de3a1d897b627a1dc9e3d57b",
+      "file": "d740cad31044d1f80692.mp3",
+      "bytes": 21150,
+      "sha256": "3d02de5ae19c026cde7559e5d8a7a3bae7a6cbd92edf0bc360f775bfd1bd2fe1",
+      "durationSeconds": 2.549206,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-02",
+          "part": 2,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "The team leader is traveling on Wednesday.",
+      "textSha256": "d7f6b0d5661b301bd7706f189ac5171f4646f161d25552a7b641c9776b09bdca",
+      "file": "d7f6b0d5661b301bd770.mp3",
+      "bytes": 24285,
+      "sha256": "e671f3fe3d1afeab0c5298eae2b22c6d3987cded3b53347ee722b43409b4a199",
+      "durationSeconds": 2.934014,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-06",
+          "part": 2,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "I enjoyed meeting her.",
+      "textSha256": "d9bf153bd0a59b3f8a2462829a35d8069f73977184a1c094066d4bb4dbea8c3f",
+      "file": "d9bf153bd0a59b3f8a24.mp3",
+      "bytes": 17389,
+      "sha256": "4590dc348280a47ed2a9e4c2fb8fcd16304ebdbd262b462e81dae17a6c8bbccb",
+      "durationSeconds": 2.065805,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-03",
+          "part": 2,
+          "index": 7
+        }
+      ]
+    },
+    {
+      "text": "Use a courier; the client needs them tomorrow.",
+      "textSha256": "dc85686bec510ccc55fa6c6e77982bad2b1cc0b7b64aa5cdc04af9679c04ff9c",
+      "file": "dc85686bec510ccc55fa.mp3",
+      "bytes": 29719,
+      "sha256": "1ed1713648ceca5981308007307c3b92c59e286007a7c97160baffbc2c4cf6f7",
+      "durationSeconds": 3.608889,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-04",
+          "part": 2,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "The room has large windows.",
+      "textSha256": "e089314ae4eb3bd61a3338f9a1b2fbdcccd97a4208df73c5d4f8c7d543ac2e9a",
+      "file": "e089314ae4eb3bd61a33.mp3",
+      "bytes": 19897,
+      "sha256": "6508078e99f6f4cf98df69f57993b932d0ccfcf246d5ec81be82ce00e5a6fc45",
+      "durationSeconds": 2.389116,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-03",
+          "part": 2,
+          "index": 5
+        }
+      ]
+    },
+    {
+      "text": "I prefer the table near the window.",
+      "textSha256": "e0cfbe3d1edaca62b687c72419fa7a64bdeddebfc80b0270be51f3ce70e3bf11",
+      "file": "e0cfbe3d1edaca62b687.mp3",
+      "bytes": 20941,
+      "sha256": "c0ada75a3703d305ee71dc785f4e01e0cbb00f0a6c2c40b812daf0be269f1277",
+      "durationSeconds": 2.509887,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-07",
+          "part": 2,
+          "index": 6
+        }
+      ]
+    },
+    {
+      "text": "Certainly.",
+      "textSha256": "e2d8594ef10f888a7bc21fd3a989f228428c150fc3b9984f3214c55efa8eb4d8",
+      "file": "e2d8594ef10f888a7bc2.mp3",
+      "bytes": 12582,
+      "sha256": "a4fd1a4938b8d81781130702ac039cb23df1e41d55bc61ed655763359c65f285",
+      "durationSeconds": 1.484263,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-02",
+          "part": 2,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "I'll send the message before lunch.",
+      "textSha256": "e360b3fdc4f4df32bae87fa62995d45ac718a90c36866468747af2ec04d8af66",
+      "file": "e360b3fdc4f4df32bae8.mp3",
+      "bytes": 21777,
+      "sha256": "cb1dc93c6514052337d08062fdb9b8b9480defbeaa7b19ac063361ad049c6e59",
+      "durationSeconds": 2.619002,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-01",
+          "part": 3,
+          "index": 8
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-02",
+          "part": 3,
+          "index": 8
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-03",
+          "part": 3,
+          "index": 8
+        }
+      ]
+    },
+    {
+      "text": "Lena: Thank you.",
+      "textSha256": "e399dd24c33b1b0e8d8512bd49d9a8e670e59a00d17daf4983366a839e8d7028",
+      "file": "e399dd24c33b1b0e8d85.mp3",
+      "bytes": 18643,
+      "sha256": "4c6f44cdfa44b904441625b7882805dc7cc20bbe09244ea311a54316996b428e",
+      "durationSeconds": 2.229297,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-04",
+          "part": 3,
+          "index": 13
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-05",
+          "part": 3,
+          "index": 13
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-06",
+          "part": 3,
+          "index": 13
+        }
+      ]
+    },
+    {
+      "text": "A.",
+      "textSha256": "e53657178cb6855ac4b2029197a64b0ce6af712b69433254ae18be74d224f991",
+      "file": "e53657178cb6855ac4b2.mp3",
+      "bytes": 9239,
+      "sha256": "15224630324298fa49499bf240e0965d4857946db69adb7f003a460196b57b26",
+      "durationSeconds": 1.049433,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p1-01",
+          "part": 1,
+          "index": 2
+        },
+        {
+          "kind": "sentence",
+          "id": "p1-02",
+          "part": 1,
+          "index": 2
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-01",
+          "part": 2,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-02",
+          "part": 2,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-03",
+          "part": 2,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-04",
+          "part": 2,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-05",
+          "part": 2,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-01",
+          "part": 2,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-02",
+          "part": 2,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-03",
+          "part": 2,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-04",
+          "part": 2,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-05",
+          "part": 2,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-06",
+          "part": 2,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-07",
+          "part": 2,
+          "index": 1
+        },
+        {
+          "kind": "sentence",
+          "id": "p2-v2-08",
+          "part": 2,
+          "index": 1
+        }
+      ]
+    },
+    {
+      "text": "I printed the report yesterday.",
+      "textSha256": "e627f967ce4e999e829b7e6690601fc805f2b728d85e34b5bffd9f2a25376bb1",
+      "file": "e627f967ce4e999e829b.mp3",
+      "bytes": 20524,
+      "sha256": "5dc43ed64d8454b83d17b77057577c9e08ded326fc08c4d9c167be93cbadbfd8",
+      "durationSeconds": 2.463991,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-03",
+          "part": 2,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "The printer is out of paper again.",
+      "textSha256": "e6bc4466dd64777ca961e31c3d29de0363af617b87043df363ebff7922d0f07a",
+      "file": "e6bc4466dd64777ca961.mp3",
+      "bytes": 21568,
+      "sha256": "d6c9237f011be84d628134bbaf1d817ffb1314efae5cff9325f629d96464cc45",
+      "durationSeconds": 2.603946,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-03",
+          "part": 2,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "In the small conference room.",
+      "textSha256": "e6eb51ba1d04b61675dfd7f3f62e5af6de758b77ac4030b960209105927df2ea",
+      "file": "e6eb51ba1d04b61675df.mp3",
+      "bytes": 19897,
+      "sha256": "298c81a5aaca80897d325b8fd99069434720db7f147b0262e99cb97dd5a318a1",
+      "durationSeconds": 2.384036,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-06",
+          "part": 2,
+          "index": 2
+        }
+      ]
+    },
+    {
+      "text": "Good morning, visitors.",
+      "textSha256": "e7fcd52f5a177c35ba4c3e63fe32a7146d16bf4f2cc421b710fddea6a9602008",
+      "file": "e7fcd52f5a177c35ba4c.mp3",
+      "bytes": 21359,
+      "sha256": "fc5dca46616c001fe7c8f3101bf0f5ca0ee4d66d54fe34a949fa262551471e0b",
+      "durationSeconds": 2.579229,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-01",
+          "part": 4,
+          "index": 0
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-02",
+          "part": 4,
+          "index": 0
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-03",
+          "part": 4,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "How many copies of the visitor guide should I make? A. The guide was written last year. B. Twenty, including two for the reception desk. C. Visitors enter through the side door.",
+      "textSha256": "e88731c1aef42ab2c82938426bf4caf9c5bc9f634b8782e8747163823693c25a",
+      "file": "e88731c1aef42ab2c829.mp3",
+      "bytes": 103070,
+      "sha256": "c2886e14282b0b38c3982c03d57e51a59dcd7531b58b0997cbcb444e63df59fa",
+      "durationSeconds": 12.792381,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p2-v2-05",
+          "part": 2
+        }
+      ]
+    },
+    {
+      "text": "Who is updating the visitor map? A. The map shows all three floors. B. I'm not sure; ask the information desk. C. The visitors arrived by bus.",
+      "textSha256": "e9e807cc7383118aa73ecde3cbb9a9fdf5423b9d8a1c440d399770f2d6b787cd",
+      "file": "e9e807cc7383118aa73e.mp3",
+      "bytes": 96592,
+      "sha256": "1ab7586c45336ef3d0768fa3dbc387ea752c247bd71a56fd60b0f90f3c6c900c",
+      "durationSeconds": 11.977778,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p2-v2-08",
+          "part": 2
+        }
+      ]
+    },
+    {
+      "text": "Should we send the samples by courier or by regular mail? A. Use a courier; the client needs them tomorrow. B. Yes, the samples are blue. C. The email was sent this morning.",
+      "textSha256": "eb846a3deed4c195d699febbc802d5179fdecafe121030a604e6c8f9bf4183f0",
+      "file": "eb846a3deed4c195d699.mp3",
+      "bytes": 108295,
+      "sha256": "bcb3d75e9ace5ade0948622a1a80a1ce8e1943cd50c8b836a147b01a9bca928d",
+      "durationSeconds": 13.437324,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p2-v2-04",
+          "part": 2
+        }
+      ]
+    },
+    {
+      "text": "Thank you for visiting the Riverton History Center. This Saturday, we are opening our new Local Journeys exhibition, featuring maps and travel diaries donated by residents. Admission to the exhibition is free. A guided tour will begin at two in the afternoon and last forty minutes. Places on the tour are limited, so please reserve yours at the front desk before noon on Saturday. After the tour, visitors can try our new digital map table in the east gallery. Please note that the café will close at three for maintenance, but drinking water will remain available beside the main entrance. We look forward to welcoming you.",
+      "textSha256": "ec34b5c2afa9c14fb03b907598f402afffb27572e9bb79f10ba5ada225044fa1",
+      "file": "ec34b5c2afa9c14fb03b.mp3",
+      "bytes": 324171,
+      "sha256": "16c2326890d6d6bf1340529806d259bf59d7c0f8c6b01e5c0200d907a19997d7",
+      "durationSeconds": 40.426712,
+      "references": [
+        {
+          "kind": "listening",
+          "id": "p4-v2-04",
+          "part": 4
+        },
+        {
+          "kind": "listening",
+          "id": "p4-v2-05",
+          "part": 4
+        },
+        {
+          "kind": "listening",
+          "id": "p4-v2-06",
+          "part": 4
+        }
+      ]
+    },
+    {
+      "text": "The print shop says its delivery van is delayed and won't reach us until eleven.",
+      "textSha256": "ee854aecfaeb9f4b492f6bd9d956425afe8fcce1b3e352efbc474bdaeec5a660",
+      "file": "ee854aecfaeb9f4b492f.mp3",
+      "bytes": 40377,
+      "sha256": "3264ef9814030a9d9aec19c3f02c44edca838f9a537c034197affdfffae49475",
+      "durationSeconds": 4.95356,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-01",
+          "part": 3,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-02",
+          "part": 3,
+          "index": 3
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-03",
+          "part": 3,
+          "index": 3
+        }
+      ]
+    },
+    {
+      "text": "Nora: We can't keep the participants waiting.",
+      "textSha256": "ef867933262247816f1984da175f4cd594eccfa06aca809efc0aec8ed6f67dc7",
+      "file": "ef867933262247816f19.mp3",
+      "bytes": 29928,
+      "sha256": "f1d6bde720fd2fdfbe599db0ae6c3d8f2f34bc418021de4043ec6d7b608eec66",
+      "durationSeconds": 3.648934,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-01",
+          "part": 3,
+          "index": 4
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-02",
+          "part": 3,
+          "index": 4
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-03",
+          "part": 3,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "Why was the delivery delayed?",
+      "textSha256": "f16b82554743c442496077bdba3824005001f45af4ad2df0f6804b85902676fd",
+      "file": "f16b82554743c4424960.mp3",
+      "bytes": 19061,
+      "sha256": "f3fbe46ce317d19c814f224fa858ff118e2d49d44051d8c5b5db4f7850c2814c",
+      "durationSeconds": 2.279002,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-04",
+          "part": 2,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "text": "Thursday is the day after Wednesday.",
+      "textSha256": "f38a0e14e2dcf9de903b2b1a0b9befc45a6c22a09f95c265a8d430781e3d6e13",
+      "file": "f38a0e14e2dcf9de903b.mp3",
+      "bytes": 22404,
+      "sha256": "fcfa3a368aca5acdc6a674a8a402e2c04cbb10de98cb680830ec3b19ce4eb3ea",
+      "durationSeconds": 2.709161,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p2-v2-06",
+          "part": 2,
+          "index": 4
+        }
+      ]
+    },
+    {
+      "text": "For any questions about the room change, call our reception team before five today.",
+      "textSha256": "f452a8c8f7c3060ec3707fe14e723736aa8787364d6c2fe0bf31b8f67e1e1368",
+      "file": "f452a8c8f7c3060ec370.mp3",
+      "bytes": 47064,
+      "sha256": "d73431f8465b1487112a59b34f6fe20946105430a8cc4d2e946e6f433bb12ff8",
+      "durationSeconds": 5.778685,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-01",
+          "part": 4,
+          "index": 7
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-02",
+          "part": 4,
+          "index": 7
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-03",
+          "part": 4,
+          "index": 7
+        }
+      ]
+    },
+    {
+      "text": "Evan: All right.",
+      "textSha256": "f4d32f3dab8afc6e29d20e6f252759b594e06697d7d0587275257a4b64f006fb",
+      "file": "f4d32f3dab8afc6e29d2.mp3",
+      "bytes": 18643,
+      "sha256": "c661b082d3e90d11aeb5cd3439e0f84e8551ab9229a5fbf9d04eb6a327d4f7c8",
+      "durationSeconds": 2.23932,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-01",
+          "part": 3,
+          "index": 10
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-02",
+          "part": 3,
+          "index": 10
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-03",
+          "part": 3,
+          "index": 10
+        }
+      ]
+    },
+    {
+      "text": "D.",
+      "textSha256": "f9e487799dfc7882b1a0db047999249489d02726b2c82055cb68a6bb0311f118",
+      "file": "f9e487799dfc7882b1a0.mp3",
+      "bytes": 9866,
+      "sha256": "ef5c5629ec40dbe4afb2a9cba33852259cf13248a2d8c491e3119843a8435bea",
+      "durationSeconds": 1.134422,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p1-01",
+          "part": 1,
+          "index": 8
+        },
+        {
+          "kind": "sentence",
+          "id": "p1-02",
+          "part": 1,
+          "index": 8
+        }
+      ]
+    },
+    {
+      "text": "I'll tell the driver to look for you at the west exit.",
+      "textSha256": "fd45f460c0288a4f9c6ec71cee486ab06463610a57459f94d87d2433d3becee7",
+      "file": "fd45f460c0288a4f9c6e.mp3",
+      "bytes": 28883,
+      "sha256": "5327f901b4bc4865bf002b4e331de143a83e0bf349cbf32b4b591b529bdba585",
+      "durationSeconds": 3.508798,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p3-v2-04",
+          "part": 3,
+          "index": 12
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-05",
+          "part": 3,
+          "index": 12
+        },
+        {
+          "kind": "sentence",
+          "id": "p3-v2-06",
+          "part": 3,
+          "index": 12
+        }
+      ]
+    },
+    {
+      "text": "Please arrive fifteen minutes early to collect your visitor badge in the lobby.",
+      "textSha256": "fdcaff3b10742dc93efe54ce7a204ac14d67880ee5fa950dd6717836e98602b5",
+      "file": "fdcaff3b10742dc93efe.mp3",
+      "bytes": 38496,
+      "sha256": "a5b71d0202914b2e6219a893d68a254f1a5c0a25c7228274282ea6d20af1823b",
+      "durationSeconds": 4.708526,
+      "references": [
+        {
+          "kind": "sentence",
+          "id": "p4-v2-01",
+          "part": 4,
+          "index": 4
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-02",
+          "part": 4,
+          "index": 4
+        },
+        {
+          "kind": "sentence",
+          "id": "p4-v2-03",
+          "part": 4,
+          "index": 4
+        }
+      ]
+    }
+  ]
+}

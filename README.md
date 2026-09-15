@@ -21,9 +21,9 @@
 | 形态 | 当前能力 | 边界 |
 |---|---|---|
 | 网页 / 鸿蒙PWA | 私有网站身份、D1学习记录、R2录音、本机离线队列、恢复联网同步；内置鸿蒙添加桌面指引 | 首次打开需要网络；当前使用同一ChatGPT账号同步；手机号登录尚待真实认证服务；麦克风与系统朗读需设备支持 |
-| HarmonyOS原生工程 | ArkTS / ArkUI / ArkWeb封装共享React界面，原生资源包、本机记录、后台录音保护与联网权限 | 当前没有HAP；真实联网账号同步和手机号注册登录须完成AGC/短信认证配置、SDK编译和真机验收 |
+| HarmonyOS原生工程 | ArkTS / ArkUI / ArkWeb封装共享React界面，原生资源包、本机记录、后台录音保护；官方SDK已生成未签名HAP | 签名与设备运行尚未验收；真实联网账号同步和手机号注册登录仍需认证服务与后端 |
 
-鸿蒙原生接入位于 `harmony/`，使用ArkTS / ArkUI / ArkWeb复用共享网页资源，目标HarmonyOS 5及更新版本；它是唯一主动维护的原生目标。当前仅工程与资源准备，HAP编译、签名、真实手机号认证及真机验收尚未完成，详见 [鸿蒙工程说明](harmony/README.md) 与 [平台范围RFC](docs/rfcs/0001-harmony-only-platform.md)。
+鸿蒙原生接入位于 `harmony/`，使用ArkTS / ArkUI / ArkWeb复用共享网页资源，目标HarmonyOS 5及更新版本；它是唯一主动维护的原生目标。已完成官方 SDK 的原生编译和未签名 HAP 打包，签名、运行及手机验收仍待完成，详见 [鸿蒙工程说明](harmony/README.md)、[编译记录](docs/testing/HARMONY_OFFLINE_BUILD.md) 与 [平台范围RFC](docs/rfcs/0001-harmony-only-platform.md)。
 
 鸿蒙系统浏览器可以将网页版添加到桌面。Web/PWA目前沿用站点的ChatGPT身份；手机号入口只有在真实短信供应商和服务端令牌校验完成后才会开放。原生工程不嵌入网页身份头、Cookie或服务密钥，当前记录仅保存在本机，并在安装说明中提供安全的在线同步版入口。
 
