@@ -76,6 +76,22 @@ export function daysUntil(exam:string,today:string){if(!exam)return null;return 
 export function uniqueById<T extends {id:string}>(items:T[]):T[]{return [...new Map(items.map(x=>[x.id,x])).values()];}
 export function mergeData(local:StudyData,remote:StudyData):StudyData{local=migrateStudyData(local);remote=migrateStudyData(remote);return {schemaVersion:DATA_SCHEMA_VERSION,profile:remote.profile,attempts:uniqueById([...local.attempts,...remote.attempts]).sort((a,b)=>a.createdAt.localeCompare(b.createdAt)),checkins:uniqueById([...local.checkins,...remote.checkins]),recordings:uniqueById([...local.recordings,...remote.recordings]),questionMarks:mergeMutableRecords([...local.questionMarks,...remote.questionMarks]),resourceTasks:mergeMutableRecords([...local.resourceTasks,...remote.resourceTasks])};}
 export function firstAttempts(attempts:Attempt[]){const seen=new Set<string>();return [...attempts].sort((a,b)=>a.createdAt.localeCompare(b.createdAt)).filter(a=>{if(seen.has(a.qid))return false;seen.add(a.qid);return true;});}
+// Use the user's local day and only earlier history: answering today's task
+// must not replace that task, including after a restart later the same day.
+export function dailyPlan(data:StudyData,questions:Question[],prompts:Speaking[],today=dayKey(new Date(),data.profile.timezone)){
+ const timezone=data.profile.timezone;
+ const parts=new Map(questions.map(q=>[q.id,q.part]));
+ const history=firstAttempts(data.attempts.filter(a=>dayKey(a.createdAt,timezone)<today));
+ const stats=PARTS.map((_,i)=>{const attempts=history.filter(a=>parts.get(a.qid)===i+1);return {part:i+1,total:attempts.length,rate:attempts.length?attempts.filter(a=>a.correct).length/attempts.length:1};});
+ const seed=Math.floor(Date.parse(today+'T00:00:00Z')/86400000);
+ const pick=(listening:boolean)=>{const group=stats.filter(s=>listening?s.part<=4:s.part>4);const weakest=group.filter(s=>s.total>0).sort((a,b)=>a.rate-b.rate)[0];return weakest&&weakest.rate<.7?weakest.part:group.find(s=>s.total===0)?.part||group[((seed%group.length)+group.length)%group.length].part;};
+ const listeningPart=pick(true),readingPart=pick(false);
+ const priorRecordings=data.recordings.filter(r=>dayKey(r.createdAt,timezone)<today);
+ const oral=prompts[priorRecordings.length%prompts.length];
+ const attempts=data.attempts.filter(a=>dayKey(a.createdAt,timezone)===today);
+ const checkedTasks=[attempts.some(a=>parts.get(a.qid)===listeningPart),attempts.some(a=>parts.get(a.qid)===readingPart),!!oral&&data.recordings.some(r=>dayKey(r.createdAt,timezone)===today&&r.promptId===oral.id)];
+ return {listeningPart,readingPart,oral,checkedTasks};
+}
 export function reviewSchedule(attempts:Attempt[],now=Date.now()){
  const grouped=new Map<string,Attempt[]>();for(const a of attempts){const arr=grouped.get(a.qid)||[];arr.push(a);grouped.set(a.qid,arr);}
  return [...grouped.entries()].map(([qid,arr])=>{

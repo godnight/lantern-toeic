@@ -2,6 +2,7 @@ import { common } from '@kit.AbilityKit';
 import { webview } from '@kit.ArkWeb';
 import { fileIo, fileUri, picker } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
+import { BusinessError } from '@kit.BasicServicesKit';
 
 const LOCAL_ORIGIN: string = 'https://lantern.local';
 
@@ -61,8 +62,15 @@ export class NativeDownloads {
     });
   }
 
-  attach(controller: webview.WebviewController): void {
-    controller.setDownloadDelegate(this.delegate);
+  attach(controller: webview.WebviewController): boolean {
+    try {
+      controller.setDownloadDelegate(this.delegate);
+      return true;
+    } catch (error) {
+      console.error('LANTERN download attachment failed: ' + (error as BusinessError).code);
+      this.notify('导出功能暂不可用，请重新打开应用后重试');
+      return false;
+    }
   }
 
   private cancelItem(item: webview.WebDownloadItem): void {

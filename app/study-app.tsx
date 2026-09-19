@@ -12,7 +12,7 @@ import {toast} from 'sonner';
 import {useStudy} from '@/lib/use-study';
 import {createStudyBackup} from '@/lib/study-backup';
 import {registerNativeBack} from '@/lib/native-host';
-import {createId,expandQuestionGroups,PARTS,dayKey,daysUntil,dayOffset,getWeek,firstAttempts,reviewSchedule,chooseQuestions,type Profile,type Question,type Speaking,type Recording,type Theme} from '@/lib/study-model';
+import {createId,expandQuestionGroups,PARTS,dayKey,daysUntil,dayOffset,getWeek,firstAttempts,reviewSchedule,chooseQuestions,dailyPlan,type Profile,type Question,type Speaking,type Recording,type Theme} from '@/lib/study-model';
 import qData from '@/content/questions.json';
 import sData from '@/content/speaking.json';
 import ResourceLibrary from './learn/resource-library';
@@ -47,8 +47,7 @@ export default function StudyApp({owner,nativeMode=false}:{owner:string|null;nat
  useEffect(()=>{const t=setInterval(()=>setNow(new Date()),60000);if(!nativeMode&&'serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});const before=(e:Event)=>{e.preventDefault();setInstallPrompt(e);};window.addEventListener('beforeinstallprompt',before);return()=>{clearInterval(t);window.removeEventListener('beforeinstallprompt',before);};},[]);
  const partStats=PARTS.map((name,i)=>{const a=first.filter(a=>questions.find(q=>q.id===a.qid)?.part===i+1);return {part:i+1,name,total:a.length,correct:a.filter(x=>x.correct).length,rate:a.length?Math.round(a.filter(x=>x.correct).length/a.length*100):null};});
  const weakest=partStats.filter(x=>x.total>0).sort((a,b)=>(a.rate||0)-(b.rate||0))[0];
- const pickPart=(isListening:boolean)=>{const relevant=partStats.filter(x=>isListening?x.part<=4:x.part>4);const tried=relevant.filter(x=>x.total>0).sort((a,b)=>(a.rate||0)-(b.rate||0));if(tried[0]&&(tried[0].rate||0)<70)return tried[0].part;return relevant.find(x=>x.total===0)?.part||relevant[Math.floor(Date.now()/86400000)%relevant.length].part;};
- const listeningPart=pickPart(true),readingPart=pickPart(false);const oral=prompts[data.recordings.length%prompts.length];
+ const {listeningPart,readingPart,oral,checkedTasks}=dailyPlan(data,questions,prompts,today);
  const startPart=(part?:number,count=100)=>{const q=chooseQuestions(questions,data.attempts,part,count);if(q.length)setQueue(q);};
  const startDaily=(minimum=false)=>{const q=minimum?chooseQuestions(questions,data.attempts,listeningPart<=2?listeningPart:2,1):[...chooseQuestions(questions,data.attempts,listeningPart,Math.max(1,Math.round(profile.dailyMinutes/12))),...chooseQuestions(questions,data.attempts,readingPart,Math.max(2,Math.round(profile.dailyMinutes/8)))];setQueue(q);};
  const finish=(n:number)=>{setQueue(null);setSpeaking(null);setMinutes(String(n));setNote('');setSelectedResource(null);setLoad('刚好');setCheckinOpen(true);};
@@ -56,7 +55,6 @@ export default function StudyApp({owner,nativeMode=false}:{owner:string|null;nat
  const openSettings=()=>{setDraft({...profile});setSettings(true);};
  const currentNav=nav==='art'?{label:'主题素材库',en:'ART LIBRARY'}:NAV.find(x=>x.id===nav)!;
  const region=mapScenes.views[nav as keyof typeof mapScenes.views]||mapScenes.views.today;
- const checkedTasks=[todayAttempts.some(a=>(questions.find(q=>q.id===a.qid)?.part||99)<=4),todayAttempts.some(a=>(questions.find(q=>q.id===a.qid)?.part||0)>4),todayRecordings.length>0];
  const startReview=()=>{const ids=new Set(due.map(x=>x.qid));const qs=expandQuestionGroups(questions,ids);if(qs.length)setQueue(qs);};
  const downloadRecap=()=>{const s=`# 微光托业 · 周复盘\n\n日期：${today}\n近7天启动：${starts}天\n已记录学习：${weekMinutes}分钟\n听读首次作答：${first.length}题\n口语录音：${data.recordings.length}段\n${weakest?`优先巩固：Part ${weakest.part} ${weakest.name}`:'尚未完成基线，不估分'}\n\n## 学习反馈\n${data.checkins.filter(c=>c.date>=dayOffset(today,-6)).map(c=>`- ${c.date} · ${c.minutes}分钟 · ${c.load}：${c.note||'未填写卡点'}`).join('\n')}\n\n漏一天不补两天。练习表现与正式成绩分开记录。`;saveFile('lantern-weekly-review.md',s,'text/markdown');};
  const regionSummary=nav==='today'?[['今日已学',todayMinutes+' 分钟'],['听读练习',todayAttempts.length+' 题'],['口语表达',todayRecordings.length+' 段']]:nav==='train'?[['听力与阅读',questions.length+' 道原创题'],['口语表达',prompts.length+' 类任务'],['练习方式','作答 · 解析 · 再练']]:nav==='review'?[['待巩固',due.length+' 道题'],['复习记录',schedule.length+' 道题'],['记忆节奏','先回想，再作答']]:nav==='progress'?[['近 7 天',weekMinutes+' 分钟'],['学习启动',starts+' 天'],['首答记录',first.length+' 道题']]:[['材料来源','官方入口'],['练习内容','原创听读与口语'],['学习收获','关联打卡']];
