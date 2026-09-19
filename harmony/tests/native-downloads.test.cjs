@@ -65,7 +65,7 @@ test('attachment failure is contained and a later valid attachment can export', 
   assert.equal(h.manager.attach({setDownloadDelegate(){throw Object.assign(Error('unattached'), {code:17100001});}}), false);
   assert.equal(h.delegate, undefined);
   assert.deepEqual(h.errors, ['LANTERN download attachment failed: 17100001']);
-  assert.deepEqual(h.notices, ['���������ݲ����ã������´�Ӧ�ú�����']);
+  assert.deepEqual(h.notices, ['导出功能暂不可用，请重新打开应用后重试']);
   assert.equal(h.pickers.length, 0);
   assert.equal(h.files.size, 0);
   assert.equal(h.manager.attach(h.controller), true);
@@ -73,7 +73,7 @@ test('attachment failure is contained and a later valid attachment can export', 
   h.delegate.before(request); h.pickers[0]([directory]); await tick();
   request.fullPath = request.started; h.files.set(request.started, request.received);
   h.delegate.finish(request);
-  assert.equal(h.notices.filter(message=>message.includes('�ѱ���')).length, 1);
+  assert.equal(h.notices.filter(message=>message.includes('已保存')).length, 1);
 });
 
 test('a local export succeeds only after the requested public file exists with the received bytes', async () => {
@@ -84,7 +84,7 @@ test('a local export succeeds only after the requested public file exists with t
   assert.equal(h.notices.length, 0);
   request.fullPath=request.started; h.files.set(request.started, 5);
   h.delegate.finish(request);
-  assert.match(h.notices[0], /�ѱ���/);
+  assert.match(h.notices[0], /已保存/);
   h.manager.invalidate();
   assert.equal(h.files.size, 1, 'A completed user export must survive later page disposal');
 });
@@ -121,7 +121,7 @@ test('sandbox fallback and partial files never produce false success', async () 
     h.files.set(request.started, 3);
     request.fullPath = fallback ? '/private/sandbox/other-user-file.json' : request.started;
     h.delegate.finish(request);
-    assert.equal(h.notices.some(message=>message.includes('�ѱ���')), false);
+    assert.equal(h.notices.some(message=>message.includes('已保存')), false);
     assert.deepEqual(h.removed, [request.started]);
   }
 });
@@ -140,7 +140,7 @@ test('bundled art downloads copy rawfile bytes without fetching the internal ori
   h.delegate.before(request); h.pickers[0]([directory]); await tick();
   assert.equal(request.cancelled, 1); assert.equal(request.started, '');
   assert.deepEqual(h.reads, ['web/art-packs/hollow-originals-v0.2.3.zip']);
-  assert.match(h.notices[0], /�ѱ���/); assert.equal([...h.files.values()][0], 4);
+  assert.match(h.notices[0], /已保存/); assert.equal([...h.files.values()][0], 4);
 });
 
 test('engine failure while the download directory is pending cannot cancel a bundled copy', async () => {
@@ -151,6 +151,6 @@ test('engine failure while the download directory is pending cannot cancel a bun
   assert.equal(h.notices.length, 0);
   h.pickers[0]([directory]); await tick();
   assert.deepEqual(h.reads, ['web/art-packs/silk-originals-v0.2.3.zip']);
-  assert.match(h.notices[0], /�ѱ���/);
+  assert.match(h.notices[0], /已保存/);
   assert.equal([...h.files.values()][0], 4);
 });

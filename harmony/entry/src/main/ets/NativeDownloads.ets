@@ -57,7 +57,7 @@ export class NativeDownloads {
     this.delegate.onDownloadFailed((item: webview.WebDownloadItem) => {
       const job: DownloadJob | undefined = this.active;
       if (job && job.guid === item.getGuid() && !job.bundled) {
-        this.fail(job, '����δ��ɣ�������');
+        this.fail(job, '导出未完成，请重试');
       }
     });
   }
@@ -68,7 +68,7 @@ export class NativeDownloads {
       return true;
     } catch (error) {
       console.error('LANTERN download attachment failed: ' + (error as BusinessError).code);
-      this.notify('���������ݲ����ã������´�Ӧ�ú�����');
+      this.notify('导出功能暂不可用，请重新打开应用后重试');
       return false;
     }
   }
@@ -107,7 +107,7 @@ export class NativeDownloads {
       allowedBlob(name, item.getMimeType());
     if (!this.canStart() || (!localBlob && asset === '') || this.active) {
       this.cancelItem(item);
-      this.notify(this.active ? '�����ļ����ڵ��������Ժ�' : '�ݲ�֧�ֵ�������ļ�');
+      this.notify(this.active ? '已有文件正在导出，请稍候' : '暂不支持导出这个文件');
       return;
     }
     const job: DownloadJob = new DownloadJob(item, name, asset !== '');
@@ -119,13 +119,13 @@ export class NativeDownloads {
       const uris: string[] = await viewPicker.save({ pickerMode: picker.DocumentPickerMode.DOWNLOAD });
       if (this.active !== job) return;
       if (!this.canStart() || uris.length !== 1 || !uris[0].startsWith('file://')) {
-        this.fail(job, '�޷�ȡ������Ŀ¼��������');
+        this.fail(job, '无法取得下载目录，请重试');
         return;
       }
       const directory: string = new fileUri.FileUri(uris[0]).path.replace(/\/$/, '');
       if (!directory.startsWith('/') || directory.split('/').some((part: string) => part === '..') ||
         directory.includes('\u0000')) {
-        this.fail(job, '����Ŀ¼������');
+        this.fail(job, '下载目录不可用');
         return;
       }
       const dot: number = name.lastIndexOf('.');
@@ -133,7 +133,7 @@ export class NativeDownloads {
       if (fileIo.accessSync(job.path)) {
         // Do not remove an existing file, even in the unlikely event of a UUID collision.
         job.path = '';
-        this.fail(job, '�ļ�����ͻ�������µ���');
+        this.fail(job, '文件名冲突，请重新导出');
         return;
       }
       if (job.bundled) {
@@ -155,7 +155,7 @@ export class NativeDownloads {
         item.start(job.path);
       }
     } catch {
-      this.fail(job, '����ʧ�ܣ�������ÿռ������');
+      this.fail(job, '导出失败，请检查可用空间后重试');
     }
   }
 
@@ -164,11 +164,11 @@ export class NativeDownloads {
     if (!job || job.bundled || job.guid !== item.getGuid()) return;
     try {
       if (job.path === '' || item.getFullPath() !== job.path) {
-        this.fail(job, '�ļ�δ���浽����Ŀ¼��������');
+        this.fail(job, '文件未保存到下载目录，请重试');
         return;
       }
       this.complete(job, item.getReceivedBytes());
-    } catch { this.fail(job, '�޷�ȷ�ϵ����ļ���������'); }
+    } catch { this.fail(job, '无法确认导出文件，请重试'); }
   }
 
   private complete(job: DownloadJob, bytes: number): void {
@@ -176,11 +176,11 @@ export class NativeDownloads {
     try {
       const stat: fileIo.Stat = fileIo.statSync(job.path);
       if (!stat.isFile() || bytes <= 0 || stat.size !== bytes) {
-        this.fail(job, '�����ļ���������������');
+        this.fail(job, '导出文件不完整，请重试');
         return;
       }
       this.active = undefined;
-      this.notify('�ѱ��浽�ļ�������������Ŀ¼ �� com.lantern.toeic');
-    } catch { this.fail(job, '�޷�ȷ�ϵ����ļ���������'); }
+      this.notify('已保存到文件管理器的下载目录 · com.lantern.toeic');
+    } catch { this.fail(job, '无法确认导出文件，请重试'); }
   }
 }
