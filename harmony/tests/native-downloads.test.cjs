@@ -7,7 +7,7 @@ const ts = require('typescript');
 const source = fs.readFileSync(path.join(__dirname, '../entry/src/main/ets/NativeDownloads.ets'), 'utf8');
 const code = ts.transpileModule(source, {compilerOptions:{module:ts.ModuleKind.CommonJS, target:ts.ScriptTarget.ES2022}}).outputText;
 const tick = () => new Promise(resolve => setImmediate(resolve));
-function fixture() {
+function fixture({attach = true} = {}) {
   const files = new Map(), removed = [], notices = [], pickers = [], reads = [];
   let allowed = true, uuid = 0, delegate;
   class Delegate {
@@ -38,13 +38,14 @@ function fixture() {
     }}},
     '@kit.ArkTS': {util:{generateRandomUUID:()=>`uuid-${++uuid}`}},
   };
-  const exports = {};
-  vm.runInNewContext(code, {exports, Uint8Array, ArrayBuffer, Error, require:name=>imports[name]});
+  const exports = {}, errors = [];
+  vm.runInNewContext(code, {exports, Uint8Array, ArrayBuffer, Error, console:{error:message=>errors.push(message)}, require:name=>imports[name]});
   const manager = new exports.NativeDownloads(() => ({resourceManager:{
     async getRawFileContent(name) { reads.push(name); return new Uint8Array([1,2,3,4]); },
   }}), () => allowed, message => notices.push(message));
-  manager.attach({setDownloadDelegate:value=>{delegate=value;}});
-  return {manager, files, removed, notices, pickers, reads, get delegate(){return delegate;}, setAllowed(value){allowed=value;}};
+  const controller = {setDownloadDelegate:value=>{delegate=value;}};
+  if (attach) manager.attach(controller);
+  return {manager, controller, errors, files, removed, notices, pickers, reads, get delegate(){return delegate;}, setAllowed(value){allowed=value;}};
 }
 let nextGuid = 0;
 function item(overrides={}) {
@@ -58,6 +59,22 @@ function item(overrides={}) {
   };
 }
 const directory = 'file://docs/storage/Download/com.lantern.toeic';
+
+test('attachment failure is contained and a later valid attachment can export', async () => {
+  const h = fixture({attach:false});
+  assert.equal(h.manager.attach({setDownloadDelegate(){throw Object.assign(Error('unattached'), {code:17100001});}}), false);
+  assert.equal(h.delegate, undefined);
+  assert.deepEqual(h.errors, ['LANTERN download attachment failed: 17100001']);
+  assert.deepEqual(h.notices, ['导出功能暂不可用，请重新打开应用后重试']);
+  assert.equal(h.pickers.length, 0);
+  assert.equal(h.files.size, 0);
+  assert.equal(h.manager.attach(h.controller), true);
+  const request = item();
+  h.delegate.before(request); h.pickers[0]([directory]); await tick();
+  request.fullPath = request.started; h.files.set(request.started, request.received);
+  h.delegate.finish(request);
+  assert.equal(h.notices.filter(message=>message.includes('已保存')).length, 1);
+});
 
 test('a local export succeeds only after the requested public file exists with the received bytes', async () => {
   const h = fixture(), request = item();
