@@ -7,7 +7,7 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 const output = path.resolve(process.argv[2] || path.join(root, 'reports/offline-audio'));
 const digest = value => createHash('sha256').update(value).digest('hex');
 const sources = {};
-for (const name of ['questions', 'speaking']) {
+for (const name of ['questions', 'speaking', 'vocabulary']) {
   const bytes = await readFile(path.join(root, 'content', `${name}.json`));
   sources[name] = { path: `content/${name}.json`, sha256: digest(bytes), data: JSON.parse(bytes.toString('utf8')) };
 }
@@ -31,6 +31,8 @@ for (const question of sources.questions.data) {
     add(text, { kind: 'sentence', id: question.id, part: question.part, index });
   });
 }
+for (const word of sources.vocabulary.data) add(word.word, { kind: 'vocabulary', id: word.id });
+for (const q of sources.questions.data) for (const v of q.vocabulary || []) add(v.word, {kind:'questionVocabulary', id:q.id});
 for (const prompt of sources.speaking.data) add(prompt.sampleAnswer, { kind: 'sampleAnswer', id: prompt.id });
 const entries = [...byText.values()].sort((a, b) => a.filename.localeCompare(b.filename));
 const result = {

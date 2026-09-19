@@ -6,3 +6,4 @@ export const recordings=sqliteTable('recordings',{id:text('id').primaryKey(),use
 const mutableColumns=()=>({userId:text('user_id').notNull(),entityId:text('entity_id').notNull(),body:text('body').notNull(),revision:integer('revision').notNull(),cancelled:integer('cancelled').notNull(),mutationId:text('mutation_id').notNull()});
 export const questionMarks=sqliteTable('question_marks',mutableColumns(),table=>[primaryKey({columns:[table.userId,table.entityId]})]);
 export const resourceTasks=sqliteTable('resource_tasks',mutableColumns(),table=>[primaryKey({columns:[table.userId,table.entityId]})]);
+export const vocabularyEvents=sqliteTable('vocabulary_events',{userId:text('user_id').notNull(),eventId:text('event_id').notNull(),body:text('body').notNull()},table=>[primaryKey({columns:[table.userId,table.eventId]})]);

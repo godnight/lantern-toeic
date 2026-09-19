@@ -2,6 +2,14 @@
 
 更新：2026-09-19。代码仓库：[godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)。当前只维护Web/PWA和HarmonyOS；Android/iOS工程、专用工作流及Capacitor已删除，旧源码留在Git历史。
 
+## 最新词库分支（2026-09-19）
+
+先核对 `feat/toeic-vocabulary` 的 PR；它建立在尚未合并的 PR #26 `test/harmony-offline-validation` 上。包含240场景词、55额外题内表达、双语搜索/生词/自测、独立词库JSON备份、网页D1同步与鸿蒙离线语音。详见 PROJECT_STATUS 和 RFC 0004。只检出旧main会丢失两个阶段改动。
+
+新迁移 `drizzle/0002_parched_edwin_jarvis.sql` 仅新增 vocabulary_events。词库进度不属于 StudyData v2 / 原个人记录备份；不得塞进 Attempt、QuestionMark 或 /api/study。鸿蒙owner仍为null，不要声称手机号或原生云同步已经实现。`npm run test:study` 已加入20项词库测试，合计74项；完整相关自动化99项通过。
+
+2026-09-19本地Sites插件目录在运行中消失，已搜原缓存未找到；生产构建改用已锁定安装的 `npx --no-install vinext build`（与原helper最终构建命令相同），正式Worker本地hydration通过。原始 `npx vite` 开发预览存在React重复加载问题，勿把dev错误或静态截图当成生产发布失败。发布沿用当前owner-private Site；原账号授权未扩大。最终部署结果和PR状态需检查本轮交付。
+
 ## 先选对分支
 
 PR #18 平台收敛、#20 数据基础、#21 地图改版、#22 去地名、#24 离线 HAP/内置语音、#25 原生导出均已合并。2026-09-19 核实 GitHub main 为 `b8da1526e21f4369998fe58bae1ad6105962292f`。本轮设备回归修复在 [PR #26](https://github.com/godnight/lantern-toeic/pull/26)，分支 `test/harmony-offline-validation`；接续时核对实时 PR 状态：
