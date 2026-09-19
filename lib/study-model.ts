@@ -11,7 +11,7 @@ export type Profile = { name: string; lrGoal: number; speakingGoal: number; exam
 export type Question = { id: string; part: number; title: string; groupId?: string; prompt: string; options: string[]; correctIndex: number; explanation: string; evidence: string; skill: string; difficulty: string; passage?: string; transcript?: string; audioText?: string; translation?: string; vocabulary?: {word:string;meaning:string;example:string}[]; image?: string };
 export type Speaking = { id: string; type: string; title: string; prompt: string; prepSeconds: number; answerSeconds: number; guide: string[]; sampleAnswer: string; passage?: string; image?: string };
 export type Attempt = {id:string;qid:string;choice:number;correct:boolean;createdAt:string;seconds:number;mode:'first'|'review'};
-export type Checkin = {id:string;date:string;minutes:number;load:'轻'|'刚好'|'重';note:string;createdAt:string};
+export type Checkin = {id:string;date:string;minutes:number;load:'��'|'�պ�'|'��';note:string;createdAt:string};
 export type Recording = {id:string;promptId:string;title:string;createdAt:string;duration:number;mime:string;uploaded?:boolean;note?:string};
 export const DATA_SCHEMA_VERSION = 2;
 export const WRONG_REASONS = ['listening','vocabulary','grammar','evidence','timing'] as const;
@@ -20,7 +20,7 @@ export type MutableStudyRecord = {revision:number;mutationId:string;updatedAt:st
 export type QuestionMark = MutableStudyRecord & {qid:string;flagged:boolean;reason:WrongReason|null;note:string};
 export type ResourceTask = MutableStudyRecord & {id:string;resourceId:string;plannedDate:string;status:'planned'|'in_progress'|'completed'|'cancelled';minutes:number;checkinId:string|null};
 export type StudyData = {schemaVersion:2;profile:Profile;attempts:Attempt[];checkins:Checkin[];recordings:Recording[];questionMarks:QuestionMark[];resourceTasks:ResourceTask[]};
-export const DEFAULT_PROFILE:Profile={name:'学习者',lrGoal:650,speakingGoal:130,examDate:'2026-12-20',dailyMinutes:25,timezone:'Asia/Shanghai',theme:'hollow',weeklyTarget:4,onboarded:false};
+export const DEFAULT_PROFILE:Profile={name:'ѧϰ��',lrGoal:650,speakingGoal:130,examDate:'2026-12-20',dailyMinutes:25,timezone:'Asia/Shanghai',theme:'hollow',weeklyTarget:4,onboarded:false};
 export const EMPTY_DATA:StudyData={schemaVersion:DATA_SCHEMA_VERSION,profile:DEFAULT_PROFILE,attempts:[],checkins:[],recordings:[],questionMarks:[],resourceTasks:[]};
 const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export function validStudyDate(value:unknown):value is string {
@@ -61,7 +61,7 @@ export function mergeMutableRecords<T extends QuestionMark|ResourceTask>(items:T
 export function migrateStudyData(value:unknown):StudyData {
  const raw=value&&typeof value==='object'?value as Partial<StudyData>:{};
  const version=(value as {schemaVersion?:unknown}|null)?.schemaVersion;
- if(version!==undefined&&version!==1&&version!==DATA_SCHEMA_VERSION)throw Error('学习记录版本不受支持，请更新应用后再打开');
+ if(version!==undefined&&version!==1&&version!==DATA_SCHEMA_VERSION)throw Error('ѧϰ��¼�汾����֧�֣������Ӧ�ú��ٴ�');
  const result=structuredClone(EMPTY_DATA);
  if(raw.profile&&typeof raw.profile.name==='string')result.profile={...result.profile,...raw.profile};
  for(const key of ['attempts','checkins','recordings'] as const){const items=raw[key];if(Array.isArray(items))(result[key] as Array<{id:string}>)=items.filter(item=>item&&typeof item.id==='string');}
@@ -69,13 +69,29 @@ export function migrateStudyData(value:unknown):StudyData {
  if(Array.isArray(raw.resourceTasks))result.resourceTasks=mergeMutableRecords(raw.resourceTasks.filter(validResourceTask));
  return result;
 }
-export const PARTS=['照片描述','应答问题','简短对话','简短独白','短句填空','长文填空','阅读理解'];
+export const PARTS=['��Ƭ����','Ӧ������','��̶Ի�','��̶���','�̾����','�������','�Ķ�����'];
 export function dayKey(date:Date|string=new Date(),timezone='Asia/Shanghai'){return new Intl.DateTimeFormat('en-CA',{timeZone:timezone,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(date));}
 export function dayOffset(day:string,offset:number){const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+offset);return d.toISOString().slice(0,10);}
 export function daysUntil(exam:string,today:string){if(!exam)return null;return Math.ceil((Date.parse(exam+'T12:00:00Z')-Date.parse(today+'T12:00:00Z'))/86400000);}
 export function uniqueById<T extends {id:string}>(items:T[]):T[]{return [...new Map(items.map(x=>[x.id,x])).values()];}
 export function mergeData(local:StudyData,remote:StudyData):StudyData{local=migrateStudyData(local);remote=migrateStudyData(remote);return {schemaVersion:DATA_SCHEMA_VERSION,profile:remote.profile,attempts:uniqueById([...local.attempts,...remote.attempts]).sort((a,b)=>a.createdAt.localeCompare(b.createdAt)),checkins:uniqueById([...local.checkins,...remote.checkins]),recordings:uniqueById([...local.recordings,...remote.recordings]),questionMarks:mergeMutableRecords([...local.questionMarks,...remote.questionMarks]),resourceTasks:mergeMutableRecords([...local.resourceTasks,...remote.resourceTasks])};}
 export function firstAttempts(attempts:Attempt[]){const seen=new Set<string>();return [...attempts].sort((a,b)=>a.createdAt.localeCompare(b.createdAt)).filter(a=>{if(seen.has(a.qid))return false;seen.add(a.qid);return true;});}
+// Use the user's local day and only earlier history: answering today's task
+// must not replace that task, including after a restart later the same day.
+export function dailyPlan(data:StudyData,questions:Question[],prompts:Speaking[],today=dayKey(new Date(),data.profile.timezone)){
+ const timezone=data.profile.timezone;
+ const parts=new Map(questions.map(q=>[q.id,q.part]));
+ const history=firstAttempts(data.attempts.filter(a=>dayKey(a.createdAt,timezone)<today));
+ const stats=PARTS.map((_,i)=>{const attempts=history.filter(a=>parts.get(a.qid)===i+1);return {part:i+1,total:attempts.length,rate:attempts.length?attempts.filter(a=>a.correct).length/attempts.length:1};});
+ const seed=Math.floor(Date.parse(today+'T00:00:00Z')/86400000);
+ const pick=(listening:boolean)=>{const group=stats.filter(s=>listening?s.part<=4:s.part>4);const weakest=group.filter(s=>s.total>0).sort((a,b)=>a.rate-b.rate)[0];return weakest&&weakest.rate<.7?weakest.part:group.find(s=>s.total===0)?.part||group[((seed%group.length)+group.length)%group.length].part;};
+ const listeningPart=pick(true),readingPart=pick(false);
+ const priorRecordings=data.recordings.filter(r=>dayKey(r.createdAt,timezone)<today);
+ const oral=prompts[priorRecordings.length%prompts.length];
+ const attempts=data.attempts.filter(a=>dayKey(a.createdAt,timezone)===today);
+ const checkedTasks=[attempts.some(a=>parts.get(a.qid)===listeningPart),attempts.some(a=>parts.get(a.qid)===readingPart),!!oral&&data.recordings.some(r=>dayKey(r.createdAt,timezone)===today&&r.promptId===oral.id)];
+ return {listeningPart,readingPart,oral,checkedTasks};
+}
 export function reviewSchedule(attempts:Attempt[],now=Date.now()){
  const grouped=new Map<string,Attempt[]>();for(const a of attempts){const arr=grouped.get(a.qid)||[];arr.push(a);grouped.set(a.qid,arr);}
  return [...grouped.entries()].map(([qid,arr])=>{

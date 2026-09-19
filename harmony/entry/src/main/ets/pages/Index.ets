@@ -187,7 +187,7 @@ struct Index {
 
   private retryBridge(sequence: number, document: number, lifecycle: number, attempt: number): void {
     if (attempt >= 19) {
-      this.toast('页面尚未就绪，请稍后再试');
+      this.toast('ҳ����δ���������Ժ�����');
       return;
     }
     this.bridgeRetryTimer = setTimeout(() => {
@@ -331,11 +331,11 @@ struct Index {
     this.lastExitBackAt = 0;
     try {
       this.context().openLink(destination).catch((error: BusinessError) => {
-        this.toast('暂时无法打开链接');
+        this.toast('��ʱ�޷�������');
         console.warn('Unable to open external link: ' + error.code);
       });
     } catch {
-      this.toast('暂时无法打开链接');
+      this.toast('��ʱ�޷�������');
     }
   }
 
@@ -370,7 +370,7 @@ struct Index {
 
   private failedBack(): void {
     this.cancelBack();
-    this.toast('页面暂未响应，请稍后再试');
+    this.toast('ҳ����δ��Ӧ�����Ժ�����');
   }
 
   private finishBack(): void {
@@ -384,13 +384,13 @@ struct Index {
       if (this.lastExitBackAt > 0 && now - this.lastExitBackAt <= 2000) {
         this.lastExitBackAt = 0;
         this.context().terminateSelf().catch((error: BusinessError) => {
-          this.toast('暂时无法退出，请稍后再试');
+          this.toast('��ʱ�޷��˳������Ժ�����');
           console.warn('Unable to terminate ability: ' + error.code);
         });
         return;
       }
       this.lastExitBackAt = now;
-      this.toast('再按一次返回退出');
+      this.toast('�ٰ�һ�η����˳�');
     } catch {
       this.failedBack();
     }
@@ -403,7 +403,7 @@ struct Index {
     if (!this.pageReady || !this.bridgeReady || !this.isTrustedDocument()) {
       this.lastExitBackAt = 0;
       this.startBridgeSync();
-      this.toast('页面尚未就绪，请稍后再试');
+      this.toast('ҳ����δ���������Ժ�����');
       return true;
     }
     this.backPending = true;
@@ -469,7 +469,7 @@ struct Index {
           this.downloads = new NativeDownloads(() => this.context(),
             () => this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
             (message: string) => this.toast(message));
-          this.downloads.attach(this.controller);
+          if (!this.downloads.attach(this.controller)) this.downloads = undefined;
         })
         .onPageBegin(() => this.pageBegin())
         .onPageEnd((event) => this.pageEnd(event.url))
