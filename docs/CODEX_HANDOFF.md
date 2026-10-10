@@ -2,11 +2,21 @@
 
 更新：2026-10-11。代码仓库：[godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)。当前只维护Web/PWA和HarmonyOS；Android/iOS工程、专用工作流及Capacitor已删除，旧源码留在Git历史。
 
-## 最新接续：v0.1.0 已发布（2026-10-11）
+## 最新接续：v0.3.0 已预发布（2026-10-11）
+
+从 GitHub 当前 main 接续。PR #29 已合并，v0.3.0 标签/功能基线为 `88dd510fdbbf9edaef0370ff537f463142c9ca2c`，树 `60c436a7dcba3f0127cffb3e0fd175ec59ec1eba`；发布 run `38073334481` 成功，附件以实际发布 SHA256SUMS 为准。随后文档提交只记录发布结果，不覆盖已发布标签或附件。
+
+Sites 版本 9 已部署对应功能，源提交 `2d342626cb23389021a10ba8b8b1b5c76b3568d2` 与上述功能基线同树；最新文档提交不要求重建未变化的网页。所有者私有权限未变。线上浏览器复验遇到连接超时，不能把部署成功写成手机已经打开。
+
+整卷格式在 `docs/EXAM_IMPORT.md`，存储与计时设计在 RFC 0005；本机 228 项机器测试和 18 个浏览器流程通过，CI 也已运行浏览器门禁。新版本地签名 HAP 在私人交付目录，未安装到手机；旧真机录音/词库证据只适用于原验收范围。下一步等用户连接设备后覆盖安装、验证 ArkWeb 整卷/文件下载/后台及真实听音，不卸载或清空学习数据。
+
+多套官方完整卷仍未取得；私人交付仅有 60 题官方原样 PDF，不能当成整卷或公开打包。模拟器首次协议确认、真实硬件验收、材料取得、手机号与云同步的账户配置留待用户醒来处理。发布与后续事项见 `docs/releases/v0.3.0-published.md`。
+
+## v0.1.0 发布历史（2026-10-11）
 
 PR #28 已合并，GitHub main/tag v0.1.0 为 `859a39f18eb4c3d95445ff08e37b3226335bfc23`；7 个预发布附件已完整上传并核验。相同内容的 Sites 源提交 `f3fbac42dae8f7907b5377c1e44d5bafe645c823` 已部署成功，原所有者私有地址不变。GitHub 与 Sites 仍保留独立提交历史。
 
-后续模考分支 `feat/full-listening-reading-mock` 从此基线开发 v0.3.0 / versionCode 20006。核心说明 `docs/EXAM_IMPORT.md`、RFC 0005；个人题包不进入公开仓库。正式验收、后续提交及发布结果以该版本测试报告和 PR 为准，勿把旧 v0.1.0 的真机证据扩大到新功能。
+模考分支 `feat/full-listening-reading-mock` 曾从此基线开发 v0.3.0 / versionCode 20006，现已合并。个人题包不进入公开仓库，勿把旧 v0.1.0 的真机证据扩大到新功能。
 
 Windows Sites 打包使用已安装 Codex Node 24.19.0 + Git Bash，当前进程设置 `TAR_OPTIONS=--force-local`。普通 Node 24.13.1 在 fs.cpSync 原生崩溃；插件 npm shim 仍有路径问题，直接 PowerShell npm.ps1 可安装锁定依赖。凭据仅经 helper stdin 传递。
 
