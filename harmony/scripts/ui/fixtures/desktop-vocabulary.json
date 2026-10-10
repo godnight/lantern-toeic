@@ -1,0 +1,561 @@
+[
+  {
+    "bounds": [
+      0,
+      0,
+      2584,
+      1828
+    ],
+    "children": [
+      {
+        "type": "Web",
+        "text": "https://lantern.local/",
+        "bounds": [
+          0,
+          107,
+          2584,
+          1751
+        ],
+        "children": [
+          {
+            "type": "rootWebArea",
+            "bounds": [
+              0,
+              107,
+              2584,
+              1751
+            ],
+            "scrollable": true,
+            "children": [
+              {
+                "type": "genericContainer",
+                "bounds": [
+                  0,
+                  107,
+                  2584,
+                  1751
+                ],
+                "clickable": true,
+                "children": [
+                  {
+                    "type": "genericContainer",
+                    "bounds": [
+                      0,
+                      107,
+                      2584,
+                      1751
+                    ],
+                    "clickable": true,
+                    "children": [
+                      {
+                        "type": "staticText",
+                        "text": "LANTERN",
+                        "bounds": [
+                          187,
+                          190,
+                          506,
+                          266
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "genericContainer",
+                        "text": "微光托业 · 学习之境",
+                        "bounds": [
+                          187,
+                          277,
+                          516,
+                          332
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "genericContainer",
+                        "bounds": [
+                          0,
+                          406,
+                          603,
+                          1288
+                        ],
+                        "scrollable": true,
+                        "children": [
+                          {
+                            "type": "staticText",
+                            "text": "学习导航",
+                            "bounds": [
+                              66,
+                              442,
+                              220,
+                              485
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "staticText",
+                            "text": "STUDY",
+                            "bounds": [
+                              430,
+                              446,
+                              537,
+                              480
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "今日旅程 TODAY 01",
+                            "bounds": [
+                              38,
+                              554,
+                              565,
+                              764
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "训练之境 PRACTICE 02",
+                            "bounds": [
+                              38,
+                              785,
+                              565,
+                              995
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "温故知新 REVIEW 03",
+                            "bounds": [
+                              38,
+                              1016,
+                              565,
+                              1226
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "成长足迹 PROGRESS 04",
+                            "bounds": [
+                              38,
+                              1247,
+                              565,
+                              1457
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "学习书库 LIBRARY 05",
+                            "bounds": [
+                              38,
+                              1478,
+                              565,
+                              1688
+                            ],
+                            "clickable": true,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "type": "button",
+                        "text": "界面配色 深蓝圣巢",
+                        "bounds": [
+                          63,
+                          1339,
+                          540,
+                          1526
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "学 学习者 目标与学习偏好",
+                        "bounds": [
+                          63,
+                          1566,
+                          540,
+                          1703
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "sectionHeader",
+                        "text": "学习状态",
+                        "bounds": [
+                          605,
+                          107,
+                          2584,
+                          341
+                        ],
+                        "children": [
+                          {
+                            "type": "genericContainer",
+                            "text": "旅人状态",
+                            "bounds": [
+                              756,
+                              158,
+                              922,
+                              222
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "genericContainer",
+                            "text": "10月11日",
+                            "bounds": [
+                              756,
+                              232,
+                              922,
+                              288
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "staticText",
+                            "text": "今日学习",
+                            "bounds": [
+                              1419,
+                              189,
+                              1563,
+                              231
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "genericContainer",
+                            "text": "0 / 25 分钟",
+                            "bounds": [
+                              1595,
+                              174,
+                              1766,
+                              247
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "progressIndicator",
+                            "text": "0%, 今日学习时间",
+                            "bounds": [
+                              1419,
+                              263,
+                              1766,
+                              272
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "同步学习记录",
+                            "bounds": [
+                              2191,
+                              162,
+                              2258,
+                              284
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "安装手机应用",
+                            "bounds": [
+                              2285,
+                              172,
+                              2387,
+                              274
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "选择主题",
+                            "bounds": [
+                              2414,
+                              172,
+                              2517,
+                              274
+                            ],
+                            "clickable": true,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "type": "paragraph",
+                        "text": "VOCABULARY",
+                        "bounds": [
+                          673,
+                          409,
+                          1186,
+                          464
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "heading",
+                        "text": "托业场景词库",
+                        "bounds": [
+                          673,
+                          485,
+                          1186,
+                          606
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "region",
+                        "text": "托业场景词库",
+                        "bounds": [
+                          673,
+                          677,
+                          2517,
+                          1751
+                        ],
+                        "children": [
+                          {
+                            "type": "staticText",
+                            "text": "240",
+                            "bounds": [
+                              673,
+                              694,
+                              797,
+                              777
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "staticText",
+                            "text": " 场景词",
+                            "bounds": [
+                              807,
+                              718,
+                              952,
+                              771
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "staticText",
+                            "text": "0",
+                            "bounds": [
+                              1022,
+                              694,
+                              1064,
+                              777
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "staticText",
+                            "text": " 生词",
+                            "bounds": [
+                              1074,
+                              718,
+                              1175,
+                              771
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "staticText",
+                            "text": "0",
+                            "bounds": [
+                              1245,
+                              694,
+                              1287,
+                              777
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "staticText",
+                            "text": " 到期复习",
+                            "bounds": [
+                              1297,
+                              718,
+                              1486,
+                              771
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "status",
+                            "text": "本机保存",
+                            "bounds": [
+                              2362,
+                              714,
+                              2517,
+                              778
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "textField",
+                            "bounds": [
+                              802,
+                              951,
+                              1945,
+                              1025
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "comboBoxMenuButton",
+                            "text": "词汇场景",
+                            "bounds": [
+                              2021,
+                              921,
+                              2517,
+                              1054
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "genericContainer",
+                            "text": "词库筛选",
+                            "bounds": [
+                              673,
+                              1114,
+                              1312,
+                              1222
+                            ],
+                            "children": [
+                              {
+                                "type": "toggleButton",
+                                "text": "全部",
+                                "bounds": [
+                                  673,
+                                  1114,
+                                  828,
+                                  1222
+                                ],
+                                "clickable": true,
+                                "checkable": true,
+                                "children": []
+                              },
+                              {
+                                "type": "toggleButton",
+                                "text": "我的生词",
+                                "bounds": [
+                                  838,
+                                  1114,
+                                  1070,
+                                  1222
+                                ],
+                                "clickable": true,
+                                "checkable": true,
+                                "children": []
+                              },
+                              {
+                                "type": "toggleButton",
+                                "text": "到期复习",
+                                "bounds": [
+                                  1080,
+                                  1114,
+                                  1312,
+                                  1222
+                                ],
+                                "clickable": true,
+                                "checkable": true,
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "type": "button",
+                            "text": "词卡自测 · 20 词",
+                            "bounds": [
+                              2054,
+                              1108,
+                              2517,
+                              1227
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "status",
+                            "text": "找到 295 个词 · 每组自测前 20 个，可按场景或到期状态筛选",
+                            "bounds": [
+                              673,
+                              1259,
+                              2517,
+                              1324
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "办公事务 document 文件；文档 查看释义与例句",
+                            "bounds": [
+                              675,
+                              1374,
+                              1574,
+                              1751
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "toggleButton",
+                            "text": "加入生词本：document",
+                            "bounds": [
+                              1430,
+                              1402,
+                              1547,
+                              1518
+                            ],
+                            "clickable": true,
+                            "checkable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "办公事务 file 文件；档案 查看释义与例句",
+                            "bounds": [
+                              1616,
+                              1374,
+                              2515,
+                              1751
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "toggleButton",
+                            "text": "加入生词本：file",
+                            "bounds": [
+                              2371,
+                              1402,
+                              2487,
+                              1518
+                            ],
+                            "clickable": true,
+                            "checkable": true,
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

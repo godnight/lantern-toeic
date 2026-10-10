@@ -1,6 +1,6 @@
 {
   "name": "lantern-toeic",
-  "version": "0.2.4",
+  "version": "0.1.0",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -8,7 +8,7 @@
   "scripts": {
     "install:ci": "bash scripts/install-ci.sh",
     "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vite",
-    "build": "bash scripts/build-verified.sh",
+    "build": "node scripts/build-verified.mjs",
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "test": "npm run validate:content && npm run test:study && npm run build && node --test tests/*.test.mjs",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",

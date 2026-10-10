@@ -1,0 +1,437 @@
+[
+  {
+    "bounds": [
+      0,
+      0,
+      1264,
+      1848
+    ],
+    "children": [
+      {
+        "type": "Web",
+        "text": "https://lantern.local/",
+        "bounds": [
+          0,
+          107,
+          1264,
+          1771
+        ],
+        "children": [
+          {
+            "type": "rootWebArea",
+            "bounds": [
+              0,
+              107,
+              1264,
+              1771
+            ],
+            "scrollable": true,
+            "children": [
+              {
+                "type": "genericContainer",
+                "bounds": [
+                  0,
+                  107,
+                  1264,
+                  1771
+                ],
+                "clickable": true,
+                "children": [
+                  {
+                    "type": "sectionHeader",
+                    "text": "学习状态",
+                    "bounds": [
+                      0,
+                      107,
+                      1264,
+                      452
+                    ],
+                    "children": [
+                      {
+                        "type": "genericContainer",
+                        "text": "旅人状态",
+                        "bounds": [
+                          126,
+                          142,
+                          292,
+                          207
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "genericContainer",
+                        "text": "10月11日",
+                        "bounds": [
+                          126,
+                          211,
+                          268,
+                          267
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "staticText",
+                        "text": "今日学习",
+                        "bounds": [
+                          49,
+                          338,
+                          182,
+                          378
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "genericContainer",
+                        "text": "0 / 25 分钟",
+                        "bounds": [
+                          584,
+                          327,
+                          751,
+                          391
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "progressIndicator",
+                        "text": "0%, 今日学习时间",
+                        "bounds": [
+                          49,
+                          404,
+                          751,
+                          413
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "待复习 0",
+                        "bounds": [
+                          1019,
+                          323,
+                          1216,
+                          417
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "本机保存",
+                        "bounds": [
+                          709,
+                          157,
+                          902,
+                          252
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "安装手机应用",
+                        "bounds": [
+                          918,
+                          157,
+                          1007,
+                          252
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "选择主题",
+                        "bounds": [
+                          1023,
+                          157,
+                          1111,
+                          252
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "编辑目标",
+                        "bounds": [
+                          1127,
+                          157,
+                          1216,
+                          252
+                        ],
+                        "clickable": true,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "type": "region",
+                    "text": "今日旅程",
+                    "bounds": [
+                      44,
+                      498,
+                      1221,
+                      1571
+                    ],
+                    "children": [
+                      {
+                        "type": "staticText",
+                        "text": "TODAY",
+                        "bounds": [
+                          158,
+                          555,
+                          267,
+                          589
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "staticText",
+                        "text": "01",
+                        "bounds": [
+                          1068,
+                          555,
+                          1103,
+                          589
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "staticText",
+                        "text": " / 05",
+                        "bounds": [
+                          1102,
+                          555,
+                          1164,
+                          589
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "heading",
+                        "text": "今日旅程",
+                        "bounds": [
+                          106,
+                          699,
+                          1159,
+                          843
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "paragraph",
+                        "text": "从一小步开始，走进今天的旅程。",
+                        "bounds": [
+                          106,
+                          875,
+                          781,
+                          945
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "开始今日练习",
+                        "bounds": [
+                          106,
+                          1013,
+                          480,
+                          1135
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "今天只学 5 分钟",
+                        "bounds": [
+                          517,
+                          1013,
+                          772,
+                          1135
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "staticText",
+                        "text": "今日已学",
+                        "bounds": [
+                          101,
+                          1414,
+                          223,
+                          1450
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "genericContainer",
+                        "text": "0 分钟",
+                        "bounds": [
+                          101,
+                          1474,
+                          203,
+                          1528
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "staticText",
+                        "text": "听读练习",
+                        "bounds": [
+                          498,
+                          1414,
+                          620,
+                          1450
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "genericContainer",
+                        "text": "0 题",
+                        "bounds": [
+                          498,
+                          1474,
+                          565,
+                          1528
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "staticText",
+                        "text": "口语表达",
+                        "bounds": [
+                          861,
+                          1414,
+                          983,
+                          1450
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "genericContainer",
+                        "text": "0 段",
+                        "bounds": [
+                          861,
+                          1474,
+                          928,
+                          1528
+                        ],
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "type": "heading",
+                    "text": "今日行程",
+                    "bounds": [
+                      44,
+                      1642,
+                      286,
+                      1738
+                    ],
+                    "children": []
+                  },
+                  {
+                    "type": "staticText",
+                    "text": "0",
+                    "bounds": [
+                      1014,
+                      1669,
+                      1034,
+                      1709
+                    ],
+                    "children": []
+                  },
+                  {
+                    "type": "staticText",
+                    "text": " / 3 项已练习",
+                    "bounds": [
+                      1033,
+                      1669,
+                      1221,
+                      1709
+                    ],
+                    "children": []
+                  },
+                  {
+                    "type": "navigation",
+                    "text": "主导航",
+                    "bounds": [
+                      0,
+                      1574,
+                      1264,
+                      1771
+                    ],
+                    "children": [
+                      {
+                        "type": "button",
+                        "text": "今日旅程",
+                        "bounds": [
+                          22,
+                          1598,
+                          260,
+                          1752
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "训练之境",
+                        "bounds": [
+                          267,
+                          1598,
+                          506,
+                          1752
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "温故知新",
+                        "bounds": [
+                          513,
+                          1598,
+                          752,
+                          1752
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "成长足迹",
+                        "bounds": [
+                          759,
+                          1598,
+                          998,
+                          1752
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "学习书库",
+                        "bounds": [
+                          1005,
+                          1598,
+                          1243,
+                          1752
+                        ],
+                        "clickable": true,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

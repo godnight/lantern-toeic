@@ -6,6 +6,10 @@
 
 微光是面向 TOEIC 听读与口语的学习教练。目标、考试日期、每日时间与时区均可配置。预设为听读 >650、口语 ≥130、2026-12-20 听读考试、每日25分钟、每周启动4天；这只是首位学习者的可编辑起点。
 
+## 当前考试与版本安排
+
+用户确认 2026-12-20 只参加听读，口语考后再准备；暂沿用听读 650+，先以每周约 8–10 小时和首次完整基线调整计划。见 [发布与学习计划](docs/RELEASE_PLAN.md) 和 [本次 v0.1.0 测试报告](docs/testing/TEST_EXECUTION_v0.1.0.md)。用户指定本次测试名为 v0.1.0，保留历史 v0.2.x，后续功能版从 v0.3.0 开始；版本名变化不回退源码，鸿蒙升级号递增。
+
 ## 当前已经实现
 
 - **今日旅程**：按时间预算和已记录的薄弱 Part 选择小组练习，保留一题起步的5分钟最低版。
@@ -37,7 +41,7 @@ bash scripts/codex-setup.sh
 npm run build
 ```
 
-初始化只安装根目录依赖并执行核心检查；`mobile/`保留鸿蒙共享网页入口，没有独立运行依赖。Android/iOS工程、专用工作流和Capacitor已删除，旧源码可从Git历史追溯。Codex接续分支和环境设置见 [Codex交接说明](docs/CODEX_HANDOFF.md)。Web入口为 `app/page.tsx`，共享产品界面为 `app/study-app.tsx`。原生构建见 [原生工程说明](docs/NATIVE.md)。普通Linux可执行Web编译（需GNU `timeout`）；生产身份与D1/R2接入仍需要对应运行平台。
+初始化只安装根目录依赖并执行核心检查；`mobile/`保留鸿蒙共享网页入口，没有独立运行依赖。Android/iOS工程、专用工作流和Capacitor已删除，旧源码可从Git历史追溯。Codex接续分支和环境设置见 [Codex交接说明](docs/CODEX_HANDOFF.md)。Web入口为 `app/page.tsx`，共享产品界面为 `app/study-app.tsx`。原生构建见 [原生工程说明](docs/NATIVE.md)。Windows 与 Linux 可执行 `npm run build`；Linux 的限时构建需 GNU `timeout`；生产身份与D1/R2接入仍需要对应运行平台。
 
 ## 内容与质量边界
 
