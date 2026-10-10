@@ -2,6 +2,12 @@
 
 更新：2026-10-11。代码仓库：[godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)。当前只维护Web/PWA和HarmonyOS；Android/iOS工程、专用工作流及Capacitor已删除，旧源码留在Git历史。
 
+## 当前发布接续（2026-10-11）
+
+PR #26 与 #27 已顺序合并，GitHub main 为 `70081a47059036d11e731cb2166975aab453fd5f`，内容树与本地真机修复基线一致。v0.1.0 测试发布准备中：报告见 `docs/testing/TEST_EXECUTION_v0.1.0.md`；发布计划见 `docs/RELEASE_PLAN.md`。当前默认范围是 12 月 20 日听读，口语后延。后续功能版从 v0.3.0 继续，避免覆盖历史 v0.2.x 标签。
+
+Windows Web 构建现在由 Node 包装器直接启动锁定 Vinext，避免 PowerShell 把 Bash 转入缺少 Node 的 WSL；Linux CI 保留既有脚本。设备自动化在 `harmony/scripts/ui`，27 项离线测试通过，live 首跑待模拟器协议确认，不能写成端到端已通过。
+
 ## 最新真机接续（2026-10-11）
 
 词库位于 [PR #27](https://github.com/godnight/lantern-toeic/pull/27)，以 PR #26 的 `test/harmony-offline-validation` 为基线；先核对合并状态。本人开发者 CLI 登录、AGC 设备登记、开发签名和 Pura X Max 安装已完成，不要重复要求这些前置。

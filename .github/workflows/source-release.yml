@@ -1,17 +1,19 @@
-name: Source preview release
+name: Tested offline prerelease
 on:
   push:
     branches: [main]
     paths: [release-manifest.json]
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: source-preview-release
+  group: tested-offline-release
   cancel-in-progress: false
 jobs:
-  verify-release:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+  verify-and-build:
+    if: github.repository == 'godnight/lantern-toeic' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
         with:
@@ -20,16 +22,68 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - run: npm ci
-      - run: npm run typecheck
-      - run: npm run validate:content
-      - run: npm run test:study
-      - run: npm run build
-  publish-source-preview:
-    needs: verify-release
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Validate source and Web production build
+        run: |
+          npm ci
+          npm run typecheck
+          npm run validate:content
+          npm run validate:art
+          node --test tests/*.test.cjs
+          npm run build
+          node --test tests/*.test.mjs
+          node --test harmony/tests/toolchain.test.mjs harmony/tests/*.test.cjs
+          python3 -B -m unittest discover -s harmony/tests -p 'test_*.py'
+          python3 -B -m unittest discover -s harmony/scripts/ui -p 'test_*.py'
+          python3 -B -m unittest discover -s tests -p 'test_release_*.py'
+          npm --prefix harmony run sync:web
+          npm --prefix harmony run check:web
+      - name: Restore the pinned public CLT archive
+        id: clt-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ runner.temp }}/lantern-clt-cache/commandline-tools.zip
+          key: linux-x64-harmony-clt-5.1.0.840-1dcefa4741dc289277560b2802040e0c45b433898d8db453d711d5376e0478f1
+      - name: Download if needed and verify official SHA256
+        run: python3 scripts/install-release-clt.py download "$RUNNER_TEMP/lantern-clt-cache/commandline-tools.zip"
+      - name: Cache only the verified SDK archive
+        if: steps.clt-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ runner.temp }}/lantern-clt-cache/commandline-tools.zip
+          key: ${{ steps.clt-cache.outputs.cache-primary-key }}
+      - name: Extract verified CLT and release compressed disk space
+        run: |
+          python3 scripts/install-release-clt.py extract "$RUNNER_TEMP/lantern-clt-cache/commandline-tools.zip" "$RUNNER_TEMP/lantern-clt"
+          python3 -c 'import os,pathlib; (pathlib.Path(os.environ["RUNNER_TEMP"])/"lantern-clt-cache/commandline-tools.zip").unlink()'
+      - name: Compile the unsigned HAP and verify every bundled resource
+        env:
+          LANTERN_HARMONY_CLT: ${{ runner.temp }}/lantern-clt/command-line-tools
+          LANTERN_HARMONY_OUTPUT: ${{ runner.temp }}/lantern-native-output
+        run: bash harmony/scripts/build-offline.sh
+      - name: Prepare public artifacts and checksums
+        env:
+          LANTERN_HARMONY_CLT: ${{ runner.temp }}/lantern-clt/command-line-tools
+        run: >-
+          python3 scripts/prepare-release-artifacts.py
+          --hap "$RUNNER_TEMP/lantern-native-output/entry-default-unsigned.hap"
+          --verification "$RUNNER_TEMP/lantern-native-output/package-verification.json"
+          --output release-assets
+      - uses: actions/upload-artifact@v7
+        with:
+          name: verified-release-${{ github.sha }}
+          path: release-assets/
+          overwrite: true
+          if-no-files-found: error
+          retention-days: 30
+  publish-prerelease:
+    needs: verify-and-build
     if: github.repository == 'godnight/lantern-toeic' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:
@@ -39,7 +93,11 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: '22'
-      - name: Create an immutable source preview tag and release
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-release-${{ github.sha }}
+          path: release-assets
+      - name: Verify artifacts, resume/create draft, upload, verify, publish
         env:
           GH_TOKEN: ${{ github.token }}
-        run: node scripts/publish-source-release.mjs
+        run: node scripts/publish-source-release.mjs release-assets

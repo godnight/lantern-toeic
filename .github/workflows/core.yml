@@ -23,6 +23,8 @@ jobs:
           cache: npm
       - name: Initialize dependencies and verify core behavior (shared with Codex)
         run: bash scripts/codex-setup.sh
+      - name: Verify bounded build cleanup
+        run: node --test tests/build-timeout.test.cjs
       - run: npm run build
       - name: Verify built HTML and UI component contracts
         run: node --test tests/*.test.mjs

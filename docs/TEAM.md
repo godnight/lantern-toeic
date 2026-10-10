@@ -5,6 +5,7 @@
 | 职责 | 固定任务名 | 本轮协作名 | 负责交付 |
 |---|---|---|---|
 | 产品与架构负责人 | root | 主代理 | 需求取舍、数据与跨端架构、集成、版本发布、验收证据 |
+| 项目经理 | project_manager | 每轮由主代理接续 | 版本计划、验收门槛、测试与产物发布、考试节奏；见 [职责](roles/PROJECT_MANAGER.md) 和 [发布计划](RELEASE_PLAN.md) |
 | 托尼老师·课程负责人 | tony_curriculum | Meitner | 学习计划、原创题目、解析与难度、现行题型核验、内容来源 |
 | 美术与体验负责人 | art_director | Dalton | 主题系统、原创视觉素材、移动端可读性、动效与无障碍 |
 | 鸿蒙工程负责人 | harmony_engineer | Faraday | HarmonyOS构建、认证、设备权限、录音、网络和离线体验 |
