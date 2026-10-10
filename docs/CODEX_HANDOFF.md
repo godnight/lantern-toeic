@@ -2,7 +2,15 @@
 
 更新：2026-10-11。代码仓库：[godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)。当前只维护Web/PWA和HarmonyOS；Android/iOS工程、专用工作流及Capacitor已删除，旧源码留在Git历史。
 
-## 当前发布接续（2026-10-11）
+## 最新接续：v0.1.0 已发布（2026-10-11）
+
+PR #28 已合并，GitHub main/tag v0.1.0 为 `859a39f18eb4c3d95445ff08e37b3226335bfc23`；7 个预发布附件已完整上传并核验。相同内容的 Sites 源提交 `f3fbac42dae8f7907b5377c1e44d5bafe645c823` 已部署成功，原所有者私有地址不变。GitHub 与 Sites 仍保留独立提交历史。
+
+后续模考分支 `feat/full-listening-reading-mock` 从此基线开发 v0.3.0 / versionCode 20006。核心说明 `docs/EXAM_IMPORT.md`、RFC 0005；个人题包不进入公开仓库。正式验收、后续提交及发布结果以该版本测试报告和 PR 为准，勿把旧 v0.1.0 的真机证据扩大到新功能。
+
+Windows Sites 打包使用已安装 Codex Node 24.19.0 + Git Bash，当前进程设置 `TAR_OPTIONS=--force-local`。普通 Node 24.13.1 在 fs.cpSync 原生崩溃；插件 npm shim 仍有路径问题，直接 PowerShell npm.ps1 可安装锁定依赖。凭据仅经 helper stdin 传递。
+
+## v0.1.0 准备阶段历史（2026-10-11）
 
 PR #26 与 #27 已顺序合并，GitHub main 为 `70081a47059036d11e731cb2166975aab453fd5f`，内容树与本地真机修复基线一致。v0.1.0 测试发布准备中：报告见 `docs/testing/TEST_EXECUTION_v0.1.0.md`；发布计划见 `docs/RELEASE_PLAN.md`。当前默认范围是 12 月 20 日听读，口语后延。后续功能版从 v0.3.0 继续，避免覆盖历史 v0.2.x 标签。
 

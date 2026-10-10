@@ -96,7 +96,7 @@ function dailyApp(data, {fullTree = false} = {}) {
     '@/lib/study-model': h.model, '@/lib/study-backup': h.backup,
     '@/lib/native-host': {registerNativeBack: () => () => {}},
     './learn/exam-collection': {}, './learn/resource-library': {}, './learn/practice': {},
-    './learn/speaking': {}, './learn/theme-library': {}, './learn/vocabulary-library': {}
+    './learn/speaking': {}, './learn/theme-library': {}, './learn/vocabulary-library': {}, './learn/mock-exam': {default:'MockExam'}
   };
   for (const file of ['content/questions.json', 'content/speaking.json', 'art/map-scenes.json', 'art/themes.json']) {
     imports['@/' + file] = {default: JSON.parse(fs.readFileSync(root + '/' + file, 'utf8'))};
@@ -219,7 +219,7 @@ test('storage quota failure keeps resource checkin open without a false success 
     '@/content/questions.json': {default: JSON.parse(fs.readFileSync(root + '/content/questions.json'))},
     '@/content/speaking.json': {default: JSON.parse(fs.readFileSync(root + '/content/speaking.json'))},
     './learn/exam-collection':{},'./learn/resource-library': {default: 'ResourceLibrary'}, './learn/practice': {default: 'Practice'}, './learn/speaking': {default: 'SpeakingRoom'},
-    './learn/theme-library': {default:()=>null}, './learn/vocabulary-library': {},
+    './learn/theme-library': {default:()=>null}, './learn/vocabulary-library': {}, './learn/mock-exam': {default:'MockExam'},
     '@/art/map-scenes.json': {default: JSON.parse(fs.readFileSync(root+'/art/map-scenes.json','utf8'))},
     '@/art/themes.json': {default:JSON.parse(fs.readFileSync(root+'/art/themes.json','utf8'))},
   };
@@ -262,7 +262,7 @@ test('mobile access guidance distinguishes synchronized PWA and local native mod
       '@/content/questions.json': {default: JSON.parse(fs.readFileSync(root + '/content/questions.json'))},
       '@/content/speaking.json': {default: JSON.parse(fs.readFileSync(root + '/content/speaking.json'))},
       './learn/exam-collection': {}, './learn/resource-library': {default: 'ResourceLibrary'}, './learn/practice': {default: 'Practice'}, './learn/speaking': {default: 'SpeakingRoom'},
-      './learn/theme-library': {default: () => null}, './learn/vocabulary-library': {},
+      './learn/theme-library': {default: () => null}, './learn/vocabulary-library': {}, './learn/mock-exam': {default:'MockExam'},
       '@/art/map-scenes.json': {default: JSON.parse(fs.readFileSync(root+'/art/map-scenes.json','utf8'))},
     '@/art/themes.json': {default: JSON.parse(fs.readFileSync(root + '/art/themes.json', 'utf8'))},
     };
@@ -303,4 +303,18 @@ test('active native maintenance is Harmony-only and phone auth remains fail-clos
   assert.match(fs.readFileSync(root + '/harmony/entry/src/main/module.json5', 'utf8'), /ohos\.permission\.INTERNET/);
   assert.match(fs.readFileSync(root + '/harmony/.gitignore', 'utf8'), /agconnect-services\.json/);
   assert.match(fs.readFileSync(root + '/docs/rfcs/0002-phone-auth-and-online-data.md', 'utf8'), /等待外部配置/);
+});
+
+
+test('native full exam opens in an isolated view with stable local scope and returns to training', () => {
+  const model = load('lib/study-model.ts', {}), data = structuredClone(model.EMPTY_DATA);
+  const render = dailyApp(data, {fullTree:true});
+  nodes(render(), n => n.type === 'SidebarMenuButton' && textOf(n).includes('训练之境'))[0].props.onClick();
+  nodes(render(), n => n.type === 'button' && textOf(n).includes('完整听读模考'))[0].props.onClick();
+  const tree = render(), exam = nodes(tree, n => n.type === 'MockExam')[0];
+  assert.equal(exam.props.ownerId, 'harmony-local-device');
+  assert.equal(nodes(tree, n => n.type === 'nav').length, 0, 'No surrounding navigation may silently unmount an active exam');
+  exam.props.onClose();
+  assert.equal(nodes(render(), n => n.type === 'MockExam').length, 0);
+  assert.ok(nodes(render(), n => n.type === 'button' && textOf(n).includes('完整听读模考')).length);
 });

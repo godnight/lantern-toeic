@@ -8,7 +8,7 @@ const LOCAL_ORIGIN: string = 'https://lantern.local';
 
 function allowedBlob(name: string, mime: string): boolean {
   const type: string = mime.toLowerCase().split(';')[0].trim();
-  if (name === 'lantern-vocabulary-records.json' || name === 'lantern-original-starter.json' || name === 'lantern-my-study-records.json') {
+  if (name === 'lantern-vocabulary-records.json' || name === 'lantern-original-starter.json' || name === 'lantern-my-study-records.json' || name === 'lantern-exam-backup.json') {
     return type === 'application/json';
   }
   if (name === 'lantern-weekly-review.md') return type === 'text/markdown';

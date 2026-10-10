@@ -28,6 +28,23 @@ jobs:
       - run: npm run build
       - name: Verify built HTML and UI component contracts
         run: node --test tests/*.test.mjs
+      - name: Build shared app and run real-browser mock-exam regression
+        env:
+          LANTERN_BROWSER_QA_DIR: ${{ runner.temp }}/lantern-browser-qa
+        run: |
+          npm --prefix mobile run build
+          node node_modules/playwright/cli.js install --with-deps chromium
+          npm run test:browser
+      - name: Retain synthetic browser QA evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-qa-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/lantern-browser-qa/result.json
+            ${{ runner.temp }}/lantern-browser-qa/*.png
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Apply migrations to an empty local SQLite database
         run: |
           python3 - <<'PY'

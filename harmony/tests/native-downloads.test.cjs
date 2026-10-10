@@ -154,3 +154,35 @@ test('engine failure while the download directory is pending cannot cancel a bun
   assert.match(h.notices[0], /已保存/);
   assert.equal([...h.files.values()][0], 4);
 });
+
+test('the fixed exam backup filename saves locally with a unique name and confirmed byte count', async () => {
+  const h = fixture(), request = item({name:'lantern-exam-backup.json', mime:'application/json; charset=utf-8', received:8192});
+  h.delegate.before(request);
+  assert.equal(h.pickers.length, 1, 'The supported exam backup reaches the existing download-directory flow');
+  assert.equal(request.cancelled, 0);
+  h.pickers[0]([directory]); await tick();
+  assert.equal(request.started, '/storage/Download/com.lantern.toeic/lantern-exam-backup-uuid-1.json');
+  assert.equal(h.notices.length, 0, 'Starting a download is not a successful save');
+  request.fullPath = request.started; h.files.set(request.started, request.received);
+  h.delegate.finish(request);
+  assert.equal(h.notices.filter(message => message.includes('已保存')).length, 1);
+  h.manager.invalidate();
+  assert.equal(h.files.get(request.started), request.received, 'A completed private backup is retained');
+});
+
+test('exam backup allowlisting does not permit other MIME types, paths, timestamp names or origins', () => {
+  const h = fixture();
+  for (const overrides of [
+    {name:'lantern-exam-backup.json', mime:'text/html'},
+    {name:'lantern-exam-backup.json', mime:'application/octet-stream'},
+    {name:'../lantern-exam-backup.json'},
+    {name:'lantern-exam-backup-2026-10-11.json'},
+    {name:'lantern-exam-backup.json', url:'blob:https://lantern.local.evil/backup'},
+    {name:'lantern-exam-backup.json', url:'https://lantern.local/backup.json'},
+  ]) {
+    const request = item(overrides); h.delegate.before(request);
+    assert.equal(request.cancelled, 1);
+  }
+  assert.equal(h.pickers.length, 0);
+  assert.equal(h.files.size, 0);
+});
