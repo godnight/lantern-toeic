@@ -85,7 +85,7 @@ function textOf(node) {
   return Array.isArray(node) ? node.map(textOf).join('') : textOf(node.props?.children);
 }
 
-function dailyApp(data) {
+function dailyApp(data, {fullTree = false} = {}) {
   const h = environment();
   const jsx = (type, props) => ({type, props});
   const stubs = new Proxy({}, {get: (_, name) => String(name)});
@@ -104,8 +104,23 @@ function dailyApp(data) {
   for (const name of ['sidebar', 'dialog', 'tabs', 'select', 'radio-group', 'progress', 'sonner']) imports['@/components/ui/' + name] = stubs;
   const App = load('app/study-app.tsx', imports, h.browser).default;
   h.setRenderer(() => App({owner: null, nativeMode: true}));
-  return () => nodes(h.render(), n => n.type === 'button' && n.props.className?.startsWith('task-row'));
+  return () => {const tree = h.render(); return fullTree ? tree : nodes(tree, n => n.type === 'button' && n.props.className?.startsWith('task-row'));};
 }
+
+test('recording dates follow the configured timezone across UTC day boundaries', () => {
+  const model = load('lib/study-model.ts', {}), data = structuredClone(model.EMPTY_DATA);
+  const createdAt = '2026-10-10T16:30:00.000Z';
+  data.recordings.push({id: randomUUID(), promptId: 's1', title: 'Timezone recording', createdAt, duration: 24, mime: 'audio/mp4'});
+  const render = dailyApp(data, {fullTree: true});
+  nodes(render(), n => n.type === 'SidebarMenuButton' && textOf(n).includes('训练之境'))[0].props.onClick();
+  for (const [timezone, expected] of [['Asia/Shanghai', '2026-10-11'], ['America/Los_Angeles', '2026-10-10'], ['UTC', '2026-10-10']]) {
+    data.profile.timezone = timezone;
+    const list = nodes(render(), n => typeof n.type === 'function' && n.type.name === 'RecordingList')[0];
+    const row = nodes(list.type(list.props), n => n.type === 'button')[0];
+    assert.match(textOf(row), new RegExp(expected + ' · 24 秒 · 本机录音'), timezone);
+    assert.equal(data.recordings[0].createdAt, createdAt, 'Formatting must preserve the original recording timestamp');
+  }
+});
 
 for (const part of [1, 5]) test(`daily Part ${part} task keeps its title after an answer and remount`, () => {
   const model = load('lib/study-model.ts', {}), data = structuredClone(model.EMPTY_DATA);

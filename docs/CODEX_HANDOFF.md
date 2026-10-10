@@ -1,6 +1,14 @@
 # Codex 开发交接
 
-更新：2026-09-19。代码仓库：[godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)。当前只维护Web/PWA和HarmonyOS；Android/iOS工程、专用工作流及Capacitor已删除，旧源码留在Git历史。
+更新：2026-10-11。代码仓库：[godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)。当前只维护Web/PWA和HarmonyOS；Android/iOS工程、专用工作流及Capacitor已删除，旧源码留在Git历史。
+
+## 最新真机接续（2026-10-11）
+
+词库位于 [PR #27](https://github.com/godnight/lantern-toeic/pull/27)，以 PR #26 的 `test/harmony-offline-validation` 为基线；先核对合并状态。本人开发者 CLI 登录、AGC 设备登记、开发签名和 Pura X Max 安装已完成，不要重复要求这些前置。
+
+真机离线冷启动、折叠/展开布局、词库、JSON 重复导入、内置发音、麦克风录音切后台保存及冷启动回听均有实际证据和用户听音确认。发现录音日期错误使用 UTC 切片，已按配置时区修复，自动化先失败后通过，并覆盖安装在同一录音上回归。见 [真机报告](testing/HARMONY_PHONE_QA_2026-10-11.md)。当前签名包 SHA-256 `64076cee2802ad2803496217909c65b22aa00791e2fe31f165d8e9a5ebc3487d`；签名材料仅在本机隔离 staging，不能覆盖到 Git。75 项学习/词库及 5 项 Web 产物检查通过。
+
+原生仍为本机离线版；手机号登录、原生云同步、发行签名和商店发布未完成。真机拒绝麦克风、长时间后台/锁屏、大字体及其他机型未验。本轮未发布 Site；此前词库网页包上传超时，不能把源码提交当作线上更新。以下旧状态结合此节阅读。
 
 ## 最新词库分支（2026-09-19）
 
