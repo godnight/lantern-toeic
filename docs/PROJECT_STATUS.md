@@ -1,12 +1,14 @@
 # 项目状态
 
-## v0.1.0 已发布，v0.3.0 模考开发中（2026-10-11）
+## v0.3.0 模考已预发布（2026-10-11）
+
+[PR #29](https://github.com/godnight/lantern-toeic/pull/29) 已合并，[v0.3.0 prerelease](https://github.com/godnight/lantern-toeic/releases/tag/v0.3.0) 已发布，功能基线为 `88dd510fdbbf9edaef0370ff537f463142c9ca2c`。本机整卷导入、45+75 分钟模考、恢复、成绩与备份已完成；228 项机器测试、18 个浏览器流程通过。main 的 Core、Harmony 和发布流程均成功，公开附件包含未签名 HAP、Web 构建包、源码、报告及校验值。详见 [发布核验](releases/v0.3.0-published.md)。
 
 [GitHub v0.1.0 prerelease](https://github.com/godnight/lantern-toeic/releases/tag/v0.1.0) 已发布：Tag 指向 `859a39f18eb4c3d95445ff08e37b3226335bfc23`，7 个附件和 SHA256SUMS 已核对；[构建运行](https://github.com/godnight/lantern-toeic/actions/runs/38071088521) 成功。公开 HAP 未签名；本地签名包尚未以重新编号版本安装到手机。
 
-对应新版网页已由 Sites 实际部署成功（source `f3fbac42dae8f7907b5377c1e44d5bafe645c823`，deployment `appgdep_6aca74d05008819181520e4e3886f7df`），保留原地址与所有者私有权限。Windows 打包需 Codex Node 24.19.0、Git Bash 和 `TAR_OPTIONS=--force-local`；系统 Node 24.13.1 在 helper 的 fs.cpSync 原生崩溃，版本替换后打包部署通过。
+v0.3.0 网页已由 Sites 实际部署成功（Sites 版本 9，source `2d342626cb23389021a10ba8b8b1b5c76b3568d2`，deployment `appgdep_6aca7a77e39c8191b927ad704e0b1b68`），源树与该功能发布一致，保留原地址与所有者私有权限。部署后浏览器连接超时，未完成线上页面复验；本地生产包浏览器回归不等于线上或真机验收。Windows 打包需 Codex Node 24.19.0、Git Bash 和 `TAR_OPTIONS=--force-local`。
 
-v0.3.0 在独立功能分支接入本机多套完整题包、45+75 分钟模考、保存恢复、成绩和备份，228 项机器测试及 18 个真实浏览器流程通过，Web/共享资源/未签名 HAP 与本地签名构建通过；新包未安装到手机，发布结果须核对对应 PR 与流水线。[格式说明](EXAM_IMPORT.md) 与 RFC 0005 记录边界。完整官方卷仍未取得；已合法下载一份 60 题官方原样样题到私人交付目录，不内置产品。下面为各阶段历史，最新功能验收以对应报告和 PR 为准。
+本地新版签名 HAP 已交付，尚未安装到手机；两小时真实听音、大备份、ArkWeb 与原生下载落盘仍待验。[格式说明](EXAM_IMPORT.md) 与 RFC 0005 记录边界。完整官方卷仍未取得；已下载一份 60 题官方原样样题到私人交付目录，不内置产品。手机号认证、原生云同步仍未完成。下面为各阶段历史，最新功能验收以对应报告和 PR 为准。
 
 ## v0.1.0 测试基线与听读计划（2026-10-11，准备中）
 
