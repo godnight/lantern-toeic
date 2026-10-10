@@ -41,6 +41,22 @@ jobs:
           python3 -B -m unittest discover -s tests -p 'test_release_*.py'
           npm --prefix harmony run sync:web
           npm --prefix harmony run check:web
+      - name: Exercise the shared app in a real browser before release
+        env:
+          LANTERN_BROWSER_QA_DIR: ${{ runner.temp }}/lantern-browser-qa
+        run: |
+          node node_modules/playwright/cli.js install --with-deps chromium
+          npm run test:browser
+      - name: Retain synthetic browser QA evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-browser-qa-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/lantern-browser-qa/result.json
+            ${{ runner.temp }}/lantern-browser-qa/*.png
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Restore the pinned public CLT archive
         id: clt-cache
         uses: actions/cache/restore@v6
