@@ -469,7 +469,7 @@ struct Index {
           this.downloads = new NativeDownloads(() => this.context(),
             () => this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
             (message: string) => this.toast(message));
-          this.downloads.attach(this.controller);
+          if (!this.downloads.attach(this.controller)) this.downloads = undefined;
         })
         .onPageBegin(() => this.pageBegin())
         .onPageEnd((event) => this.pageEnd(event.url))

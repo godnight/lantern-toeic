@@ -27,7 +27,7 @@ jobs:
       - name: Check native build helpers (no SDK compilation)
         run: |
           node --test harmony/tests/toolchain.test.mjs
-          node --test harmony/tests/native-downloads.test.cjs
+          node --test harmony/tests/native-downloads.test.cjs harmony/tests/entry-ability.test.cjs
           python3 -B -m unittest discover -s harmony/tests -p 'test_*.py'
       - run: npm --prefix harmony run sync:web
       - run: npm --prefix harmony run check:web
