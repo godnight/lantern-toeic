@@ -1,5 +1,13 @@
 # 项目状态
 
+## v0.1.0 已发布，v0.3.0 模考开发中（2026-10-11）
+
+[GitHub v0.1.0 prerelease](https://github.com/godnight/lantern-toeic/releases/tag/v0.1.0) 已发布：Tag 指向 `859a39f18eb4c3d95445ff08e37b3226335bfc23`，7 个附件和 SHA256SUMS 已核对；[构建运行](https://github.com/godnight/lantern-toeic/actions/runs/38071088521) 成功。公开 HAP 未签名；本地签名包尚未以重新编号版本安装到手机。
+
+对应新版网页已由 Sites 实际部署成功（source `f3fbac42dae8f7907b5377c1e44d5bafe645c823`，deployment `appgdep_6aca74d05008819181520e4e3886f7df`），保留原地址与所有者私有权限。Windows 打包需 Codex Node 24.19.0、Git Bash 和 `TAR_OPTIONS=--force-local`；系统 Node 24.13.1 在 helper 的 fs.cpSync 原生崩溃，版本替换后打包部署通过。
+
+v0.3.0 在独立功能分支接入本机多套完整题包、45+75 分钟模考、保存恢复、成绩和备份，228 项机器测试及 18 个真实浏览器流程通过，Web/共享资源/未签名 HAP 与本地签名构建通过；新包未安装到手机，发布结果须核对对应 PR 与流水线。[格式说明](EXAM_IMPORT.md) 与 RFC 0005 记录边界。完整官方卷仍未取得；已合法下载一份 60 题官方原样样题到私人交付目录，不内置产品。下面为各阶段历史，最新功能验收以对应报告和 PR 为准。
+
 ## v0.1.0 测试基线与听读计划（2026-10-11，准备中）
 
 用户指定此次真机测试为 v0.1.0，版本号重新标识基线，鸿蒙升级号递增至 20005；历史 v0.2.x 标签不覆盖。正式测试报告、固定项目经理、每版 HAP/Web/源码校验发布和 12 月 20 日听读备考节奏见 [发布计划](RELEASE_PLAN.md)。本节尚不代表 Release 已发布，需核对实际 CI 与附件。多套本机整卷导入和完整模考单独开发；官方题库来源仍在核查，没有已获许可可随 App 分发的完整真题。
