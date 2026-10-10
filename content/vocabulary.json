@@ -1,0 +1,2402 @@
+[
+  {
+    "id": "v-document",
+    "word": "document",
+    "pos": "名词",
+    "meaning": "文件；文档",
+    "category": "office",
+    "example": "Keep a copy of this document for your records.",
+    "translation": "请留存一份这份文件的副本，以备查阅。",
+    "collocation": "a copy of a document（文件副本）"
+  },
+  {
+    "id": "v-file",
+    "word": "file",
+    "pos": "名词",
+    "meaning": "文件；档案",
+    "category": "office",
+    "example": "The project file is in the shared folder.",
+    "translation": "项目文件在共享文件夹中。",
+    "collocation": "a shared file（共享文件）"
+  },
+  {
+    "id": "v-form",
+    "word": "form",
+    "pos": "名词",
+    "meaning": "表格",
+    "category": "office",
+    "example": "Fill out the request form before borrowing a laptop.",
+    "translation": "借用笔记本电脑前，请填写申请表。",
+    "collocation": "fill out a form（填写表格）"
+  },
+  {
+    "id": "v-signature",
+    "word": "signature",
+    "pos": "名词",
+    "meaning": "签名；签字",
+    "category": "office",
+    "example": "We need your signature at the bottom of the page.",
+    "translation": "我们需要您在这一页的底部签字。",
+    "collocation": "require a signature（需要签字）"
+  },
+  {
+    "id": "v-deadline",
+    "word": "deadline",
+    "pos": "名词",
+    "meaning": "截止日期；最后期限",
+    "category": "office",
+    "example": "The deadline for travel requests is Friday afternoon.",
+    "translation": "出差申请的截止时间是星期五下午。",
+    "collocation": "meet a deadline（按期完成）"
+  },
+  {
+    "id": "v-schedule",
+    "word": "schedule",
+    "pos": "名词",
+    "meaning": "日程表；时间安排",
+    "category": "office",
+    "example": "Check the schedule for your team's assigned lunch time.",
+    "translation": "请查看时间安排，确认分配给您团队的午餐时间。",
+    "collocation": "a work schedule（工作时间表）"
+  },
+  {
+    "id": "v-procedure",
+    "word": "procedure",
+    "pos": "名词",
+    "meaning": "程序；办事流程",
+    "category": "office",
+    "example": "A new procedure will make expense claims easier.",
+    "translation": "一项新流程将使费用报销更方便。",
+    "collocation": "follow a procedure（遵循流程）"
+  },
+  {
+    "id": "v-equipment",
+    "word": "equipment",
+    "pos": "名词",
+    "meaning": "设备；器材",
+    "category": "office",
+    "example": "All office equipment must be switched off before the move.",
+    "translation": "搬迁前，所有办公设备都必须关闭。",
+    "collocation": "office equipment（办公设备）"
+  },
+  {
+    "id": "v-supply",
+    "word": "supply",
+    "pos": "名词",
+    "meaning": "供应量；储备",
+    "category": "office",
+    "example": "We keep a small supply of paper beside the printer.",
+    "translation": "我们在打印机旁备有少量纸张。",
+    "collocation": "a supply of paper（备用纸张）"
+  },
+  {
+    "id": "v-notice",
+    "word": "notice",
+    "pos": "名词",
+    "meaning": "通知；告示",
+    "category": "office",
+    "example": "A notice on the door explains the change in opening hours.",
+    "translation": "门上的告示说明了开放时间的变更。",
+    "collocation": "post a notice（张贴通知）"
+  },
+  {
+    "id": "v-archive",
+    "word": "archive",
+    "pos": "动词",
+    "meaning": "归档；存档",
+    "category": "office",
+    "example": "Archive the completed project files at the end of each month.",
+    "translation": "每月月底，请将已完成项目的文件归档。",
+    "collocation": "archive documents（将文件归档）"
+  },
+  {
+    "id": "v-extension",
+    "word": "extension",
+    "pos": "名词",
+    "meaning": "分机号码；电话分机",
+    "category": "office",
+    "example": "Call extension 204 to reach the facilities team.",
+    "translation": "请拨打分机 204 联系设施管理团队。",
+    "collocation": "an extension number（分机号码）"
+  },
+  {
+    "id": "v-photocopy",
+    "word": "photocopy",
+    "pos": "名词",
+    "meaning": "复印件",
+    "category": "office",
+    "example": "Bring a photocopy of your permit to reception.",
+    "translation": "请将许可证的复印件带到接待处。",
+    "collocation": "make a photocopy（复印一份）"
+  },
+  {
+    "id": "v-stationery",
+    "word": "stationery",
+    "pos": "名词",
+    "meaning": "文具；办公用纸用品",
+    "category": "office",
+    "example": "Pens and other stationery are stored in the blue cabinet.",
+    "translation": "笔和其他文具放在蓝色柜子里。",
+    "collocation": "order stationery（订购文具）"
+  },
+  {
+    "id": "v-drawer",
+    "word": "drawer",
+    "pos": "名词",
+    "meaning": "抽屉",
+    "category": "office",
+    "example": "The spare keys are in the top drawer of my desk.",
+    "translation": "备用钥匙在我办公桌最上面的抽屉里。",
+    "collocation": "a desk drawer（办公桌抽屉）"
+  },
+  {
+    "id": "v-attach",
+    "word": "attach",
+    "pos": "动词",
+    "meaning": "附上；附加",
+    "category": "office",
+    "example": "Attach the floor plan to your email so everyone can find the room.",
+    "translation": "请在邮件中附上平面图，方便大家找到房间。",
+    "collocation": "attach a file（附加文件）"
+  },
+  {
+    "id": "v-distribute",
+    "word": "distribute",
+    "pos": "动词",
+    "meaning": "分发；发放",
+    "category": "office",
+    "example": "The assistant will distribute the visitor passes at nine.",
+    "translation": "助理将在九点发放访客通行证。",
+    "collocation": "distribute copies（分发副本）"
+  },
+  {
+    "id": "v-revise",
+    "word": "revise",
+    "pos": "动词",
+    "meaning": "修改；修订",
+    "category": "office",
+    "example": "Please revise the final paragraph before sending the letter.",
+    "translation": "寄出信件前，请修改最后一段。",
+    "collocation": "revise a draft（修改草稿）"
+  },
+  {
+    "id": "v-complete",
+    "word": "complete",
+    "pos": "动词",
+    "meaning": "完成；填写完整",
+    "category": "office",
+    "example": "You can complete the access request online.",
+    "translation": "您可以在线填写门禁权限申请。",
+    "collocation": "complete a form（填写完整表格）"
+  },
+  {
+    "id": "v-confidential",
+    "word": "confidential",
+    "pos": "形容词",
+    "meaning": "保密的；机密的",
+    "category": "office",
+    "example": "Please leave confidential papers in the locked cabinet.",
+    "translation": "请将机密文件放在上锁的柜子里。",
+    "collocation": "confidential information（机密信息）"
+  },
+  {
+    "id": "v-applicant",
+    "word": "applicant",
+    "pos": "名词",
+    "meaning": "申请人；求职者",
+    "category": "people",
+    "example": "Each applicant should provide two professional references.",
+    "translation": "每位求职者应提供两名职业推荐人的信息。",
+    "collocation": "a job applicant（求职者）"
+  },
+  {
+    "id": "v-candidate",
+    "word": "candidate",
+    "pos": "名词",
+    "meaning": "候选人；应聘者",
+    "category": "people",
+    "example": "Three candidates have been invited to a second interview.",
+    "translation": "三位应聘者已获邀参加第二轮面试。",
+    "collocation": "a suitable candidate（合适的候选人）"
+  },
+  {
+    "id": "v-interview",
+    "word": "interview",
+    "pos": "名词",
+    "meaning": "面试",
+    "category": "people",
+    "example": "Your interview will take place in Room 6 on Tuesday.",
+    "translation": "您的面试将于星期二在 6 号房间进行。",
+    "collocation": "attend an interview（参加面试）"
+  },
+  {
+    "id": "v-employee",
+    "word": "employee",
+    "pos": "名词",
+    "meaning": "员工；雇员",
+    "category": "people",
+    "example": "Every new employee receives a building access card.",
+    "translation": "每位新员工都会领到一张楼宇门禁卡。",
+    "collocation": "a full-time employee（全职员工）"
+  },
+  {
+    "id": "v-employer",
+    "word": "employer",
+    "pos": "名词",
+    "meaning": "雇主；用人单位",
+    "category": "people",
+    "example": "The employer provides safety clothing for warehouse staff.",
+    "translation": "雇主为仓库员工提供防护服。",
+    "collocation": "a former employer（前雇主）"
+  },
+  {
+    "id": "v-vacancy",
+    "word": "vacancy",
+    "pos": "名词",
+    "meaning": "职位空缺",
+    "category": "people",
+    "example": "There is a vacancy for an assistant in the purchasing department.",
+    "translation": "采购部门有一个助理职位空缺。",
+    "collocation": "fill a vacancy（填补职位空缺）"
+  },
+  {
+    "id": "v-qualification",
+    "word": "qualification",
+    "pos": "名词",
+    "meaning": "资格；资质；学历",
+    "category": "people",
+    "example": "A teaching qualification is required for this training role.",
+    "translation": "这个培训岗位要求具备教师资格。",
+    "collocation": "a professional qualification（专业资格）"
+  },
+  {
+    "id": "v-experience",
+    "word": "experience",
+    "pos": "名词",
+    "meaning": "经验；工作经历",
+    "category": "people",
+    "example": "Experience in customer support would be helpful for this position.",
+    "translation": "客户支持方面的经验有助于胜任这个职位。",
+    "collocation": "relevant experience（相关经验）"
+  },
+  {
+    "id": "v-resume",
+    "word": "resume",
+    "pos": "名词",
+    "meaning": "简历（美式英语，也写作 résumé）",
+    "category": "people",
+    "example": "Send your resume and a short cover letter to the hiring team.",
+    "translation": "请将简历和一封简短的求职信发送给招聘团队。",
+    "collocation": "submit a resume（提交简历）"
+  },
+  {
+    "id": "v-recruit",
+    "word": "recruit",
+    "pos": "动词",
+    "meaning": "招聘；招募",
+    "category": "people",
+    "example": "The hotel plans to recruit extra staff for the summer.",
+    "translation": "酒店计划为夏季增聘员工。",
+    "collocation": "recruit staff（招聘员工）"
+  },
+  {
+    "id": "v-hire",
+    "word": "hire",
+    "pos": "动词",
+    "meaning": "雇用；聘用",
+    "category": "people",
+    "example": "We hope to hire a technician before the new branch opens.",
+    "translation": "我们希望在新分店开业前聘用一名技术人员。",
+    "collocation": "hire an assistant（聘用助理）"
+  },
+  {
+    "id": "v-position",
+    "word": "position",
+    "pos": "名词",
+    "meaning": "职位；岗位",
+    "category": "people",
+    "example": "This position involves occasional travel to regional offices.",
+    "translation": "这个岗位需要偶尔前往各地区办事处出差。",
+    "collocation": "apply for a position（申请职位）"
+  },
+  {
+    "id": "v-department",
+    "word": "department",
+    "pos": "名词",
+    "meaning": "部门",
+    "category": "people",
+    "example": "Contact the human resources department if your address changes.",
+    "translation": "如果您的地址有变，请联系人力资源部门。",
+    "collocation": "the human resources department（人力资源部门）"
+  },
+  {
+    "id": "v-colleague",
+    "word": "colleague",
+    "pos": "名词",
+    "meaning": "同事",
+    "category": "people",
+    "example": "A colleague from the design team will show you around.",
+    "translation": "设计团队的一位同事将带您参观。",
+    "collocation": "a new colleague（新同事）"
+  },
+  {
+    "id": "v-supervisor",
+    "word": "supervisor",
+    "pos": "名词",
+    "meaning": "主管；监督人员",
+    "category": "people",
+    "example": "Ask your supervisor before changing your shift.",
+    "translation": "调整班次前，请先询问您的主管。",
+    "collocation": "an immediate supervisor（直属主管）"
+  },
+  {
+    "id": "v-salary",
+    "word": "salary",
+    "pos": "名词",
+    "meaning": "薪水；固定工资",
+    "category": "people",
+    "example": "The annual salary will be discussed during the final interview.",
+    "translation": "年薪将在最后一轮面试时讨论。",
+    "collocation": "an annual salary（年薪）"
+  },
+  {
+    "id": "v-promotion",
+    "word": "promotion",
+    "pos": "名词",
+    "meaning": "晋升；升职",
+    "category": "people",
+    "example": "Her promotion to team leader was announced this morning.",
+    "translation": "她晋升为组长的消息已于今天上午公布。",
+    "collocation": "receive a promotion（获得晋升）"
+  },
+  {
+    "id": "v-retire",
+    "word": "retire",
+    "pos": "动词",
+    "meaning": "退休",
+    "category": "people",
+    "example": "Our maintenance manager will retire at the end of June.",
+    "translation": "我们的维修经理将于六月底退休。",
+    "collocation": "retire from a company（从公司退休）"
+  },
+  {
+    "id": "v-benefit",
+    "word": "benefit",
+    "pos": "名词",
+    "meaning": "员工福利；待遇",
+    "category": "people",
+    "example": "Free language classes are one of the benefits offered to staff.",
+    "translation": "免费语言课程是公司为员工提供的福利之一。",
+    "collocation": "employee benefits（员工福利）"
+  },
+  {
+    "id": "v-orientation",
+    "word": "orientation",
+    "pos": "名词",
+    "meaning": "入职介绍；岗前说明",
+    "category": "people",
+    "example": "The orientation includes a tour of the building and a safety briefing.",
+    "translation": "入职介绍包括楼宇参观和安全说明。",
+    "collocation": "an orientation session（入职说明会）"
+  },
+  {
+    "id": "v-agenda",
+    "word": "agenda",
+    "pos": "名词",
+    "meaning": "议程",
+    "category": "meetings",
+    "example": "The revised agenda includes time for questions after lunch.",
+    "translation": "修订后的议程安排了午餐后的提问时间。",
+    "collocation": "on the agenda（列入议程）"
+  },
+  {
+    "id": "v-attendee",
+    "word": "attendee",
+    "pos": "名词",
+    "meaning": "出席者；参会者",
+    "category": "meetings",
+    "example": "All attendees will receive a link to the presentation slides.",
+    "translation": "所有参会者都会收到演示幻灯片的链接。",
+    "collocation": "conference attendees（会议出席者）"
+  },
+  {
+    "id": "v-venue",
+    "word": "venue",
+    "pos": "名词",
+    "meaning": "活动场地；会场",
+    "category": "meetings",
+    "example": "The venue is a short walk from Central Station.",
+    "translation": "从中央车站步行不远即可到达会场。",
+    "collocation": "book a venue（预订场地）"
+  },
+  {
+    "id": "v-session",
+    "word": "session",
+    "pos": "名词",
+    "meaning": "一场活动；一节课；一段会议时间",
+    "category": "meetings",
+    "example": "The morning session focuses on writing clear reports.",
+    "translation": "上午的课程重点讲解如何撰写清晰的报告。",
+    "collocation": "a training session（一节培训课）"
+  },
+  {
+    "id": "v-seminar",
+    "word": "seminar",
+    "pos": "名词",
+    "meaning": "研讨会；专题讲座",
+    "category": "meetings",
+    "example": "A local accountant will lead a seminar on business taxes.",
+    "translation": "一位当地会计师将主持一场关于企业税务的研讨会。",
+    "collocation": "attend a seminar（参加研讨会）"
+  },
+  {
+    "id": "v-workshop",
+    "word": "workshop",
+    "pos": "名词",
+    "meaning": "实作培训；研习班",
+    "category": "meetings",
+    "example": "Bring your laptop to the spreadsheet workshop.",
+    "translation": "请带上笔记本电脑参加电子表格实作培训。",
+    "collocation": "a practical workshop（实作培训）"
+  },
+  {
+    "id": "v-presentation",
+    "word": "presentation",
+    "pos": "名词",
+    "meaning": "演示；报告；介绍",
+    "category": "meetings",
+    "example": "Her presentation explains how the new booking system works.",
+    "translation": "她的演示说明了新的预订系统如何运作。",
+    "collocation": "give a presentation（进行演示）"
+  },
+  {
+    "id": "v-discussion",
+    "word": "discussion",
+    "pos": "名词",
+    "meaning": "讨论",
+    "category": "meetings",
+    "example": "The discussion continued after the formal meeting ended.",
+    "translation": "正式会议结束后，讨论仍在继续。",
+    "collocation": "a group discussion（小组讨论）"
+  },
+  {
+    "id": "v-minutes",
+    "word": "minutes",
+    "pos": "名词",
+    "meaning": "会议纪要（复数形式）",
+    "category": "meetings",
+    "example": "The minutes record the decisions made at Monday's meeting.",
+    "translation": "会议纪要记录了星期一会议上作出的决定。",
+    "collocation": "take the minutes（记录会议纪要）"
+  },
+  {
+    "id": "v-chair",
+    "word": "chair",
+    "pos": "动词",
+    "meaning": "主持会议",
+    "category": "meetings",
+    "example": "Ms. Lee will chair the planning meeting while the director is away.",
+    "translation": "主任不在期间，李女士将主持规划会议。",
+    "collocation": "chair a meeting（主持会议）"
+  },
+  {
+    "id": "v-confirm",
+    "word": "confirm",
+    "pos": "动词",
+    "meaning": "确认",
+    "category": "meetings",
+    "example": "Please confirm your attendance by Wednesday.",
+    "translation": "请在星期三之前确认您是否出席。",
+    "collocation": "confirm attendance（确认出席）"
+  },
+  {
+    "id": "v-postpone",
+    "word": "postpone",
+    "pos": "动词",
+    "meaning": "推迟；延期",
+    "category": "meetings",
+    "example": "We may postpone the workshop until the trainer returns.",
+    "translation": "我们可能会将培训推迟到培训师返回之后。",
+    "collocation": "postpone a meeting（推迟会议）"
+  },
+  {
+    "id": "v-cancel",
+    "word": "cancel",
+    "pos": "动词",
+    "meaning": "取消",
+    "category": "meetings",
+    "example": "Please cancel the room booking if the meeting moves online.",
+    "translation": "如果会议改为线上举行，请取消会议室预订。",
+    "collocation": "cancel a booking（取消预订）"
+  },
+  {
+    "id": "v-participate",
+    "word": "participate",
+    "pos": "动词",
+    "meaning": "参加；参与",
+    "category": "meetings",
+    "example": "Remote staff can participate in the discussion by video.",
+    "translation": "远程办公的员工可以通过视频参与讨论。",
+    "collocation": "participate in a discussion（参与讨论）"
+  },
+  {
+    "id": "v-register",
+    "word": "register",
+    "pos": "动词",
+    "meaning": "报名；登记",
+    "category": "meetings",
+    "example": "Register for the course through the staff website.",
+    "translation": "请通过员工网站报名参加这门课程。",
+    "collocation": "register for a course（报名课程）"
+  },
+  {
+    "id": "v-feedback",
+    "word": "feedback",
+    "pos": "名词",
+    "meaning": "反馈；意见",
+    "category": "meetings",
+    "example": "Your feedback will help us improve the next training session.",
+    "translation": "您的反馈将帮助我们改进下一次培训。",
+    "collocation": "provide feedback（提供反馈）"
+  },
+  {
+    "id": "v-objective",
+    "word": "objective",
+    "pos": "名词",
+    "meaning": "目标；目的",
+    "category": "meetings",
+    "example": "The main objective is to agree on a launch date.",
+    "translation": "主要目标是就发布日期达成一致。",
+    "collocation": "a clear objective（明确的目标）"
+  },
+  {
+    "id": "v-break",
+    "word": "break",
+    "pos": "名词",
+    "meaning": "休息；间歇",
+    "category": "meetings",
+    "example": "There will be a fifteen-minute break between the two sessions.",
+    "translation": "两场活动之间将有十五分钟的休息时间。",
+    "collocation": "take a break（休息一下）"
+  },
+  {
+    "id": "v-propose",
+    "word": "propose",
+    "pos": "动词",
+    "meaning": "提议；提出",
+    "category": "meetings",
+    "example": "I'd like to propose a shorter weekly meeting.",
+    "translation": "我想提议缩短每周例会的时间。",
+    "collocation": "propose a solution（提出解决方案）"
+  },
+  {
+    "id": "v-summarize",
+    "word": "summarize",
+    "pos": "动词",
+    "meaning": "概述；总结",
+    "category": "meetings",
+    "example": "Could you summarize the main points before we finish?",
+    "translation": "结束前，您能总结一下要点吗？",
+    "collocation": "summarize the main points（总结要点）"
+  },
+  {
+    "id": "v-invoice",
+    "word": "invoice",
+    "pos": "名词",
+    "meaning": "发票；付款账单",
+    "category": "finance",
+    "example": "The invoice lists the cost of each item and the delivery charge.",
+    "translation": "账单列出了每件商品的费用和运费。",
+    "collocation": "pay an invoice（支付账单）"
+  },
+  {
+    "id": "v-receipt",
+    "word": "receipt",
+    "pos": "名词",
+    "meaning": "收据；收条",
+    "category": "finance",
+    "example": "Keep the receipt if you plan to claim the taxi fare.",
+    "translation": "如果您打算报销出租车费，请保留收据。",
+    "collocation": "an original receipt（原始收据）"
+  },
+  {
+    "id": "v-budget",
+    "word": "budget",
+    "pos": "名词",
+    "meaning": "预算",
+    "category": "finance",
+    "example": "The proposed repairs are within this year's budget.",
+    "translation": "拟议的维修费用在今年的预算之内。",
+    "collocation": "within budget（在预算内）"
+  },
+  {
+    "id": "v-expense",
+    "word": "expense",
+    "pos": "名词",
+    "meaning": "费用；开支",
+    "category": "finance",
+    "example": "Travel expenses increased when the new office opened.",
+    "translation": "新办事处开设后，差旅开支增加了。",
+    "collocation": "travel expenses（差旅费用）"
+  },
+  {
+    "id": "v-payment",
+    "word": "payment",
+    "pos": "名词",
+    "meaning": "付款；支付款项",
+    "category": "finance",
+    "example": "Payment is due within thirty days of the invoice date.",
+    "translation": "款项应在账单开具之日起三十天内支付。",
+    "collocation": "make a payment（付款）"
+  },
+  {
+    "id": "v-balance",
+    "word": "balance",
+    "pos": "名词",
+    "meaning": "未付余额；结余",
+    "category": "finance",
+    "example": "The remaining balance must be paid before the equipment is delivered.",
+    "translation": "设备交付前必须付清余款。",
+    "collocation": "the remaining balance（剩余款项）"
+  },
+  {
+    "id": "v-account",
+    "word": "account",
+    "pos": "名词",
+    "meaning": "账户",
+    "category": "finance",
+    "example": "Your refund will be sent to the account used for the original payment.",
+    "translation": "退款将退回原付款账户。",
+    "collocation": "a bank account（银行账户）"
+  },
+  {
+    "id": "v-deposit",
+    "word": "deposit",
+    "pos": "名词",
+    "meaning": "预付款；订金；押金",
+    "category": "finance",
+    "example": "A deposit is required to secure the equipment rental.",
+    "translation": "确认设备租赁需要支付一笔订金。",
+    "collocation": "pay a deposit（支付订金）"
+  },
+  {
+    "id": "v-refund",
+    "word": "refund",
+    "pos": "名词",
+    "meaning": "退款",
+    "category": "finance",
+    "example": "The supplier offered a full refund for the defective chair.",
+    "translation": "供应商愿意对有缺陷的椅子全额退款。",
+    "collocation": "a full refund（全额退款）"
+  },
+  {
+    "id": "v-discount",
+    "word": "discount",
+    "pos": "名词",
+    "meaning": "折扣；减价",
+    "category": "finance",
+    "example": "Customers receive a ten percent discount on orders of twenty units or more.",
+    "translation": "订购二十件及以上的客户可享受九折优惠。",
+    "collocation": "a volume discount（批量购买折扣）"
+  },
+  {
+    "id": "v-fee",
+    "word": "fee",
+    "pos": "名词",
+    "meaning": "费用；服务费",
+    "category": "finance",
+    "example": "The registration fee covers lunch and course materials.",
+    "translation": "报名费包含午餐和课程资料的费用。",
+    "collocation": "a registration fee（报名费）"
+  },
+  {
+    "id": "v-tax",
+    "word": "tax",
+    "pos": "名词",
+    "meaning": "税；税款",
+    "category": "finance",
+    "example": "The prices shown do not include tax.",
+    "translation": "所列价格不含税。",
+    "collocation": "including tax（含税）"
+  },
+  {
+    "id": "v-total",
+    "word": "total",
+    "pos": "名词",
+    "meaning": "总额；总计",
+    "category": "finance",
+    "example": "The total includes a small charge for express delivery.",
+    "translation": "总额包含一笔加急配送费。",
+    "collocation": "the invoice total（账单总额）"
+  },
+  {
+    "id": "v-estimate",
+    "word": "estimate",
+    "pos": "名词",
+    "meaning": "估价；估算",
+    "category": "finance",
+    "example": "The contractor will send a written estimate after visiting the office.",
+    "translation": "承包商将在实地查看办公室后发送书面估价。",
+    "collocation": "a cost estimate（费用估算）"
+  },
+  {
+    "id": "v-overdue",
+    "word": "overdue",
+    "pos": "形容词",
+    "meaning": "逾期的；过期未付的",
+    "category": "finance",
+    "example": "Our records show that this invoice is ten days overdue.",
+    "translation": "我们的记录显示，这张账单已逾期十天。",
+    "collocation": "an overdue payment（逾期款项）"
+  },
+  {
+    "id": "v-transfer",
+    "word": "transfer",
+    "pos": "动词",
+    "meaning": "转账；转移",
+    "category": "finance",
+    "example": "We will transfer the payment once the invoice has been checked.",
+    "translation": "账单核对完毕后，我们会转账付款。",
+    "collocation": "transfer funds（转账）"
+  },
+  {
+    "id": "v-reimburse",
+    "word": "reimburse",
+    "pos": "动词",
+    "meaning": "报销；偿还费用",
+    "category": "finance",
+    "example": "The company will reimburse you for the train ticket.",
+    "translation": "公司将为您报销火车票费用。",
+    "collocation": "reimburse travel expenses（报销差旅费用）"
+  },
+  {
+    "id": "v-calculate",
+    "word": "calculate",
+    "pos": "动词",
+    "meaning": "计算",
+    "category": "finance",
+    "example": "Use the spreadsheet to calculate the cost per person.",
+    "translation": "请使用电子表格计算人均费用。",
+    "collocation": "calculate the total（计算总额）"
+  },
+  {
+    "id": "v-deduct",
+    "word": "deduct",
+    "pos": "动词",
+    "meaning": "扣除；减去",
+    "category": "finance",
+    "example": "We will deduct the deposit from your final bill.",
+    "translation": "我们将在您的最终账单中扣除已付订金。",
+    "collocation": "deduct an amount from a bill（从账单中扣除一笔金额）"
+  },
+  {
+    "id": "v-approve",
+    "word": "approve",
+    "pos": "动词",
+    "meaning": "批准；核准",
+    "category": "finance",
+    "example": "The finance director must approve purchases above this limit.",
+    "translation": "超过这一限额的采购必须经财务总监批准。",
+    "collocation": "approve a budget（批准预算）"
+  },
+  {
+    "id": "v-customer",
+    "word": "customer",
+    "pos": "名词",
+    "meaning": "顾客；客户",
+    "category": "sales",
+    "example": "A customer asked whether the desk was available in white.",
+    "translation": "一位顾客询问这款办公桌是否有白色款。",
+    "collocation": "a regular customer（常客）"
+  },
+  {
+    "id": "v-client",
+    "word": "client",
+    "pos": "名词",
+    "meaning": "客户；委托人",
+    "category": "sales",
+    "example": "The design team will present two options to the client.",
+    "translation": "设计团队将向客户展示两个方案。",
+    "collocation": "meet a client（会见客户）"
+  },
+  {
+    "id": "v-product",
+    "word": "product",
+    "pos": "名词",
+    "meaning": "产品；商品",
+    "category": "sales",
+    "example": "This product comes with instructions in four languages.",
+    "translation": "这款产品附有四种语言的说明书。",
+    "collocation": "launch a product（推出产品）"
+  },
+  {
+    "id": "v-service",
+    "word": "service",
+    "pos": "名词",
+    "meaning": "服务",
+    "category": "sales",
+    "example": "Our repair service is available six days a week.",
+    "translation": "我们的维修服务每周提供六天。",
+    "collocation": "after-sales service（售后服务）"
+  },
+  {
+    "id": "v-order",
+    "word": "order",
+    "pos": "名词",
+    "meaning": "订单；订货",
+    "category": "sales",
+    "example": "Your order will be ready for collection after two o'clock.",
+    "translation": "您的订单将于两点后备好，可前来领取。",
+    "collocation": "place an order（下订单）"
+  },
+  {
+    "id": "v-inquiry",
+    "word": "inquiry",
+    "pos": "名词",
+    "meaning": "咨询；询问",
+    "category": "sales",
+    "example": "Thank you for your inquiry about our printing services.",
+    "translation": "感谢您咨询我们的印刷服务。",
+    "collocation": "respond to an inquiry（回复咨询）"
+  },
+  {
+    "id": "v-complaint",
+    "word": "complaint",
+    "pos": "名词",
+    "meaning": "投诉；不满意见",
+    "category": "sales",
+    "example": "The manager called the customer to discuss the complaint.",
+    "translation": "经理致电客户，了解并讨论其投诉。",
+    "collocation": "handle a complaint（处理投诉）"
+  },
+  {
+    "id": "v-warranty",
+    "word": "warranty",
+    "pos": "名词",
+    "meaning": "保修；保修承诺",
+    "category": "sales",
+    "example": "Repairs are free while the printer is under warranty.",
+    "translation": "打印机在保修期内可免费维修。",
+    "collocation": "under warranty（在保修期内）"
+  },
+  {
+    "id": "v-guarantee",
+    "word": "guarantee",
+    "pos": "动词",
+    "meaning": "保证；担保",
+    "category": "sales",
+    "example": "We cannot guarantee next-day delivery for orders placed after noon.",
+    "translation": "对于中午之后下的订单，我们无法保证次日送达。",
+    "collocation": "guarantee delivery（保证送达）"
+  },
+  {
+    "id": "v-quotation",
+    "word": "quotation",
+    "pos": "名词",
+    "meaning": "报价；报价单",
+    "category": "sales",
+    "example": "The quotation is valid for fourteen days.",
+    "translation": "这份报价的有效期为十四天。",
+    "collocation": "request a quotation（索取报价）"
+  },
+  {
+    "id": "v-contract",
+    "word": "contract",
+    "pos": "名词",
+    "meaning": "合同；合约",
+    "category": "sales",
+    "example": "Both parties signed the contract after reviewing the payment terms.",
+    "translation": "双方审阅付款条款后签署了合同。",
+    "collocation": "sign a contract（签订合同）"
+  },
+  {
+    "id": "v-renew",
+    "word": "renew",
+    "pos": "动词",
+    "meaning": "续签；续订",
+    "category": "sales",
+    "example": "You can renew your service agreement through the customer portal.",
+    "translation": "您可以通过客户门户续签服务协议。",
+    "collocation": "renew a contract（续签合同）"
+  },
+  {
+    "id": "v-negotiate",
+    "word": "negotiate",
+    "pos": "动词",
+    "meaning": "协商；谈判",
+    "category": "sales",
+    "example": "Our sales manager will negotiate the delivery terms with the buyer.",
+    "translation": "我们的销售经理将与买方协商交货条款。",
+    "collocation": "negotiate terms（协商条款）"
+  },
+  {
+    "id": "v-purchase",
+    "word": "purchase",
+    "pos": "动词",
+    "meaning": "购买；采购",
+    "category": "sales",
+    "example": "You can purchase replacement filters from any of our stores.",
+    "translation": "您可以在我们的任何一家门店购买替换滤芯。",
+    "collocation": "purchase equipment（购买设备）"
+  },
+  {
+    "id": "v-recommend",
+    "word": "recommend",
+    "pos": "动词",
+    "meaning": "推荐；建议",
+    "category": "sales",
+    "example": "The assistant recommended a lighter model for frequent travelers.",
+    "translation": "店员向经常出差的顾客推荐了一款更轻便的型号。",
+    "collocation": "recommend a product（推荐产品）"
+  },
+  {
+    "id": "v-demonstration",
+    "word": "demonstration",
+    "pos": "名词",
+    "meaning": "演示；示范",
+    "category": "sales",
+    "example": "Book a demonstration to see how the scanner handles large documents.",
+    "translation": "请预约演示，了解这台扫描仪如何处理大幅面文件。",
+    "collocation": "a product demonstration（产品演示）"
+  },
+  {
+    "id": "v-feature",
+    "word": "feature",
+    "pos": "名词",
+    "meaning": "特色；功能；特点",
+    "category": "sales",
+    "example": "One useful feature is the automatic reminder for low ink.",
+    "translation": "一个实用功能是墨水不足时自动提醒。",
+    "collocation": "a key feature（主要功能）"
+  },
+  {
+    "id": "v-satisfaction",
+    "word": "satisfaction",
+    "pos": "名词",
+    "meaning": "满意；满意度",
+    "category": "sales",
+    "example": "We use short surveys to measure customer satisfaction.",
+    "translation": "我们通过简短问卷衡量客户满意度。",
+    "collocation": "customer satisfaction（客户满意度）"
+  },
+  {
+    "id": "v-loyalty",
+    "word": "loyalty",
+    "pos": "名词",
+    "meaning": "忠诚；忠诚度",
+    "category": "sales",
+    "example": "The loyalty program gives members points on every purchase.",
+    "translation": "这个客户忠诚度计划为会员的每次购物提供积分。",
+    "collocation": "a loyalty program（客户忠诚度计划；会员奖励计划）"
+  },
+  {
+    "id": "v-demand",
+    "word": "demand",
+    "pos": "名词",
+    "meaning": "需求；需求量",
+    "category": "sales",
+    "example": "Demand for portable chargers rises during the holiday season.",
+    "translation": "节假日期间，便携式充电器的需求量会上升。",
+    "collocation": "demand for a product（对某种产品的需求）"
+  },
+  {
+    "id": "v-shipment",
+    "word": "shipment",
+    "pos": "名词",
+    "meaning": "一批货物；装运的货物",
+    "category": "logistics",
+    "example": "The shipment contains twelve boxes of replacement parts.",
+    "translation": "这批货物包含十二箱替换零件。",
+    "collocation": "receive a shipment（收到一批货物）"
+  },
+  {
+    "id": "v-delivery",
+    "word": "delivery",
+    "pos": "名词",
+    "meaning": "送货；交付",
+    "category": "logistics",
+    "example": "Delivery to the new office is scheduled for Monday morning.",
+    "translation": "货物计划于星期一上午送达新办公室。",
+    "collocation": "arrange delivery（安排送货）"
+  },
+  {
+    "id": "v-warehouse",
+    "word": "warehouse",
+    "pos": "名词",
+    "meaning": "仓库",
+    "category": "logistics",
+    "example": "The warehouse closes at five, so please arrive before then.",
+    "translation": "仓库五点关闭，请在那之前到达。",
+    "collocation": "a warehouse entrance（仓库入口）"
+  },
+  {
+    "id": "v-inventory",
+    "word": "inventory",
+    "pos": "名词",
+    "meaning": "库存；库存清单",
+    "category": "logistics",
+    "example": "We check the inventory every Friday to avoid running out of supplies.",
+    "translation": "我们每周五核查库存，以免用品耗尽。",
+    "collocation": "check inventory（核查库存）"
+  },
+  {
+    "id": "v-stock",
+    "word": "stock",
+    "pos": "名词",
+    "meaning": "库存；存货",
+    "category": "logistics",
+    "example": "The smaller size is currently out of stock.",
+    "translation": "较小的尺寸目前缺货。",
+    "collocation": "out of stock（缺货）"
+  },
+  {
+    "id": "v-supplier",
+    "word": "supplier",
+    "pos": "名词",
+    "meaning": "供应商；供货方",
+    "category": "logistics",
+    "example": "Our supplier has confirmed that the paper will arrive tomorrow.",
+    "translation": "供应商已确认纸张将于明天送达。",
+    "collocation": "a reliable supplier（可靠的供应商）"
+  },
+  {
+    "id": "v-manufacturer",
+    "word": "manufacturer",
+    "pos": "名词",
+    "meaning": "制造商；生产厂家",
+    "category": "logistics",
+    "example": "Contact the manufacturer if a part is missing from the box.",
+    "translation": "如果箱内缺少零件，请联系制造商。",
+    "collocation": "the original manufacturer（原制造商）"
+  },
+  {
+    "id": "v-package",
+    "word": "package",
+    "pos": "动词",
+    "meaning": "包装；将……装箱",
+    "category": "logistics",
+    "example": "Please package each glass item separately to prevent damage.",
+    "translation": "请分别包装每件玻璃制品，以防损坏。",
+    "collocation": "package goods（包装货物）"
+  },
+  {
+    "id": "v-parcel",
+    "word": "parcel",
+    "pos": "名词",
+    "meaning": "包裹",
+    "category": "logistics",
+    "example": "A parcel for the accounting team is waiting at reception.",
+    "translation": "一个寄给会计团队的包裹正在接待处等待领取。",
+    "collocation": "collect a parcel（领取包裹）"
+  },
+  {
+    "id": "v-carton",
+    "word": "carton",
+    "pos": "名词",
+    "meaning": "纸箱；纸盒",
+    "category": "logistics",
+    "example": "The books are packed in six cartons of equal size.",
+    "translation": "这些书装在六个大小相同的纸箱里。",
+    "collocation": "a shipping carton（运输纸箱）"
+  },
+  {
+    "id": "v-label",
+    "word": "label",
+    "pos": "名词",
+    "meaning": "标签",
+    "category": "logistics",
+    "example": "The label must show the recipient's full address.",
+    "translation": "标签上必须注明收件人的完整地址。",
+    "collocation": "a shipping label（货运标签）"
+  },
+  {
+    "id": "v-tracking",
+    "word": "tracking",
+    "pos": "名词",
+    "meaning": "追踪；跟踪查询",
+    "category": "logistics",
+    "example": "Online tracking shows that the parcel has reached the local depot.",
+    "translation": "在线追踪信息显示，包裹已到达当地转运站。",
+    "collocation": "a tracking number（物流追踪号码）"
+  },
+  {
+    "id": "v-dispatch",
+    "word": "dispatch",
+    "pos": "动词",
+    "meaning": "发运；发送",
+    "category": "logistics",
+    "example": "We will dispatch the replacement parts as soon as they arrive.",
+    "translation": "替换零件一到货，我们就会发出。",
+    "collocation": "dispatch an order（发出订单货物）"
+  },
+  {
+    "id": "v-freight",
+    "word": "freight",
+    "pos": "名词",
+    "meaning": "货物运输；货运",
+    "category": "logistics",
+    "example": "Air freight is faster but costs more than shipping by sea.",
+    "translation": "空运速度更快，但费用高于海运。",
+    "collocation": "air freight（航空货运）"
+  },
+  {
+    "id": "v-customs",
+    "word": "customs",
+    "pos": "名词",
+    "meaning": "海关",
+    "category": "logistics",
+    "example": "The shipment is being held at customs for inspection.",
+    "translation": "这批货物正滞留海关接受检查。",
+    "collocation": "clear customs（通关）"
+  },
+  {
+    "id": "v-delay",
+    "word": "delay",
+    "pos": "名词",
+    "meaning": "延误；延期",
+    "category": "logistics",
+    "example": "A traffic accident caused a two-hour delay in delivery.",
+    "translation": "一起交通事故导致送货延误了两小时。",
+    "collocation": "a delivery delay（送货延误）"
+  },
+  {
+    "id": "v-damage",
+    "word": "damage",
+    "pos": "名词",
+    "meaning": "损坏；损伤",
+    "category": "logistics",
+    "example": "Check the boxes for damage before signing the delivery note.",
+    "translation": "签收送货单前，请检查箱子是否有损坏。",
+    "collocation": "damage in transit（运输途中造成的损坏）"
+  },
+  {
+    "id": "v-inspect",
+    "word": "inspect",
+    "pos": "动词",
+    "meaning": "检查；检验",
+    "category": "logistics",
+    "example": "Our team will inspect the goods before they leave the warehouse.",
+    "translation": "货物离开仓库前，我们的团队将对其进行检验。",
+    "collocation": "inspect a shipment（检验一批货物）"
+  },
+  {
+    "id": "v-quantity",
+    "word": "quantity",
+    "pos": "名词",
+    "meaning": "数量",
+    "category": "logistics",
+    "example": "Please enter the quantity you need in the second column.",
+    "translation": "请在第二列填写您需要的数量。",
+    "collocation": "the required quantity（所需数量）"
+  },
+  {
+    "id": "v-destination",
+    "word": "destination",
+    "pos": "名词",
+    "meaning": "目的地；送达地点",
+    "category": "logistics",
+    "example": "The final destination is our distribution center in the north.",
+    "translation": "最终目的地是我们位于北部的配送中心。",
+    "collocation": "the final destination（最终目的地）"
+  },
+  {
+    "id": "v-itinerary",
+    "word": "itinerary",
+    "pos": "名词",
+    "meaning": "行程安排",
+    "category": "travel",
+    "example": "Our itinerary allows an hour between the two flights.",
+    "translation": "我们的行程安排在两趟航班之间留出一小时。",
+    "collocation": "travel itinerary"
+  },
+  {
+    "id": "v-passport",
+    "word": "passport",
+    "pos": "名词",
+    "meaning": "护照",
+    "category": "travel",
+    "example": "Keep your passport ready at the border checkpoint.",
+    "translation": "在边境检查站请提前准备好护照。",
+    "collocation": "valid passport"
+  },
+  {
+    "id": "v-visa",
+    "word": "visa",
+    "pos": "名词",
+    "meaning": "签证",
+    "category": "travel",
+    "example": "Her visa allows a stay of up to thirty days.",
+    "translation": "她的签证允许最多停留三十天。",
+    "collocation": "apply for a visa"
+  },
+  {
+    "id": "v-terminal",
+    "word": "terminal",
+    "pos": "名词",
+    "meaning": "机场航站楼",
+    "category": "travel",
+    "example": "The airport bus stops outside the main terminal.",
+    "translation": "机场巴士在主航站楼外停靠。",
+    "collocation": "airport terminal"
+  },
+  {
+    "id": "v-departure",
+    "word": "departure",
+    "pos": "名词",
+    "meaning": "出发；起飞",
+    "category": "travel",
+    "example": "The departure time has moved from six to seven.",
+    "translation": "出发时间已从六点改到七点。",
+    "collocation": "departure time"
+  },
+  {
+    "id": "v-arrival",
+    "word": "arrival",
+    "pos": "名词",
+    "meaning": "到达；抵达",
+    "category": "travel",
+    "example": "A driver will meet you on arrival at the airport.",
+    "translation": "你抵达机场时会有司机来接你。",
+    "collocation": "on arrival"
+  },
+  {
+    "id": "v-boarding",
+    "word": "boarding",
+    "pos": "名词",
+    "meaning": "登机；上车或上船",
+    "category": "travel",
+    "example": "Boarding begins twenty minutes before the flight leaves.",
+    "translation": "登机在航班起飞前二十分钟开始。",
+    "collocation": "boarding pass"
+  },
+  {
+    "id": "v-gate",
+    "word": "gate",
+    "pos": "名词",
+    "meaning": "登机口",
+    "category": "travel",
+    "example": "Our gate is at the far end of the corridor.",
+    "translation": "我们的登机口在走廊的尽头。",
+    "collocation": "departure gate"
+  },
+  {
+    "id": "v-aisle",
+    "word": "aisle",
+    "pos": "名词",
+    "meaning": "座位之间的过道",
+    "category": "travel",
+    "example": "Please keep the aisle clear during the journey.",
+    "translation": "旅途中请保持过道畅通。",
+    "collocation": "aisle seat"
+  },
+  {
+    "id": "v-fare",
+    "word": "fare",
+    "pos": "名词",
+    "meaning": "交通票价",
+    "category": "travel",
+    "example": "The evening bus fare is lower than the taxi fare.",
+    "translation": "晚间的巴士票价比出租车费低。",
+    "collocation": "bus fare"
+  },
+  {
+    "id": "v-shuttle",
+    "word": "shuttle",
+    "pos": "名词",
+    "meaning": "短程往返班车",
+    "category": "travel",
+    "example": "A free shuttle runs between the hotel and the station.",
+    "translation": "酒店与车站之间有免费班车往返。",
+    "collocation": "shuttle service"
+  },
+  {
+    "id": "v-platform",
+    "word": "platform",
+    "pos": "名词",
+    "meaning": "火车站站台",
+    "category": "travel",
+    "example": "The train to Brighton leaves from platform four.",
+    "translation": "开往布莱顿的列车从四号站台发车。",
+    "collocation": "station platform"
+  },
+  {
+    "id": "v-route",
+    "word": "route",
+    "pos": "名词",
+    "meaning": "路线",
+    "category": "travel",
+    "example": "This route passes through several small towns.",
+    "translation": "这条路线经过几个小镇。",
+    "collocation": "bus route"
+  },
+  {
+    "id": "v-turbulence",
+    "word": "turbulence",
+    "pos": "名词",
+    "meaning": "气流扰动；飞行颠簸",
+    "category": "travel",
+    "example": "We experienced mild turbulence shortly after takeoff.",
+    "translation": "起飞后不久，我们经历了轻微颠簸。",
+    "collocation": "mild turbulence"
+  },
+  {
+    "id": "v-stopover",
+    "word": "stopover",
+    "pos": "名词",
+    "meaning": "中途停留",
+    "category": "travel",
+    "example": "We have a three-hour stopover in Singapore.",
+    "translation": "我们将在新加坡中途停留三小时。",
+    "collocation": "overnight stopover"
+  },
+  {
+    "id": "v-ferry",
+    "word": "ferry",
+    "pos": "名词",
+    "meaning": "渡轮",
+    "category": "travel",
+    "example": "The last ferry to the island leaves at nine.",
+    "translation": "前往该岛的最后一班渡轮九点出发。",
+    "collocation": "ferry terminal"
+  },
+  {
+    "id": "v-timetable",
+    "word": "timetable",
+    "pos": "名词",
+    "meaning": "交通时刻表",
+    "category": "travel",
+    "example": "The new timetable adds a train on Sunday mornings.",
+    "translation": "新时刻表增加了一班周日早晨的列车。",
+    "collocation": "train timetable"
+  },
+  {
+    "id": "v-commuter",
+    "word": "commuter",
+    "pos": "名词",
+    "meaning": "通勤者",
+    "category": "travel",
+    "example": "Many commuters use the early train to reach the city.",
+    "translation": "许多通勤者乘坐早班火车进城。",
+    "collocation": "daily commuter"
+  },
+  {
+    "id": "v-transit",
+    "word": "transit",
+    "pos": "名词",
+    "meaning": "中转；过境",
+    "category": "travel",
+    "example": "Passengers in transit can wait in the lounge upstairs.",
+    "translation": "中转旅客可以在楼上的休息室等候。",
+    "collocation": "in transit"
+  },
+  {
+    "id": "v-luggage",
+    "word": "luggage",
+    "pos": "名词",
+    "meaning": "行李",
+    "category": "travel",
+    "example": "You can leave your luggage in a locker at the station.",
+    "translation": "你可以把行李放在车站的储物柜里。",
+    "collocation": "hand luggage"
+  },
+  {
+    "id": "v-reservation",
+    "word": "reservation",
+    "pos": "名词",
+    "meaning": "预订",
+    "category": "hospitality",
+    "example": "Please confirm your dinner reservation by noon.",
+    "translation": "请在中午前确认您的晚餐预订。",
+    "collocation": "make a reservation"
+  },
+  {
+    "id": "v-reception",
+    "word": "reception",
+    "pos": "名词",
+    "meaning": "酒店前台",
+    "category": "hospitality",
+    "example": "Collect your room key at reception after three.",
+    "translation": "三点之后请到前台领取房间钥匙。",
+    "collocation": "reception desk"
+  },
+  {
+    "id": "v-concierge",
+    "word": "concierge",
+    "pos": "名词",
+    "meaning": "酒店礼宾员",
+    "category": "hospitality",
+    "example": "The concierge can suggest a nearby walking tour.",
+    "translation": "礼宾员可以推荐附近的步行游览活动。",
+    "collocation": "hotel concierge"
+  },
+  {
+    "id": "v-suite",
+    "word": "suite",
+    "pos": "名词",
+    "meaning": "套房",
+    "category": "hospitality",
+    "example": "The suite has a separate bedroom and a small kitchen.",
+    "translation": "这间套房设有独立卧室和小厨房。",
+    "collocation": "hotel suite"
+  },
+  {
+    "id": "v-cuisine",
+    "word": "cuisine",
+    "pos": "名词",
+    "meaning": "菜肴；烹饪风格",
+    "category": "hospitality",
+    "example": "This restaurant specializes in regional Italian cuisine.",
+    "translation": "这家餐厅专营意大利地方菜。",
+    "collocation": "local cuisine"
+  },
+  {
+    "id": "v-amenity",
+    "word": "amenity",
+    "pos": "名词",
+    "meaning": "便利设施；配套服务",
+    "category": "hospitality",
+    "example": "Free bicycle rental is a popular amenity at this hotel.",
+    "translation": "免费自行车租借是这家酒店一项很受欢迎的配套服务。",
+    "collocation": "hotel amenity"
+  },
+  {
+    "id": "v-housekeeping",
+    "word": "housekeeping",
+    "pos": "名词",
+    "meaning": "客房清洁服务",
+    "category": "hospitality",
+    "example": "Housekeeping will replace the towels this afternoon.",
+    "translation": "客房清洁人员今天下午会更换毛巾。",
+    "collocation": "housekeeping staff"
+  },
+  {
+    "id": "v-linen",
+    "word": "linen",
+    "pos": "名词",
+    "meaning": "床单、桌布等布制用品",
+    "category": "hospitality",
+    "example": "The hotel washes its bed linen every day.",
+    "translation": "这家酒店每天清洗床上布草。",
+    "collocation": "bed linen"
+  },
+  {
+    "id": "v-towel",
+    "word": "towel",
+    "pos": "名词",
+    "meaning": "毛巾",
+    "category": "hospitality",
+    "example": "There is a clean towel on the bathroom shelf.",
+    "translation": "浴室架子上有一条干净的毛巾。",
+    "collocation": "bath towel"
+  },
+  {
+    "id": "v-buffet",
+    "word": "buffet",
+    "pos": "名词",
+    "meaning": "自助餐",
+    "category": "hospitality",
+    "example": "The breakfast buffet closes at half past ten.",
+    "translation": "自助早餐十点半结束。",
+    "collocation": "breakfast buffet"
+  },
+  {
+    "id": "v-appetizer",
+    "word": "appetizer",
+    "pos": "名词",
+    "meaning": "开胃菜",
+    "category": "hospitality",
+    "example": "We ordered a small salad as an appetizer.",
+    "translation": "我们点了一份小沙拉作为开胃菜。",
+    "collocation": "order an appetizer"
+  },
+  {
+    "id": "v-entree",
+    "word": "entree",
+    "pos": "名词",
+    "meaning": "主菜（美式英语）",
+    "category": "hospitality",
+    "example": "Each entree comes with vegetables and a choice of rice or potatoes.",
+    "translation": "每份主菜都配有蔬菜，并可选择米饭或土豆作为配食。",
+    "collocation": "vegetarian entree"
+  },
+  {
+    "id": "v-dessert",
+    "word": "dessert",
+    "pos": "名词",
+    "meaning": "甜点",
+    "category": "hospitality",
+    "example": "Would you like to see the dessert menu?",
+    "translation": "您想看看甜点菜单吗？",
+    "collocation": "dessert menu"
+  },
+  {
+    "id": "v-beverage",
+    "word": "beverage",
+    "pos": "名词",
+    "meaning": "饮料",
+    "category": "hospitality",
+    "example": "One hot beverage is included with the breakfast set.",
+    "translation": "早餐套餐包含一杯热饮。",
+    "collocation": "hot beverage"
+  },
+  {
+    "id": "v-complimentary",
+    "word": "complimentary",
+    "pos": "形容词",
+    "meaning": "免费赠送的",
+    "category": "hospitality",
+    "example": "Guests receive a complimentary bottle of water each day.",
+    "translation": "住客每天可免费获赠一瓶水。",
+    "collocation": "complimentary breakfast"
+  },
+  {
+    "id": "v-occupancy",
+    "word": "occupancy",
+    "pos": "名词",
+    "meaning": "酒店入住率；占用情况",
+    "category": "hospitality",
+    "example": "Hotel occupancy rises during the summer festival.",
+    "translation": "夏季节庆期间酒店入住率会上升。",
+    "collocation": "occupancy rate"
+  },
+  {
+    "id": "v-checkout",
+    "word": "checkout",
+    "pos": "名词",
+    "meaning": "酒店退房",
+    "category": "hospitality",
+    "example": "Please return both keys at checkout.",
+    "translation": "退房时请交还两把钥匙。",
+    "collocation": "late checkout"
+  },
+  {
+    "id": "v-valet",
+    "word": "valet",
+    "pos": "名词",
+    "meaning": "代客泊车员",
+    "category": "hospitality",
+    "example": "The valet will bring your car to the main entrance.",
+    "translation": "代客泊车员会把您的车开到正门。",
+    "collocation": "valet parking"
+  },
+  {
+    "id": "v-minibar",
+    "word": "minibar",
+    "pos": "名词",
+    "meaning": "酒店客房内的迷你酒吧",
+    "category": "hospitality",
+    "example": "Prices for the minibar are listed beside the fridge.",
+    "translation": "迷你酒吧的商品价格列在冰箱旁边。",
+    "collocation": "in-room minibar"
+  },
+  {
+    "id": "v-cutlery",
+    "word": "cutlery",
+    "pos": "名词",
+    "meaning": "刀、叉、勺等餐具",
+    "category": "hospitality",
+    "example": "Clean cutlery is available beside the buffet counter.",
+    "translation": "自助餐台旁备有干净的刀叉勺。",
+    "collocation": "a set of cutlery"
+  },
+  {
+    "id": "v-browser",
+    "word": "browser",
+    "pos": "名词",
+    "meaning": "网页浏览器",
+    "category": "technology",
+    "example": "Open the link in a different browser.",
+    "translation": "请换一个浏览器打开该链接。",
+    "collocation": "web browser"
+  },
+  {
+    "id": "v-password",
+    "word": "password",
+    "pos": "名词",
+    "meaning": "密码",
+    "category": "technology",
+    "example": "Enter your password to unlock the account.",
+    "translation": "请输入密码以解锁账户。",
+    "collocation": "reset a password"
+  },
+  {
+    "id": "v-username",
+    "word": "username",
+    "pos": "名词",
+    "meaning": "用户名",
+    "category": "technology",
+    "example": "Your username appears at the top of the screen.",
+    "translation": "你的用户名显示在屏幕顶部。",
+    "collocation": "choose a username"
+  },
+  {
+    "id": "v-bandwidth",
+    "word": "bandwidth",
+    "pos": "名词",
+    "meaning": "网络带宽",
+    "category": "technology",
+    "example": "Video calls need more bandwidth than text messages.",
+    "translation": "视频通话比文字消息需要更多网络带宽。",
+    "collocation": "available bandwidth"
+  },
+  {
+    "id": "v-wireless",
+    "word": "wireless",
+    "pos": "形容词",
+    "meaning": "无线的",
+    "category": "technology",
+    "example": "The wireless keyboard connects to this tablet.",
+    "translation": "这款无线键盘可以连接这台平板电脑。",
+    "collocation": "wireless connection"
+  },
+  {
+    "id": "v-router",
+    "word": "router",
+    "pos": "名词",
+    "meaning": "路由器",
+    "category": "technology",
+    "example": "The router is on the shelf beside the window.",
+    "translation": "路由器放在窗边的架子上。",
+    "collocation": "wireless router"
+  },
+  {
+    "id": "v-device",
+    "word": "device",
+    "pos": "名词",
+    "meaning": "电子设备",
+    "category": "technology",
+    "example": "You can connect one device to each port.",
+    "translation": "每个接口可以连接一台设备。",
+    "collocation": "mobile device"
+  },
+  {
+    "id": "v-software",
+    "word": "software",
+    "pos": "名词",
+    "meaning": "软件",
+    "category": "technology",
+    "example": "The new software opens large images more quickly.",
+    "translation": "这款新软件打开大幅图片的速度更快。",
+    "collocation": "install software"
+  },
+  {
+    "id": "v-hardware",
+    "word": "hardware",
+    "pos": "名词",
+    "meaning": "计算机硬件",
+    "category": "technology",
+    "example": "The technician checked the hardware inside the computer.",
+    "translation": "技术人员检查了电脑内部的硬件。",
+    "collocation": "computer hardware"
+  },
+  {
+    "id": "v-database",
+    "word": "database",
+    "pos": "名词",
+    "meaning": "数据库",
+    "category": "technology",
+    "example": "The database stores the opening hours of local libraries.",
+    "translation": "这个数据库保存着当地各图书馆的开放时间。",
+    "collocation": "search a database"
+  },
+  {
+    "id": "v-backup",
+    "word": "backup",
+    "pos": "名词",
+    "meaning": "备份；备份副本",
+    "category": "technology",
+    "example": "Keep a backup of the file on another drive.",
+    "translation": "请在另一个存储盘上保留该文件的备份。",
+    "collocation": "backup copy"
+  },
+  {
+    "id": "v-encrypt",
+    "word": "encrypt",
+    "pos": "动词",
+    "meaning": "加密",
+    "category": "technology",
+    "example": "The technician will encrypt the drive before it leaves the office.",
+    "translation": "技术人员会在存储盘被带离办公室前对其加密。",
+    "collocation": "encrypt data"
+  },
+  {
+    "id": "v-firewall",
+    "word": "firewall",
+    "pos": "名词",
+    "meaning": "防火墙",
+    "category": "technology",
+    "example": "The firewall blocks connections from unknown sources.",
+    "translation": "防火墙会阻止来自未知来源的连接。",
+    "collocation": "network firewall"
+  },
+  {
+    "id": "v-attachment",
+    "word": "attachment",
+    "pos": "名词",
+    "meaning": "电子邮件附件",
+    "category": "technology",
+    "example": "The attachment contains a map of the campus.",
+    "translation": "附件中有一张校园地图。",
+    "collocation": "email attachment"
+  },
+  {
+    "id": "v-cursor",
+    "word": "cursor",
+    "pos": "名词",
+    "meaning": "屏幕光标",
+    "category": "technology",
+    "example": "Move the cursor to the end of the sentence.",
+    "translation": "请把光标移到句末。",
+    "collocation": "move the cursor"
+  },
+  {
+    "id": "v-keyboard",
+    "word": "keyboard",
+    "pos": "名词",
+    "meaning": "键盘",
+    "category": "technology",
+    "example": "This keyboard has a separate number pad.",
+    "translation": "这款键盘配有独立的数字键区。",
+    "collocation": "keyboard shortcut"
+  },
+  {
+    "id": "v-touchscreen",
+    "word": "touchscreen",
+    "pos": "名词",
+    "meaning": "触摸屏",
+    "category": "technology",
+    "example": "Tap the touchscreen to choose a language.",
+    "translation": "轻触触摸屏以选择语言。",
+    "collocation": "touchscreen display"
+  },
+  {
+    "id": "v-update",
+    "word": "update",
+    "pos": "动词",
+    "meaning": "更新",
+    "category": "technology",
+    "example": "Please update the app before using the new feature.",
+    "translation": "使用新功能前请先更新应用。",
+    "collocation": "update an app"
+  },
+  {
+    "id": "v-reboot",
+    "word": "reboot",
+    "pos": "动词",
+    "meaning": "重新启动电脑或设备",
+    "category": "technology",
+    "example": "The message asks you to reboot the computer.",
+    "translation": "这条消息提示你重新启动电脑。",
+    "collocation": "reboot a computer"
+  },
+  {
+    "id": "v-troubleshoot",
+    "word": "troubleshoot",
+    "pos": "动词",
+    "meaning": "排查并解决故障",
+    "category": "technology",
+    "example": "The help desk can troubleshoot a slow network connection.",
+    "translation": "技术服务台可以排查并解决网络连接缓慢的问题。",
+    "collocation": "troubleshoot a problem"
+  },
+  {
+    "id": "v-facility",
+    "word": "facility",
+    "pos": "名词",
+    "meaning": "设施；场所",
+    "category": "facilities",
+    "example": "The sports facility closes at nine.",
+    "translation": "这座体育场馆九点关闭。",
+    "collocation": "sports facility"
+  },
+  {
+    "id": "v-maintenance",
+    "word": "maintenance",
+    "pos": "名词",
+    "meaning": "维护；保养",
+    "category": "facilities",
+    "example": "The elevator is closed for routine maintenance.",
+    "translation": "电梯因例行维护暂停使用。",
+    "collocation": "routine maintenance"
+  },
+  {
+    "id": "v-renovation",
+    "word": "renovation",
+    "pos": "名词",
+    "meaning": "翻新；整修",
+    "category": "facilities",
+    "example": "The swimming pool will reopen after the renovation.",
+    "translation": "游泳池将在整修后重新开放。",
+    "collocation": "building renovation"
+  },
+  {
+    "id": "v-ventilation",
+    "word": "ventilation",
+    "pos": "名词",
+    "meaning": "通风",
+    "category": "facilities",
+    "example": "The basement needs better ventilation.",
+    "translation": "地下室需要改善通风。",
+    "collocation": "adequate ventilation"
+  },
+  {
+    "id": "v-plumbing",
+    "word": "plumbing",
+    "pos": "名词",
+    "meaning": "给排水管道系统",
+    "category": "facilities",
+    "example": "The old building has several plumbing problems.",
+    "translation": "这栋老建筑的给排水管道有几处问题。",
+    "collocation": "plumbing system"
+  },
+  {
+    "id": "v-insulation",
+    "word": "insulation",
+    "pos": "名词",
+    "meaning": "隔热材料；隔热措施",
+    "category": "facilities",
+    "example": "New insulation keeps the building warmer in winter.",
+    "translation": "新的隔热材料让这栋建筑在冬季更加暖和。",
+    "collocation": "thermal insulation"
+  },
+  {
+    "id": "v-fixture",
+    "word": "fixture",
+    "pos": "名词",
+    "meaning": "固定装置",
+    "category": "facilities",
+    "example": "The light fixture above the entrance is broken.",
+    "translation": "入口上方的照明装置坏了。",
+    "collocation": "light fixture"
+  },
+  {
+    "id": "v-leak",
+    "word": "leak",
+    "pos": "名词",
+    "meaning": "渗漏；漏水处",
+    "category": "facilities",
+    "example": "A small leak has left a stain on the ceiling.",
+    "translation": "一处轻微漏水在天花板上留下了污渍。",
+    "collocation": "water leak"
+  },
+  {
+    "id": "v-repair",
+    "word": "repair",
+    "pos": "动词",
+    "meaning": "修理；修复",
+    "category": "facilities",
+    "example": "A technician will repair the automatic door this afternoon.",
+    "translation": "技术人员今天下午将修理这扇自动门。",
+    "collocation": "repair a door"
+  },
+  {
+    "id": "v-elevator",
+    "word": "elevator",
+    "pos": "名词",
+    "meaning": "电梯",
+    "category": "facilities",
+    "example": "The elevator stops on every floor of the building.",
+    "translation": "这部电梯在大楼的每一层都停靠。",
+    "collocation": "passenger elevator"
+  },
+  {
+    "id": "v-staircase",
+    "word": "staircase",
+    "pos": "名词",
+    "meaning": "楼梯",
+    "category": "facilities",
+    "example": "The staircase beside the elevator leads to the second floor.",
+    "translation": "电梯旁的楼梯通往二楼。",
+    "collocation": "main staircase"
+  },
+  {
+    "id": "v-corridor",
+    "word": "corridor",
+    "pos": "名词",
+    "meaning": "走廊",
+    "category": "facilities",
+    "example": "The corridor connects the library to the reading room.",
+    "translation": "这条走廊连接图书馆和阅览室。",
+    "collocation": "narrow corridor"
+  },
+  {
+    "id": "v-ceiling",
+    "word": "ceiling",
+    "pos": "名词",
+    "meaning": "天花板",
+    "category": "facilities",
+    "example": "Workers painted the ceiling white.",
+    "translation": "工人把天花板漆成了白色。",
+    "collocation": "high ceiling"
+  },
+  {
+    "id": "v-rooftop",
+    "word": "rooftop",
+    "pos": "名词",
+    "meaning": "屋顶",
+    "category": "facilities",
+    "example": "Solar panels cover most of the rooftop.",
+    "translation": "太阳能板覆盖了屋顶的大部分区域。",
+    "collocation": "on the rooftop"
+  },
+  {
+    "id": "v-basement",
+    "word": "basement",
+    "pos": "名词",
+    "meaning": "地下室",
+    "category": "facilities",
+    "example": "The cleaning equipment is stored in the basement.",
+    "translation": "清洁设备存放在地下室。",
+    "collocation": "basement storage"
+  },
+  {
+    "id": "v-handrail",
+    "word": "handrail",
+    "pos": "名词",
+    "meaning": "扶手",
+    "category": "facilities",
+    "example": "A new handrail runs along the ramp.",
+    "translation": "坡道旁安装了新的扶手。",
+    "collocation": "hold the handrail"
+  },
+  {
+    "id": "v-pavement",
+    "word": "pavement",
+    "pos": "名词",
+    "meaning": "铺装路面",
+    "category": "facilities",
+    "example": "The pavement near the entrance is uneven.",
+    "translation": "入口附近的路面不平整。",
+    "collocation": "uneven pavement"
+  },
+  {
+    "id": "v-lighting",
+    "word": "lighting",
+    "pos": "名词",
+    "meaning": "照明",
+    "category": "facilities",
+    "example": "The new lighting makes the hallway brighter.",
+    "translation": "新的照明让走廊更明亮了。",
+    "collocation": "outdoor lighting"
+  },
+  {
+    "id": "v-drain",
+    "word": "drain",
+    "pos": "名词",
+    "meaning": "排水口；排水管",
+    "category": "facilities",
+    "example": "Leaves have blocked the drain in the courtyard.",
+    "translation": "树叶堵住了庭院里的排水口。",
+    "collocation": "blocked drain"
+  },
+  {
+    "id": "v-accessible",
+    "word": "accessible",
+    "pos": "形容词",
+    "meaning": "可无障碍进入的",
+    "category": "facilities",
+    "example": "The new restroom is accessible to wheelchair users.",
+    "translation": "新洗手间可供轮椅使用者无障碍进入。",
+    "collocation": "wheelchair accessible"
+  },
+  {
+    "id": "v-clinic",
+    "word": "clinic",
+    "pos": "名词",
+    "meaning": "诊所",
+    "category": "health",
+    "example": "The clinic opens at eight on weekdays.",
+    "translation": "这家诊所在工作日八点开门。",
+    "collocation": "local clinic"
+  },
+  {
+    "id": "v-patient",
+    "word": "patient",
+    "pos": "名词",
+    "meaning": "患者；病人",
+    "category": "health",
+    "example": "Each patient receives a numbered card upon arrival.",
+    "translation": "每位患者到达后都会领到一张号码卡。",
+    "collocation": "new patient"
+  },
+  {
+    "id": "v-physician",
+    "word": "physician",
+    "pos": "名词",
+    "meaning": "医生",
+    "category": "health",
+    "example": "The physician reviewed the test results with the patient.",
+    "translation": "医生与患者一起查看了检查结果。",
+    "collocation": "family physician"
+  },
+  {
+    "id": "v-nurse",
+    "word": "nurse",
+    "pos": "名词",
+    "meaning": "护士",
+    "category": "health",
+    "example": "The nurse called the next patient into the room.",
+    "translation": "护士叫下一位患者进屋。",
+    "collocation": "registered nurse"
+  },
+  {
+    "id": "v-dentist",
+    "word": "dentist",
+    "pos": "名词",
+    "meaning": "牙医",
+    "category": "health",
+    "example": "The dentist examined a chipped tooth.",
+    "translation": "牙医检查了一颗缺损的牙齿。",
+    "collocation": "visit a dentist"
+  },
+  {
+    "id": "v-pharmacy",
+    "word": "pharmacy",
+    "pos": "名词",
+    "meaning": "药房；药店",
+    "category": "health",
+    "example": "The pharmacy is next to the community clinic.",
+    "translation": "药房在社区诊所旁边。",
+    "collocation": "local pharmacy"
+  },
+  {
+    "id": "v-prescription",
+    "word": "prescription",
+    "pos": "名词",
+    "meaning": "处方",
+    "category": "health",
+    "example": "The pharmacy has not received my prescription yet.",
+    "translation": "药房还没有收到我的处方。",
+    "collocation": "fill a prescription"
+  },
+  {
+    "id": "v-symptom",
+    "word": "symptom",
+    "pos": "名词",
+    "meaning": "症状",
+    "category": "health",
+    "example": "The doctor asked when the symptom first appeared.",
+    "translation": "医生询问这个症状最初是什么时候出现的。",
+    "collocation": "describe a symptom"
+  },
+  {
+    "id": "v-allergy",
+    "word": "allergy",
+    "pos": "名词",
+    "meaning": "过敏",
+    "category": "health",
+    "example": "Her allergy is recorded in the clinic’s system.",
+    "translation": "她的过敏情况记录在诊所的系统中。",
+    "collocation": "food allergy"
+  },
+  {
+    "id": "v-vaccination",
+    "word": "vaccination",
+    "pos": "名词",
+    "meaning": "疫苗接种",
+    "category": "health",
+    "example": "Vaccination is available by appointment at the clinic.",
+    "translation": "这家诊所可预约接种疫苗。",
+    "collocation": "vaccination record"
+  },
+  {
+    "id": "v-checkup",
+    "word": "checkup",
+    "pos": "名词",
+    "meaning": "体检；健康检查",
+    "category": "health",
+    "example": "My annual checkup is scheduled for next Tuesday.",
+    "translation": "我的年度体检安排在下周二。",
+    "collocation": "annual checkup"
+  },
+  {
+    "id": "v-treatment",
+    "word": "treatment",
+    "pos": "名词",
+    "meaning": "治疗",
+    "category": "health",
+    "example": "He returned to the clinic for treatment on Monday.",
+    "translation": "他周一回到诊所接受治疗。",
+    "collocation": "receive treatment"
+  },
+  {
+    "id": "v-wellness",
+    "word": "wellness",
+    "pos": "名词",
+    "meaning": "身心健康",
+    "category": "health",
+    "example": "The wellness program includes free exercise classes.",
+    "translation": "这项健康促进计划包括免费运动课程。",
+    "collocation": "wellness program"
+  },
+  {
+    "id": "v-nutrition",
+    "word": "nutrition",
+    "pos": "名词",
+    "meaning": "营养",
+    "category": "health",
+    "example": "The community center holds a monthly class on nutrition.",
+    "translation": "社区中心每月举办一次营养课程。",
+    "collocation": "nutrition class"
+  },
+  {
+    "id": "v-fitness",
+    "word": "fitness",
+    "pos": "名词",
+    "meaning": "身体健康；体能",
+    "category": "health",
+    "example": "The fitness assessment takes about twenty minutes.",
+    "translation": "体能评估大约需要二十分钟。",
+    "collocation": "fitness assessment"
+  },
+  {
+    "id": "v-recovery",
+    "word": "recovery",
+    "pos": "名词",
+    "meaning": "康复；恢复",
+    "category": "health",
+    "example": "Her recovery took longer than expected.",
+    "translation": "她的康复时间比预期更长。",
+    "collocation": "full recovery"
+  },
+  {
+    "id": "v-referral",
+    "word": "referral",
+    "pos": "名词",
+    "meaning": "转诊；转诊单",
+    "category": "health",
+    "example": "The specialist’s clinic received the referral yesterday.",
+    "translation": "专科诊所昨天收到了转诊单。",
+    "collocation": "medical referral"
+  },
+  {
+    "id": "v-consultation",
+    "word": "consultation",
+    "pos": "名词",
+    "meaning": "问诊；咨询",
+    "category": "health",
+    "example": "The consultation lasted thirty minutes.",
+    "translation": "这次问诊持续了三十分钟。",
+    "collocation": "initial consultation"
+  },
+  {
+    "id": "v-screening",
+    "word": "screening",
+    "pos": "名词",
+    "meaning": "筛查",
+    "category": "health",
+    "example": "The health center offers vision screening every Friday.",
+    "translation": "健康中心每周五提供视力筛查。",
+    "collocation": "health screening"
+  },
+  {
+    "id": "v-eyesight",
+    "word": "eyesight",
+    "pos": "名词",
+    "meaning": "视力",
+    "category": "health",
+    "example": "The nurse checked his eyesight before the consultation.",
+    "translation": "护士在问诊前检查了他的视力。",
+    "collocation": "check someone’s eyesight"
+  },
+  {
+    "id": "v-library",
+    "word": "library",
+    "pos": "名词",
+    "meaning": "图书馆",
+    "category": "services",
+    "example": "The library has a quiet area for children to read.",
+    "translation": "图书馆设有供儿童阅读的安静区域。",
+    "collocation": "public library"
+  },
+  {
+    "id": "v-librarian",
+    "word": "librarian",
+    "pos": "名词",
+    "meaning": "图书管理员",
+    "category": "services",
+    "example": "The librarian helped me find a book about local history.",
+    "translation": "图书管理员帮我找到了一本有关当地历史的书。",
+    "collocation": "ask a librarian"
+  },
+  {
+    "id": "v-community",
+    "word": "community",
+    "pos": "名词",
+    "meaning": "社区",
+    "category": "services",
+    "example": "The community holds a street cleanup every spring.",
+    "translation": "这个社区每年春天都会组织街道清扫活动。",
+    "collocation": "local community"
+  },
+  {
+    "id": "v-borrow",
+    "word": "borrow",
+    "pos": "动词",
+    "meaning": "借；借阅",
+    "category": "services",
+    "example": "Members can borrow up to six books at a time.",
+    "translation": "会员一次最多可以借六本书。",
+    "collocation": "borrow a book"
+  },
+  {
+    "id": "v-barber",
+    "word": "barber",
+    "pos": "名词",
+    "meaning": "理发师",
+    "category": "services",
+    "example": "The barber has an opening at four this afternoon.",
+    "translation": "理发师今天下午四点有空档。",
+    "collocation": "barber shop"
+  },
+  {
+    "id": "v-recycling",
+    "word": "recycling",
+    "pos": "名词",
+    "meaning": "回收利用",
+    "category": "services",
+    "example": "The recycling center accepts glass and cardboard.",
+    "translation": "回收中心接收玻璃和纸板。",
+    "collocation": "recycling center"
+  },
+  {
+    "id": "v-garbage",
+    "word": "garbage",
+    "pos": "名词",
+    "meaning": "垃圾",
+    "category": "services",
+    "example": "Garbage is collected on Tuesday mornings.",
+    "translation": "垃圾在每周二早上清运。",
+    "collocation": "garbage collection"
+  },
+  {
+    "id": "v-laundry",
+    "word": "laundry",
+    "pos": "名词",
+    "meaning": "待洗或已洗的衣物",
+    "category": "services",
+    "example": "My clean laundry will be ready this evening.",
+    "translation": "我送洗的衣物今晚就能洗好。",
+    "collocation": "do the laundry"
+  },
+  {
+    "id": "v-laundromat",
+    "word": "laundromat",
+    "pos": "名词",
+    "meaning": "自助洗衣店",
+    "category": "services",
+    "example": "The laundromat on Pine Street stays open until midnight.",
+    "translation": "松树街上的自助洗衣店营业至午夜。",
+    "collocation": "nearby laundromat"
+  },
+  {
+    "id": "v-tailor",
+    "word": "tailor",
+    "pos": "名词",
+    "meaning": "裁缝",
+    "category": "services",
+    "example": "The tailor shortened the sleeves of my jacket.",
+    "translation": "裁缝改短了我夹克的袖子。",
+    "collocation": "local tailor"
+  },
+  {
+    "id": "v-alteration",
+    "word": "alteration",
+    "pos": "名词",
+    "meaning": "衣物改制；修改",
+    "category": "services",
+    "example": "The alteration made the trousers fit better.",
+    "translation": "改过之后，这条裤子更加合身了。",
+    "collocation": "clothing alteration"
+  },
+  {
+    "id": "v-locksmith",
+    "word": "locksmith",
+    "pos": "名词",
+    "meaning": "锁匠",
+    "category": "services",
+    "example": "A locksmith replaced the broken lock on our front door.",
+    "translation": "锁匠更换了我们前门上损坏的锁。",
+    "collocation": "call a locksmith"
+  },
+  {
+    "id": "v-plumber",
+    "word": "plumber",
+    "pos": "名词",
+    "meaning": "管道工",
+    "category": "services",
+    "example": "The plumber fixed the leaking tap in the kitchen.",
+    "translation": "管道工修好了厨房里漏水的水龙头。",
+    "collocation": "licensed plumber"
+  },
+  {
+    "id": "v-electrician",
+    "word": "electrician",
+    "pos": "名词",
+    "meaning": "电工",
+    "category": "services",
+    "example": "An electrician installed two new outlets in the bedroom.",
+    "translation": "电工在卧室安装了两个新插座。",
+    "collocation": "qualified electrician"
+  },
+  {
+    "id": "v-childcare",
+    "word": "childcare",
+    "pos": "名词",
+    "meaning": "儿童照护；托儿服务",
+    "category": "services",
+    "example": "The center provides childcare during evening classes.",
+    "translation": "该中心在晚间课程期间提供托儿服务。",
+    "collocation": "childcare service"
+  },
+  {
+    "id": "v-shelter",
+    "word": "shelter",
+    "pos": "名词",
+    "meaning": "收容所；庇护所",
+    "category": "services",
+    "example": "The shelter provides a warm place to sleep.",
+    "translation": "这家收容所提供温暖的住宿场所。",
+    "collocation": "emergency shelter"
+  },
+  {
+    "id": "v-volunteer",
+    "word": "volunteer",
+    "pos": "名词",
+    "meaning": "志愿者",
+    "category": "services",
+    "example": "A volunteer helped visitors complete the forms.",
+    "translation": "一位志愿者帮助来访者填写表格。",
+    "collocation": "community volunteer"
+  },
+  {
+    "id": "v-helpline",
+    "word": "helpline",
+    "pos": "名词",
+    "meaning": "服务热线；求助热线",
+    "category": "services",
+    "example": "The helpline provides information about local support services.",
+    "translation": "这条求助热线提供有关当地援助服务的信息。",
+    "collocation": "call a helpline"
+  },
+  {
+    "id": "v-playground",
+    "word": "playground",
+    "pos": "名词",
+    "meaning": "儿童游乐场",
+    "category": "services",
+    "example": "The playground has new swings and a shaded seating area.",
+    "translation": "游乐场配有新秋千和一处带遮阴的休息区。",
+    "collocation": "children’s playground"
+  },
+  {
+    "id": "v-municipal",
+    "word": "municipal",
+    "pos": "形容词",
+    "meaning": "市政的；市政府的",
+    "category": "services",
+    "example": "The municipal website lists nearby recycling locations.",
+    "translation": "市政府网站列出了附近的回收点。",
+    "collocation": "municipal services"
+  }
+]

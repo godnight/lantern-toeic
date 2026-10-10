@@ -15,6 +15,13 @@
       "when": 1789305304732,
       "tag": "0001_study_data_v2",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1789815686395,
+      "tag": "0002_parched_edwin_jarvis",
+      "breakpoints": true
     }
   ]
 }
