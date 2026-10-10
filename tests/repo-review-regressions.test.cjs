@@ -96,7 +96,7 @@ function dailyApp(data) {
     '@/lib/study-model': h.model, '@/lib/study-backup': h.backup,
     '@/lib/native-host': {registerNativeBack: () => () => {}},
     './learn/exam-collection': {}, './learn/resource-library': {}, './learn/practice': {},
-    './learn/speaking': {}, './learn/theme-library': {}
+    './learn/speaking': {}, './learn/theme-library': {}, './learn/vocabulary-library': {}
   };
   for (const file of ['content/questions.json', 'content/speaking.json', 'art/map-scenes.json', 'art/themes.json']) {
     imports['@/' + file] = {default: JSON.parse(fs.readFileSync(root + '/' + file, 'utf8'))};
@@ -204,7 +204,7 @@ test('storage quota failure keeps resource checkin open without a false success 
     '@/content/questions.json': {default: JSON.parse(fs.readFileSync(root + '/content/questions.json'))},
     '@/content/speaking.json': {default: JSON.parse(fs.readFileSync(root + '/content/speaking.json'))},
     './learn/exam-collection':{},'./learn/resource-library': {default: 'ResourceLibrary'}, './learn/practice': {default: 'Practice'}, './learn/speaking': {default: 'SpeakingRoom'},
-    './learn/theme-library': {default:()=>null},
+    './learn/theme-library': {default:()=>null}, './learn/vocabulary-library': {},
     '@/art/map-scenes.json': {default: JSON.parse(fs.readFileSync(root+'/art/map-scenes.json','utf8'))},
     '@/art/themes.json': {default:JSON.parse(fs.readFileSync(root+'/art/themes.json','utf8'))},
   };
@@ -247,7 +247,7 @@ test('mobile access guidance distinguishes synchronized PWA and local native mod
       '@/content/questions.json': {default: JSON.parse(fs.readFileSync(root + '/content/questions.json'))},
       '@/content/speaking.json': {default: JSON.parse(fs.readFileSync(root + '/content/speaking.json'))},
       './learn/exam-collection': {}, './learn/resource-library': {default: 'ResourceLibrary'}, './learn/practice': {default: 'Practice'}, './learn/speaking': {default: 'SpeakingRoom'},
-      './learn/theme-library': {default: () => null},
+      './learn/theme-library': {default: () => null}, './learn/vocabulary-library': {},
       '@/art/map-scenes.json': {default: JSON.parse(fs.readFileSync(root+'/art/map-scenes.json','utf8'))},
     '@/art/themes.json': {default: JSON.parse(fs.readFileSync(root + '/art/themes.json', 'utf8'))},
     };

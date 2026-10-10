@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-15T02:40:13.8282337Z",
+  "generatedAt": "2026-09-19T11:09:28.6868821Z",
   "sourceFiles": {
     "questions": {
       "path": "content/questions.json",
@@ -9,6 +9,10 @@
     "speaking": {
       "path": "content/speaking.json",
       "sha256": "7907afee50105a91eb60d5adaeb60b41f03e76d62ef919c549c4b18ecd0cf7ef"
+    },
+    "vocabulary": {
+      "path": "content/vocabulary.json",
+      "sha256": "659f2607bdc65985f8e7c8df8c1c14bd8de6b954897596ad5eeea0bd4a3c4eff"
     }
   },
   "textPolicy": "Exact source strings; no whitespace, punctuation or pronunciation normalization. Sentence splitting matches practice.tsx /(?<=[.!?])\\s+/.",
@@ -49,6 +53,20 @@
       ]
     },
     {
+      "text": "aisle",
+      "textSha256": "0145be012aa0a4428a20b444e690b1ec82267db40d5c460762fd99fd0585a04b",
+      "file": "0145be012aa0a4428a20.mp3",
+      "bytes": 10493,
+      "sha256": "b59d7067ff33fab8aded231c5152c4817302589fa2501f2c6a9fd6e1f00b74f3",
+      "durationSeconds": 1.214422,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-aisle"
+        }
+      ]
+    },
+    {
       "text": "When does the training session begin?",
       "textSha256": "01fe2908020e302a96fc49fbab77199d52dedd9a5dba113ca0c539e7e5c66baa",
       "file": "01fe2908020e302a96fc.mp3",
@@ -65,6 +83,34 @@
       ]
     },
     {
+      "text": "interview",
+      "textSha256": "02540942346fdfbf21a94f8b823af2ae315f20cb71721c2cc6e205097d560840",
+      "file": "02540942346fdfbf21a9.mp3",
+      "bytes": 12164,
+      "sha256": "b32b381dff58f6665c1a2f343aa234dbfd093d1200f5a5562a004036f002a28f",
+      "durationSeconds": 1.429252,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-interview"
+        }
+      ]
+    },
+    {
+      "text": "including",
+      "textSha256": "031af55b1821e721e58832cb81177a527f3e8ea244986da200562c62b91d535c",
+      "file": "031af55b1821e721e588.mp3",
+      "bytes": 13209,
+      "sha256": "cefda44ad3e9d9a8064cca63b33e50203b067f08bad1b65570e953767d237f13",
+      "durationSeconds": 1.554376,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p2-v2-05"
+        }
+      ]
+    },
+    {
       "text": "I'm not sure; ask the information desk.",
       "textSha256": "037f37423e6976afd79f070ecad60c0d88b052414f0650cfbc8eca06a0a473d8",
       "file": "037f37423e6976afd79f.mp3",
@@ -77,6 +123,48 @@
           "id": "p2-v2-08",
           "part": 2,
           "index": 4
+        }
+      ]
+    },
+    {
+      "text": "payment",
+      "textSha256": "040ffd5925d40e11c67b7238a7fc9957850b8b9a46e9729fab88c24d6a98aff2",
+      "file": "040ffd5925d40e11c67b.mp3",
+      "bytes": 12582,
+      "sha256": "5b8d0730ba84fe9af8c2f751204c7635bd52666b2c4c0283a832bd975992450d",
+      "durationSeconds": 1.479365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-payment"
+        }
+      ]
+    },
+    {
+      "text": "working day",
+      "textSha256": "0451b31f4bc987850fbd958a4718fc0792e182ed92ecc070b89c1318adbc5cbb",
+      "file": "0451b31f4bc987850fbd.mp3",
+      "bytes": 13209,
+      "sha256": "62c98e01c3513001b28c46eb8c26dd5e8a9f773caa0cf56a76123ec47180b5bc",
+      "durationSeconds": 1.544308,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-v2-02"
+        }
+      ]
+    },
+    {
+      "text": "procedure",
+      "textSha256": "0487c249731a7d9064b8671a7e745fffe250a700a04c9a1ecc8450cb8185e57e",
+      "file": "0487c249731a7d9064b8.mp3",
+      "bytes": 13000,
+      "sha256": "50da86b2cd1fe194611ec7e11c8465d54e64b69598fdecb8d4ba04970157ee7e",
+      "durationSeconds": 1.534286,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-procedure"
         }
       ]
     },
@@ -125,6 +213,94 @@
           "id": "p1-01",
           "part": 1,
           "index": 5
+        }
+      ]
+    },
+    {
+      "text": "reception",
+      "textSha256": "066a4a70376da00eb9e50a8e30725427faf9b9573d0c6430d28316497c889213",
+      "file": "066a4a70376da00eb9e5.mp3",
+      "bytes": 14045,
+      "sha256": "5449d6383a235f9ac61aa0324997f75799df3024f5ab7baa171d8fcce3688190",
+      "durationSeconds": 1.654286,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-reception"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p3-v2-03"
+        }
+      ]
+    },
+    {
+      "text": "transit",
+      "textSha256": "068b7e6c97f2284a48f4d7ff0fd0bffe449f4544da079e04cacd52aba5df28c2",
+      "file": "068b7e6c97f2284a48f4.mp3",
+      "bytes": 12791,
+      "sha256": "a4b50b771c2991cd5f522c03c2cdc07c007f27bfe702b3ce05974b75229a1103",
+      "durationSeconds": 1.509297,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-transit"
+        }
+      ]
+    },
+    {
+      "text": "form",
+      "textSha256": "07397d633f25a7101990a75864ae03d5a3b9ac07c4ed6accbc52cbfd7d7c13b4",
+      "file": "07397d633f25a7101990.mp3",
+      "bytes": 12164,
+      "sha256": "4b99d68de663a17e42b78db371b077ec7a3ae8abc5d46c4df17c26d85be4f01f",
+      "durationSeconds": 1.424399,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-form"
+        }
+      ]
+    },
+    {
+      "text": "linen",
+      "textSha256": "07ad2ef1607d283839af1b4e82e8c61ff211de269d4648390295d407c0162f7a",
+      "file": "07ad2ef1607d283839af.mp3",
+      "bytes": 11955,
+      "sha256": "52c7b1e421fa684e4bbe866d05c569bbbdd8b7129435a44b8012fdf52b38201e",
+      "durationSeconds": 1.399365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-linen"
+        }
+      ]
+    },
+    {
+      "text": "supervisor",
+      "textSha256": "0834c2d60725ac5902257b3b78dd161ad26d1c0290dbf1e47cc14add5b8c8142",
+      "file": "0834c2d60725ac590225.mp3",
+      "bytes": 14463,
+      "sha256": "d69de4f9310c65a5454f6fdf3f724a97f1d06cbbca1f297196579d76867c5ddf",
+      "durationSeconds": 1.719274,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-supervisor"
+        }
+      ]
+    },
+    {
+      "text": "stock",
+      "textSha256": "08c4242b5f585628bb8cef8ede40e9895b8719eb8070aee2d96613583ee3904a",
+      "file": "08c4242b5f585628bb8c.mp3",
+      "bytes": 12582,
+      "sha256": "9663a0ac0f17de4698a06a90cc40b2c99bc6e567f40f5c3966a3770be5518bda",
+      "durationSeconds": 1.464989,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-stock"
         }
       ]
     },
@@ -229,6 +405,104 @@
       ]
     },
     {
+      "text": "budget",
+      "textSha256": "0af96a8ed622a394e8b2a239284ee46e9a7a7b0ec38191bbd08571b171118dd6",
+      "file": "0af96a8ed622a394e8b2.mp3",
+      "bytes": 11746,
+      "sha256": "a62d4ed023631fb2e9d6938047406d1ac3fcc82fe5d44984a7bfc34f82028ecf",
+      "durationSeconds": 1.360499,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-budget"
+        }
+      ]
+    },
+    {
+      "text": "return trip",
+      "textSha256": "0bc640467a070cdee50f08a37ae626874be022dfc608794f40a251c833ca783f",
+      "file": "0bc640467a070cdee50f.mp3",
+      "bytes": 14254,
+      "sha256": "eebc3ba3fa2b1aaaa1ca7efb9c3ddb98f8a1c4709dd56ff497271a3eb91ae829",
+      "durationSeconds": 1.684263,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-v2-07"
+        }
+      ]
+    },
+    {
+      "text": "take place",
+      "textSha256": "0d2216989b3ed911b8219fcf848e91e36b45ae76211db525d516e23476d3318d",
+      "file": "0d2216989b3ed911b821.mp3",
+      "bytes": 13627,
+      "sha256": "f8adfbea5a4cb36d8237187c32552303d106a8b2b36bc635e304e12c0225e150",
+      "durationSeconds": 1.599365,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p4-v2-01"
+        }
+      ]
+    },
+    {
+      "text": "portfolio",
+      "textSha256": "0e6a8e0b849ed9b064c5a25e1ee5592f427e3eb9d250e42069ce46147d00e8d4",
+      "file": "0e6a8e0b849ed9b064c5.mp3",
+      "bytes": 13836,
+      "sha256": "43a027f7896c8c655f2fb40cd164d815e4b6be1c3a5c81b769bac13e68240c40",
+      "durationSeconds": 1.624308,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p5-07"
+        }
+      ]
+    },
+    {
+      "text": "commuter",
+      "textSha256": "0e9f29349fc1e5365ef72320f2e61a82ea0372ded8351c8be65d9f02cab6c842",
+      "file": "0e9f29349fc1e5365ef7.mp3",
+      "bytes": 12164,
+      "sha256": "2e8a6ac8adaad85a0dc8fc8db3c881c2be1848a6caec7dced82080816b4e73e6",
+      "durationSeconds": 1.414331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-commuter"
+        }
+      ]
+    },
+    {
+      "text": "recommend",
+      "textSha256": "0eb15ad185af2b351ef4be172745e9dcdfca32f2b0b4e96ffc45af98e813b74d",
+      "file": "0eb15ad185af2b351ef4.mp3",
+      "bytes": 12791,
+      "sha256": "43b5d6aadb1f5583b3d53b6d9d8b4702813d2097cf3bd4e15571359600bbb28a",
+      "durationSeconds": 1.504354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-recommend"
+        }
+      ]
+    },
+    {
+      "text": "archive",
+      "textSha256": "0eb3e36bfb24dcd9bb1d1bece1531216b59539a8fde17ee80224af0653c92aa3",
+      "file": "0eb3e36bfb24dcd9bb1d.mp3",
+      "bytes": 12791,
+      "sha256": "3f759154b39bcf91757e7c931d0bf48592af0ac6e7d53127bb27db787b908592",
+      "durationSeconds": 1.491111,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-archive"
+        }
+      ]
+    },
+    {
       "text": "Why was the team briefing moved to Thursday?",
       "textSha256": "0f546fc74e3191c20393101544ec9ae0dfb7f481cda3a9bbfc205d0e2a86b5dd",
       "file": "0f546fc74e3191c20393.mp3",
@@ -273,6 +547,20 @@
       ]
     },
     {
+      "text": "manufacturer",
+      "textSha256": "10002859ace9985449d177bc2612b74ef5aaec3c8dacef5c62a603819b560f2e",
+      "file": "10002859ace9985449d1.mp3",
+      "bytes": 15926,
+      "sha256": "690e1cde06735803533b65610d943a4d90983009c7bb8e43a1307cda4824f6dd",
+      "durationSeconds": 1.894195,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-manufacturer"
+        }
+      ]
+    },
+    {
       "text": "Sam: Yes, beside the information desk.",
       "textSha256": "10a33583d9592b539275b336d78b8e84854d4e500779b72e152f6ca876c826a1",
       "file": "10a33583d9592b539275.mp3",
@@ -297,6 +585,34 @@
           "id": "p3-v2-06",
           "part": 3,
           "index": 11
+        }
+      ]
+    },
+    {
+      "text": "towel",
+      "textSha256": "10ca50a8a7148afd6d2a563e8ef8e05cfedd17fc97a6a5327cf9e5300b933e4b",
+      "file": "10ca50a8a7148afd6d2a.mp3",
+      "bytes": 10910,
+      "sha256": "c2da15a37640f4cdb0c91aff507d528b02c1f805257af2d63bbeea5e7ddfea14",
+      "durationSeconds": 1.259365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-towel"
+        }
+      ]
+    },
+    {
+      "text": "total",
+      "textSha256": "11239872d178729acc9e5aeaf7fc001a0ffd878c922330be43712b9b3be043a7",
+      "file": "11239872d178729acc9e.mp3",
+      "bytes": 11119,
+      "sha256": "07810d41234319d27f69d77f7d0d12e1f69d2d1a5c92d73ef12f652582f602f4",
+      "durationSeconds": 1.304399,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-total"
         }
       ]
     },
@@ -385,6 +701,20 @@
       ]
     },
     {
+      "text": "propose",
+      "textSha256": "12df7f0ee89f9d7f17fb8e881e8b568794603af2a9d53c1d0379d2c588792a50",
+      "file": "12df7f0ee89f9d7f17fb.mp3",
+      "bytes": 12373,
+      "sha256": "93063ec801e101cfe4f208bc51268ed94c738f9c951bdb8f5eafcabe946dd6f9",
+      "durationSeconds": 1.439365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-propose"
+        }
+      ]
+    },
+    {
       "text": "Thank you for visiting the Riverton History Center.",
       "textSha256": "147d9d34a0029d1331bbb9857454584462fec1c4e6fec252c9803aa613a39892",
       "file": "147d9d34a0029d1331bb.mp3",
@@ -409,6 +739,48 @@
           "id": "p4-v2-06",
           "part": 4,
           "index": 0
+        }
+      ]
+    },
+    {
+      "text": "inspect",
+      "textSha256": "14a60637758cb026afd2fe447f3648a07965072eeefaa9ee57734959bce8ae2b",
+      "file": "14a60637758cb026afd2.mp3",
+      "bytes": 13836,
+      "sha256": "5bcded331f73f72aca70644aa18b10e5840ae8cd1435d8a373eddb489622ef39",
+      "durationSeconds": 1.624399,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-inspect"
+        }
+      ]
+    },
+    {
+      "text": "break",
+      "textSha256": "14ebe56a5008e7c251101e9e1fdbe281ab0a82bd6fa00a5cef746b9ee0dd31d1",
+      "file": "14ebe56a5008e7c25110.mp3",
+      "bytes": 11537,
+      "sha256": "ec7aa8342b75ed9b15a984937c8d92f5b717e274ddf0d0d72932b2042b6ef52a",
+      "durationSeconds": 1.334376,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-break"
+        }
+      ]
+    },
+    {
+      "text": "username",
+      "textSha256": "16f78a7d6317f102bbd95fc9a4f3ff2e3249287690b8bdad6b7810f82b34ace3",
+      "file": "16f78a7d6317f102bbd9.mp3",
+      "bytes": 13418,
+      "sha256": "7a454f604a529bc5d418f587a53c2ea179465bc852fc469eaa8cb4e984ffe15d",
+      "durationSeconds": 1.57424,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-username"
         }
       ]
     },
@@ -482,6 +854,66 @@
       ]
     },
     {
+      "text": "signature",
+      "textSha256": "1a2fc26dc7ea5a2a4748b7cb2b1ef193d96ab2c99f93092f69e63075b28d1278",
+      "file": "1a2fc26dc7ea5a2a4748.mp3",
+      "bytes": 13209,
+      "sha256": "4fa013b6bc5aa3ed136d848a536189c0fcac74d470c298f63586ce6859ded14a",
+      "durationSeconds": 1.55932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-signature"
+        }
+      ]
+    },
+    {
+      "text": "quantity",
+      "textSha256": "1a7b308d8df661bad4338cb6acfa57891ac9d97b434d315b993214248ca3ddb2",
+      "file": "1a7b308d8df661bad433.mp3",
+      "bytes": 12373,
+      "sha256": "a168e6e0eca8a0c6b559a4329c1ca00c7871be2fe7c8c122973d256d10f3a73a",
+      "durationSeconds": 1.43932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-quantity"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p7-v2-03"
+        }
+      ]
+    },
+    {
+      "text": "label",
+      "textSha256": "1aca80e8b55c802f7b43740da2990e1b5735bbb323d93eb5ebda8395b04025e2",
+      "file": "1aca80e8b55c802f7b43.mp3",
+      "bytes": 11328,
+      "sha256": "f40c8e9eccb2d992fc7ddb765390e00f7cc7dced7c0fa34e9319ac76a8c2e030",
+      "durationSeconds": 1.329388,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-label"
+        }
+      ]
+    },
+    {
+      "text": "equipment",
+      "textSha256": "1c09f5a7f47df2ee11dac3abd4010d9b70fb62c46446fd0c872c67a37609a52d",
+      "file": "1c09f5a7f47df2ee11da.mp3",
+      "bytes": 12791,
+      "sha256": "f5b952afddd7aece075b510ed9f39ea8409a6f36c3ab4590b9ed63fb8a9a1c6e",
+      "durationSeconds": 1.504308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-equipment"
+        }
+      ]
+    },
+    {
       "text": "I'll email them in ten minutes.",
       "textSha256": "1d58b3ecea409bad214b5693cb40ef08737f03c9965b761fefd3c6a17a4bf757",
       "file": "1d58b3ecea409bad214b.mp3",
@@ -494,6 +926,76 @@
           "id": "p2-v2-02",
           "part": 2,
           "index": 5
+        }
+      ]
+    },
+    {
+      "text": "refund",
+      "textSha256": "1d630127108f1feaf1f7beee59b66dd679daf712a441f3d0a39ee9ea0f2b7a95",
+      "file": "1d630127108f1feaf1f7.mp3",
+      "bytes": 13209,
+      "sha256": "98e3a29bf5b439a3ff05a883f849c9d86bb94fe0b00472c5d8c87a050f8b7429",
+      "durationSeconds": 1.564354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-refund"
+        }
+      ]
+    },
+    {
+      "text": "qualification",
+      "textSha256": "1dbf39600b5761d58378447f494a50c8b9c01b559b6ef420720f99f4e45717c9",
+      "file": "1dbf39600b5761d58378.mp3",
+      "bytes": 16135,
+      "sha256": "2f92ab79fdd1307daa6f9ad4327bb481eda9059da513c601314c6cf92e42a08b",
+      "durationSeconds": 1.929252,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-qualification"
+        }
+      ]
+    },
+    {
+      "text": "amenity",
+      "textSha256": "1ddc1fdfcd675f40084cf8389427144d90663bec19e31a5bca7b5462ad133f2d",
+      "file": "1ddc1fdfcd675f40084c.mp3",
+      "bytes": 11537,
+      "sha256": "81ea4ba38f8347853f6a44da4cf1a97233e4dea54af7cf651be92e70d4f8d069",
+      "durationSeconds": 1.349297,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-amenity"
+        }
+      ]
+    },
+    {
+      "text": "tax",
+      "textSha256": "1ffc0406b9891fcd265a225e83a668fa045f1282588f80c8d11c029bad156d85",
+      "file": "1ffc0406b9891fcd265a.mp3",
+      "bytes": 11955,
+      "sha256": "000b69e7c5c2916577d576454ce4ea8589fbc927723265d0d99e46c4ad320a1c",
+      "durationSeconds": 1.394422,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-tax"
+        }
+      ]
+    },
+    {
+      "text": "pharmacy",
+      "textSha256": "20b04a4f018b89f369ce009213afc6369f59fe1c903c0770732ec7402163c358",
+      "file": "20b04a4f018b89f369ce.mp3",
+      "bytes": 13000,
+      "sha256": "e9fbef381281cd6b42b516485b906105a3521a5075a8bfef608526c249e77d28",
+      "durationSeconds": 1.524308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-pharmacy"
         }
       ]
     },
@@ -522,6 +1024,76 @@
           "id": "p3-03",
           "part": 3,
           "index": 4
+        }
+      ]
+    },
+    {
+      "text": "security badge",
+      "textSha256": "216a07d6e3216f469849474ef39618e750e2b8b0648a9eed0659c84dff8b711f",
+      "file": "216a07d6e3216f469849.mp3",
+      "bytes": 16553,
+      "sha256": "27603bed964a9b48f94b00c117fb504c17a94c93bc6de246273de5b058cadff1",
+      "durationSeconds": 1.974286,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p5-03"
+        }
+      ]
+    },
+    {
+      "text": "discount",
+      "textSha256": "221617318bcf512885af0e07ad0577f462a84cf345b9099822a10f64945153df",
+      "file": "221617318bcf512885af.mp3",
+      "bytes": 14045,
+      "sha256": "cce47d0983d59cfb41648e7ca2b1ae583cc6c42b078996c82db21b6231c9b9da",
+      "durationSeconds": 1.654376,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-discount"
+        }
+      ]
+    },
+    {
+      "text": "patient",
+      "textSha256": "2295ff7a8bd8b3f2884c6482146e3ded0417f72072c079fbe223e13e83a0388e",
+      "file": "2295ff7a8bd8b3f2884c.mp3",
+      "bytes": 13209,
+      "sha256": "d9729e64c59de53b53a2d6f8b8b0ff5299bc1d20a74da063d4264066bb701b3c",
+      "durationSeconds": 1.549388,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-patient"
+        }
+      ]
+    },
+    {
+      "text": "cancel",
+      "textSha256": "2374d91794b79f4fb4ec9587d2cf00aecc4f9953fab3ed1dd12ab147a0b721f9",
+      "file": "2374d91794b79f4fb4ec.mp3",
+      "bytes": 12373,
+      "sha256": "4494be5a9bcae76cb890b7e1cdf3534c9c60767acf16b6344a575871480173b1",
+      "durationSeconds": 1.444354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-cancel"
+        }
+      ]
+    },
+    {
+      "text": "expense",
+      "textSha256": "23b18e504dd45960690a04669a3f89b3b9672d878218b99aa84011784c9174f5",
+      "file": "23b18e504dd45960690a.mp3",
+      "bytes": 14463,
+      "sha256": "affab9fbd6b1f026f66db606330c1fd36121e4a30df8ad0af33f4b91209ad016",
+      "durationSeconds": 1.704399,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-expense"
         }
       ]
     },
@@ -582,6 +1154,20 @@
       ]
     },
     {
+      "text": "nutrition",
+      "textSha256": "257c4a121ae568ba528fa07d0d0254b2ae4146912586e65a241e42520b0080ac",
+      "file": "257c4a121ae568ba528f.mp3",
+      "bytes": 14045,
+      "sha256": "cb8176da04c02a1cd71f0864e3e5bcbceccea4b6d00fb4fd3cde64054e28f5f2",
+      "durationSeconds": 1.65932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-nutrition"
+        }
+      ]
+    },
+    {
       "text": "Didn't you reserve a table for the project lunch? A. Yes, for six people at twelve thirty. B. The reservation desk is made of wood. C. I prefer the table near the window.",
       "textSha256": "26132324aeee95616393568ab97dbce2936353a0c94ec6897043d4ebac8af338",
       "file": "26132324aeee95616393.mp3",
@@ -593,6 +1179,48 @@
           "kind": "listening",
           "id": "p2-v2-07",
           "part": 2
+        }
+      ]
+    },
+    {
+      "text": "device",
+      "textSha256": "263a4dbe41488fb87214b0032339dbb9f0c8da14c16dfcf13084bf3c2552eca5",
+      "file": "263a4dbe41488fb87214.mp3",
+      "bytes": 11955,
+      "sha256": "a134ccd9051929b9bad43a01e58ca82e37085f7462f01309777a281810507825",
+      "durationSeconds": 1.394376,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-device"
+        }
+      ]
+    },
+    {
+      "text": "hardware",
+      "textSha256": "26787dd2f72cc993706ee8209c6c8b2e77b8b6c7bbc8d168550dcfc1c8b28818",
+      "file": "26787dd2f72cc993706e.mp3",
+      "bytes": 12582,
+      "sha256": "6a16bed9f9462bfd568d54c0783dd89e0ab716d4e3ddfc105237b6c683a98d76",
+      "durationSeconds": 1.484308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-hardware"
+        }
+      ]
+    },
+    {
+      "text": "extension",
+      "textSha256": "26f1de33979d065ba8d86789de634228e3540fee2f6e5a66eebf93f78d83077d",
+      "file": "26f1de33979d065ba8d8.mp3",
+      "bytes": 14045,
+      "sha256": "4267e2853050bb465f9aa886e777301def289ffd062f62e6178e077536d49ce1",
+      "durationSeconds": 1.664308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-extension"
         }
       ]
     },
@@ -625,6 +1253,62 @@
       ]
     },
     {
+      "text": "cuisine",
+      "textSha256": "2753cb15f1d6d34c2d6e101c9cd5b2b21ea938dd888de94436730734aad7f60d",
+      "file": "2753cb15f1d6d34c2d6e.mp3",
+      "bytes": 12791,
+      "sha256": "ae266cfb5bf666df04fffbbcdc9740e152561086280b1792ebc3610b2c7987c4",
+      "durationSeconds": 1.514376,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-cuisine"
+        }
+      ]
+    },
+    {
+      "text": "beverage",
+      "textSha256": "27648bbe98f14b9d6fb402d885e6f36eaf4ff41f8e20fcd2c587dab519b6bb5d",
+      "file": "27648bbe98f14b9d6fb4.mp3",
+      "bytes": 12791,
+      "sha256": "075114e1edb892482dbc44b3ab5dd937b57442ed0fc60b07396c90cca6ea31b4",
+      "durationSeconds": 1.514422,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-beverage"
+        }
+      ]
+    },
+    {
+      "text": "updated",
+      "textSha256": "27eb5e51506c911f6fc4bb345c0d9db6f60415fceab7c18e1e9b862637415777",
+      "file": "27eb5e51506c911f6fc4.mp3",
+      "bytes": 12164,
+      "sha256": "50469f35de39fa3728bdf955a68c8db697df2719fabce8ce67fdb6bccad0db57",
+      "durationSeconds": 1.434376,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p2-02"
+        }
+      ]
+    },
+    {
+      "text": "transfer",
+      "textSha256": "27f576cafbb263ed44be8bd094f66114da26877706f96c4c31d5a97ffebf2e29",
+      "file": "27f576cafbb263ed44be.mp3",
+      "bytes": 13627,
+      "sha256": "35c5359aaeb84933656e4fb7595320293072605002a4f9562b9705fdce4a34c3",
+      "durationSeconds": 1.599274,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-transfer"
+        }
+      ]
+    },
+    {
       "text": "Why was the team briefing moved to Thursday? A. In the small conference room. B. Thursday is the day after Wednesday. C. The team leader is traveling on Wednesday.",
       "textSha256": "281619b53c1388fda2fa3e4247cfd06103ed8dd745a5c60faf28fdfe5eb7f0b4",
       "file": "281619b53c1388fda2fa.mp3",
@@ -636,6 +1320,38 @@
           "kind": "listening",
           "id": "p2-v2-06",
           "part": 2
+        }
+      ]
+    },
+    {
+      "text": "update",
+      "textSha256": "2937013f2181810606b2a799b05bda2849f3e369a20982a4138f0e0a55984ce4",
+      "file": "2937013f2181810606b2.mp3",
+      "bytes": 11746,
+      "sha256": "c6dd69de4fe169b7bb0f7e030b161c0052686d7c6d035ac6efab812f3e354b33",
+      "durationSeconds": 1.364354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-update"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p2-v2-08"
+        }
+      ]
+    },
+    {
+      "text": "technician",
+      "textSha256": "29ba9d9cef5a66461116a24938bb9307e005c35aa1bb909f16aa5e85bd767480",
+      "file": "29ba9d9cef5a66461116.mp3",
+      "bytes": 14045,
+      "sha256": "80b79f8cfd025517c04ba69ffd3cc784c8a8ce734250e6774edf1dbeb5d3fb20",
+      "durationSeconds": 1.654286,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p5-v2-03"
         }
       ]
     },
@@ -652,6 +1368,198 @@
           "id": "p2-v2-03",
           "part": 2,
           "index": 6
+        }
+      ]
+    },
+    {
+      "text": "department",
+      "textSha256": "2ad29f65743a0524d916bfb3e24f5034c970b8daa7749699a88bd7096129fa09",
+      "file": "2ad29f65743a0524d916.mp3",
+      "bytes": 13418,
+      "sha256": "464933a41c186bc37496172ad347bc3772a64f40f1aa6f254f4f4297ed2a757d",
+      "durationSeconds": 1.589252,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-department"
+        }
+      ]
+    },
+    {
+      "text": "feature",
+      "textSha256": "2ad562319767157087dda0dec6391f4479f8a04869ab0cc8d3a9c3637dae73b5",
+      "file": "2ad562319767157087dd.mp3",
+      "bytes": 12373,
+      "sha256": "f0834295a2314ac171391d30130d6c92e58c6fb414c837c40c911dd922229482",
+      "durationSeconds": 1.444354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-feature"
+        }
+      ]
+    },
+    {
+      "text": "in progress",
+      "textSha256": "2b6b853c9e59dbf44fdd9dd5919557d3ca4bf448807949acaea7697e6cd1d92d",
+      "file": "2b6b853c9e59dbf44fdd.mp3",
+      "bytes": 14254,
+      "sha256": "6ceaff91da23b62882d6db77d6d5e1fd1dad1f8548269110efc0621b65b8e1e2",
+      "durationSeconds": 1.679274,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p7-01"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p7-02"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p7-03"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p7-04"
+        }
+      ]
+    },
+    {
+      "text": "registration desk",
+      "textSha256": "2b7a5ed7b23b399b162831b3626aff984499f921d76f4cba07a5431773fe129a",
+      "file": "2b7a5ed7b23b399b1628.mp3",
+      "bytes": 17180,
+      "sha256": "1a0d1576a0378ff2a474fa5018260764774f39f04aa180e4b3574192ec484f33",
+      "durationSeconds": 2.049206,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p7-01"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p7-02"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p7-03"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p7-04"
+        }
+      ]
+    },
+    {
+      "text": "arrival",
+      "textSha256": "2ba137ba3df58ba75a42ea2c4bab76a4e3f03d04b93ec4d37e83671e2d3dd973",
+      "file": "2ba137ba3df58ba75a42.mp3",
+      "bytes": 12164,
+      "sha256": "bcceb3053e58d7a60ac32af3e18c780381e5168e7fd9ac5544c1a0a649208971",
+      "durationSeconds": 1.434331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-arrival"
+        }
+      ]
+    },
+    {
+      "text": "QR code",
+      "textSha256": "2c24d35a117c162de53d300e235a26c5c06ad613bd3c1d02b8388b28b7126775",
+      "file": "2c24d35a117c162de53d.mp3",
+      "bytes": 14045,
+      "sha256": "2cfcb8a32baabff9f98dc878e234d8e07c01e6f26843a7ad0128aff4880e8a14",
+      "durationSeconds": 1.654331,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-v2-03"
+        }
+      ]
+    },
+    {
+      "text": "librarian",
+      "textSha256": "2c445e1c04df4e247c2089245b68fc811f728f7d30ff14a6d64a4faac58e6270",
+      "file": "2c445e1c04df4e247c20.mp3",
+      "bytes": 14045,
+      "sha256": "30761505ef7cb14dc49de4f9eecff8291184f5d59402233b788ae85f7bb85933",
+      "durationSeconds": 1.664354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-librarian"
+        }
+      ]
+    },
+    {
+      "text": "bandwidth",
+      "textSha256": "2c7210c5b950d31204e6a8e9383ea5b5fc5372b8bf827a647a9d05aa005bc3d7",
+      "file": "2c7210c5b950d31204e6.mp3",
+      "bytes": 13627,
+      "sha256": "9eb21fa0bbadc21d67f0c6d5e9d9fdc5e3d6125c79ff860f717f6c56d52d4717",
+      "durationSeconds": 1.614422,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-bandwidth"
+        }
+      ]
+    },
+    {
+      "text": "expense report",
+      "textSha256": "2cef331e216a8cfabbce31f273d9506d3d2dbc8deab359d47758d732ecd061ee",
+      "file": "2cef331e216a8cfabbce.mp3",
+      "bytes": 16135,
+      "sha256": "c07777e2ab1f280f4b4856f089ddcff911dbb2dc4431f56f54229e03903ab891",
+      "durationSeconds": 1.924218,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p5-02"
+        }
+      ]
+    },
+    {
+      "text": "courier",
+      "textSha256": "2dae946ece4887f35fb73062be6e8ba4eb9e61f4b3b358d5a42936277ef4a2bb",
+      "file": "2dae946ece4887f35fb7.mp3",
+      "bytes": 11537,
+      "sha256": "8e54b07332da09831d6b50bdc59310f08385943add13c8158d8fd7321881e0cd",
+      "durationSeconds": 1.33941,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p2-v2-04"
+        }
+      ]
+    },
+    {
+      "text": "alteration",
+      "textSha256": "2fc6bbd7dead02737f95c207f2195b66789d72cec1a0959bdacc85b067d78f81",
+      "file": "2fc6bbd7dead02737f95.mp3",
+      "bytes": 14672,
+      "sha256": "7826e70b6ccac900402dc7d9e740e993c596e0226cc6657755491b7dc33651e2",
+      "durationSeconds": 1.734331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-alteration"
+        }
+      ]
+    },
+    {
+      "text": "employee",
+      "textSha256": "2fdc0177057d3a5c6c2c0821e01f4fa8d90f9a3bb7afd82b0db526af98d68de8",
+      "file": "2fdc0177057d3a5c6c2c.mp3",
+      "bytes": 11955,
+      "sha256": "71a485827019f7aef199ef8b233804d7511ff1ed1ce3ff92d677c291f42f4c52",
+      "durationSeconds": 1.409297,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-employee"
         }
       ]
     },
@@ -684,6 +1592,20 @@
       ]
     },
     {
+      "text": "be seated",
+      "textSha256": "3082279ee2cc2029166f078709c9fc05048f988ce11a53844eddd1c7418ed672",
+      "file": "3082279ee2cc2029166f.mp3",
+      "bytes": 12164,
+      "sha256": "e4cdb329b7ae83789ba602fc44db4c4e19e3da23145f2b030cde4e9ec0e0ccb6",
+      "durationSeconds": 1.424399,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p1-02"
+        }
+      ]
+    },
+    {
       "text": "A laptop computer is open on the table.",
       "textSha256": "30f7a535459e930ba1dc45f8e78d75a4095e2bcafd24a5983453b20c34f5318a",
       "file": "30f7a535459e930ba1dc.mp3",
@@ -696,6 +1618,20 @@
           "id": "p1-01",
           "part": 1,
           "index": 7
+        }
+      ]
+    },
+    {
+      "text": "confidential",
+      "textSha256": "3151084286f59511ce11d4fd234b6485012514587a1968fa55afff83b05e213e",
+      "file": "3151084286f59511ce11.mp3",
+      "bytes": 14463,
+      "sha256": "77415b50bac0d5d11b235ec8af23aeb146eadda92ec458744c20425411f31d8f",
+      "durationSeconds": 1.709297,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-confidential"
         }
       ]
     },
@@ -802,6 +1738,34 @@
       ]
     },
     {
+      "text": "software",
+      "textSha256": "35390f5453e810b6248028c63e5860ce4b2ec6401d3849a7f4f871c0d183c22b",
+      "file": "35390f5453e810b62480.mp3",
+      "bytes": 13627,
+      "sha256": "426ff91542e8219a7c9ef888052115f291728280fc4919e31613df7dcd39ca8c",
+      "durationSeconds": 1.614331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-software"
+        }
+      ]
+    },
+    {
+      "text": "database",
+      "textSha256": "3549b0028b75d981cdda2e573e9cb49dedc200185876df299f912b79f69dabd8",
+      "file": "3549b0028b75d981cdda.mp3",
+      "bytes": 12582,
+      "sha256": "6ac0031cda518cef58055c81d2077478f85ef085e571e85083863730cf1bd2e9",
+      "durationSeconds": 1.47932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-database"
+        }
+      ]
+    },
+    {
       "text": "In the meeting room.",
       "textSha256": "35bc2f7fcb1a3b6b6b0c4586e7ee2b692c7a1d09942de6e70878e9a144ee4c89",
       "file": "35bc2f7fcb1a3b6b6b0c.mp3",
@@ -814,6 +1778,34 @@
           "id": "p2-01",
           "part": 2,
           "index": 2
+        }
+      ]
+    },
+    {
+      "text": "buffet",
+      "textSha256": "3603a9780bdecf2bb5bf4e55685c7a32cb38191a6a9003f31e38890553caf5f6",
+      "file": "3603a9780bdecf2bb5bf.mp3",
+      "bytes": 10910,
+      "sha256": "793c1ff7c2f35f2be1f686201d363abeb9ffed6bc55ed4797d61a141c13f4b51",
+      "durationSeconds": 1.279365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-buffet"
+        }
+      ]
+    },
+    {
+      "text": "eyesight",
+      "textSha256": "3662c1bb2510602914696664716cb978e80ad1b5099ef24a296187c163eccc7d",
+      "file": "3662c1bb251060291469.mp3",
+      "bytes": 12582,
+      "sha256": "e914645d2ed687014a0dda25e2ece2fbe2abb88203357c07c20b352d3db9a666",
+      "durationSeconds": 1.469342,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-eyesight"
         }
       ]
     },
@@ -848,6 +1840,20 @@
       ]
     },
     {
+      "text": "file",
+      "textSha256": "3b9c358f36f0a31b6ad3e14f309c7cf198ac9246e8316f9ce543d5b19ac02b80",
+      "file": "3b9c358f36f0a31b6ad3.mp3",
+      "bytes": 11746,
+      "sha256": "6124d74ae78e0a799400b3e3615f40cd7b0d280aef14b6a8939928cb9bc27b13",
+      "durationSeconds": 1.360499,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-file"
+        }
+      ]
+    },
+    {
       "text": "A guided tour will begin at two in the afternoon and last forty minutes.",
       "textSha256": "3c453814909c0b0ec3dc9c4db0474e0cb8c51e5b217ecd3f912af9b31832d2b7",
       "file": "3c453814909c0b0ec3dc.mp3",
@@ -872,6 +1878,34 @@
           "id": "p4-v2-06",
           "part": 4,
           "index": 3
+        }
+      ]
+    },
+    {
+      "text": "discussion",
+      "textSha256": "3cc610240ec72ccfbf16c22bcd5d1d298a09f0e2bb1dd8feef426911542492c4",
+      "file": "3cc610240ec72ccfbf16.mp3",
+      "bytes": 13836,
+      "sha256": "68a15f6341699ab8c407e5c3bd86029eb1e8aac291c8c36dfd51bdaa34a3e24a",
+      "durationSeconds": 1.624308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-discussion"
+        }
+      ]
+    },
+    {
+      "text": "chair",
+      "textSha256": "3d7eb3d3dab17ee509a6911e0feb928eb46e956adcada792493614bfb97a7a9c",
+      "file": "3d7eb3d3dab17ee509a6.mp3",
+      "bytes": 11328,
+      "sha256": "0a21d72e2f7335393669dfc99db7227c2262b71c790ad81df6fcc50f01c56474",
+      "durationSeconds": 1.309388,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-chair"
         }
       ]
     },
@@ -920,6 +1954,76 @@
       ]
     },
     {
+      "text": "order",
+      "textSha256": "3eeb7e96e59ce40f9cb1a089daba079fd699f6867a30f6634af8570967b2375a",
+      "file": "3eeb7e96e59ce40f9cb1.mp3",
+      "bytes": 10910,
+      "sha256": "1c57aaea933d4a9fd2a90828f0e2a95d9c274fbfe1cbcf0aa8643d0f203818df",
+      "durationSeconds": 1.269388,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-order"
+        }
+      ]
+    },
+    {
+      "text": "confirm",
+      "textSha256": "3f267c2ab422e502bad8e60ff9e55666ec59b725e561bf1629c48a1578a08c79",
+      "file": "3f267c2ab422e502bad8.mp3",
+      "bytes": 12791,
+      "sha256": "5b7f78be512b138ebde8462bddd2cd40f11cbfd73ceb0d11ce8ba28d24504dba",
+      "durationSeconds": 1.49932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-confirm"
+        }
+      ]
+    },
+    {
+      "text": "session",
+      "textSha256": "3f3af1ecebbd1410ab417ec0d27bbfcb5d340e177ae159b59fc8626c2dfd9175",
+      "file": "3f3af1ecebbd1410ab41.mp3",
+      "bytes": 13418,
+      "sha256": "d1cf34088e3ce0e67e3d4bad3fb23bc7262f37aa737316c76d7ec9fba4449792",
+      "durationSeconds": 1.569478,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-session"
+        }
+      ]
+    },
+    {
+      "text": "provide",
+      "textSha256": "405abc33f5f3b06b881c7330aab9bf808b29801e9d5f6d0848336867d6e6edcb",
+      "file": "405abc33f5f3b06b881c.mp3",
+      "bytes": 11328,
+      "sha256": "13f4b4cdf9aa8b17d188d6911cb0f99931daf69b9ac14b68fd3b901c2d72e697",
+      "durationSeconds": 1.314376,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p4-v2-03"
+        }
+      ]
+    },
+    {
+      "text": "elevator",
+      "textSha256": "41762bcf88c5e7148181df374b2e9ecff9bc9e64d67e032ebeea1a6d5a26eda8",
+      "file": "41762bcf88c5e7148181.mp3",
+      "bytes": 12791,
+      "sha256": "b883b91be4c1237544b3dfb7d3d69f0a91b6547233e8d3d5e0519ce3dc8c181b",
+      "durationSeconds": 1.491111,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-elevator"
+        }
+      ]
+    },
+    {
       "text": "Maya emailed it to you this morning.",
       "textSha256": "429b30bbe4a7823c0b0255f62d945c24cdf1e10be7909bdc24a75f88e4ae010d",
       "file": "429b30bbe4a7823c0b02.mp3",
@@ -932,6 +2036,20 @@
           "id": "p2-02",
           "part": 2,
           "index": 6
+        }
+      ]
+    },
+    {
+      "text": "applicant",
+      "textSha256": "42aef2f386567bd5a6a3c753ad0b0debc280a3b6231c084618992fc4c91b7644",
+      "file": "42aef2f386567bd5a6a3.mp3",
+      "bytes": 12791,
+      "sha256": "39dca79c76188c8b5a84fbf2d520752a8ffe2c3246d9001e40fbe87a43cc2d03",
+      "durationSeconds": 1.504308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-applicant"
         }
       ]
     },
@@ -961,6 +2079,48 @@
       ]
     },
     {
+      "text": "document",
+      "textSha256": "43cc23fa52b87b4cc1d02b5b114154151d6adddb17c9fddc06b027fa99e24008",
+      "file": "43cc23fa52b87b4cc1d0.mp3",
+      "bytes": 13000,
+      "sha256": "8846956aa1b218e47ab09f1211b5d36322b839bad95213f78bee0cefa0d1e51b",
+      "durationSeconds": 1.53932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-document"
+        }
+      ]
+    },
+    {
+      "text": "referral",
+      "textSha256": "44574c4ba2ea74ad4bf1e184133cdbf4e7390a3690beff6a7364511a70ec208e",
+      "file": "44574c4ba2ea74ad4bf1.mp3",
+      "bytes": 12373,
+      "sha256": "4ac404d3db3e2040e761263059c3878d91152ecd93129d58ff664b358ad691e7",
+      "durationSeconds": 1.45932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-referral"
+        }
+      ]
+    },
+    {
+      "text": "customs",
+      "textSha256": "45e285133b891bc3bc022fdd5eda0726b15b609396e5b8e734078ab9f5ccdd6b",
+      "file": "45e285133b891bc3bc02.mp3",
+      "bytes": 15090,
+      "sha256": "ee4bf83f355b76e4b4906cd0effcf527d67a344ede5a63fd44d4fb5d2f3b54f2",
+      "durationSeconds": 1.789388,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-customs"
+        }
+      ]
+    },
+    {
       "text": "I usually bring my lunch from home.",
       "textSha256": "45eb103791b3872978b8b0c23127b4f3b2a8d3660cf0d87519bd1fcc7193bf03",
       "file": "45eb103791b3872978b8.mp3",
@@ -977,6 +2137,34 @@
       ]
     },
     {
+      "text": "cursor",
+      "textSha256": "46a4eebd20d881ecfc0ecb54f6d8346524fadb143726d256b1a045303fc67717",
+      "file": "46a4eebd20d881ecfc0e.mp3",
+      "bytes": 11955,
+      "sha256": "7ad4285d35156dad891bff7112fcd1ee2aff41742b5007eb4b0dbaab47e47e45",
+      "durationSeconds": 1.409342,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-cursor"
+        }
+      ]
+    },
+    {
+      "text": "guarantee",
+      "textSha256": "47032622e20b741b293bd1fe1430229d032868cd769075f0a62ac9e985242fd9",
+      "file": "47032622e20b741b293b.mp3",
+      "bytes": 11955,
+      "sha256": "d702506f13a5f8c336d85389de573515e4c069c4faedf7c41c488fc6c8752556",
+      "durationSeconds": 1.399274,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-guarantee"
+        }
+      ]
+    },
+    {
       "text": "Where can I recharge my travel card? A. At the machine beside the ticket office. B. It takes about fifteen minutes. C. The next train goes to Northbridge.",
       "textSha256": "4887916ca0f9876485329c45e676e82441538332911c5a3da78d311952d46723",
       "file": "4887916ca0f987648532.mp3",
@@ -988,6 +2176,34 @@
           "kind": "listening",
           "id": "p2-v2-01",
           "part": 2
+        }
+      ]
+    },
+    {
+      "text": "shuttle",
+      "textSha256": "48f42260a8448caa7a9ca1af2630a086da42c48fb009755da7e8bac819490836",
+      "file": "48f42260a8448caa7a9c.mp3",
+      "bytes": 11328,
+      "sha256": "d40d4b66598fdfa00bcecea72028bad6b98793ee7c513043ed8f4fa18812b9d6",
+      "durationSeconds": 1.329342,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-shuttle"
+        }
+      ]
+    },
+    {
+      "text": "participate",
+      "textSha256": "48f8106bb7de701e3ec345c2b970d8677b2ff0ed9b21debb333d63b5b8425953",
+      "file": "48f8106bb7de701e3ec3.mp3",
+      "bytes": 13836,
+      "sha256": "4c4e56cedf5c8dac0b953428d67cff25bcc2e7b8cee72a2323e70a53f190a626",
+      "durationSeconds": 1.639274,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-participate"
         }
       ]
     },
@@ -1036,6 +2252,20 @@
       ]
     },
     {
+      "text": "issue",
+      "textSha256": "4a502846d070e2088b7025abe80629830bf03d7ab5624d5e91f332bc9d049d3f",
+      "file": "4a502846d070e2088b70.mp3",
+      "bytes": 11537,
+      "sha256": "f1d310020890957d3e1206d7c90ec2c7c3bbb84ff020a17c99928286fa12429c",
+      "durationSeconds": 1.344399,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-v2-04"
+        }
+      ]
+    },
+    {
       "text": "Maya: Leo, our product demonstration is at two, but the projector in Room B isn't working.",
       "textSha256": "4ab054b5ff2184b4ff7f0041b1c97738c52c19def28eafc02e75c33f167c1768",
       "file": "4ab054b5ff2184b4ff7f.mp3",
@@ -1060,6 +2290,20 @@
           "id": "p3-03",
           "part": 3,
           "index": 0
+        }
+      ]
+    },
+    {
+      "text": "rooftop",
+      "textSha256": "4b12261f13388b3ba8a530d6ca35a40274ffc8b13496cd6090d41a939bb13765",
+      "file": "4b12261f13388b3ba8a5.mp3",
+      "bytes": 13000,
+      "sha256": "291414832ae8271ea8374aa3871ecf098849d1848ebf8bdf94e8ac0e340d2d77",
+      "durationSeconds": 1.534286,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-rooftop"
         }
       ]
     },
@@ -1107,6 +2351,174 @@
       ]
     },
     {
+      "text": "terminal",
+      "textSha256": "4e686af7bdcc5ae005a247624fd8c7283257c2514f6b3ad2ff5d4cb6d95196e6",
+      "file": "4e686af7bdcc5ae005a2.mp3",
+      "bytes": 11955,
+      "sha256": "381fd9cda1f1ee87681c15d6f8a2907d0aa8e11b1b74499d1823c21b56b21b2d",
+      "durationSeconds": 1.389342,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-terminal"
+        }
+      ]
+    },
+    {
+      "text": "laundromat",
+      "textSha256": "4e89130c061ef80a5583ce16a56f7cfc9eb150418639af9a4f00cc0c0d926353",
+      "file": "4e89130c061ef80a5583.mp3",
+      "bytes": 13209,
+      "sha256": "ab7457a69eedcb915bfcbb8e590ccb7a3003ffde12e55de6d145bc69fa6b31a7",
+      "durationSeconds": 1.564308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-laundromat"
+        }
+      ]
+    },
+    {
+      "text": "drain",
+      "textSha256": "510345478efc1edf0c921f97f5b314eb51b4a0347fd85f36845101d3beff1a1d",
+      "file": "510345478efc1edf0c92.mp3",
+      "bytes": 11746,
+      "sha256": "e0840f723015a3303ac089bca222cc7ce5399204d0a2e7c2d18305db0256f17f",
+      "durationSeconds": 1.360499,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-drain"
+        }
+      ]
+    },
+    {
+      "text": "vacancy",
+      "textSha256": "51f362abd94840346d18cc80f60429efe1705dec27b10060e4e60ee1ca7087e9",
+      "file": "51f362abd94840346d18.mp3",
+      "bytes": 13000,
+      "sha256": "8a019ef1cf174bc7874b9216591e3597eedd85a38680ccf200e33b94055224a9",
+      "durationSeconds": 1.524308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-vacancy"
+        }
+      ]
+    },
+    {
+      "text": "screening",
+      "textSha256": "5215377cf1359506f68b18fcfabe00cf06b6beed68fb75d577a48ce8c6551000",
+      "file": "5215377cf1359506f68b.mp3",
+      "bytes": 13209,
+      "sha256": "a44c4c4aaa861ee20cfe78d649e2b4182eebedbb9cb1c127a76000468dd210b6",
+      "durationSeconds": 1.55932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-screening"
+        }
+      ]
+    },
+    {
+      "text": "recycling",
+      "textSha256": "5217577262ae60bf7363139e097fe014c72a3d9ad35a3d4ef70cae5570d3af94",
+      "file": "5217577262ae60bf7363.mp3",
+      "bytes": 13836,
+      "sha256": "c75c59409698015ebf21fefc2c8764f389a30f48ff26e868888c36774c5dac7e",
+      "durationSeconds": 1.63932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-recycling"
+        }
+      ]
+    },
+    {
+      "text": "invoice",
+      "textSha256": "52d6e3de4fa0dcc29946695f93940c3e7f26f30e1e39f4b1a49ad98839112786",
+      "file": "52d6e3de4fa0dcc29946.mp3",
+      "bytes": 13627,
+      "sha256": "72687df543633338984fcc2a6f6d4c6e9870af01d0067b76e6fe2d24d7c79bfa",
+      "durationSeconds": 1.609433,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-invoice"
+        }
+      ]
+    },
+    {
+      "text": "lift",
+      "textSha256": "5364b92e50b1944f33d10f662b1c90a18a004ed8da1434376c41cde8f920aede",
+      "file": "5364b92e50b1944f33d1.mp3",
+      "bytes": 12373,
+      "sha256": "3e5f827333d23fe8f05607af93f9c13b2657793b9498d4155967cd9b44f49931",
+      "durationSeconds": 1.43941,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p3-v2-06"
+        }
+      ]
+    },
+    {
+      "text": "experience",
+      "textSha256": "53e5e7c5a884893739c4cf64528572aeb846f8e4ca1986188287475c65900fab",
+      "file": "53e5e7c5a884893739c4.mp3",
+      "bytes": 14463,
+      "sha256": "cf0b1da5478f1eaff3a11fdcce14281e6c7ccdcc0f7f13cba7fff69a69568694",
+      "durationSeconds": 1.71932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-experience"
+        }
+      ]
+    },
+    {
+      "text": "backup",
+      "textSha256": "54d00d867758cef816bc4685f58e327b949712b07ebd17c3485f3ffc9e9f5133",
+      "file": "54d00d867758cef816bc.mp3",
+      "bytes": 12164,
+      "sha256": "13aac9a3c8cf8f413392a70d9e36a6854b59f0aa632cdadfbed3be8acbb679a7",
+      "durationSeconds": 1.424354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-backup"
+        }
+      ]
+    },
+    {
+      "text": "parcel",
+      "textSha256": "550a49ead28c8f626c7026d5fad7b537003546386755f06a410a55a76055be87",
+      "file": "550a49ead28c8f626c70.mp3",
+      "bytes": 12373,
+      "sha256": "3019c4f82233a7ea63f753acbfdb68580c65f6d8f2ee2974c1f31e778724d135",
+      "durationSeconds": 1.454376,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-parcel"
+        }
+      ]
+    },
+    {
+      "text": "balance",
+      "textSha256": "5751e048eb6fee3eb9bb4ea70f107f19c35863766bee5100044e52ab60d9edcf",
+      "file": "5751e048eb6fee3eb9bb.mp3",
+      "bytes": 13209,
+      "sha256": "bdae9bb5becc20726f5463544148c14e0a50e43a83bf50be785c510249008a8c",
+      "durationSeconds": 1.554422,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-balance"
+        }
+      ]
+    },
+    {
       "text": "This is a message for everyone registered for tomorrow's customer-service training at Greenway Learning Center.",
       "textSha256": "57dd7e190405d5ad30475ba2e1fefb490b43d157833b3dff79667b94a22cd653",
       "file": "57dd7e190405d5ad3047.mp3",
@@ -1131,6 +2543,48 @@
           "id": "p4-v2-03",
           "part": 4,
           "index": 1
+        }
+      ]
+    },
+    {
+      "text": "turbulence",
+      "textSha256": "5800768b32a54c54c82b8db4629339e8f830efdc3591fab146297ee1aab2bf8a",
+      "file": "5800768b32a54c54c82b.mp3",
+      "bytes": 13836,
+      "sha256": "dad0d614a57b8263448208332f27c16cc45606d46a9e3fffcbc341236fe903bd",
+      "durationSeconds": 1.644354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-turbulence"
+        }
+      ]
+    },
+    {
+      "text": "freight",
+      "textSha256": "58467d4070997eb48ecbbd7a08e9e2ef8cdaa259273d0dfb03cde7d810c2eefe",
+      "file": "58467d4070997eb48ecb.mp3",
+      "bytes": 11955,
+      "sha256": "dcafca9e409517a1ef0bc46227b503f0e26263c1a9b04adc407614e7cc6dd6af",
+      "durationSeconds": 1.39941,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-freight"
+        }
+      ]
+    },
+    {
+      "text": "handrail",
+      "textSha256": "589e723490b7f155175bd381761f508be1ca2b0fe77895cfa7c61b2b2acc59c3",
+      "file": "589e723490b7f155175b.mp3",
+      "bytes": 13000,
+      "sha256": "7e69906fd1c3e6c5ebe1b37b6a93bd3a703e6aab63b4465fef2df52483b86e6a",
+      "durationSeconds": 1.534331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-handrail"
         }
       ]
     },
@@ -1163,6 +2617,104 @@
       ]
     },
     {
+      "text": "feedback",
+      "textSha256": "59bda3f8ee98128d543572e0d29f27ad5343f0c88c36e7bf4672c4c3ab6245b4",
+      "file": "59bda3f8ee98128d5435.mp3",
+      "bytes": 12791,
+      "sha256": "4d03e5fa14eeda6ecafe03638eb6835c0c7177ffdd789666c4d19c04ba25f9a6",
+      "durationSeconds": 1.499365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-feedback"
+        }
+      ]
+    },
+    {
+      "text": "shipment",
+      "textSha256": "59f9076bc5008c4d07960fa34352b2281e2f25751ddccd85e63c0a70db99cc1f",
+      "file": "59f9076bc5008c4d0796.mp3",
+      "bytes": 12791,
+      "sha256": "c0608a27fca72413a17cee30d51c0e624b138d6a97475613b70e067db1f4ba04",
+      "durationSeconds": 1.504308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-shipment"
+        }
+      ]
+    },
+    {
+      "text": "position",
+      "textSha256": "5a452459503be70d2ed2fca46dd91e05e820a957f175686a77d03fff80f664fe",
+      "file": "5a452459503be70d2ed2.mp3",
+      "bytes": 13209,
+      "sha256": "51dcd59c82202317984a73d7afb4e47d6e955c087e49ff2d64635126587bdd66",
+      "durationSeconds": 1.564308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-position"
+        }
+      ]
+    },
+    {
+      "text": "respond to",
+      "textSha256": "5a89ce195c063f2f5caeb9de163bf1e1a1657c949be59b8d7efd15d75daf518a",
+      "file": "5a89ce195c063f2f5cae.mp3",
+      "bytes": 13627,
+      "sha256": "5f5f6049162fe03ee2124501035b4d34671455709b3d8641862c00de8ef9c63b",
+      "durationSeconds": 1.614286,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p5-06"
+        }
+      ]
+    },
+    {
+      "text": "tracking",
+      "textSha256": "5a95db2aa8e5d0883be7b8968983b8ea67d91f1e7ae5463b97258986a93de1be",
+      "file": "5a95db2aa8e5d0883be7.mp3",
+      "bytes": 13000,
+      "sha256": "1b76ce08bc244aa3ff277e1bddfd95f8346df970ed25c1b8c9d643c0aa08bad1",
+      "durationSeconds": 1.529342,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-tracking"
+        }
+      ]
+    },
+    {
+      "text": "ventilation",
+      "textSha256": "5b4d9dbdb0a2141d57f8b849db63933810ed929dd777e7b806a795e9e475a72e",
+      "file": "5b4d9dbdb0a2141d57f8.mp3",
+      "bytes": 15090,
+      "sha256": "365e0d08ac66997411afd711324275920d762e2bd7724080e52c03f328b4d66f",
+      "durationSeconds": 1.784218,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-ventilation"
+        }
+      ]
+    },
+    {
+      "text": "beside",
+      "textSha256": "5bcaffed4d27f7b2dd939334aa6032a0770b552e4059c50e76b5c8e64219af93",
+      "file": "5bcaffed4d27f7b2dd93.mp3",
+      "bytes": 11537,
+      "sha256": "dc3d1cca79b997eb8b23e21c10905e1df4bc7443fc1af366937ef325784f933f",
+      "durationSeconds": 1.349388,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p1-01"
+        }
+      ]
+    },
+    {
       "text": "About twenty employees.",
       "textSha256": "5c0bc1a39918b9f2ec2cb6617b9be83f49fb51a8246839613b9c8ba3f89fd7e5",
       "file": "5c0bc1a39918b9f2ec2c.mp3",
@@ -1175,6 +2727,20 @@
           "id": "p2-01",
           "part": 2,
           "index": 6
+        }
+      ]
+    },
+    {
+      "text": "complaint",
+      "textSha256": "5d08b02d678fc068788ca5ade565148e494083821ac8d1bce4c3fba092bc634e",
+      "file": "5d08b02d678fc068788c.mp3",
+      "bytes": 13627,
+      "sha256": "5e4addda231f01c1673b40b01c5f7bcaeacbda63eb8fd9412197dd387ed0d177",
+      "durationSeconds": 1.59932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-complaint"
         }
       ]
     },
@@ -1195,6 +2761,42 @@
       ]
     },
     {
+      "text": "password",
+      "textSha256": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
+      "file": "5e884898da28047151d0.mp3",
+      "bytes": 13627,
+      "sha256": "1f21a43349845865449d6b112be698608b81436310def91a4c308286b57730a9",
+      "durationSeconds": 1.595601,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-password"
+        }
+      ]
+    },
+    {
+      "text": "room change",
+      "textSha256": "5ee26db6e8ead6d24bcff88804ed98eee4404350e1c429e98904fa21be42b23e",
+      "file": "5ee26db6e8ead6d24bcf.mp3",
+      "bytes": 14672,
+      "sha256": "c3366b2cd2fba377e4b661db10f80eb33f790f02edf4cd36f71b1fb2520dc4a4",
+      "durationSeconds": 1.73932,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p3-01"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p3-02"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p3-03"
+        }
+      ]
+    },
+    {
       "text": "Why was the delivery delayed? A. The loading dock is downstairs. B. There was a problem with the truck. C. Two boxes of office supplies.",
       "textSha256": "5ee39de71ddb9150f0120938baa559d8ceeec37c20ce6b4e90b17064c9457d66",
       "file": "5ee39de71ddb9150f012.mp3",
@@ -1206,6 +2808,48 @@
           "kind": "listening",
           "id": "p2-04",
           "part": 2
+        }
+      ]
+    },
+    {
+      "text": "leak",
+      "textSha256": "5f537b80f1f2b7d1cc179dba8d36aa88463eda6ac11cb8e60a4583e1bd16aa3c",
+      "file": "5f537b80f1f2b7d1cc17.mp3",
+      "bytes": 10910,
+      "sha256": "de72fb40aa0984b8d7781f120a52c88109c4c5bce6a0bc71dd1947f90fc76801",
+      "durationSeconds": 1.269388,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-leak"
+        }
+      ]
+    },
+    {
+      "text": "schedule",
+      "textSha256": "5f72005e81c4ecbd5aa3588e80e3daf0df068ce0cf5638944508a0165fea609a",
+      "file": "5f72005e81c4ecbd5aa3.mp3",
+      "bytes": 13418,
+      "sha256": "02cdc8f1f56ea8a57a98409237e380694cb7653de58e939f92f83172e0613d07",
+      "durationSeconds": 1.569478,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-schedule"
+        }
+      ]
+    },
+    {
+      "text": "attachment",
+      "textSha256": "602a5e69c3021bdbd3d25156a02d2cbb467605b8203248eea6af3fb42168d663",
+      "file": "602a5e69c3021bdbd3d2.mp3",
+      "bytes": 13836,
+      "sha256": "5802a6340c71c9cbe5948e2a2237d9d025bd826d10d8817a091e446170389214",
+      "durationSeconds": 1.63424,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-attachment"
         }
       ]
     },
@@ -1222,6 +2866,20 @@
           "id": "p2-03",
           "part": 2,
           "index": 0
+        }
+      ]
+    },
+    {
+      "text": "dessert",
+      "textSha256": "6084392347f92be9ce898e68fb9eeb0c69d2c797690abea8fc59ad3c94b66427",
+      "file": "6084392347f92be9ce89.mp3",
+      "bytes": 11328,
+      "sha256": "5361503011ce833c21d8bca6fddbd19102492610508dac50bec979a2f81aeac3",
+      "durationSeconds": 1.324354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-dessert"
         }
       ]
     },
@@ -1250,6 +2908,48 @@
           "id": "p3-v2-06",
           "part": 3,
           "index": 14
+        }
+      ]
+    },
+    {
+      "text": "treatment",
+      "textSha256": "60c411b2baec2ab58d4494dd7a1efcec94ed33e8737a24a920ab58a59284208d",
+      "file": "60c411b2baec2ab58d44.mp3",
+      "bytes": 13209,
+      "sha256": "6a59bc7bc33889f6209653c6e666b05f3bab3d782cb6942d223dac2426fad639",
+      "durationSeconds": 1.544308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-treatment"
+        }
+      ]
+    },
+    {
+      "text": "entree",
+      "textSha256": "612ed6939fb9a7f0bea122326e623bf8484fffb3e8b4b92061d10ccb16cfa317",
+      "file": "612ed6939fb9a7f0bea1.mp3",
+      "bytes": 11746,
+      "sha256": "ecc271dcce91e4b673667da63a44ad133281e3098a925e9f130570bbafae9aa2",
+      "durationSeconds": 1.364399,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-entree"
+        }
+      ]
+    },
+    {
+      "text": "vaccination",
+      "textSha256": "61b43ea1f6043e3ce51f4264320ef8907ad059425fc3bcf7cc9f4c20fac3b025",
+      "file": "61b43ea1f6043e3ce51f.mp3",
+      "bytes": 15508,
+      "sha256": "c120df9589577cf3d39a48b6e7b3511d2baab21d1f01c5c6bbb9ba9ba7c7fe7f",
+      "durationSeconds": 1.854195,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-vaccination"
         }
       ]
     },
@@ -1341,6 +3041,76 @@
       ]
     },
     {
+      "text": "salary",
+      "textSha256": "6384e43c02b1fbdfb9b4a7edc68afd75ea50031471f1bd8d843ccee19f4be1bf",
+      "file": "6384e43c02b1fbdfb9b4.mp3",
+      "bytes": 12164,
+      "sha256": "4dea5445581552e7a8ce640160defbc47f437f0ee607859afa37ef0fb69c84fd",
+      "durationSeconds": 1.434331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-salary"
+        }
+      ]
+    },
+    {
+      "text": "pickup point",
+      "textSha256": "63a951636fa277ba1d051106ce745351b32a88e54e7fc1d7af5b634f31e09395",
+      "file": "63a951636fa277ba1d05.mp3",
+      "bytes": 14672,
+      "sha256": "880f467c2f93a6e0c7fb1f62a4b0a861dc1472e27716feb73d7251fc332895fc",
+      "durationSeconds": 1.744308,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p3-v2-04"
+        }
+      ]
+    },
+    {
+      "text": "negotiate",
+      "textSha256": "67c9a9ad709a59ba7747212ef10ba54bfed4bfd06636039ed90085dd99cd45c0",
+      "file": "67c9a9ad709a59ba7747.mp3",
+      "bytes": 13418,
+      "sha256": "7779feb89a2968ffa0d71bde2be18791cc6bb02fe3bf3ddde8ffca81c22b1f3a",
+      "durationSeconds": 1.574331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-negotiate"
+        }
+      ]
+    },
+    {
+      "text": "cutlery",
+      "textSha256": "68d1453aacf2cff4b82d417c59064401bb681b999f6bd4ce22e92856ae28ebfa",
+      "file": "68d1453aacf2cff4b82d.mp3",
+      "bytes": 11955,
+      "sha256": "4dd3a64da9dc9dda16be2601ba978ca25dfd6b9b73c01c60c95068b944d7ba3a",
+      "durationSeconds": 1.404308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-cutlery"
+        }
+      ]
+    },
+    {
+      "text": "demonstration",
+      "textSha256": "69f02b772af161fdf75d857d4b21021cc02939f84ce92981a050e31ea9093429",
+      "file": "69f02b772af161fdf75d.mp3",
+      "bytes": 15508,
+      "sha256": "6ec041da2e4d8df2b2fae5cf58d7338a3d9f157956efbc767ab9f9703a792537",
+      "durationSeconds": 1.849206,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-demonstration"
+        }
+      ]
+    },
+    {
       "text": "Choose the best description.",
       "textSha256": "6a421a7c8b726cbfbf343f157ef43e9d58921449ff8882db8edceffccb53e0cd",
       "file": "6a421a7c8b726cbfbf34.mp3",
@@ -1391,6 +3161,20 @@
       ]
     },
     {
+      "text": "previous",
+      "textSha256": "6da0633528deaa0144e7b058315f0b753ec0b945163a72bf96a0d18180f9de0d",
+      "file": "6da0633528deaa0144e7.mp3",
+      "bytes": 12582,
+      "sha256": "d81f619ae9d2aad232f57af0ebee3af2fc43152d4e8f3935fb128322c732b1fb",
+      "durationSeconds": 1.484354,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p5-v2-07"
+        }
+      ]
+    },
+    {
       "text": "How many people are coming?",
       "textSha256": "6da6135d10048a1c198cf4cf08d17df282ac534f5cbce838006e3396a5ec8e47",
       "file": "6da6135d10048a1c198c.mp3",
@@ -1423,6 +3207,56 @@
       ]
     },
     {
+      "text": "reserve",
+      "textSha256": "6df24c372c044a0fd8d05774ee70449d7a035d99b3bc3b570a0bf5b22556a904",
+      "file": "6df24c372c044a0fd8d0.mp3",
+      "bytes": 12373,
+      "sha256": "503026fecb6788ab3bc7d9664aafbe8a71719e701659d3b8259eee89269b5077",
+      "durationSeconds": 1.43932,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p2-03"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p2-v2-07"
+        }
+      ]
+    },
+    {
+      "text": "delay",
+      "textSha256": "6e16db102267e6e7de7f08f9c28836861561b6ac5a9aec0d26e263c37267f54e",
+      "file": "6e16db102267e6e7de7f.mp3",
+      "bytes": 10493,
+      "sha256": "1dab856e422738e377acecbf0640eeceef7fdcd9c5236394da401d19f8e47693",
+      "durationSeconds": 1.224354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-delay"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p2-04"
+        }
+      ]
+    },
+    {
+      "text": "in good condition",
+      "textSha256": "6eb78546335e3f0f6df2822a77a11136e6269a0f4d4c950da3b5358ef000aae0",
+      "file": "6eb78546335e3f0f6df2.mp3",
+      "bytes": 15508,
+      "sha256": "562713776d582a5354bdfcf70e5b651707010e856a69fe30ab92490fecea1b8d",
+      "durationSeconds": 1.849161,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p5-05"
+        }
+      ]
+    },
+    {
       "text": "Some people are waiting in a line.",
       "textSha256": "6edf41a2532f5a7bcc2b278fdf8322506056a930cff59e298850639b09f9f363",
       "file": "6edf41a2532f5a7bcc2b.mp3",
@@ -1439,6 +3273,34 @@
       ]
     },
     {
+      "text": "receipt",
+      "textSha256": "6f32860910ca0fb2a20c7fda143666b09dbf8db5238195c90a586fb542ff0cad",
+      "file": "6f32860910ca0fb2a20c.mp3",
+      "bytes": 11955,
+      "sha256": "0a2fccfe3913cf2207677e7dc39c6bb34dfa41e09ae152ddcd892f160bdf474f",
+      "durationSeconds": 1.404354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-receipt"
+        }
+      ]
+    },
+    {
+      "text": "damage",
+      "textSha256": "6f5a5c61ccdbd8ff2a620d28c86c721feda2dcc809d23b29e1983af5cc50bd85",
+      "file": "6f5a5c61ccdbd8ff2a62.mp3",
+      "bytes": 12582,
+      "sha256": "247e31efe30f7e6e21c59914dd6c86816f7eecb30247f75a7e12a6103e45a452",
+      "durationSeconds": 1.474422,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-damage"
+        }
+      ]
+    },
+    {
       "text": "Will you take the train or drive to the conference? A. The conference starts on Monday. B. Please take a seat over there. C. I haven't decided yet.",
       "textSha256": "6f5cb322718ec8cd2b053f62dcd9a1f2d9c2315e438d67d58fdbeaefb9e4f9ad",
       "file": "6f5cb322718ec8cd2b05.mp3",
@@ -1450,6 +3312,34 @@
           "kind": "listening",
           "id": "p2-05",
           "part": 2
+        }
+      ]
+    },
+    {
+      "text": "overdue",
+      "textSha256": "7038dedb22f1eafb467ac263ceaf9dc55327f339c1dcae858b0bd9675aa71fd5",
+      "file": "7038dedb22f1eafb467a.mp3",
+      "bytes": 11537,
+      "sha256": "a2cc240b5bf24ac99992dd38b5c41bef58f4dd89c6bed59c97bf11e07273c34f",
+      "durationSeconds": 1.344308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-overdue"
+        }
+      ]
+    },
+    {
+      "text": "purchase",
+      "textSha256": "7048dc8aa7663e713097535171b4ed72ab015705a885de9636e66d4b1fa18804",
+      "file": "7048dc8aa7663e713097.mp3",
+      "bytes": 13418,
+      "sha256": "823dd46b129d04e5ea64f4d2cd1ff60a8adbe900ecf9ae6ae3bf588e9e7f65c2",
+      "durationSeconds": 1.584399,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-purchase"
         }
       ]
     },
@@ -1478,6 +3368,48 @@
           "id": "p3-v2-06",
           "part": 3,
           "index": 7
+        }
+      ]
+    },
+    {
+      "text": "briefing",
+      "textSha256": "714e51bab9a4176cef278e85dccf1de3acfa2ff12c24d9dae9fbad5926f35205",
+      "file": "714e51bab9a4176cef27.mp3",
+      "bytes": 13000,
+      "sha256": "7661185d5ac839bdfa1a57c2a1189c79d36b1948b50c40ffa660b3079bd9f9d8",
+      "durationSeconds": 1.53932,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p2-v2-06"
+        }
+      ]
+    },
+    {
+      "text": "lighting",
+      "textSha256": "72059e4ae63a5e1fd696c8817d6ec88d89f9c9bb05ba8cc90a99a35654516986",
+      "file": "72059e4ae63a5e1fd696.mp3",
+      "bytes": 12373,
+      "sha256": "9072ef24debb0966858ba48bc300e159391862bc55cce226098e3c2cfc2b0548",
+      "durationSeconds": 1.459365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-lighting"
+        }
+      ]
+    },
+    {
+      "text": "consultation",
+      "textSha256": "725949a1f8218e8d1997d92ac8125184b2c8ede6bdb436bfb955b07edd64476e",
+      "file": "725949a1f8218e8d1997.mp3",
+      "bytes": 15926,
+      "sha256": "2bf55078c85c2384275f49520229c1140abdfc8fe4aba246236098865f065186",
+      "durationSeconds": 1.894286,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-consultation"
         }
       ]
     },
@@ -1526,6 +3458,48 @@
       ]
     },
     {
+      "text": "router",
+      "textSha256": "74c95604043427f0bee1d0e16bfa53afd537f736ad0073c4cc4e1ccb3a82b5dc",
+      "file": "74c95604043427f0bee1.mp3",
+      "bytes": 11537,
+      "sha256": "d7cd1b1d2777753dc3cb81854c807c98600a28f35a82b27524e511d88ec04e5e",
+      "durationSeconds": 1.354376,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-router"
+        }
+      ]
+    },
+    {
+      "text": "approve",
+      "textSha256": "74e21680eac7385ca408cb01878465fd693b37e58eb0c0c32663a2d8f15d8136",
+      "file": "74e21680eac7385ca408.mp3",
+      "bytes": 13000,
+      "sha256": "ee59713c50e6934d194ab88b72cafa7b7514ca4ee75af036cb24a1ec049e5a93",
+      "durationSeconds": 1.51941,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-approve"
+        }
+      ]
+    },
+    {
+      "text": "photocopy",
+      "textSha256": "74f4634145f0d4ed3d82f996083e4935c0a58797a59b095d14ec82ae0b682fb4",
+      "file": "74f4634145f0d4ed3d82.mp3",
+      "bytes": 13627,
+      "sha256": "fdbbfbb5c2cdd0926c49f0dcbc44ee7cdaf9c42f7fa3f2a8f931dbe5771582b5",
+      "durationSeconds": 1.599229,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-photocopy"
+        }
+      ]
+    },
+    {
       "text": "When does the training session begin? A. In the meeting room. B. At half past nine. C. About twenty employees.",
       "textSha256": "7520772502b5911f1de35ab51400332ac22966ba366b83e3b865ea8f039aab40",
       "file": "7520772502b5911f1de3.mp3",
@@ -1537,6 +3511,62 @@
           "kind": "listening",
           "id": "p2-01",
           "part": 2
+        }
+      ]
+    },
+    {
+      "text": "submit",
+      "textSha256": "75490bd7b93e6fa7d18cfdea90cc6bcb983d5f3ea326249d2709ca6c94bc07ba",
+      "file": "75490bd7b93e6fa7d18c.mp3",
+      "bytes": 12791,
+      "sha256": "d9412741f7442061a4ad5496236ff002c32b270bb942898df91fe3150dd92442",
+      "durationSeconds": 1.491111,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p5-v2-02"
+        }
+      ]
+    },
+    {
+      "text": "handout",
+      "textSha256": "757b9ab75f73e484c354b58f41b5706a4f3a2a8e9c73df63cd0c80667f112bb9",
+      "file": "757b9ab75f73e484c354.mp3",
+      "bytes": 12164,
+      "sha256": "4d4b33cce9e1799489e01e24abee83ecabcd70237a348055d96789c698c41c3b",
+      "durationSeconds": 1.434331,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p3-v2-01"
+        }
+      ]
+    },
+    {
+      "text": "prescription",
+      "textSha256": "758768c3ca261d8585e6b015f3347600da49407c3cf17f0a158c4e3487f772f4",
+      "file": "758768c3ca261d8585e6.mp3",
+      "bytes": 14672,
+      "sha256": "f5439dda6a0aec054ed227c52cd63596fc4928f0a1923362480709a144f4c506",
+      "durationSeconds": 1.744218,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-prescription"
+        }
+      ]
+    },
+    {
+      "text": "tailor",
+      "textSha256": "758cb95fdc40c073054dc6125f16b3cce19f74553e64d6d8861b2cb15753316c",
+      "file": "758cb95fdc40c073054d.mp3",
+      "bytes": 11537,
+      "sha256": "4f8eebe60cda80f07f1b83e3a9068a82cb9872fd6858dbc355fb04ef191f3a4a",
+      "durationSeconds": 1.344354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-tailor"
         }
       ]
     },
@@ -1571,6 +3601,90 @@
       ]
     },
     {
+      "text": "wireless",
+      "textSha256": "780d06d3a2af1b22aa2f657aa1385e3813a9d2ecc16edffb23f6e30b05dc4b45",
+      "file": "780d06d3a2af1b22aa2f.mp3",
+      "bytes": 13209,
+      "sha256": "d82f7e8ea73cfe9729c87520ecf50311d903c4920cd4444b2a4ac2b76fae530a",
+      "durationSeconds": 1.55424,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-wireless"
+        }
+      ]
+    },
+    {
+      "text": "nurse",
+      "textSha256": "781e5116a1e14a34eada50159d589e690c81ec4c5063115ea1f10b99441d5b94",
+      "file": "781e5116a1e14a34eada.mp3",
+      "bytes": 11328,
+      "sha256": "fcbfa6321708b06fb38f81f16e6c2d52802f604e065aa178703ca761b642bf37",
+      "durationSeconds": 1.324399,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-nurse"
+        }
+      ]
+    },
+    {
+      "text": "garbage",
+      "textSha256": "795b6904e54f82411df4b0e27a373a55eea3f9d66dac5a9bce1dd92f7b401da5",
+      "file": "795b6904e54f82411df4.mp3",
+      "bytes": 12791,
+      "sha256": "cd553ea6c01cf522fcc1addb2dcb34348ea2c03dce88a32e7fa2a2158adadb45",
+      "durationSeconds": 1.509388,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-garbage"
+        }
+      ]
+    },
+    {
+      "text": "estimate",
+      "textSha256": "79e1d925e79c904a9cf8ef433d2eb255d5e3f1a881e45d7e3ea1121a86da1749",
+      "file": "79e1d925e79c904a9cf8.mp3",
+      "bytes": 12373,
+      "sha256": "9db04634332032ba76e3e7bf8c898aecd4dcafb677cc37f25f6fc7a5a9f7518c",
+      "durationSeconds": 1.444308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-estimate"
+        }
+      ]
+    },
+    {
+      "text": "limited",
+      "textSha256": "7b508dace774f8adc1b121c1812b740904be6dfd37e3b5e3579bc81fbf6f5553",
+      "file": "7b508dace774f8adc1b1.mp3",
+      "bytes": 11746,
+      "sha256": "ca5026f914fdd9ba6172ec128cbd36ad9cb3ad24b46530e6bed767f178050174",
+      "durationSeconds": 1.37932,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p4-v2-05"
+        }
+      ]
+    },
+    {
+      "text": "complimentary",
+      "textSha256": "7cda1ed37c4bbe344f3476df5746fbf1241058196a7e4c88adf8ac6df93e57a1",
+      "file": "7cda1ed37c4bbe344f34.mp3",
+      "bytes": 14672,
+      "sha256": "afef6b0583ad301783e8d213dbe9e06d446a492770e00877dcdf65b35a89edb7",
+      "durationSeconds": 1.744263,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-complimentary"
+        }
+      ]
+    },
+    {
       "text": "Where can I find the updated price list? A. The prices are quite reasonable. B. Yes, I bought one yesterday. C. Maya emailed it to you this morning.",
       "textSha256": "7d6e121ead76155b0998bc340a9f2d7854adb499ca01734a1c9169dc8e5b9ce5",
       "file": "7d6e121ead76155b0998.mp3",
@@ -1582,6 +3696,20 @@
           "kind": "listening",
           "id": "p2-02",
           "part": 2
+        }
+      ]
+    },
+    {
+      "text": "colleague",
+      "textSha256": "7fdbbefdb4a4607cd42ae8e5fe81b951aa3cd19273a35ef207e36d7cc8339e8d",
+      "file": "7fdbbefdb4a4607cd42a.mp3",
+      "bytes": 12164,
+      "sha256": "426aa257e0861894672ca0bd74d12bbd22b788bb4c1045d8d01507ce82abdcbc",
+      "durationSeconds": 1.424399,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-colleague"
         }
       ]
     },
@@ -1702,6 +3830,62 @@
       ]
     },
     {
+      "text": "resident",
+      "textSha256": "84816ff383c826e9c11e26fdbd8d66e4edd7cf1ec1a4b23f8d10d84aa56e0d8f",
+      "file": "84816ff383c826e9c11e.mp3",
+      "bytes": 12373,
+      "sha256": "869a6018e1ee1a023f6b7491dd8c1dbb7e0b8cb073414abad06033254a9e5479",
+      "durationSeconds": 1.444308,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p4-v2-04"
+        }
+      ]
+    },
+    {
+      "text": "inquiry",
+      "textSha256": "84d7466427d6e8c1747edbc81df1daccedc26df156345027d638d966ed9e0329",
+      "file": "84d7466427d6e8c1747e.mp3",
+      "bytes": 12791,
+      "sha256": "85439e8cc6c21e6e8162c8520b6ede27c4747a2330a8660721ae4e23238582db",
+      "durationSeconds": 1.49932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-inquiry"
+        }
+      ]
+    },
+    {
+      "text": "maintenance",
+      "textSha256": "8589c63b0943a62bfda9b35dccc71a30f5677386f6f7c644c3307465ce2cfa55",
+      "file": "8589c63b0943a62bfda9.mp3",
+      "bytes": 13836,
+      "sha256": "e8006ac3571b8c44ab9a9b76b85cdde1fa3f8d1da7755a72e17f4b7ca731a210",
+      "durationSeconds": 1.629297,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-maintenance"
+        }
+      ]
+    },
+    {
+      "text": "plumbing",
+      "textSha256": "864b24fdae91ef938ba12b344c1652425531133b3194c9114475269e17257c47",
+      "file": "864b24fdae91ef938ba1.mp3",
+      "bytes": 12582,
+      "sha256": "76151154397e475cd7710b26e221b0c26f4fc4d236f8dee10ab13749e4194f00",
+      "durationSeconds": 1.484399,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-plumbing"
+        }
+      ]
+    },
+    {
       "text": "Where can I find the updated price list?",
       "textSha256": "876dc067966b4364de98294d366e8593dcb55467f47ebcb439a37dd5119de0af",
       "file": "876dc067966b4364de98.mp3",
@@ -1714,6 +3898,62 @@
           "id": "p2-02",
           "part": 2,
           "index": 0
+        }
+      ]
+    },
+    {
+      "text": "boarding",
+      "textSha256": "87713743bce6bb3c51ffad8be72e728c323bf158234dd06584de2fdca8b0aed9",
+      "file": "87713743bce6bb3c51ff.mp3",
+      "bytes": 12164,
+      "sha256": "23b4b9535d9ba8cf0d109da3a0b7bf12ba930177c91526ede0b555e8cfe11d95",
+      "durationSeconds": 1.419365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-boarding"
+        }
+      ]
+    },
+    {
+      "text": "register",
+      "textSha256": "87780fa5de684e87cb92b279f0bc07b14f572851e73b8943a097c1770a5f38e6",
+      "file": "87780fa5de684e87cb92.mp3",
+      "bytes": 12791,
+      "sha256": "9775192ba31feaffe7ce822c88d2c34329a40a097dcbe63912647de09a9007a5",
+      "durationSeconds": 1.514331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-register"
+        }
+      ]
+    },
+    {
+      "text": "facility",
+      "textSha256": "87c597285cce41492615ad2e2daa932eb38daab5733ea380a38d27b36824da8b",
+      "file": "87c597285cce41492615.mp3",
+      "bytes": 12791,
+      "sha256": "36daffb93e6100b59564c5dea08a59680bdc11cfae1dc779327adeb69d22dcc6",
+      "durationSeconds": 1.491111,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-facility"
+        }
+      ]
+    },
+    {
+      "text": "childcare",
+      "textSha256": "889508afe2d56326bdabe19ea10cca551e090900eba011c0240c7d2fffbe407f",
+      "file": "889508afe2d56326bdab.mp3",
+      "bytes": 13627,
+      "sha256": "6a23932769d97000a58067db29c19f1eb7186e59df0ecba31bf617373180dd48",
+      "durationSeconds": 1.61932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-childcare"
         }
       ]
     },
@@ -1742,6 +3982,62 @@
           "id": "p3-v2-06",
           "part": 3,
           "index": 4
+        }
+      ]
+    },
+    {
+      "text": "accessible",
+      "textSha256": "89c683ba0c58f5476cbf99708eb50702e2e109a3f88f9b3e2c2a2009846f9035",
+      "file": "89c683ba0c58f5476cbf.mp3",
+      "bytes": 13209,
+      "sha256": "2838ad4dcc2c0a68dd52ea15d8ce4e4b1e55689474d082d8d9d8344c35516f6e",
+      "durationSeconds": 1.564308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-accessible"
+        }
+      ]
+    },
+    {
+      "text": "route",
+      "textSha256": "8a84e406c08ac9594f47222406598f7598e15c55f8044b04813e28c9dee70976",
+      "file": "8a84e406c08ac9594f47.mp3",
+      "bytes": 10910,
+      "sha256": "ed4af5f570e44acb110c52bf81b95a71598b225efd04cc70415ded0998b9fb8e",
+      "durationSeconds": 1.25941,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-route"
+        }
+      ]
+    },
+    {
+      "text": "checkup",
+      "textSha256": "8c3878832bc188aee2a2c0e4d5ed9cb563b5c40e4617f32352c3770337b28e6e",
+      "file": "8c3878832bc188aee2a2.mp3",
+      "bytes": 12373,
+      "sha256": "fb733754fbecdb8af86bf4e092f3fe314c98c964071038f960394f139e4fbf51",
+      "durationSeconds": 1.439365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-checkup"
+        }
+      ]
+    },
+    {
+      "text": "recovery",
+      "textSha256": "8c585378513f5f7a2e1456ee54042605fdb890392becefadd2ab180fd02fb341",
+      "file": "8c585378513f5f7a2e14.mp3",
+      "bytes": 12791,
+      "sha256": "206c3356644a603d77e363760bbe7c6d34cde1f2144f28150f31c559460373d4",
+      "durationSeconds": 1.494286,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-recovery"
         }
       ]
     },
@@ -1790,6 +4086,20 @@
       ]
     },
     {
+      "text": "employer",
+      "textSha256": "8efdf55724c97710333b1e6e7ad03e1b61c9c4206a35ca33898058c6e15c9c42",
+      "file": "8efdf55724c97710333b.mp3",
+      "bytes": 13000,
+      "sha256": "01d33268563e72c6a5f9b64502453f5971137424862d0089aeef54f5382f3d42",
+      "durationSeconds": 1.529342,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-employer"
+        }
+      ]
+    },
+    {
       "text": "Good afternoon. This is a message for everyone registered for tomorrow's customer-service training at Greenway Learning Center. Because the ground-floor training room is being painted, the session will take place in Room 305 on the third floor. The start time is still nine thirty. Please arrive fifteen minutes early to collect your visitor badge in the lobby. Printed workbooks and tablets will be provided, so you only need to bring a pen. If you requested an accessible workstation when you registered, it has already been reserved. For any questions about the room change, call our reception team before five today.",
       "textSha256": "8fbb778cc9b0e4b46777da4eb2fd095ca47ac78de28541444ca1a061120b9fe7",
       "file": "8fbb778cc9b0e4b46777.mp3",
@@ -1815,6 +4125,20 @@
       ]
     },
     {
+      "text": "municipal",
+      "textSha256": "908e2636911e8764e34b51a303322f57531fa3e742ded0790825a121852ca8a5",
+      "file": "908e2636911e8764e34b.mp3",
+      "bytes": 13000,
+      "sha256": "b6ce670bea0355454e913a40d2641bc144f2fdc7922fb6c1a4cadef28bd39dce",
+      "durationSeconds": 1.539274,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-municipal"
+        }
+      ]
+    },
+    {
       "text": "The guide was written last year.",
       "textSha256": "90bb2694511ffdca6c05aabc7b27e55ee2100c59b71deb6936fa6e14aa00c204",
       "file": "90bb2694511ffdca6c05.mp3",
@@ -1827,6 +4151,34 @@
           "id": "p2-v2-05",
           "part": 2,
           "index": 2
+        }
+      ]
+    },
+    {
+      "text": "minutes",
+      "textSha256": "90e63d85fa1ab2c8ed65222f3ebd794b1e524b4b7cf84bec451542d0451b2985",
+      "file": "90e63d85fa1ab2c8ed65.mp3",
+      "bytes": 12791,
+      "sha256": "05c9c591e33ed1302b5a0c1509aff8ab4434fbfae81244a58a3fc76a48665ac6",
+      "durationSeconds": 1.504354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-minutes"
+        }
+      ]
+    },
+    {
+      "text": "insulation",
+      "textSha256": "91663419710f5f57e8bf59c8db358d402c32e49be43f9179375b5baeb499a775",
+      "file": "91663419710f5f57e8bf.mp3",
+      "bytes": 14672,
+      "sha256": "6d9ce5a757b268d740950212224f1ab1e61d7b5367e2ee098b0f03a39921cfa2",
+      "durationSeconds": 1.739229,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-insulation"
         }
       ]
     },
@@ -1859,6 +4211,118 @@
       ]
     },
     {
+      "text": "keyboard",
+      "textSha256": "91f060a9ad4b39eb228d9537292fab19d252faed06c169d0fdcb4a90560f5676",
+      "file": "91f060a9ad4b39eb228d.mp3",
+      "bytes": 11537,
+      "sha256": "98b5d56496a70a69e7266dacbf33733c9f38514a8281c5b35c8de2ccb86180fc",
+      "durationSeconds": 1.349342,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-keyboard"
+        }
+      ]
+    },
+    {
+      "text": "renovation",
+      "textSha256": "92a9fcf1f2853d6b5cabaa9176f5794ef683924beb0e21c2a38801b80f12f087",
+      "file": "92a9fcf1f2853d6b5cab.mp3",
+      "bytes": 14254,
+      "sha256": "c899ed877b1c6e7c9d0ece405cc95681693b1f98a12a714121b3f0e2ae86312e",
+      "durationSeconds": 1.67932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-renovation"
+        }
+      ]
+    },
+    {
+      "text": "training session",
+      "textSha256": "92ab1f08998e36e7c0b7336929e7eda65a72367f9d75f2274dd84fff0e5262bd",
+      "file": "92ab1f08998e36e7c0b7.mp3",
+      "bytes": 14881,
+      "sha256": "deb549e0fc2a5ae764151f6413c586a83d64637a1af3dd32f94a36f8e43a6918",
+      "durationSeconds": 1.774286,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p2-01"
+        }
+      ]
+    },
+    {
+      "text": "reboot",
+      "textSha256": "92bf8ea876da2855facd9e176e481364a9e1d709c9bbfe6e2bd8109bcf7ed20a",
+      "file": "92bf8ea876da2855facd.mp3",
+      "bytes": 12164,
+      "sha256": "f74424cd847d7f88aaa640976cb14126c2b9c864b18b55510c80e769cdedfdba",
+      "durationSeconds": 1.419365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-reboot"
+        }
+      ]
+    },
+    {
+      "text": "notice",
+      "textSha256": "9368a7d21e018f64ae3327d2f25cd4d7693b2d85328e4bb680bcfcbd4c26b90e",
+      "file": "9368a7d21e018f64ae33.mp3",
+      "bytes": 12791,
+      "sha256": "df4ed1e6741ff75e1128c965442c6ec3196ae79bd7f5fef50fc08df089177947",
+      "durationSeconds": 1.514376,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-notice"
+        }
+      ]
+    },
+    {
+      "text": "visitor badge",
+      "textSha256": "94371f477b14a3369689e9be9ebd21dd7715d3f2e644a6568cf5c659aa88b725",
+      "file": "94371f477b14a3369689.mp3",
+      "bytes": 14672,
+      "sha256": "c975f98ee4e93ff4107d2df5b4978536b405299366e5c1cb5629a8a3995764ab",
+      "durationSeconds": 1.734286,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p4-v2-02"
+        }
+      ]
+    },
+    {
+      "text": "carton",
+      "textSha256": "94741ea49e3a3278b99a8d16e44be5866729e6bd5d2940825ac6d83857ebe5e8",
+      "file": "94741ea49e3a3278b99a.mp3",
+      "bytes": 12791,
+      "sha256": "ea7978480a91faf086cb9247e9ad608f7f99dc2372479cbffc6c8f47d5e3fe28",
+      "durationSeconds": 1.49941,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-carton"
+        }
+      ]
+    },
+    {
+      "text": "client",
+      "textSha256": "948fe603f61dc036b5c596dc09fe3ce3f3d30dc90f024c85f3c82db2ccab679d",
+      "file": "948fe603f61dc036b5c5.mp3",
+      "bytes": 12373,
+      "sha256": "3ce576be1c934d406d27d61c5e492242db99c44d00ce569e02cd59a63b77fc6e",
+      "durationSeconds": 1.449342,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-client"
+        }
+      ]
+    },
+    {
       "text": "The shop closes at six.",
       "textSha256": "95427caadcb15b3f297c470bac71ad7091c23111612595c92b91d466befe7dd7",
       "file": "95427caadcb15b3f297c.mp3",
@@ -1871,6 +4335,52 @@
           "id": "p2-v2-03",
           "part": 2,
           "index": 4
+        }
+      ]
+    },
+    {
+      "text": "supplier",
+      "textSha256": "955ed10b73d6265b1adcf768b94f8dd5d91f33309db94b6b3af4efa822f1d9af",
+      "file": "955ed10b73d6265b1adc.mp3",
+      "bytes": 13209,
+      "sha256": "d2b28edc15474dde6fe911c6580d380fa5f454a4e609d643b7383b9b15c68cfd",
+      "durationSeconds": 1.554286,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-supplier"
+        }
+      ]
+    },
+    {
+      "text": "replacement",
+      "textSha256": "95713e9cbdd1dfcb2d4080c2537f418d43ca0da25f0d7d6631f4f7c97b89dc47",
+      "file": "95713e9cbdd1dfcb2d40.mp3",
+      "bytes": 14881,
+      "sha256": "db5ffa76ba0dc134800547da3d97d3e88b9424525ca11f2bec300605ceb4faf4",
+      "durationSeconds": 1.764263,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p5-04"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p5-v2-06"
+        }
+      ]
+    },
+    {
+      "text": "retire",
+      "textSha256": "9588c4b2e8c1865b86df6fc410ec658e7e5930086451d4c894ffaf4fdab23617",
+      "file": "9588c4b2e8c1865b86df.mp3",
+      "bytes": 12164,
+      "sha256": "73156712cce4267a58f9f2cd7a70fe9d7e376335bc9f0e5fe2455af639cac1f0",
+      "durationSeconds": 1.429342,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-retire"
         }
       ]
     },
@@ -1903,6 +4413,48 @@
       ]
     },
     {
+      "text": "main hall",
+      "textSha256": "95ed6c814c455115a5daac202911849ec8769ffecf38d4ef1afe511108a47168",
+      "file": "95ed6c814c455115a5da.mp3",
+      "bytes": 12582,
+      "sha256": "b316836fbf1163a5a05675f9332f8668fcbb8dc349eb892a4e225966a2d5e275",
+      "durationSeconds": 1.47932,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p3-v2-05"
+        }
+      ]
+    },
+    {
+      "text": "ceiling",
+      "textSha256": "96f16e929047d5fa07f1a824858e3d7c101ef56562ae7c8e801f924882e41ed8",
+      "file": "96f16e929047d5fa07f1.mp3",
+      "bytes": 12791,
+      "sha256": "31148dad224d7437a4eac9c6051e50a287bcc36b7f32e9335101bfae4051a4ab",
+      "durationSeconds": 1.514376,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-ceiling"
+        }
+      ]
+    },
+    {
+      "text": "itinerary",
+      "textSha256": "9844cdc6c5489db0bbee8d7539bd2e7dbcb4e59922e7259812b966b180e5e23a",
+      "file": "9844cdc6c5489db0bbee.mp3",
+      "bytes": 14045,
+      "sha256": "78f7bc85936cc0fd4cc43fc074a39ea27b0e7acd2d40f40c0906db910b8612cf",
+      "durationSeconds": 1.659274,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-itinerary"
+        }
+      ]
+    },
+    {
       "text": "The email-writing session starts at nine thirty in the morning. The presenter is Nina Brooks.",
       "textSha256": "992772718f0a76dc3349c3fdc69aed983f2af51eb6bfc5f7955e0d2936b0a4bc",
       "file": "992772718f0a76dc3349.mp3",
@@ -1913,6 +4465,90 @@
         {
           "kind": "sampleAnswer",
           "id": "speaking-information-01"
+        }
+      ]
+    },
+    {
+      "text": "account",
+      "textSha256": "9af211329b2fc82e5efe906062c730082819b23fe8394bc435e0b1bf0458eb54",
+      "file": "9af211329b2fc82e5efe.mp3",
+      "bytes": 11955,
+      "sha256": "fb69f42efb1d8c060cd6930ab90f349b6d9ce7135cf421407c565725b61cab22",
+      "durationSeconds": 1.39941,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-account"
+        }
+      ]
+    },
+    {
+      "text": "warranty",
+      "textSha256": "9ba5d957f2837308c84622384f0bcf6d66b8f48a3278dc87474a641fd6957bd5",
+      "file": "9ba5d957f2837308c846.mp3",
+      "bytes": 11955,
+      "sha256": "159911e0c4ad547cf840f84044a82b9bd5afb193f5a5631f77ae32c3ead54827",
+      "durationSeconds": 1.409252,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-warranty"
+        }
+      ]
+    },
+    {
+      "text": "service",
+      "textSha256": "9df6b026a8c6c26e3c3acd2370a16e93fffdc0015ff5bd879218788025db0280",
+      "file": "9df6b026a8c6c26e3c3a.mp3",
+      "bytes": 13000,
+      "sha256": "42d890ae3b1cbd2604efe56acf1e70d4f2b75fb714cc2540fda6e9308f496f28",
+      "durationSeconds": 1.539365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-service"
+        }
+      ]
+    },
+    {
+      "text": "minibar",
+      "textSha256": "9dfb2328da1bbbec0023bf4129d6f0afe4ab69260c5b5be31caac99027a48d1d",
+      "file": "9dfb2328da1bbbec0023.mp3",
+      "bytes": 12164,
+      "sha256": "d0e7231ed1aebd3e321fbf2c8a427ea168eb58dfc24c69cb262b7ed08d24ea5d",
+      "durationSeconds": 1.414286,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-minibar"
+        }
+      ]
+    },
+    {
+      "text": "fitness",
+      "textSha256": "9ebf9b5978e6d486b0a66423715469b0e96f4b04c23d5061ec6c69bb29813a3b",
+      "file": "9ebf9b5978e6d486b0a6.mp3",
+      "bytes": 13209,
+      "sha256": "47c8e11806bbbcf28b0a6c60a17aa1dcff91f17e68eb2642af324949efa5c49c",
+      "durationSeconds": 1.549388,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-fitness"
+        }
+      ]
+    },
+    {
+      "text": "reservation",
+      "textSha256": "9efa077f044e7a779c655f8d8e8760cacd16ce2347b6aa10e45b18fb5325fdd6",
+      "file": "9efa077f044e7a779c65.mp3",
+      "bytes": 14881,
+      "sha256": "0958a313ba4e8fc8cb49b6da01f3a062131141befc61034d7b20e40ef6ba799b",
+      "durationSeconds": 1.754195,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-reservation"
         }
       ]
     },
@@ -1929,6 +4565,28 @@
           "id": "p2-v2-07",
           "part": 2,
           "index": 4
+        }
+      ]
+    },
+    {
+      "text": "information desk",
+      "textSha256": "9f29e5c3560efddee4feba58eaaac035112861377b3ae16a49dfc2c2c7402136",
+      "file": "9f29e5c3560efddee4fe.mp3",
+      "bytes": 16553,
+      "sha256": "3c25183e668435508d872c63971cf848045e4d1049290e7c25af19c129f47462",
+      "durationSeconds": 1.984218,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p4-01"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p4-02"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p4-03"
         }
       ]
     },
@@ -1961,6 +4619,34 @@
       ]
     },
     {
+      "text": "repair",
+      "textSha256": "a1a14ff4aab4f1d3efbe2f3fe8e32ec686289ba95e5b2fc3e1f38052d64da522",
+      "file": "a1a14ff4aab4f1d3efbe.mp3",
+      "bytes": 11746,
+      "sha256": "02999c2c629d815bded9071f4f1760dd117eba5d57f35cf6c55ea7c31f9a4489",
+      "durationSeconds": 1.364308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-repair"
+        }
+      ]
+    },
+    {
+      "text": "stationery",
+      "textSha256": "a2666691322310c7913863192d7c71984e194e60104fe1cc8efb816a90d0375e",
+      "file": "a2666691322310c79138.mp3",
+      "bytes": 14254,
+      "sha256": "76a6e8f58bb543ded0e0213e68a488360fcb8bf5c239ba1b91c434a9bbf73f9d",
+      "durationSeconds": 1.694286,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-stationery"
+        }
+      ]
+    },
+    {
       "text": "Where can I recharge my travel card?",
       "textSha256": "a27d4048a7ef9bcab6b081964176206cb322b7df3b17b950c46da3dab0577109",
       "file": "a27d4048a7ef9bcab6b0.mp3",
@@ -1977,6 +4663,34 @@
       ]
     },
     {
+      "text": "renew",
+      "textSha256": "a36a2ce1800626b7cf4751afdc8256807d43467660ae8e444a3f2592b71e454a",
+      "file": "a36a2ce1800626b7cf47.mp3",
+      "bytes": 10701,
+      "sha256": "802f462f70cef5f9c5c2065c3b85beef537fa152174cf44bfcdd04e0fd46fb19",
+      "durationSeconds": 1.239365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-renew"
+        }
+      ]
+    },
+    {
+      "text": "firewall",
+      "textSha256": "a3863c5d7ce546d24186581bcba0b0a157db9d318d9174d46d0db3f3f38cc1a6",
+      "file": "a3863c5d7ce546d24186.mp3",
+      "bytes": 13627,
+      "sha256": "3d48fe1ccff3547e7e9d09f056fb00a998024c214fee2b7582ee252bf5c227fd",
+      "durationSeconds": 1.604354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-firewall"
+        }
+      ]
+    },
+    {
       "text": "The next train goes to Northbridge.",
       "textSha256": "a3b9df79de0d897e79275b9157f7045dbd27202f8722ac1481d4c66a9af9b139",
       "file": "a3b9df79de0d897e7927.mp3",
@@ -1989,6 +4703,20 @@
           "id": "p2-v2-01",
           "part": 2,
           "index": 6
+        }
+      ]
+    },
+    {
+      "text": "depart",
+      "textSha256": "a43ac7b069a33fe30bf308b54f6e8d8ec7d516f7d1875de65e2257d07761a909",
+      "file": "a43ac7b069a33fe30bf3.mp3",
+      "bytes": 11537,
+      "sha256": "28b0ffee15d5ad35a31057980b1b603fe3fd4fda9db8139a8ddfe73c742bac40",
+      "durationSeconds": 1.354331,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-v2-05"
         }
       ]
     },
@@ -2046,6 +4774,34 @@
       ]
     },
     {
+      "text": "basement",
+      "textSha256": "a6f91dfd2c7321f316bc30c2f5439d2071cf90eafb5c53ed41887f4f74e7e0ad",
+      "file": "a6f91dfd2c7321f316bc.mp3",
+      "bytes": 13836,
+      "sha256": "5d6f5e5d85795f155cb855678ad2eedf61997c874ffcc2cc07ed563c1e2a8f36",
+      "durationSeconds": 1.639365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-basement"
+        }
+      ]
+    },
+    {
+      "text": "departure",
+      "textSha256": "a70712f49d7d1d9cc551fcf45ff89adb1906d511957a67932f591ba273266695",
+      "file": "a70712f49d7d1d9cc551.mp3",
+      "bytes": 13000,
+      "sha256": "7b343521468048cde62772915c3cdc0e3c65fa0f27985ab416828a361916841b",
+      "durationSeconds": 1.534331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-departure"
+        }
+      ]
+    },
+    {
       "text": "The prices are quite reasonable.",
       "textSha256": "a7c719a2e1773da5afbf095f071b76677e535252a6ed1dcad51da6f7b89ec858",
       "file": "a7c719a2e1773da5afbf.mp3",
@@ -2090,6 +4846,48 @@
       ]
     },
     {
+      "text": "resume",
+      "textSha256": "a83a31320d921b888a48fa5edd0b4b5a29984de6e96bf7b8ac7d29ba06caf616",
+      "file": "a83a31320d921b888a48.mp3",
+      "bytes": 11955,
+      "sha256": "5c24beb1cf3c1f796cf9be75c07628a641efd4e3f5ea30893d10f6516f52338e",
+      "durationSeconds": 1.404308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-resume"
+        }
+      ]
+    },
+    {
+      "text": "product",
+      "textSha256": "a8792157cb4f27fb949c035f45518c61e884bb86e6f420204379c2baa8beb66e",
+      "file": "a8792157cb4f27fb949c.mp3",
+      "bytes": 12582,
+      "sha256": "216e3146a2fdbed5469e93711aff572c08052fcb1a2259f2a1b24e55f1b44ac8",
+      "durationSeconds": 1.484354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-product"
+        }
+      ]
+    },
+    {
+      "text": "unopened",
+      "textSha256": "a89bde0aade8308738b1ee986e64012b7e081125501616785ce317985205e2b0",
+      "file": "a89bde0aade8308738b1.mp3",
+      "bytes": 12791,
+      "sha256": "350608c049691fdd0421dc8b42892dfcc15d64fd9e5172bd0fe187c428f7dee0",
+      "durationSeconds": 1.509297,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p2-v2-03"
+        }
+      ]
+    },
+    {
       "text": "Visitors enter through the side door.",
       "textSha256": "a8d1b7fc3e01fabff8fffd5169e9bc4259c4cc0fcef5c42506b7ca56cb477c20",
       "file": "a8d1b7fc3e01fabff8ff.mp3",
@@ -2106,6 +4904,20 @@
       ]
     },
     {
+      "text": "attach",
+      "textSha256": "a919007637abd504f123db0cbc8f290ab16db93adf24b1fc03c50e6131d2b98e",
+      "file": "a919007637abd504f123.mp3",
+      "bytes": 11955,
+      "sha256": "b03664de5ae4c084e090240e8129bdff5e687343c9c218194800793a9b408152",
+      "durationSeconds": 1.394422,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-attach"
+        }
+      ]
+    },
+    {
       "text": "A laptop screen is being cleaned.",
       "textSha256": "aa4b84d0d049331a19ceb1c7646ad89a84739e6cf60b9fe03d09b99ad5080822",
       "file": "aa4b84d0d049331a19ce.mp3",
@@ -2118,6 +4930,34 @@
           "id": "p1-02",
           "part": 1,
           "index": 7
+        }
+      ]
+    },
+    {
+      "text": "revise",
+      "textSha256": "aa53d35cdecfe4a2bc65f25f9a20e040c9a1a9afe89366a0608b14cfe587dfc7",
+      "file": "aa53d35cdecfe4a2bc65.mp3",
+      "bytes": 12164,
+      "sha256": "6d836cc4f3ad9b93514a1c4cddf318b6400aa458c11cf44db5c45312fb2d92d4",
+      "durationSeconds": 1.419365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-revise"
+        }
+      ]
+    },
+    {
+      "text": "advance reservation",
+      "textSha256": "aa7ae1432c86f35580568d6386933f97b742458a088ae71e0d8ade27067021fe",
+      "file": "aa7ae1432c86f3558056.mp3",
+      "bytes": 18016,
+      "sha256": "f93615e8c852178b8eccf05e0827e15070cd476c99f4c670a9086cc3483c954d",
+      "durationSeconds": 2.149116,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-v2-06"
         }
       ]
     },
@@ -2222,6 +5062,34 @@
       ]
     },
     {
+      "text": "promotion",
+      "textSha256": "adb8457527ddcdc802d8d6acead8f0ff96e72562bf4b22a2792c909d62f889b6",
+      "file": "adb8457527ddcdc802d8.mp3",
+      "bytes": 13836,
+      "sha256": "84ba45522b6338ca4a6d5fd01278225eb3edb5a2b8b37854e049b230fbb91617",
+      "durationSeconds": 1.63424,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-promotion"
+        }
+      ]
+    },
+    {
+      "text": "warehouse",
+      "textSha256": "ae1fd358c7612a02fdc6d923fd40308ebefb0e954c7ddb6f9a8bcdd1f3b00c3b",
+      "file": "ae1fd358c7612a02fdc6.mp3",
+      "bytes": 13209,
+      "sha256": "fa2ba4a42fae7421134543b1046b82a36057470b6963c35e2816bb06cb80868c",
+      "durationSeconds": 1.564308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-warehouse"
+        }
+      ]
+    },
+    {
       "text": "I can upload it to the training portal now, but some participants may not have brought a laptop.",
       "textSha256": "ae289cdad08de68aeef348c492a6fb2ccf8e292efe2077e696d86d338d68ba6e",
       "file": "ae289cdad08de68aeef3.mp3",
@@ -2250,6 +5118,20 @@
       ]
     },
     {
+      "text": "symptom",
+      "textSha256": "b093720ae25363643156e5e718dce3925eae7f866eefa3ee1fa17b9abfc86fff",
+      "file": "b093720ae25363643156.mp3",
+      "bytes": 13209,
+      "sha256": "7b3b7f32a956c5d8b002e2bd578fa27c37d39b25a0454202906bdecc3b048f86",
+      "durationSeconds": 1.55932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-symptom"
+        }
+      ]
+    },
+    {
       "text": "The conference starts on Monday.",
       "textSha256": "b0ad02bf43c53f0bbe87ec21df010c017bc875f4db344ca0fa9d540602253949",
       "file": "b0ad02bf43c53f0bbe87.mp3",
@@ -2262,6 +5144,34 @@
           "id": "p2-05",
           "part": 2,
           "index": 2
+        }
+      ]
+    },
+    {
+      "text": "inventory",
+      "textSha256": "b11a85b296a90afc460430434a504e7acb04b064575b7277724688af0e59d189",
+      "file": "b11a85b296a90afc4604.mp3",
+      "bytes": 13627,
+      "sha256": "1b5948948349287498ad07b2f7fee7ad1b64688e382de3eeaf8ca458916bce47",
+      "durationSeconds": 1.609252,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-inventory"
+        }
+      ]
+    },
+    {
+      "text": "seminar",
+      "textSha256": "b246cf89fe828ae4e9e8cc69e938034b3cd13d41808318a9cf47d3c6e57d6807",
+      "file": "b246cf89fe828ae4e9e8.mp3",
+      "bytes": 12582,
+      "sha256": "078770bf9be401e46f85f758553ac06b0237e11e42c46dceb2bc1608a15f99ea",
+      "durationSeconds": 1.474331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-seminar"
         }
       ]
     },
@@ -2294,6 +5204,104 @@
       ]
     },
     {
+      "text": "postpone",
+      "textSha256": "b301304355429e5380d911517fe3a79fecb5c4e0eea634ed9e90fae7d7a3dfbf",
+      "file": "b301304355429e5380d9.mp3",
+      "bytes": 13627,
+      "sha256": "be27f5986cd746685315b049d60be7488221b7210d53dddf8b406e69a70e6685",
+      "durationSeconds": 1.604308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-postpone"
+        }
+      ]
+    },
+    {
+      "text": "progress report",
+      "textSha256": "b433ab9970f0957b492f0794920e58ef62afeb217447875c6d97d4130f1edc45",
+      "file": "b433ab9970f0957b492f.mp3",
+      "bytes": 16344,
+      "sha256": "887809ff8eb61b705b2583ed32b3fe92572e481616bb7c95363a036b04f00340",
+      "durationSeconds": 1.939229,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p5-v2-05"
+        }
+      ]
+    },
+    {
+      "text": "delivery",
+      "textSha256": "b4af39d5b65a14849e885a9d65f0efe4f4e689989689c28c16cfcb3a6e78db5a",
+      "file": "b4af39d5b65a14849e88.mp3",
+      "bytes": 12164,
+      "sha256": "187068ba580bfc2c20d81ff1fe7708b6495eafed4dc78431532a1f7233e9c8e2",
+      "durationSeconds": 1.419274,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-delivery"
+        }
+      ]
+    },
+    {
+      "text": "destination",
+      "textSha256": "b5c755aaab1038b3d5627bbde7f47ca80c5f5c0481c6d33f04139d07aa1530e7",
+      "file": "b5c755aaab1038b3d562.mp3",
+      "bytes": 14672,
+      "sha256": "52b14694ed422a891e34073b331f9701f4c188fa6f1f17e7e8e52271e64ba883",
+      "durationSeconds": 1.749252,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-destination"
+        }
+      ]
+    },
+    {
+      "text": "barber",
+      "textSha256": "b67b8e2e8472a0a87a3d64d75995193c1da90bf098123586ceba69881880fbb1",
+      "file": "b67b8e2e8472a0a87a3d.mp3",
+      "bytes": 11537,
+      "sha256": "6cda1ccef6cdb56e20f4013a9c3c78a1b4cc74869b92b82484dba973f67e5b6e",
+      "durationSeconds": 1.334376,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-barber"
+        }
+      ]
+    },
+    {
+      "text": "customer",
+      "textSha256": "b6c45863875e34487ca3c155ed145efe12a74581e27befec5aa661b8ee8ca6dd",
+      "file": "b6c45863875e34487ca3.mp3",
+      "bytes": 12582,
+      "sha256": "8051db12f46256fb59515dbb201bcc393dd4eadaa7df7475e3470a124d2521f9",
+      "durationSeconds": 1.484354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-customer"
+        }
+      ]
+    },
+    {
+      "text": "library",
+      "textSha256": "b718f1354f7247312eca086d9a024afe5fa717ddea5adeddd6f12bcf945b2e8c",
+      "file": "b718f1354f7247312eca.mp3",
+      "bytes": 12582,
+      "sha256": "5517bf634b11308f8910fd2840cea113a3a1dfdfbd78d51fc9d662de0cf735bb",
+      "durationSeconds": 1.484354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-library"
+        }
+      ]
+    },
+    {
       "text": "We look forward to welcoming you.",
       "textSha256": "b75235ce884caad9f82d6ff658562cd41fba3606b57885278fcf888959a6af81",
       "file": "b75235ce884caad9f82d.mp3",
@@ -2322,6 +5330,20 @@
       ]
     },
     {
+      "text": "fee",
+      "textSha256": "b80cdaae9b322bba2a38fd396299782a4cc6b4a0ccf67fccbbcc617c94a46026",
+      "file": "b80cdaae9b322bba2a38.mp3",
+      "bytes": 10284,
+      "sha256": "2f83b530b26d745d9bf6426400e1e81f84d56f139f5eecb7fb9cba08480bd60c",
+      "durationSeconds": 1.194422,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-fee"
+        }
+      ]
+    },
+    {
       "text": "How many copies of the visitor guide should I make?",
       "textSha256": "b871a1c6c43e5fcbb809743b7646aff25e696fce041f8a3624d629251bc38803",
       "file": "b871a1c6c43e5fcbb809.mp3",
@@ -2334,6 +5356,34 @@
           "id": "p2-v2-05",
           "part": 2,
           "index": 0
+        }
+      ]
+    },
+    {
+      "text": "locksmith",
+      "textSha256": "b8bb11bf4529d505cbc73a0f211ec77b32c184172209719e883e824d86cbf5df",
+      "file": "b8bb11bf4529d505cbc7.mp3",
+      "bytes": 14672,
+      "sha256": "71570011ad78c0de42d905e0aaf4f34359c0a2430b777769eb4a521db6b2bc0d",
+      "durationSeconds": 1.749388,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-locksmith"
+        }
+      ]
+    },
+    {
+      "text": "laundry",
+      "textSha256": "ba29c6b70b275f61afcfb08b0cb50057e556abcc2377c25a96b69320936b2e6b",
+      "file": "ba29c6b70b275f61afcf.mp3",
+      "bytes": 11955,
+      "sha256": "df168ebf65b0070a8058562b0f67c5d969606e15dd191d90a5fae55dbfb9c38e",
+      "durationSeconds": 1.399365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-laundry"
         }
       ]
     },
@@ -2359,6 +5409,76 @@
           "kind": "listening",
           "id": "p3-v2-03",
           "part": 3
+        }
+      ]
+    },
+    {
+      "text": "summarize",
+      "textSha256": "bae9264d6d972b80f4fe23b4a22b599a1585c7faa7473232694978240159f3fe",
+      "file": "bae9264d6d972b80f4fe.mp3",
+      "bytes": 13418,
+      "sha256": "f5f0f857acd62d88f0564a7968c6512739ae4162d76d10927f52786955b92e24",
+      "durationSeconds": 1.57932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-summarize"
+        }
+      ]
+    },
+    {
+      "text": "clinic",
+      "textSha256": "bbfeb74a4b4216dfd0f7b10edf5743e6781e9f8ac7888a3392878a52c821a3b1",
+      "file": "bbfeb74a4b4216dfd0f7.mp3",
+      "bytes": 11746,
+      "sha256": "e55dcd9279f14aab51c1d3d40cf921cdb58185fe232077b065ac1e3a39c87345",
+      "durationSeconds": 1.37932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-clinic"
+        }
+      ]
+    },
+    {
+      "text": "package",
+      "textSha256": "bc4a71180870f7945155fbb02f4b0a2e3faa2a62d6d31b7039013055ed19869a",
+      "file": "bc4a71180870f7945155.mp3",
+      "bytes": 13000,
+      "sha256": "9aaf153fff2acb2f02f377c4b76d437cd9232b9519b24eef61b7ae434be52200",
+      "durationSeconds": 1.534376,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-package"
+        }
+      ]
+    },
+    {
+      "text": "wellness",
+      "textSha256": "bc90a50b2fa0d31ce6125f9ca1fb49983accd9400aeb1ea193af349c9be5f08d",
+      "file": "bc90a50b2fa0d31ce612.mp3",
+      "bytes": 12791,
+      "sha256": "21bb332191435af2dca7a976088128630e84956c3eb75cf292fe0855661f455b",
+      "durationSeconds": 1.514331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-wellness"
+        }
+      ]
+    },
+    {
+      "text": "satisfaction",
+      "textSha256": "bce2966c0b0d85327956be4ae3ba1a02c61aea7c0b2d9aaeb75f56be775468c4",
+      "file": "bce2966c0b0d85327956.mp3",
+      "bytes": 16762,
+      "sha256": "7991b49a3f4fe9c8c5e9cfcb8a4b941d428b6e532311051d121fd7d00db77150",
+      "durationSeconds": 1.989161,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-satisfaction"
         }
       ]
     },
@@ -2507,6 +5627,84 @@
       ]
     },
     {
+      "text": "staircase",
+      "textSha256": "bf1323d4d9516090d2dc5c5f4f5dda434558af84a72e7ce526da7b88a5298b86",
+      "file": "bf1323d4d9516090d2dc.mp3",
+      "bytes": 14254,
+      "sha256": "ba8efed4f7918747746555b6793d1c5514d2d3e8187d98281be996ee570b0779",
+      "durationSeconds": 1.674286,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-staircase"
+        }
+      ]
+    },
+    {
+      "text": "hire",
+      "textSha256": "bf90ace460be66498a913aaca0b7868806603cf0fef114305fcf81396c30b5ba",
+      "file": "bf90ace460be66498a91.mp3",
+      "bytes": 11119,
+      "sha256": "1a7a84f98d80c7a2e4e6d177fa9ac94f144259390eb6ac87ce6d8b7a70c23d5c",
+      "durationSeconds": 1.289388,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-hire"
+        }
+      ]
+    },
+    {
+      "text": "presentation",
+      "textSha256": "bfac314fefdc07451af1792a81cbaeda24a9363f7d4d4b7ff2938c4231ea7e36",
+      "file": "bfac314fefdc07451af1.mp3",
+      "bytes": 15717,
+      "sha256": "3bda177a5ec9ea776eba6e74749bf4a34879d41e4e4620556c4505780d691ca7",
+      "durationSeconds": 1.859229,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-presentation"
+        }
+      ]
+    },
+    {
+      "text": "include",
+      "textSha256": "c0cbff04cc90f5b4cd53a53533285f7d741f24a5279f746b8370ad0f2c982f3e",
+      "file": "c0cbff04cc90f5b4cd53.mp3",
+      "bytes": 12373,
+      "sha256": "cb27c032e9acd88dfcba46ff8c10f33148c8d434549ad1de167dd040d8038e1b",
+      "durationSeconds": 1.449388,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p4-01"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p4-02"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p4-03"
+        }
+      ]
+    },
+    {
+      "text": "participant",
+      "textSha256": "c0cde073e7e5fc1c872c3f89860466367d3a0da31a7c4b85882757a6b7dd4ba3",
+      "file": "c0cde073e7e5fc1c872c.mp3",
+      "bytes": 14672,
+      "sha256": "3e9ee2e3725bba7c92704257d2b6832304e3a4dd5fbb8b61ee6c541cae44b581",
+      "durationSeconds": 1.739274,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p3-v2-02"
+        }
+      ]
+    },
+    {
       "text": "Sure.",
       "textSha256": "c10c037156053bfe962132f8eb70e273899bcbf44d3db5e8d88a465a07e84d9e",
       "file": "c10c037156053bfe9621.mp3",
@@ -2519,6 +5717,76 @@
           "id": "p2-03",
           "part": 2,
           "index": 2
+        }
+      ]
+    },
+    {
+      "text": "attendee",
+      "textSha256": "c21a4bb7a5ab73cd27daa23bef91bc9d75ba2689afecb4cc3fbf5d9b203eaa5d",
+      "file": "c21a4bb7a5ab73cd27da.mp3",
+      "bytes": 12791,
+      "sha256": "79eb8f6af7ead003762391aa67f71bfbd81881b035e6cb49f11b87afab648c92",
+      "durationSeconds": 1.491111,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-attendee"
+        }
+      ]
+    },
+    {
+      "text": "housekeeping",
+      "textSha256": "c26871f992648a4801848b93f9ccb46f32b89005efed76c83b09f742da142478",
+      "file": "c26871f992648a480184.mp3",
+      "bytes": 14254,
+      "sha256": "eb3a16c5bf73e1289ada5b5a99310e60c31e26e47c256f6dc2a2fa3494f33981",
+      "durationSeconds": 1.674331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-housekeeping"
+        }
+      ]
+    },
+    {
+      "text": "plumber",
+      "textSha256": "c2cb46f8b213d3a1ec17b82b0cecf7f20981b64b1d20400092d5c53754d2cd8a",
+      "file": "c2cb46f8b213d3a1ec17.mp3",
+      "bytes": 11537,
+      "sha256": "6c7ed799a1e5bdcf525a10dba4d0dfebe492b3392e5a74644d579671bdd0437b",
+      "durationSeconds": 1.344399,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-plumber"
+        }
+      ]
+    },
+    {
+      "text": "distribute",
+      "textSha256": "c2ef5060da5b83a9ca0601d267709ba5b4bc07535d31673fbff23e413400fff1",
+      "file": "c2ef5060da5b83a9ca06.mp3",
+      "bytes": 13209,
+      "sha256": "15e92b889b1eaa6a1ec9f7a59e2d31a310e48a98335c96952e6beebf5bac9153",
+      "durationSeconds": 1.55424,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-distribute"
+        }
+      ]
+    },
+    {
+      "text": "appetizer",
+      "textSha256": "c32420eb39840abbf951549b5b6f8dc1db1ab1b151a085aadaa8482cc5074340",
+      "file": "c32420eb39840abbf951.mp3",
+      "bytes": 13418,
+      "sha256": "12b74d889138cdeec6b34d44006ad76a4ad3e4a712b0462bc2127a27b4974909",
+      "durationSeconds": 1.584263,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-appetizer"
         }
       ]
     },
@@ -2579,6 +5847,34 @@
       ]
     },
     {
+      "text": "deposit",
+      "textSha256": "c3b9fb78a452ce2fc90cff1608510235503e3b727683b71c7fefee54198bad63",
+      "file": "c3b9fb78a452ce2fc90c.mp3",
+      "bytes": 12791,
+      "sha256": "39868144246ab74fece22316e61aed6cac619e8845aa677f112e948a9f95db30",
+      "durationSeconds": 1.494286,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-deposit"
+        }
+      ]
+    },
+    {
+      "text": "waiting list",
+      "textSha256": "c46982c100973c4a6d97d0886c036b3e896015c26b4fdf3b75f52da861dfac7c",
+      "file": "c46982c100973c4a6d97.mp3",
+      "bytes": 13836,
+      "sha256": "92ad0672482e803e3eca4f583eaaa4490405df2f4b4417dd82e05a73f8d3cd79",
+      "durationSeconds": 1.644308,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p7-v2-02"
+        }
+      ]
+    },
+    {
       "text": "Look at the photograph. Choose the best description. A. A woman is standing beside a whiteboard. B. Two people are carrying a table. C. A laptop computer is open on the table. D. Everyone in the room is standing.",
       "textSha256": "c4eaa4590ffe698febbf3e55dbc4ed359359de29b3aa0c3e9e52dff8ae6add17",
       "file": "c4eaa4590ffe698febbf.mp3",
@@ -2590,6 +5886,48 @@
           "kind": "listening",
           "id": "p1-01",
           "part": 1
+        }
+      ]
+    },
+    {
+      "text": "touchscreen",
+      "textSha256": "c58893cdd04486620332674ce229e3842fdfb4edfe712daa0fbb62febb799b27",
+      "file": "c58893cdd04486620332.mp3",
+      "bytes": 15299,
+      "sha256": "334a47dfecd38b63d604093e8442f9f8036ae52e323d03006647784a1942df39",
+      "durationSeconds": 1.824354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-touchscreen"
+        }
+      ]
+    },
+    {
+      "text": "orientation",
+      "textSha256": "c59cf32b132c815c214c02a125da297903e6ff8d108526259b7d338c593500c6",
+      "file": "c59cf32b132c815c214c.mp3",
+      "bytes": 15717,
+      "sha256": "ad065c9f58944cff89d05367a838c6626824d8913a8762c377c53c7991977224",
+      "durationSeconds": 1.869252,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-orientation"
+        }
+      ]
+    },
+    {
+      "text": "encrypt",
+      "textSha256": "c6072170d758e5358d717360829bd1f9b1603b355b5f7fe375d1aabdca7a20de",
+      "file": "c6072170d758e5358d71.mp3",
+      "bytes": 13418,
+      "sha256": "31bf148568b01d5040802f0b97cde0a394e67cfcae568fd1256fdf7456fb313e",
+      "durationSeconds": 1.584308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-encrypt"
         }
       ]
     },
@@ -2606,6 +5944,60 @@
           "id": "p2-04",
           "part": 2,
           "index": 2
+        }
+      ]
+    },
+    {
+      "text": "checkout",
+      "textSha256": "c7761e58969f7edd498186641b2021e8477e1bcd230de4cf3435242da4a40d14",
+      "file": "c7761e58969f7edd4981.mp3",
+      "bytes": 12373,
+      "sha256": "ec370ecb2a3e7ad0a541c83ca7e5f58cfcd35402fabe1d51ec769f7c6ff88c1a",
+      "durationSeconds": 1.459365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-checkout"
+        }
+      ]
+    },
+    {
+      "text": "cooperation",
+      "textSha256": "c8f405cbf1381a8cb07c2cc0deac3d32afb0517a4be0e323a81f739b1e5ad257",
+      "file": "c8f405cbf1381a8cb07c.mp3",
+      "bytes": 15299,
+      "sha256": "ef1cefa5343b8d7da69d8d9e273d01aa67286bffe20720ac2c3bb9665aefbebd",
+      "durationSeconds": 1.81932,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-01"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-02"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-03"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-04"
+        }
+      ]
+    },
+    {
+      "text": "gate",
+      "textSha256": "c974e17b8e7321ce8c12983de3d0ed4a289821f579bbe0925b0181a4bc8e8d80",
+      "file": "c974e17b8e7321ce8c12.mp3",
+      "bytes": 10910,
+      "sha256": "0b63fec53b5f37fa69ca6fbc5838cc758f4661ff447c261e240ded36060ad1c2",
+      "durationSeconds": 1.256009,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-gate"
         }
       ]
     },
@@ -2648,6 +6040,48 @@
           "id": "p3-v2-03",
           "part": 3,
           "index": 5
+        }
+      ]
+    },
+    {
+      "text": "passport",
+      "textSha256": "cbc471ca60092bbe6c631f02bc57399b2da3d1ae491a55a1aa960a4b2e0ac7e8",
+      "file": "cbc471ca60092bbe6c63.mp3",
+      "bytes": 14045,
+      "sha256": "2b81414a665b86219c8afda986c354299103cfd634d4804b4717caaf01ed01d0",
+      "durationSeconds": 1.654331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-passport"
+        }
+      ]
+    },
+    {
+      "text": "concierge",
+      "textSha256": "cbe370481704cef068c18bdcbe262329c59824d6c87e96510a53f022e899ab04",
+      "file": "cbe370481704cef068c1.mp3",
+      "bytes": 14045,
+      "sha256": "29ec71b94b2c5b0daac25f0bb6c9fbfc149f79d32ca249f9f6d90d2644f5d6ea",
+      "durationSeconds": 1.65932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-concierge"
+        }
+      ]
+    },
+    {
+      "text": "contract",
+      "textSha256": "cc8321d6375c494d043fdd0260f21bc0ec51dacc9f6abb7f909cdcd3041b78bf",
+      "file": "cc8321d6375c494d043f.mp3",
+      "bytes": 13627,
+      "sha256": "6090330c52b11724f087fa28211a5b1c68848f40d4121817c9cbfecf09bf2245",
+      "durationSeconds": 1.614331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-contract"
         }
       ]
     },
@@ -2704,6 +6138,34 @@
           "id": "p3-03",
           "part": 3,
           "index": 7
+        }
+      ]
+    },
+    {
+      "text": "shelter",
+      "textSha256": "cd96b5def4ed2b502ab6cc6ce3c04ddd56e194c70949f750b0ab29f3e5ce3dda",
+      "file": "cd96b5def4ed2b502ab6.mp3",
+      "bytes": 12164,
+      "sha256": "3bf9fe573c6a36bace3b49f349328773ba98a8c71751a82baadc3274877bb484",
+      "durationSeconds": 1.434376,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-shelter"
+        }
+      ]
+    },
+    {
+      "text": "gallery",
+      "textSha256": "ce387d5e0a2972dea9e5129a52ac3b8d58a4d180fc9eece5946d926643a3d2c0",
+      "file": "ce387d5e0a2972dea9e5.mp3",
+      "bytes": 11746,
+      "sha256": "5486a7663df1443eaaf748ae5865ac506ad2a7b738eabe9c2a89b1ee941ffa4a",
+      "durationSeconds": 1.360499,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p4-v2-06"
         }
       ]
     },
@@ -2784,6 +6246,34 @@
       ]
     },
     {
+      "text": "borrow",
+      "textSha256": "d106ccb1fe638b61e4cfbeb00c96818ecf8245918cb478d6bdc249eac33fe353",
+      "file": "d106ccb1fe638b61e4cf.mp3",
+      "bytes": 10910,
+      "sha256": "a8df4361a1b96072c1becfbb716385d917656f042b8140d186141517597bde65",
+      "durationSeconds": 1.256009,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-borrow"
+        }
+      ]
+    },
+    {
+      "text": "allergy",
+      "textSha256": "d128b6760194ca9924546306a48b76f53d2c157628abf348c32d99f590e6792c",
+      "file": "d128b6760194ca992454.mp3",
+      "bytes": 11955,
+      "sha256": "1db28eaa7d7c4d97a139b8bf139f600feaca94f0be3fc61ed4fcccfd266a0e31",
+      "durationSeconds": 1.394286,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-allergy"
+        }
+      ]
+    },
+    {
       "text": "Look at the photograph.",
       "textSha256": "d1a920da4a04ffb4e0a6f73e62e19af597c8620cf39d072b0ef6df1038e66ceb",
       "file": "d1a920da4a04ffb4e0a6.mp3",
@@ -2806,6 +6296,20 @@
       ]
     },
     {
+      "text": "platform",
+      "textSha256": "d294fcce0cc88587843099d85dd805aeef1b09a63b0db1dd3e4dc62a343c1db5",
+      "file": "d294fcce0cc885878430.mp3",
+      "bytes": 14254,
+      "sha256": "eb7397572efb2385b1f3a3993d9f4b85f725d2eaf40985316979c5c3a192a69d",
+      "durationSeconds": 1.689342,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-platform"
+        }
+      ]
+    },
+    {
       "text": "The visitors arrived by bus.",
       "textSha256": "d3205d9ebe738765d20be5670df5ee0a30b2a1223e100e84c8b44a0b7da23a95",
       "file": "d3205d9ebe738765d20b.mp3",
@@ -2818,6 +6322,62 @@
           "id": "p2-v2-08",
           "part": 2,
           "index": 6
+        }
+      ]
+    },
+    {
+      "text": "drawer",
+      "textSha256": "d329f11d9a60de9b6f268d88fc6b40726b9e1496890bd0502f12899ac9cf8e61",
+      "file": "d329f11d9a60de9b6f26.mp3",
+      "bytes": 11119,
+      "sha256": "cba3a5b156fa42917949e9b9faf180925f269850cdced70f1c3d45045f2bde62",
+      "durationSeconds": 1.304399,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-drawer"
+        }
+      ]
+    },
+    {
+      "text": "valet",
+      "textSha256": "d3e394e67f9131b18092127e96f33a3382d564e6a1659be338fd5f17dfd13594",
+      "file": "d3e394e67f9131b18092.mp3",
+      "bytes": 11955,
+      "sha256": "e189ab0ea147c4df2ba7d8be1dd0e4a42d8d5b48c93a98cbd1e4e072ea954270",
+      "durationSeconds": 1.404354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-valet"
+        }
+      ]
+    },
+    {
+      "text": "objective",
+      "textSha256": "d454bec656d32723404961023ed9cb3c37221687c40b498a57b3eefa93c4c5f4",
+      "file": "d454bec656d327234049.mp3",
+      "bytes": 13209,
+      "sha256": "5145b463d4984720f4bfdd83efd656c5d59711cb788fb93cfe358bb9a20a9c60",
+      "durationSeconds": 1.55932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-objective"
+        }
+      ]
+    },
+    {
+      "text": "browser",
+      "textSha256": "d4c3e8a11256ab82a4fc72560eb4a2b0e87bad820c290dd9b03616de240aa6db",
+      "file": "d4c3e8a11256ab82a4fc.mp3",
+      "bytes": 12164,
+      "sha256": "10dc98bf34ae9a961def282e3846de7e1ac623fa9ee89c892c1f887fa74e8818",
+      "durationSeconds": 1.424354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-browser"
         }
       ]
     },
@@ -2900,6 +6460,48 @@
       ]
     },
     {
+      "text": "physician",
+      "textSha256": "da0e513b86418b1c956fd0f290ace36bed56407836b4f008c1e6e764ed9338bc",
+      "file": "da0e513b86418b1c956f.mp3",
+      "bytes": 13418,
+      "sha256": "a525fc272e8d65495a63176802736d9880c251a5ffff4c3be2664d75657b7d34",
+      "durationSeconds": 1.584308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-physician"
+        }
+      ]
+    },
+    {
+      "text": "meeting notes",
+      "textSha256": "db78826009a9e6f5e388046abb7dc257a3afc2eb4a2f1d190618e7c8d838e217",
+      "file": "db78826009a9e6f5e388.mp3",
+      "bytes": 14463,
+      "sha256": "da322a38ef37617785b1ef3c9d7c0c52976574ebb6d633372c5fc56bf0f46fc6",
+      "durationSeconds": 1.700091,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p2-v2-02"
+        }
+      ]
+    },
+    {
+      "text": "dispatch",
+      "textSha256": "db8d1b6d64e4ec90ceb335fc4344e75799fdc20cd236d27cc85ed4783a33d3fa",
+      "file": "db8d1b6d64e4ec90ceb3.mp3",
+      "bytes": 13627,
+      "sha256": "a47594d191aa2f2b06a930e31e1700efc71ff5d1f6479ca7692ed50eb64e2e0d",
+      "durationSeconds": 1.619365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-dispatch"
+        }
+      ]
+    },
+    {
       "text": "Use a courier; the client needs them tomorrow.",
       "textSha256": "dc85686bec510ccc55fa6c6e77982bad2b1cc0b7b64aa5cdc04af9679c04ff9c",
       "file": "dc85686bec510ccc55fa.mp3",
@@ -2912,6 +6514,118 @@
           "id": "p2-v2-04",
           "part": 2,
           "index": 2
+        }
+      ]
+    },
+    {
+      "text": "volunteer",
+      "textSha256": "dcbb0f3cafb30402d5ed4cb826e000bcae930c7ce60763e0458665150dffa879",
+      "file": "dcbb0f3cafb30402d5ed.mp3",
+      "bytes": 13418,
+      "sha256": "9c68d2e1d5054205243dee4cfff99a1b0465aff53cdc2cf3e766e686dd57311d",
+      "durationSeconds": 1.589252,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-volunteer"
+        }
+      ]
+    },
+    {
+      "text": "deduct",
+      "textSha256": "dd889c661913abe1819d638c290ea3580f5f100148867cd72f899c5b5844bf09",
+      "file": "dd889c661913abe1819d.mp3",
+      "bytes": 11746,
+      "sha256": "db21c96937f6012c387f84865229501de39b0d3e78d7d4f57f5cc28f099b6896",
+      "durationSeconds": 1.384354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-deduct"
+        }
+      ]
+    },
+    {
+      "text": "candidate",
+      "textSha256": "dda18a0e21ae47c53b4309434cbc02ae8bf764fa83a6defbb719431242722aa7",
+      "file": "dda18a0e21ae47c53b43.mp3",
+      "bytes": 12791,
+      "sha256": "1ce960088515a22f946b80ed2edfe75d60e3e56432a1132d9658ae4d223eeaf3",
+      "durationSeconds": 1.514331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-candidate"
+        }
+      ]
+    },
+    {
+      "text": "troubleshoot",
+      "textSha256": "ddcc20d051de86cb1242b343d5e5e3d9a1114d8c8b258ef9a16d546bcca99bc1",
+      "file": "ddcc20d051de86cb1242.mp3",
+      "bytes": 14045,
+      "sha256": "93dc7f8c743ab98975b5b5e9edf4422f920ef7dfbb17cbefef2bdb5c983e085f",
+      "durationSeconds": 1.649297,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-troubleshoot"
+        }
+      ]
+    },
+    {
+      "text": "available",
+      "textSha256": "ddd9818abacfde7afed60c93129175401439367a77e69ea93e0ddb3bb38e0bd9",
+      "file": "ddd9818abacfde7afed6.mp3",
+      "bytes": 12373,
+      "sha256": "f04d0cd22d4c56715b4261fc7715f0686fd52c9d1c36300cb5e1a786b27d7e37",
+      "durationSeconds": 1.449342,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p5-v2-01"
+        }
+      ]
+    },
+    {
+      "text": "agenda",
+      "textSha256": "df71fb0bd94cb72795bae4dce7bb6bd33efa6f7aa7ad11d78bfd6f734ca30e0b",
+      "file": "df71fb0bd94cb72795ba.mp3",
+      "bytes": 11328,
+      "sha256": "93a2b83debb5fe697d16cdf5b26a4b4495e0e71a66eecf0e0ac65fe5ee158056",
+      "durationSeconds": 1.329342,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-agenda"
+        }
+      ]
+    },
+    {
+      "text": "deadline",
+      "textSha256": "dfc8aeb39828e31c4cf8fec553c76b65cf91b5ec8b2b00f397788b9f58bbd80e",
+      "file": "dfc8aeb39828e31c4cf8.mp3",
+      "bytes": 12791,
+      "sha256": "c44cbe75241e7058a0a754463fc07b9318a07e8d938e06edf8976362d8a309dc",
+      "durationSeconds": 1.509388,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-deadline"
+        }
+      ]
+    },
+    {
+      "text": "demand",
+      "textSha256": "dffc177fd0bbfd674906766374356b2deab558d4e4e70839f41e1c8867e2881c",
+      "file": "dffc177fd0bbfd674906.mp3",
+      "bytes": 11955,
+      "sha256": "699d81f21848df9cd02456c790d60063b18e8c4e8a92cc968801b217175d9afb",
+      "durationSeconds": 1.404354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-demand"
         }
       ]
     },
@@ -3020,6 +6734,20 @@
       ]
     },
     {
+      "text": "crowded",
+      "textSha256": "e3b93359365856652e759ad9ff915402f59cb91358d7d088b0b2e925c9934359",
+      "file": "e3b93359365856652e75.mp3",
+      "bytes": 12373,
+      "sha256": "ebefada47b3d818a387e71ec91b01701238eb006b1493afb7a34a6eb7fd8dd7f",
+      "durationSeconds": 1.449342,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p5-v2-04"
+        }
+      ]
+    },
+    {
       "text": "A.",
       "textSha256": "e53657178cb6855ac4b2029197a64b0ce6af712b69433254ae18be74d224f991",
       "file": "e53657178cb6855ac4b2.mp3",
@@ -3120,6 +6848,34 @@
       ]
     },
     {
+      "text": "reimburse",
+      "textSha256": "e5af52b0d2d73ed82395e9d331cdabc0f900ac669be7848de13c560fd22e397b",
+      "file": "e5af52b0d2d73ed82395.mp3",
+      "bytes": 13418,
+      "sha256": "49b58e6ca993bede3a5167130815c3783bd9be0f2e5981f97f9b263780dfccfb",
+      "durationSeconds": 1.579274,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-reimburse"
+        }
+      ]
+    },
+    {
+      "text": "venue",
+      "textSha256": "e622da235a56977383e1db8bfe71eaa9b6156cec5cd95df9dc4d2aa3ac5d267a",
+      "file": "e622da235a56977383e1.mp3",
+      "bytes": 11537,
+      "sha256": "60f433067c87af52efc5cb9d904f94bfb05d67937d1408feae22f07b6d2ab74c",
+      "durationSeconds": 1.354376,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-venue"
+        }
+      ]
+    },
+    {
       "text": "I printed the report yesterday.",
       "textSha256": "e627f967ce4e999e829b7e6690601fc805f2b728d85e34b5bffd9f2a25376bb1",
       "file": "e627f967ce4e999e829b.mp3",
@@ -3168,6 +6924,20 @@
       ]
     },
     {
+      "text": "visa",
+      "textSha256": "e759968ca9278b8dde9f515ff1957813343dc35dbd2e5f68b38b5a17e29fe541",
+      "file": "e759968ca9278b8dde9f.mp3",
+      "bytes": 11746,
+      "sha256": "53e100412a3f2e26dc7ca4360502ef7bed93f7d7c9200ee912ccbdd68b2e9b74",
+      "durationSeconds": 1.374331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-visa"
+        }
+      ]
+    },
+    {
       "text": "Good morning, visitors.",
       "textSha256": "e7fcd52f5a177c35ba4c3e63fe32a7146d16bf4f2cc421b710fddea6a9602008",
       "file": "e7fcd52f5a177c35ba4c.mp3",
@@ -3211,6 +6981,62 @@
       ]
     },
     {
+      "text": "ferry",
+      "textSha256": "e9087d0b20d80d3e12bc8530d883d7ad9c1eb3ebc5cb61824a2b460816503797",
+      "file": "e9087d0b20d80d3e12bc.mp3",
+      "bytes": 11328,
+      "sha256": "a0b48498ad8346fd5cec8dd231a4bffb027df7807d967d652686875582245aba",
+      "durationSeconds": 1.319365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-ferry"
+        }
+      ]
+    },
+    {
+      "text": "loyalty",
+      "textSha256": "e931aac0a6a734c2d522d6379346d0855b738bf40bca4aee33f0aa0c82a34851",
+      "file": "e931aac0a6a734c2d522.mp3",
+      "bytes": 11955,
+      "sha256": "20fbdd831382015c13cac131b71283a75fd8e543c177c24f6b5eda48c788a072",
+      "durationSeconds": 1.409252,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-loyalty"
+        }
+      ]
+    },
+    {
+      "text": "helpline",
+      "textSha256": "e949b6bc2181cfe418875fa6aa05c0e2c8d0a9b2fdc765be01c90233eda3eb4c",
+      "file": "e949b6bc2181cfe41887.mp3",
+      "bytes": 13209,
+      "sha256": "8b7050e4b0ae8737e071817e9898e9d258b0475b108b7a5476b80ede59d7b6f2",
+      "durationSeconds": 1.559365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-helpline"
+        }
+      ]
+    },
+    {
+      "text": "benefit",
+      "textSha256": "e97469619c0d7aa7bf4747aafb43756214b46900f77fb96c86ea161a590743f0",
+      "file": "e97469619c0d7aa7bf47.mp3",
+      "bytes": 12164,
+      "sha256": "92cba99416259e2049cbce6678cd220e442f521c6bf216ea050d646f1c65eed1",
+      "durationSeconds": 1.434331,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-benefit"
+        }
+      ]
+    },
+    {
       "text": "Who is updating the visitor map? A. The map shows all three floors. B. I'm not sure; ask the information desk. C. The visitors arrived by bus.",
       "textSha256": "e9e807cc7383118aa73ecde3cbb9a9fdf5423b9d8a1c440d399770f2d6b787cd",
       "file": "e9e807cc7383118aa73e.mp3",
@@ -3226,6 +7052,60 @@
       ]
     },
     {
+      "text": "conference",
+      "textSha256": "ea728840d371e1a556f51e57413fe891207a25c1f749b6f76fcf068f3e4dcadd",
+      "file": "ea728840d371e1a556f5.mp3",
+      "bytes": 14463,
+      "sha256": "2bdc0260635968ba04c8de5491bda397abfef07727ceb006c8b56bd96e5cc509",
+      "durationSeconds": 1.700091,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p2-05"
+        }
+      ]
+    },
+    {
+      "text": "temporary",
+      "textSha256": "ea8b82a5c42a33f042e3f6c8d0f750226bf9e0ac8268e8e8ac9ab02cc1d99dff",
+      "file": "ea8b82a5c42a33f042e3.mp3",
+      "bytes": 13000,
+      "sha256": "d93873d59c5fcadd27b1e5639033f2cd216182fb3cd4a88190855cc89ab1ccc2",
+      "durationSeconds": 1.529342,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-01"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-02"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-03"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-04"
+        }
+      ]
+    },
+    {
+      "text": "fare",
+      "textSha256": "eaa8b6e89fcb020dc966e18f5bcd8f4a8d03e3e6f7b595fe7afb065aa280ed55",
+      "file": "eaa8b6e89fcb020dc966.mp3",
+      "bytes": 11328,
+      "sha256": "307838256c15b5bb35d2313296fec8b95fb66425e9099c81598435c86380f1ed",
+      "durationSeconds": 1.309388,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-fare"
+        }
+      ]
+    },
+    {
       "text": "Should we send the samples by courier or by regular mail? A. Use a courier; the client needs them tomorrow. B. Yes, the samples are blue. C. The email was sent this morning.",
       "textSha256": "eb846a3deed4c195d699febbc802d5179fdecafe121030a604e6c8f9bf4183f0",
       "file": "eb846a3deed4c195d699.mp3",
@@ -3237,6 +7117,28 @@
           "kind": "listening",
           "id": "p2-v2-04",
           "part": 2
+        }
+      ]
+    },
+    {
+      "text": "set up",
+      "textSha256": "ec153694483b2b7d1ccc1bffbbffff8cc09e7568288edd6f18450557ed2dce31",
+      "file": "ec153694483b2b7d1ccc.mp3",
+      "bytes": 12164,
+      "sha256": "a54df7cd9a43cbd44548cb74c9a5d0cda373e56eee5d8b2940101f7b11ffac8b",
+      "durationSeconds": 1.424354,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p3-01"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p3-02"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p3-03"
         }
       ]
     },
@@ -3262,6 +7164,34 @@
           "kind": "listening",
           "id": "p4-v2-06",
           "part": 4
+        }
+      ]
+    },
+    {
+      "text": "calculate",
+      "textSha256": "edca249d8d1f9a5b7d1a0f3ef54e3969bf3acb65499aaea1316cc43a98315502",
+      "file": "edca249d8d1f9a5b7d1a.mp3",
+      "bytes": 13418,
+      "sha256": "bb76188368fc58caed2ddd8753df613429fe8e1c704c66d10f86c8625818bfeb",
+      "durationSeconds": 1.589297,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-calculate"
+        }
+      ]
+    },
+    {
+      "text": "workshop",
+      "textSha256": "ee510d1a07ac7e6491ea191cd1918ea553ed2a358c8a0a04c1b90bd89222c314",
+      "file": "ee510d1a07ac7e6491ea.mp3",
+      "bytes": 13209,
+      "sha256": "e7de01866404716fbe6e5e1fb746ada95103556e1b40a8fa5e9df1dda4e6765e",
+      "durationSeconds": 1.564308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-workshop"
         }
       ]
     },
@@ -3294,6 +7224,20 @@
       ]
     },
     {
+      "text": "complete",
+      "textSha256": "eebbf6457e46a7f63acdf9b97390f790ba443d60cfa44b607da7e5c40aa1cc1d",
+      "file": "eebbf6457e46a7f63acd.mp3",
+      "bytes": 13000,
+      "sha256": "940a92eb54b61ad1fa3adcf3b087c33a1aa44032b25c786e0031c090d91df217",
+      "durationSeconds": 1.51932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-complete"
+        }
+      ]
+    },
+    {
       "text": "Nora: We can't keep the participants waiting.",
       "textSha256": "ef867933262247816f1984da175f4cd594eccfa06aca809efc0aec8ed6f67dc7",
       "file": "ef867933262247816f19.mp3",
@@ -3322,6 +7266,24 @@
       ]
     },
     {
+      "text": "timetable",
+      "textSha256": "f09390ae1c6aed062a02b14d77238f521aacf8e0ff9e03185c6ab36d358b3a7e",
+      "file": "f09390ae1c6aed062a02.mp3",
+      "bytes": 13836,
+      "sha256": "1e19814ee898329237336d8ed5dd2a4d4f4cfc1545a3e18047138a69325ee4b6",
+      "durationSeconds": 1.644308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-timetable"
+        },
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-v2-08"
+        }
+      ]
+    },
+    {
       "text": "Why was the delivery delayed?",
       "textSha256": "f16b82554743c442496077bdba3824005001f45af4ad2df0f6804b85902676fd",
       "file": "f16b82554743c4424960.mp3",
@@ -3338,6 +7300,104 @@
       ]
     },
     {
+      "text": "fixture",
+      "textSha256": "f16d05ec6b29248d2c61adb1e9263f78e4f7bace1b955014a2d17872cfe4064d",
+      "file": "f16d05ec6b29248d2c61.mp3",
+      "bytes": 13000,
+      "sha256": "d795fb3012efbe84f63db05151238685f0cd602680cae8bf8002ae17bff77778",
+      "durationSeconds": 1.529388,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-fixture"
+        }
+      ]
+    },
+    {
+      "text": "protective case",
+      "textSha256": "f1d69c12c9b63b16c14ec0b224ec658abec965d1ab3eb14bc4ca6eef2bc57b52",
+      "file": "f1d69c12c9b63b16c14e.mp3",
+      "bytes": 15508,
+      "sha256": "075159f0953b4828bbe03689ef204ede586afc19ec0e186bb195df158a456856",
+      "durationSeconds": 1.854286,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p7-v2-01"
+        }
+      ]
+    },
+    {
+      "text": "electrician",
+      "textSha256": "f2a955255f249d33f04a42e6799af140a8cd8e81573fe22eafa809132399127f",
+      "file": "f2a955255f249d33f04a.mp3",
+      "bytes": 14672,
+      "sha256": "154b52f356c3bb0c4a74dd4c488b1db4d4332490954a0764c8876f697cf8188e",
+      "durationSeconds": 1.739274,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-electrician"
+        }
+      ]
+    },
+    {
+      "text": "visitor log",
+      "textSha256": "f2b9cf59b65f1956f1d5fd022853cf3bf87204073f1fa73e82e8b4a4f107d773",
+      "file": "f2b9cf59b65f1956f1d5.mp3",
+      "bytes": 14254,
+      "sha256": "e577b6339963b3e3dd38b5fad4039edd93e71030b4d9b7f61d94cf068e26e3c0",
+      "durationSeconds": 1.684263,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p6-v2-01"
+        }
+      ]
+    },
+    {
+      "text": "supply",
+      "textSha256": "f30dfe1cfb6de6d1c962dd71424767e4d1ad2b2b5c548c7ccecb16b6897f4dff",
+      "file": "f30dfe1cfb6de6d1c962.mp3",
+      "bytes": 12164,
+      "sha256": "ecabcb3a3f8dc11571dc2780bcee7db40c7841c983c1d4e5ae96b10104db31b1",
+      "durationSeconds": 1.419365,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-supply"
+        }
+      ]
+    },
+    {
+      "text": "community",
+      "textSha256": "f354ee99e2bc863ce19d80b843353476394ebc3530a51c9290d629065bacc3b3",
+      "file": "f354ee99e2bc863ce19d.mp3",
+      "bytes": 11955,
+      "sha256": "73c127da9be34cc2f5d1e7d06133547f0a17dd98273f433eb29614967fbae458",
+      "durationSeconds": 1.404263,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-community"
+        }
+      ]
+    },
+    {
+      "text": "confirmation email",
+      "textSha256": "f370cfafa01f2efcba9abd137ea9db9f383e939a4136650930c84371eabfbed1",
+      "file": "f370cfafa01f2efcba9a.mp3",
+      "bytes": 18225,
+      "sha256": "41984f3399c84477d5922a32693c39733a8dbc9d27877f562e5f4597ff713d54",
+      "durationSeconds": 2.170295,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p5-v2-08"
+        }
+      ]
+    },
+    {
       "text": "Thursday is the day after Wednesday.",
       "textSha256": "f38a0e14e2dcf9de903b2b1a0b9befc45a6c22a09f95c265a8d430781e3d6e13",
       "file": "f38a0e14e2dcf9de903b.mp3",
@@ -3350,6 +7410,34 @@
           "id": "p2-v2-06",
           "part": 2,
           "index": 4
+        }
+      ]
+    },
+    {
+      "text": "branch",
+      "textSha256": "f38c764c8aa00b6578f4254a4dc6d9b50f88fa926e270ea7859bd1b707cd8662",
+      "file": "f38c764c8aa00b6578f4.mp3",
+      "bytes": 12582,
+      "sha256": "fc402fa8e45b7f104ddf2b2d4c82960a62bd7b8dd729541bde19d312f185c059",
+      "durationSeconds": 1.464989,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p7-v2-04"
+        }
+      ]
+    },
+    {
+      "text": "playground",
+      "textSha256": "f3cc87f78b21d53dcccd34b6dd0c2e8679cb5e6ea3ad600e2689015ce100825a",
+      "file": "f3cc87f78b21d53dcccd.mp3",
+      "bytes": 14045,
+      "sha256": "949d2f87f59e6604df5858df218abd05e2a797c59bd34ed90db09bfa1f564a9e",
+      "durationSeconds": 1.65932,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-playground"
         }
       ]
     },
@@ -3410,6 +7498,76 @@
       ]
     },
     {
+      "text": "luggage",
+      "textSha256": "f59e7a4ed324acd6be7a63946a097473b2cc3112c78f986934688077de077fe5",
+      "file": "f59e7a4ed324acd6be7a.mp3",
+      "bytes": 12373,
+      "sha256": "341679747268fcde3eaa53c7700256cdc7d81273c2d495552d2f96c32ec7af77",
+      "durationSeconds": 1.454376,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-luggage"
+        }
+      ]
+    },
+    {
+      "text": "dentist",
+      "textSha256": "f62e610834f27439cddf899d823243a003e662680789d3d1a84618c079f1cc42",
+      "file": "f62e610834f27439cddf.mp3",
+      "bytes": 13418,
+      "sha256": "a9446298fad6fe631524646bb78f24c34defe320f565a4afc68114066aa7bbbb",
+      "durationSeconds": 1.584399,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-dentist"
+        }
+      ]
+    },
+    {
+      "text": "stopover",
+      "textSha256": "f8b2686821eb0961d2994a8f9e584e5e542d7474480e157e01a64ac98edb07a1",
+      "file": "f8b2686821eb0961d299.mp3",
+      "bytes": 13627,
+      "sha256": "64fe315b33f86622cf9d3a65ce203d0b82db6d7b6ee65dbda3f40728761f84e8",
+      "durationSeconds": 1.604308,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-stopover"
+        }
+      ]
+    },
+    {
+      "text": "suite",
+      "textSha256": "f8ebd43dbef1f029bf4930c65c9b7c5cc76af476927cee861ff18fcc73bfc4ab",
+      "file": "f8ebd43dbef1f029bf49.mp3",
+      "bytes": 12373,
+      "sha256": "e1d1efd477a9a9d10bc26b2011ae6c90f3977a51892efb4f34dee28b11aae3a1",
+      "durationSeconds": 1.45941,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-suite"
+        }
+      ]
+    },
+    {
+      "text": "availability",
+      "textSha256": "f95dac581e9b439c58abf51a6c8c091f8e0aac8c0fb06f0cbca10fc8ac361330",
+      "file": "f95dac581e9b439c58ab.mp3",
+      "bytes": 14045,
+      "sha256": "913d91b4e089cf811687d81177e51a2dee4927eccb2f00e5c524553920142dbb",
+      "durationSeconds": 1.659274,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p5-01"
+        }
+      ]
+    },
+    {
       "text": "D.",
       "textSha256": "f9e487799dfc7882b1a0db047999249489d02726b2c82055cb68a6bb0311f118",
       "file": "f9e487799dfc7882b1a0.mp3",
@@ -3428,6 +7586,48 @@
           "id": "p1-02",
           "part": 1,
           "index": 8
+        }
+      ]
+    },
+    {
+      "text": "quotation",
+      "textSha256": "fcd9bd43bf8c849a3d27ff152e095c9f2f464c26c8d1ed5bffb9d2b00cf8aa95",
+      "file": "fcd9bd43bf8c849a3d27.mp3",
+      "bytes": 14881,
+      "sha256": "77ab34a4ad03bd5c308e8ba0d9abbf7e1015e9cd8153790b7a15d0d5a6b5e1a3",
+      "durationSeconds": 1.77424,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-quotation"
+        }
+      ]
+    },
+    {
+      "text": "corridor",
+      "textSha256": "fd09da605e5804b35ee408d27c1bed7c7932a1af861948e042283615be0bd3d0",
+      "file": "fd09da605e5804b35ee4.mp3",
+      "bytes": 12164,
+      "sha256": "fd627fb60d0a0a33c812c147cac8059a1549ef328b20e71d6eaaab9beab571e6",
+      "durationSeconds": 1.424354,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-corridor"
+        }
+      ]
+    },
+    {
+      "text": "occupancy",
+      "textSha256": "fd29c83362a75462bb767c80e4ce48861b30b4772b04f81ac59a87c76bd72cf2",
+      "file": "fd29c83362a75462bb76.mp3",
+      "bytes": 13627,
+      "sha256": "c4cfb8681e1bae12ede355e7827ebe3b914338485d1b9269e4677f35d54e1dd3",
+      "durationSeconds": 1.599274,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-occupancy"
         }
       ]
     },
@@ -3484,6 +7684,48 @@
           "id": "p4-v2-03",
           "part": 4,
           "index": 4
+        }
+      ]
+    },
+    {
+      "text": "recruit",
+      "textSha256": "fde2b189f66a29e29b49bfa148d2e9c5b750f6b09cbcd3967c54f858c6b11991",
+      "file": "fde2b189f66a29e29b49.mp3",
+      "bytes": 12582,
+      "sha256": "6a8987b6c908be601ff3cb83e53b1f3aa6deb27a1be07ce9b615d78e5b91aba4",
+      "durationSeconds": 1.464989,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-recruit"
+        }
+      ]
+    },
+    {
+      "text": "recharge",
+      "textSha256": "fe7280cbed88608f16bac4c90d0bc3700d3eae3d6af167be975e94afbb921093",
+      "file": "fe7280cbed88608f16ba.mp3",
+      "bytes": 13209,
+      "sha256": "4a3c1865d3c4040455497278d8e4d560244adde176c35c71b932b6aeb227927d",
+      "durationSeconds": 1.549342,
+      "references": [
+        {
+          "kind": "questionVocabulary",
+          "id": "p2-v2-01"
+        }
+      ]
+    },
+    {
+      "text": "pavement",
+      "textSha256": "ff2188e7af137b40587d92a719378df0e000a36e7e0e2374efc2b5bc0dd0c822",
+      "file": "ff2188e7af137b40587d.mp3",
+      "bytes": 13209,
+      "sha256": "d547c80127d318a22098291d4f328ed5fd47840865f53030a23bc20371c73be7",
+      "durationSeconds": 1.554376,
+      "references": [
+        {
+          "kind": "vocabulary",
+          "id": "v-pavement"
         }
       ]
     }

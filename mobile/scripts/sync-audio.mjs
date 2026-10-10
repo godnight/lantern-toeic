@@ -10,8 +10,10 @@ const digest = value => createHash('sha256').update(value).digest('hex');
 const manifest = JSON.parse(await readFile(path.join(source, 'manifest.json'), 'utf8'));
 const questions = JSON.parse(await readFile(path.join(root, 'content/questions.json'), 'utf8'));
 const speaking = JSON.parse(await readFile(path.join(root, 'content/speaking.json'), 'utf8'));
-const required = new Set();
+const vocabulary = JSON.parse(await readFile(path.join(root, 'content/vocabulary.json'), 'utf8'));
+const required = new Set(vocabulary.map(word=>word.word));
 for (const question of questions) {
+  for (const word of question.vocabulary || []) required.add(word.word);
   if (question.part <= 4) required.add(question.audioText || question.transcript || question.prompt);
   for (const sentence of (question.transcript || question.audioText || '').split(/(?<=[.!?])\s+/).filter(Boolean)) required.add(sentence);
 }
