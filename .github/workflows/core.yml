@@ -28,9 +28,20 @@ jobs:
       - run: npm run build
       - name: Verify built HTML and UI component contracts
         run: node --test tests/*.test.mjs
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Convert an original synthetic PDF through real Poppler
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y poppler-utils
+          python -m pip install reportlab==4.4.9
+          python tests/fixtures/create-page-packer-fixture.py --out-dir "$RUNNER_TEMP/lantern-page-pack-qa"
+          node scripts/pack-exam-pages.cjs --recipe "$RUNNER_TEMP/lantern-page-pack-qa/recipe.json"
       - name: Build shared app and run real-browser mock-exam regression
         env:
           LANTERN_BROWSER_QA_DIR: ${{ runner.temp }}/lantern-browser-qa
+          LANTERN_PAGE_PACK_QA_DIR: ${{ runner.temp }}/lantern-page-pack-qa
         run: |
           npm --prefix mobile run build
           node node_modules/playwright/cli.js install --with-deps chromium

@@ -403,6 +403,10 @@ async function downloadBackup(name) {
     const restored=(await currentAttempt(a=>a.id===before.id)).attempt;assert.deepEqual(restored.answers,before.answers);assert.equal(restored.listeningDeadline,before.listeningDeadline);
     return {fault:'QuotaExceededError on attempts.put',savedAnswerRetained:true,explicitExitWorked:true,resumeWorked:true};
   });
+  if(process.env.LANTERN_PAGE_PACK_QA_DIR) {
+    await freshContext();await newPage();
+    await require('./page-pack-flow.cjs')({page,step,click,importViaUI,preflight,idle,enter,currentAttempt,screenshot,layout,fixtureDir:process.env.LANTERN_PAGE_PACK_QA_DIR});
+  }
   await step('no uncaught JS errors, local HTTP failures or external requests',async()=>{assert.deepEqual(report.pageErrors,[]); assert.deepEqual(report.httpErrors,[]);assert.deepEqual(report.blockedExternal,[]);return {pageErrors:0,httpErrors:0,blockedExternal:0,consoleErrors:report.consoleErrors};});
   report.status='passed';
 })().catch(async error=>{

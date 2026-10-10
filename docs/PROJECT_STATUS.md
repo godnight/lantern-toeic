@@ -1,5 +1,11 @@
 # 项目状态
 
+## 本机 PDF 原页打包工具（2026-10-11）
+
+新增 `npm run exam:pack`：将已核对的个人完整 PDF、整场音频、200项答案和题组页码映射打包为 v0.3.0 已支持的 JSON。支持一篇跨多页及多篇同页，不做OCR或推断答案；源材料不上传。见[使用说明](EXAM_PAGE_PACKER.md)和[测试报告](testing/EXAM_PAGE_PACKER_2026-10-11.md)。26项工具检查、合计161项学习回归、类型检查、真实Poppler转换及22条浏览器流程通过；CI已加入同一链路，GitHub结果以本次PR检查为准。
+
+本轮只改工具、测试与文档，App/已发布HAP/Web/线上功能仍为v0.3.0，不重发旧标签或附件。没有取得可导入完整官方卷。补充查明韩国Vol.18确有200题题册，公开配套却是文稿、韩语译文及答案，英文完整题本下载与地区适用音频仍缺；详见[来源补充](research/OFFICIAL_EXAMS_2026-10-11.md)。USB当前离线，模拟器首次协议待本人确认，未动手机学习数据或补写新功能真机通过。
+
 ## v0.3.0 模考已预发布（2026-10-11）
 
 [PR #29](https://github.com/godnight/lantern-toeic/pull/29) 已合并，[v0.3.0 prerelease](https://github.com/godnight/lantern-toeic/releases/tag/v0.3.0) 已发布，功能基线为 `88dd510fdbbf9edaef0370ff537f463142c9ca2c`。本机整卷导入、45+75 分钟模考、恢复、成绩与备份已完成；228 项机器测试、18 个浏览器流程通过。main 的 Core、Harmony 和发布流程均成功，公开附件包含未签名 HAP、Web 构建包、源码、报告及校验值。详见 [发布核验](releases/v0.3.0-published.md)。
