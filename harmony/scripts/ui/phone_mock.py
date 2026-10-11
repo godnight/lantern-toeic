@@ -478,7 +478,7 @@ class MockRunner(ui.Runner):
                 self.click("下一题", scope=("article", "第 1 题"))
         self.capture("two-saved-answers")
         self.exit_to_catalog()
-        b0, original_filename = self.export("B0-before-cold")
+        b0, _ = self.export("B0-before-cold")
         self.attempt_id = owned_attempt(read_json(baseline), read_json(b0), self.pack, self.start_window)
         # Stop only after export proves which new attempt this run created.
         self.exit_to_main()
@@ -489,11 +489,13 @@ class MockRunner(ui.Runner):
         self.locate(text="已保存 2/200 题 · 离开仍继续计时", types={"paragraph"}, clickable=False)
         self.capture("cold-resume")
         self.exit_to_catalog()
-        b1, _ = self.export("B1-after-cold")
+        b1, restore_filename = self.export("B1-after-cold")
         paths = [b0, b1]
+        # Cold resume can append real background/audio interruption evidence.
+        # Replay the latest snapshot; restoring B0 would correctly conflict.
         for index in (1, 2):
             self.click("恢复本机备份", scope=("region", MOCK), direction="up")
-            self.picker(original_filename)
+            self.picker(restore_filename)
             self.status(r"^备份已合并：新增 0 套题包、0 次记录；原记录保留。$")
             current, _ = self.export(f"B{index + 1}-after-restore")
             paths.append(current)
