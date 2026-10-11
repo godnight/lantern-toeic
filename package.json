@@ -1,6 +1,6 @@
 {
   "name": "lantern-toeic",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -13,7 +13,7 @@
     "test": "npm run validate:content && npm run test:study && npm run build && node --test tests/*.test.mjs",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate",
-    "test:study": "node --test tests/study-invariants.test.cjs tests/native-lifecycle.test.cjs tests/repo-review-regressions.test.cjs tests/study-data-v2.test.cjs tests/lesson-audio.test.cjs tests/vocabulary.test.cjs tests/exams.test.cjs tests/exam-ui.test.cjs tests/exam-page-packer.test.cjs tests/native-mock-verifier.test.cjs tests/native-mock-timeout.test.cjs",
+    "test:study": "node --test tests/study-invariants.test.cjs tests/native-lifecycle.test.cjs tests/repo-review-regressions.test.cjs tests/study-data-v2.test.cjs tests/lesson-audio.test.cjs tests/vocabulary.test.cjs tests/exams.test.cjs tests/exam-ui.test.cjs tests/exam-page-packer.test.cjs tests/native-mock-verifier.test.cjs tests/native-mock-timeout.test.cjs tests/dictionary.test.cjs tests/dictionary-ui.test.cjs",
     "typecheck": "tsc --noEmit",
     "validate:content": "node scripts/validate-content.mjs",
     "check:resources": "node scripts/check-resources.mjs",
@@ -21,7 +21,9 @@
     "test:exams": "node --test tests/exams.test.cjs tests/exam-ui.test.cjs",
     "test:browser": "node tests/browser/full-exam.cjs",
     "exam:pack": "node scripts/pack-exam-pages.cjs",
-    "test:page-packer": "node --test tests/exam-page-packer.test.cjs"
+    "test:page-packer": "node --test tests/exam-page-packer.test.cjs",
+    "test:dictionary": "node --test tests/dictionary.test.cjs tests/dictionary-ui.test.cjs",
+    "test:dictionary:browser": "node tests/browser/dictionary.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

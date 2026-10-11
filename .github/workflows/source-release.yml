@@ -58,6 +58,7 @@ jobs:
         run: |
           node node_modules/playwright/cli.js install --with-deps chromium
           npm run test:browser
+          npm run test:dictionary:browser
       - name: Retain synthetic browser QA evidence
         if: always()
         uses: actions/upload-artifact@v7

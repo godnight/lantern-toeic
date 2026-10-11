@@ -1,5 +1,13 @@
 # 项目状态
 
+## v0.3.2 词库扩展与通用查词，发布进行中（2026-10-11）
+
+原 240 个场景词新增 567 个原创短释词条，现为 807 个场景词；加上 55 个题内表达，共 862 个学习条目。旧词条 ID 和复习记录保留。新增按需加载的 84,979 条通用英汉查词、收藏复习和记录备份；通用词典不是托业专用词表。原创内容沿用 CC BY 4.0，中文维基词典 / Kaikki 衍生查词数据按 CC BY-SA 4.0 保留署名、来源及加工说明，见[词库来源](../content/VOCABULARY_SOURCES.md)。
+
+鸿蒙 0.3.2 / 20008 已通过真实 SDK 构建，两份 HAP 的 1,059 项资源核对和官方签名验证通过。内置音频由 448 增至 1,015 段，覆盖场景词、题内表达和已有练习，不覆盖全部通用词典。合成、解码与文件验证不等于逐词人耳发音验收；例句跟读及新增词助记尚未完成。
+
+GitHub、公开发布及网页部署仍在进行中，尚不能称 v0.3.2 已发布。本轮没有安装或操作用户手机；手机此前已安装 v0.3.1。以下保留历史阶段记录，当前版本与设备状态以本节为准。
+
 ## v0.3.1 已发布，双题包鸿蒙验收通过（2026-10-11）
 
 [PR #38](https://github.com/godnight/lantern-toeic/pull/38) 已合并，[v0.3.1 prerelease](https://github.com/godnight/lantern-toeic/releases/tag/v0.3.1) 已公开；标签与发布源码为 `339671cdb6376f46d203872be832cb21726f227e`，版本 0.3.1 / 20007。最终 PR 头 `a9cac23fc3774d743f7f9eeec2bda23a15fdff8d` 的 Core/Harmony 均成功，[发布运行](https://github.com/godnight/lantern-toeic/actions/runs/38125070814)成功，7 个公开附件均已实际下载并核验 SHA-256。Sites 版本 10 已部署成功，沿用[原私有网址](https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site)；这不等于手机访问已复验。源码、CI、公开包和部署追溯见[发布核验](releases/v0.3.1-published.md)。

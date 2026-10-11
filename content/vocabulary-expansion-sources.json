@@ -1,0 +1,18 @@
+{
+  "title": "托业职场与生活场景扩展词汇候选",
+  "createdAt": "2026-10-11",
+  "source": "本项目原创整理（AI 辅助）",
+  "author": "LANTERN 微光托业项目",
+  "license": "CC BY 4.0, consistent with the repository original content policy",
+  "scope": "Word selections and short Chinese target-sense glosses were drafted independently for workplace and everyday-life practice; not copied from a published TOEIC list.",
+  "dictionaryUsage": "FreeDict+WikDict was inspected for quality and exact-headword coverage only. Its Chinese translations are not included in this proposal.",
+  "limitations": "不是 ETS 官方词表或频率排名；尚未经真人教师审校；只提供简短场景义，例句与词根词缀后续补充。单词合成音频来源另见 mobile/offline-audio/README.md。",
+  "file": "vocabulary-expansion.json",
+  "fields": [
+    "id",
+    "word",
+    "category",
+    "meaning",
+    "pos"
+  ]
+}
