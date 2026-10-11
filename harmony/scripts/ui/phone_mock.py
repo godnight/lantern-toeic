@@ -446,6 +446,36 @@ class MockRunner(ui.Runner):
         self.verify("final-backup-comparison", "--baseline", baseline, "--before-import", before, "--files", *paths)
         self.checks.extend(["native-two-package-import", "two-answers-cold-resume", "four-real-backups-and-idempotent-restore"])
         self.capture("final-catalog")
+        if getattr(self.args, "observe_deadlines", False):
+            self.observe_then_export(paths[-1])
+
+    def observe_then_export(self, baseline_path):
+        import mock_deadlines
+        # run() has just model-verified B0-B3, including the exact active ID.
+        data = read_json(baseline_path)
+        active = [a for a in data["attempts"] if a["status"] != "submitted"]
+        if len(active) != 1 or active[0]["id"] != self.attempt_id:
+            raise ui.Failure("Deadline observation lost the just-verified active attempt")
+        attempt = active[0]
+        answers = attempt["answers"]
+        baseline = {key: attempt[key] for key in ("startedAt", "listeningDeadline", "readingDeadline")}
+        baseline.update(title=self.pack["title"],
+                        attemptIdSha256=hashlib.sha256(self.attempt_id.encode()).hexdigest(),
+                        expectedCorrect=sum(answers.get(str(q["number"]), {}).get("choice") == q["answer"]
+                                            for q in self.exam["questions"] if str(q["number"]) in answers),
+                        expectedUnanswered=200 - len(answers))
+        self.click("继续考试", scope=("region", MOCK), direction="up")
+        self.phase = "attempt"
+        self.locate(text=self.pack["title"], types={"heading"}, clickable=False,
+                    scope=("region", MOCK), direction="up")
+        self.scroll("up")
+        mock_deadlines.observe(self.io, self.args, baseline)
+        self.checks.append("real-time-listening-reading-timeout-ui")
+        self.exit_to_catalog()
+        final, _ = self.export("final-timeout")
+        self.verify("final-timeout-comparison", "--timeout-baseline", baseline_path, "--final-backup", final)
+        self.checks.append("original-deadline-timeout-durable-backup")
+        self.capture("final-timeout-catalog")
 
 
 def parser():
@@ -457,12 +487,16 @@ def parser():
     p.add_argument("--dedicated-synthetic-qa", action="store_true", required=True)
     p.add_argument("--folders", nargs="+", default=["Download", "LANTERN TOEIC"])
     p.add_argument("--powershell", default="powershell.exe")
-    p.add_argument("--max-seconds", type=int, default=1200, choices=range(60, 1801))
+    p.add_argument("--observe-deadlines", action="store_true", help="Also wait for real 45/120-minute deadlines and verify a final native backup")
+    p.add_argument("--max-seconds", type=int, help="Total wall-time budget: default 1200/max 1800, or default/max 8400 with --observe-deadlines")
     return p
 
 
 def main(argv=None):
     args = parser().parse_args(argv)
+    args.max_seconds = args.max_seconds if args.max_seconds is not None else (8400 if args.observe_deadlines else 1200)
+    if not 60 <= args.max_seconds <= (8400 if args.observe_deadlines else 1800):
+        raise ui.Failure("Total wall-time budget exceeds the selected short/real-deadline mode")
     args.bundle, args.ability = "com.lantern.toeic", "EntryAbility"
     args.allow_physical_device = False
     args.dedicated_test_device, args.duplicate_import, args.idle_app_confirmed = True, False, True
@@ -487,7 +521,9 @@ def main(argv=None):
         io = MockTransport(args, manifest)
         runner = MockRunner(args, io, manifest)
         result = {"schemaVersion":1, "mode":"dedicated-synthetic-native-mock", "status":"running", "liveDeviceRun":True,
-                  "checks":runner.checks, "limitations":["Synthetic fixtures, not genuine TOEIC papers", "No real audio/hardware or two-hour endurance claim", "Requires an independent exclusive device reservation", "Leaves the new QA attempt and preserves prior history"]}
+                  "observeDeadlinesRequested":args.observe_deadlines,
+                  "checks":runner.checks, "limitations":["Synthetic fixtures, not genuine TOEIC papers", "No real audio/hardware or uninterrupted two-hour foreground claim", "Requires an independent exclusive device reservation", "Preserves all QA attempts and prior history"]}
+        (io.out / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
         try:
             # Model validation is local and precedes the first device command.
             empty = io.out / "local-validation-only.json"

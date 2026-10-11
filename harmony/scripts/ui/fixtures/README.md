@@ -5,3 +5,5 @@
 保留定位所需的 `type/text/bounds/enabled/clickable/visible/scrollable/children`，移除私有节点标识和无关属性；文件名、记录标识及个别动态文字已匿名化。原始布局的 `Web.text` 均逐份确认是包内固定来源 `https://lantern.local/`，因此保留此来源门禁。没有从夹具的简化属性推断 `checked` 状态。
 
 内容为原创合成 QA 标记，不含真题、音频或个人作答记录。固定 bounds 仅用于离线裁剪回归；实际设备动作必须从当次布局重新计算，不可硬编码这些坐标。原始截图、原始布局和匿名化映射保存在私人证据目录，不纳入公开仓库。
+
+`mock-deadline-listening.json` 与 `mock-deadline-reading.json` 来自同日实际只读观察保存的听力/阅读布局，按同一属性白名单裁减。测试中的结果、遮挡、错误与时钟变化均为明确的内存扰动；不存在声称来自未来实测的交卷夹具。

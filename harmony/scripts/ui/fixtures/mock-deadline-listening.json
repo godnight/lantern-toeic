@@ -1,0 +1,266 @@
+[
+  {
+    "bounds": [
+      0,
+      0,
+      1256,
+      2760
+    ],
+    "children": [
+      {
+        "type": "Web",
+        "text": "https://lantern.local/",
+        "bounds": [
+          0,
+          137,
+          1256,
+          2662
+        ],
+        "children": [
+          {
+            "type": "rootWebArea",
+            "bounds": [
+              0,
+              137,
+              1256,
+              2662
+            ],
+            "scrollable": true,
+            "children": [
+              {
+                "type": "genericContainer",
+                "bounds": [
+                  0,
+                  137,
+                  1256,
+                  2662
+                ],
+                "clickable": true,
+                "children": [
+                  {
+                    "type": "region",
+                    "text": "完整听读模考",
+                    "bounds": [
+                      50,
+                      220,
+                      1207,
+                      2662
+                    ],
+                    "children": [
+                      {
+                        "type": "paragraph",
+                        "text": "LOCAL MOCK EXAM",
+                        "bounds": [
+                          50,
+                          247,
+                          1207,
+                          317
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "heading",
+                        "text": "PDF page packing QA ONLY - 非真题",
+                        "bounds": [
+                          50,
+                          343,
+                          1207,
+                          435
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "退出模考",
+                        "bounds": [
+                          50,
+                          476,
+                          370,
+                          636
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "region",
+                        "text": "考试听力播放",
+                        "bounds": [
+                          50,
+                          677,
+                          1207,
+                          1125
+                        ],
+                        "children": [
+                          {
+                            "type": "paragraph",
+                            "text": "音频时长：0:20 · 听力计时固定 45:00",
+                            "bounds": [
+                              116,
+                              736,
+                              1141,
+                              815
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "status",
+                            "text": "音频当前未播放；倒计时继续。",
+                            "bounds": [
+                              116,
+                              828,
+                              1141,
+                              908
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "按已用时间恢复听力",
+                            "bounds": [
+                              116,
+                              921,
+                              840,
+                              1080
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "重新加载音频",
+                            "bounds": [
+                              867,
+                              923,
+                              1141,
+                              1078
+                            ],
+                            "clickable": true,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "type": "staticText",
+                        "text": "听力 LC",
+                        "bounds": [
+                          116,
+                          1238,
+                          312,
+                          1305
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "paragraph",
+                        "text": "听力结束后自动进入阅读",
+                        "bounds": [
+                          116,
+                          1328,
+                          640,
+                          1407
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "timer",
+                        "text": "当前阶段剩余时间",
+                        "bounds": [
+                          877,
+                          1218,
+                          1141,
+                          1424
+                        ],
+                        "children": [
+                          {
+                            "type": "strong",
+                            "text": "35:51",
+                            "bounds": [
+                              877,
+                              1218,
+                              1141,
+                              1332
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "staticText",
+                            "text": "剩余时间",
+                            "bounds": [
+                              877,
+                              1354,
+                              1057,
+                              1408
+                            ],
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "type": "paragraph",
+                        "text": "已保存 2/200 题 · 离开仍继续计时",
+                        "bounds": [
+                          116,
+                          1476,
+                          1141,
+                          1555
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "article",
+                        "text": "第 2 题",
+                        "bounds": [
+                          50,
+                          1960,
+                          1207,
+                          2662
+                        ],
+                        "children": [
+                          {
+                            "type": "paragraph",
+                            "text": "Part 1 · 第 2 题",
+                            "bounds": [
+                              102,
+                              2040,
+                              1155,
+                              2110
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "放大本组材料图片 1",
+                            "bounds": [
+                              102,
+                              2172,
+                              1155,
+                              2662
+                            ],
+                            "clickable": true,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "type": "disclosureTriangle",
+                        "text": "答题卡 · 已保存 2/200",
+                        "bounds": [
+                          109,
+                          1697,
+                          1148,
+                          1860
+                        ],
+                        "clickable": true,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
