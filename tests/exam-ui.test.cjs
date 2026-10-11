@@ -29,7 +29,7 @@ const dialog = new Proxy({}, {get: (_, name) => name});
 const component = load(path.join(root, 'app/learn/mock-exam.tsx'), {
   react: React, 'react/jsx-runtime': runtime, '@/components/ui/dialog': dialog,
   '@/lib/native-host': {}, '@/lib/exam-model': model, '@/lib/exam-storage': {},
-  '@/lib/exam-ui': ui, './mock-exam.css': {},
+  '@/lib/exam-ui': ui, './mock-exam.css': {}, './exam-library': {},
 });
 const attempt = () => ({status:'listening', startedAt:1000, lastObservedAt:1100, listeningDeadline:2701000, readingDeadline:7201000});
 const deferred = () => {let resolve, reject; const promise = new Promise((yes, no) => {resolve = yes; reject = no;}); return {promise, resolve, reject};};
@@ -258,7 +258,7 @@ function audioHarness(initial = {}) {
   const mod=load(path.join(root,'app/learn/mock-exam.tsx'), {
     react:hooks,'react/jsx-runtime':runtime,'@/components/ui/dialog':dialog,
     '@/lib/native-host':{isNativeForeground:()=>true,subscribeNativeState:()=>()=>{}},
-    '@/lib/exam-model':model,'@/lib/exam-storage':{},'@/lib/exam-ui':ui,'./mock-exam.css':{},
+    '@/lib/exam-model':model,'@/lib/exam-storage':{},'@/lib/exam-ui':ui,'./mock-exam.css':{},'./exam-library':{},
   },{document});
   function nodes(node) {
     if (!node || typeof node!=='object') return [];

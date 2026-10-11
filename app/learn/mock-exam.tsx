@@ -3,11 +3,12 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import {isNativeForeground, registerNativeBack, subscribeNativeState} from '@/lib/native-host';
-import {EXAM_LIMITS, READING_MS, advanceAttempt, examKey, getListeningDurationMs, presentExam,
+import {EXAM_LIMITS, READING_MS, advanceAttempt, examKey, getListeningDurationMs, getExamProfile, presentExam,
   type ExamAttempt, type ExamPackage, type ExamResult, type InterruptionReason} from '@/lib/exam-model';
 import {openExamRepository, type ExamRepository, type ExamSummary, type SavedExamAttempt} from '@/lib/exam-storage';
 import {ExamAssetUrls, ExamUiSession, StaleExamOwner, attachExamMedia, audioOffsetSeconds, checkExamAudioDuration, clockText, remainingMs, trySaveExamExit, verifyExamImage} from '@/lib/exam-ui';
 import './mock-exam.css';
+import ExamLibrary from './exam-library';
 
 type Props = {ownerId: string | null; onClose: () => void};
 type Catalog = {packages: ExamSummary[]; attempts: SavedExamAttempt[]};
@@ -44,6 +45,7 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
   const [saved, setSaved] = useState<SavedExamAttempt | null>(null);
   const [now, setNow] = useState(Date.now()), [reviewNumber, setReviewNumber] = useState(1);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
+  const [removeKey, setRemoveKey] = useState<string|null>(null);
   const [imagePreview, setImagePreview] = useState<{url: string; label: string} | null>(null);
   const [preflight, setPreflight] = useState(false), [heard, setHeard] = useState(false);
   const preflightRef = useRef({url: '', ready: false});
@@ -265,17 +267,21 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
   return <section className={saved && !durableSubmitted ? "mock-exam is-running" : "mock-exam"} aria-label="完整听读模考">
     <header className="mock-heading"><div><p className="eyebrow">LOCAL MOCK EXAM</p><h2>{exam?.title || '完整听读模考'}</h2></div>
       <button className="button secondary" disabled={busy} onClick={() => void leave().catch(ignore)}>退出模考</button></header>
-    {!saved && <p className="mock-muted">个人题包仅保存在这台设备。未接入云同步；卸载或清理数据前请导出完整备份。</p>}
+    {!saved && <p className="mock-muted">考试记录保存在这台设备；题包可从个人题包库下载。卸载或清理数据前请导出完整备份。</p>}
     {error && <div className="mock-alert" role="alert"><p>{error}</p><p>未完成的操作不能视为已保存。考试截止时间不会因此延后。</p>
       <button className="button secondary" disabled={busy} onClick={() => void refresh().catch(ignore)}>重新读取记录</button></div>}
     {exitFailure && <div className="mock-alert" role="alert"><p>退出时的中断标记尚未保存。可以先重试读取，或明确退出；考试仍按原截止时间继续。</p>
       <button className="button secondary" disabled={busy} onClick={onClose}>中断标记未保存，仍退出（计时继续）</button></div>}
     <p className="mock-status" role="status" aria-live="polite">{busy ? '正在处理本机记录…' : notice}</p>
     {!ready ? <p role="status">正在打开本机模考存储…</p> : !exam ? <>
+      <ExamLibrary ownerId={ownerId} disabled={busy} onImport={async text=>{
+        await perform(async repo=>{const outcome=await repo.importPackage(text);return {outcome,catalog:await readCatalog(repo)};},value=>{setCatalog(value.catalog);setNotice(value.outcome.status==='unchanged'?'本机已有相同题包。':'题包已下载到本机。');});
+      }}/>
       <div className="mock-actions"><button className="button primary" disabled={busy} onClick={() => inputs.current.packages?.click()}>导入题包 JSON</button>
         <button className="button secondary" disabled={busy || !catalog.packages.length} onClick={() => void backup().catch(ignore)}>导出完整备份</button>
         <button className="button secondary" disabled={busy} onClick={() => inputs.current.backup?.click()}>恢复本机备份</button></div>
       <p className="mock-muted">可一次选择多份 JSON，每份独立保存；若中途失败，之前成功的文件仍保留，重新读取可查看。仅同一记录范围可恢复备份。</p>
+      <p className="mock-muted">本机题包已用 {(catalog.packages.reduce((sum,item)=>sum+item.bytes,0)/1024/1024).toFixed(1)} / 192 MiB。未开始作答的题包可移除后重新下载；已有考试记录的题包会保留。</p>
       <input hidden ref={node => {inputs.current.packages = node;}} type="file" accept="application/json,.json" multiple aria-label="选择题包 JSON"
         onChange={event => {const files = Array.from(event.target.files || []); event.target.value = ''; if (files.length) void importFiles(files).catch(ignore);}}/>
       <input hidden ref={node => {inputs.current.backup = node;}} type="file" accept="application/json,.json" aria-label="选择模考备份"
@@ -286,9 +292,13 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
       {!catalog.packages.length ? <div className="panel mock-empty"><h3>还没有可用的完整题包</h3><p>导入你有权个人使用的完整听读 JSON 题包后，才能开始 200 题模考。</p>
         <p>这里没有预装完整真题，也不会用演示题拼成“真题卷”。题包须含正文或扫描图片、选项、答案和完整听力音频。</p></div> :
         <div className="mock-catalog">{catalog.packages.map(item => <article className="panel" key={item.key}>
-          <p className="eyebrow">200 题 · 听力 {clockText(getListeningDurationMs(item))} / 阅读 {clockText(READING_MS)}</p><h3>{item.title}</h3><p className="mock-muted">版本 {item.version} · {item.source.title}</p>
+          <p className="eyebrow">{getExamProfile(item.format).label} · 200 题 · 听力 {clockText(getListeningDurationMs(item))} / 阅读 {clockText(READING_MS)}</p><h3>{item.title}</h3><p className="mock-muted">版本 {item.version} · {item.source.title}</p>
+          {item.format && <p className="mock-muted">旧题型用于补充练习；Part 题量与现行考试不同，不作为现行考前基线。</p>}
           <details><summary>来源与个人使用声明</summary><p>{item.source.publisher}</p><p>{item.source.reference}</p><p>{item.source.rightsStatement}</p><p>以上为导入者填写，程序未认证来源或授权。</p></details>
-          <button className="button secondary" disabled={busy || !!active} onClick={() => void openPackage(item.key).catch(ignore)}>音频预检与新考试</button></article>)}</div>}
+          <button className="button secondary" disabled={busy || !!active} onClick={() => void openPackage(item.key).catch(ignore)}>音频预检与新考试</button>
+          {!catalog.attempts.some(row=>row.attempt.examId===item.id&&row.attempt.examVersion===item.version)&&<div>
+            {removeKey===item.key?<><p>确认移除“{item.title}”的本机副本？请先确认原 JSON 或个人题包库中仍有副本。</p><button className="button secondary" disabled={busy} onClick={()=>void perform(async repo=>{await repo.removeUnusedPackage(item.key);return readCatalog(repo);},value=>{setCatalog(value);setRemoveKey(null);setNotice('未作答题包已从本机移除，云端文件保留。');}).catch(ignore)}>确认移除本机副本</button><button className="text-button" onClick={()=>setRemoveKey(null)}>取消</button></>:<button className="text-button" disabled={busy} onClick={()=>setRemoveKey(item.key)}>移除未作答的本机副本</button>}
+          </div>}</article>)}</div>}
       <section className="mock-history"><h3>已交卷记录</h3>{catalog.attempts.filter(row => row.attempt.status === 'submitted').length ?
         catalog.attempts.filter(row => row.attempt.status === 'submitted').map(row => <article className="panel" key={row.attempt.id}>
           <h4>{catalog.packages.find(p => p.id === row.attempt.examId && p.version === row.attempt.examVersion)?.title || '本机题包'}</h4>
@@ -301,7 +311,7 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
       <ExamAudio key={examKey(exam)} url={urls[exam.listeningAudioId] || ''} declaredListeningDurationMs={exam.listeningDurationMs}
         effectiveListeningDurationMs={getListeningDurationMs(exam)} attempt={displayed} durableSubmitted={!!durableSubmitted}
         onPreflight={updatePreflight} onInterruption={interrupt} onRefresh={() => refresh()} busy={busy}/>
-      {!saved ? <article className="panel mock-preflight"><h3>开始前确认</h3><p>本套听力按 {clockText(getListeningDurationMs(exam))} 截止，随后进入 {clockText(READING_MS)} 阅读；进入阅读后不能返回听力。退出、后台和重启都不暂停计时。</p>
+      {!saved ? <article className="panel mock-preflight"><h3>开始前确认</h3><p>{getExamProfile(exam.format).label} · Part 1–7 题量：{getExamProfile(exam.format).partCounts.join(' / ')}。</p><p>本套听力按 {clockText(getListeningDurationMs(exam))} 截止，随后进入 {clockText(READING_MS)} 阅读；进入阅读后不能返回听力。退出、后台和重启都不暂停计时。</p>
         <label className="mock-checkbox"><input type="checkbox" checked={heard} onChange={event => setHeard(event.target.checked)}/><span>我已试听，确认声音可听清，且这段音频包含本卷完整听力。</span></label>
         <p>程序检查可解码、时长匹配与播放状态，不能代替你确认扬声器和材料完整性。</p>
         <div className="mock-actions"><button className="button primary" disabled={busy || !preflight || preflightRef.current.url !== urls[exam.listeningAudioId] || !heard || !imagesReady} onClick={() => void start().catch(ignore)}>开始新考试 · 立即计时</button>
@@ -368,7 +378,7 @@ export function QuestionBody({question, selected, submitted, disabled, onAnswer}
 
 function Results({result, attempt}: {result: ExamResult; attempt: ExamAttempt}) {
   return <article className="panel mock-results"><p className="eyebrow">{result.firstAttempt ? '首次完整模考' : `复测第 ${result.ordinal - 1} 次`} · {attempt.submittedReason === 'timeout' ? '到时自动交卷' : '主动交卷'}</p>
-    <h3>正确 {result.correct}/200 · 漏答 {result.unanswered}</h3><p>听力 {result.listeningCorrect}/100 · 阅读 {result.readingCorrect}/100 · 总用时 {clockText(result.elapsedMs)}</p>
+    <h3>正确 {result.correct}/200 · 漏答 {result.unanswered}</h3><p>{getExamProfile(attempt.format).label} · 听力 {result.listeningCorrect}/100 · 阅读 {result.readingCorrect}/100 · 总用时 {clockText(result.elapsedMs)}</p>
     <p>本次听力时限 {clockText(attempt.listeningDeadline - attempt.startedAt)} · 阅读时限 {clockText(attempt.readingDeadline - attempt.listeningDeadline)}</p>
     <p className="mock-muted">各 Part 用时是当前题驻留的墙钟时间，包含后台和离开，不代表有效专注时间。</p>
     <div className="mock-table-wrap"><table><caption>各 Part 成绩</caption><thead><tr><th>Part</th><th>正确/总题</th><th>漏答</th><th>正确率</th><th>用时</th></tr></thead>
