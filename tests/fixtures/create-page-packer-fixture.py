@@ -8,12 +8,20 @@ import wave
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen.canvas import Canvas
+from reportlab.lib.pdfencrypt import StandardEncryption
 
 
-def create(directory: Path):
+def create(directory: Path, printable_protected=False):
     directory.mkdir()  # New directory only: never overwrite a user's material.
     pdf = directory / 'synthetic-pages.pdf'
-    canvas = Canvas(str(pdf), pagesize=A4, invariant=True, pageCompression=1)
+    # This fixed owner password protects only original, disposable QA controls.
+    # No real source PDF is read, unlocked, rewritten, or given a password here.
+    pdf_options = {}
+    if printable_protected:
+        pdf_options['encrypt'] = StandardEncryption(
+            userPassword='', ownerPassword='lantern-original-qa-print-only',
+            canPrint=1, canCopy=0, canModify=0, canAnnotate=0, strength=128)
+    canvas = Canvas(str(pdf), pagesize=A4, invariant=True, pageCompression=1, **pdf_options)
     width, height = A4
     canvas.setTitle('Original synthetic QA pages - NOT a TOEIC practice paper')
     canvas.setAuthor('LANTERN automated test fixture')
@@ -170,4 +178,7 @@ def create(directory: Path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out-dir', required=True, type=Path)
-    create(parser.parse_args().out_dir)
+    parser.add_argument('--printable-protected', action='store_true',
+                        help='Protect this original QA PDF with an empty user password; allow printing, deny copy/modify/annotation.')
+    args = parser.parse_args()
+    create(args.out_dir, printable_protected=args.printable_protected)

@@ -14,7 +14,15 @@ npm run exam:pack -- --recipe /private/materials/recipe.json
 
 默认在材料目录中创建新的 `packed-<id>-v<version>` 目录，内含 `exam.json` 和 `mapping-report.json`。可用 `--out-dir` 指定材料目录内的新目录；已有目录不会被覆盖。Poppler 不在 PATH 时用 `--pdfinfo`、`--pdftoppm`、`--pdfdetach` 指定实际可执行文件。没有自动安装软件或下载依赖的行为。
 
+Windows 建议将完整 Poppler 分发目录放在仅含 ASCII 字符的工具路径下，并保留其配套资源。本次验证中，中文工具路径下的渲染进程虽成功退出，页面却缺少日文字形；同版工具移至 ASCII 路径后恢复。退出码或生成了图片不能代替现有的页面核对。
+
 默认 192 DPI、JPEG 质量 90；`--dpi` 可设 72–200。原页过大、超出题包存储限制或不可解析时会失败，不会默默删页或降质。低 DPI 不一定能读清小字，应在 App 放大后核对。
+
+## 支持的 PDF
+
+接受未加密 PDF，也接受无需输入密码即可由 `pdfinfo` 正常读取、权限记录完整且明确为 `print:yes` 的权限加密 PDF。后者可保留禁止复制或修改等限制；工具只渲染允许打印的页面，不提供密码参数，不重写或移除原文件保护。报告保留 `encrypted:true`，并记录 `printingAllowed:true`；源文件 SHA 核对和只读快照规则不变。
+
+需要输入密码、禁止打印、权限未知或元数据含歧义的文件会被拒绝；关键字段缺失或重复、JavaScript、表单和附件检查仍保持原有拒绝规则。允许打印不等于取得公开再分发授权，材料仍按前述个人使用范围保存在私人目录。
 
 ## 配方字段
 
@@ -46,3 +54,5 @@ npm run exam:pack -- --recipe /private/materials/recipe.json
 ## 自动化边界
 
 `npm run test:page-packer` 验证结构、路径、排除页、听读隔离和失败输出。CI 用自有合成 PDF 实际运行 Poppler，再在独立浏览器中导入生成题包，验证图片字节、放大滚动、题组和成绩。合成 PDF、短静音 WAV、受控计时均不能证明真实官方卷、真实听音或两小时真机运行。
+
+权限加密兼容修正已在私人副本完成29项回归，并将自制、允许打印且无需输入密码的保护 PDF 经真实 Poppler 打包后运行既有22条浏览器流程，全部通过。未保护 fixture 的默认输出逐字节不变；本次记录不代表该修正已合并或其 CI 已通过，详见[测试记录](testing/EXAM_PAGE_PACKER_2026-10-11.md)。

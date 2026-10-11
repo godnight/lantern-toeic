@@ -4,7 +4,7 @@
 
 ## 最新接续：原生模考 runner 已通过独立短流程（2026-10-11）
 
-PR #32 已合并。PR #33的独立短流程与原截止续验已通过；接续先核对其合并状态：已合并则从最新main开始，否则使用 `test/harmony-mock-automation` 分支。代码提交 `d0459feb05cc0fd6f963505988276c39eac84d81` 的[Core](https://github.com/godnight/lantern-toeic/actions/runs/38119790549)与[Harmony](https://github.com/godnight/lantern-toeic/actions/runs/38119790558)均成功；145项Python离线、198项学习检查及发布门禁29项Node/22项Python有分项证据。最终文档提交CI以PR检查为准。执行说明 `harmony/scripts/ui/MOCK.md`，报告 `docs/testing/HARMONY_MOCK_AUTOMATION_2026-10-11.md`。本轮只改工具/文档，不改release-manifest，不重发v0.3.0 HAP/Web/Site。
+PR #32、#33 已合并；#33合并提交为 `2c24bf058a0adc7b2fd1e20e2e54e8e8f41a72bf`。独立短流程与原截止续验均通过，最终文档提交 `6524deb0b772720c4aab37dddc2354fc261b98fe` 的[Core](https://github.com/godnight/lantern-toeic/actions/runs/38120468872)与[Harmony](https://github.com/godnight/lantern-toeic/actions/runs/38120468860)均成功；145项Python离线、198项学习检查及发布门禁29项Node/22项Python有分项证据。执行说明 `harmony/scripts/ui/MOCK.md`，报告 `docs/testing/HARMONY_MOCK_AUTOMATION_2026-10-11.md`。本轮只改工具/文档，不改release-manifest，不重发v0.3.0 HAP/Web/Site。
 
 第90轮同次考试续验通过并实际退出0（`90-latest-backup-continuation`）：最新B1两次恢复、拒绝旧B0后全数据保持、四份比较、自然LC→RC→超时交卷及最终导出均验证。原听力截止12:58:34.646、整卷截止14:13:34.646（Asia/Shanghai）保持；最终文件SHA-256为 `c5a4739bb1665f1a70a1c51c9666d08274281f665939b8b316a7971362e636a5`。这是第89轮同一记录的诊断续验，不是新长模式独立全程通过。
 
@@ -14,7 +14,7 @@ PR #32 已合并。PR #33的独立短流程与原截止续验已通过；接续�
 
 私人 `vocab-work/research-full-exams/iibc-2020-archive` 已取得 IIBC 2020 官方模考200题题本、200项答案和空白答题纸，103组题页映射已准备，仍缺匹配音频、未生成最终题包。Hachette公开CD2音频包已完整核验，CD1截断，尚无对应完整题本/答案，不能补IIBC缺口。完整可听导入包仍0套；继续由我们在线获取并核验题本/匹配音频/答案，不默认转回用户提供，也不使用静音凑包。来源及边界见[材料核查](research/OFFICIAL_EXAMS_2026-10-11.md)。
 
-PDF兼容修正已有草稿PR #34（`fix/printable-protected-exam-pdfs`），基于PR #33，尚未合并。其提交 `407e81e92303f0f0b2f4697344125af89e9267dc` 的[Core](https://github.com/godnight/lantern-toeic/actions/runs/38116263181)通过201项学习/模型检查、真实保护PDF转换和22条浏览器流程；未触发不适用的Harmony工作流。私人转换证据在 `vocab-work/pdf-printable-compatibility`；真实IIBC原件只核验元数据、0附件与封面渲染，不等于完整题包。Windows使用同版完整Poppler的ASCII工具目录，避免日文字形缺失。先让PR #33保留历史merge，再将PR #34 base改为main、核对7文件范围和最终CI；实际集成代码须与已验提案一致并运行29项packer回归。私人题本、答案、映射、原始布局和实际备份不加入Git。
+PDF兼容修正见PR #34（`fix/printable-protected-exam-pdfs`），已在PR #33合并后改以main为基线，本地集成29项packer回归通过。首版提交 `407e81e92303f0f0b2f4697344125af89e9267dc` 的[Core](https://github.com/godnight/lantern-toeic/actions/runs/38116263181)通过201项学习/模型检查、真实保护PDF转换和22条浏览器流程；最终合并基线的CI及合并状态以PR #34为准。已合并则从最新main接续，否则从该分支接续。改动为原7份工具/测试/说明文件，加3份交接状态文档。私人转换证据在 `vocab-work/pdf-printable-compatibility`；真实IIBC原件只核验元数据、0附件与封面渲染，不等于完整题包。Windows使用同版完整Poppler的ASCII工具目录，避免日文字形缺失。私人题本、答案、映射、原始布局和实际备份不加入Git。
 
 ## 前期模拟器受控验收（2026-10-11）
 
