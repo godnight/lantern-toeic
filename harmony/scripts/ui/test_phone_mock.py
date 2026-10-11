@@ -465,6 +465,89 @@ class DelayedTransitionTests(OfflineCase):
         runner.io.hdc.assert_not_called()
 
 
+class DeadlineHandoffTests(OfflineCase):
+    def prepare(self):
+        runner = self.make_runner()
+        runner.attempt_id = "owned-attempt"
+        runner.exam["questions"] = [{"number": 1, "answer": 1}, {"number": 2, "answer": 2}]
+        baseline = self.root / "B3.json"
+        baseline.write_text(json.dumps({"attempts": [{
+            "id": runner.attempt_id, "status": "listening", "startedAt": 1000,
+            "listeningDeadline": 2_701_000, "readingDeadline": 7_201_000,
+            "answers": {"1": {"choice": 0}, "2": {"choice": 1}}}]}), encoding="utf-8")
+        order = []
+        runner.click = Mock(side_effect=lambda *a, **k: order.append("resume"))
+        runner.locate = Mock()
+        runner.scroll = Mock()
+        runner.exit_to_catalog = Mock(side_effect=lambda: order.append("exit-after-result"))
+        final = self.root / "final-timeout.json"
+        runner.export = Mock(side_effect=lambda label: (order.append("actual-export") or (final, EXAM_BACKUP)))
+        runner.verify = Mock(side_effect=lambda *a: order.append("model-final-verification"))
+        runner.capture = Mock(side_effect=lambda *a: order.append("final-capture"))
+        return runner, baseline, final, order
+
+    def test_timeout_ui_is_followed_by_real_export_boundary_and_model_comparison(self):
+        runner, baseline, final, order = self.prepare()
+        def observe(io, args, proof):
+            order.append("read-only-observation")
+            self.assertEqual(proof["expectedCorrect"], 0)
+            self.assertEqual(proof["expectedUnanswered"], 198)
+            self.assertEqual(proof["readingDeadline"], 7_201_000)
+            self.assertEqual(len(proof["attemptIdSha256"]), 64)
+        with patch("mock_deadlines.observe", side_effect=observe):
+            runner.observe_then_export(baseline)
+        self.assertEqual(order, ["resume", "read-only-observation", "exit-after-result",
+                                 "actual-export", "model-final-verification", "final-capture"])
+        runner.verify.assert_called_once_with("final-timeout-comparison", "--timeout-baseline", baseline, "--final-backup", final)
+        self.assertIn("original-deadline-timeout-durable-backup", runner.checks)
+        runner.io.hdc.assert_not_called()
+
+    def test_observation_failure_cannot_export_or_claim_timeout_saved(self):
+        runner, baseline, _, _ = self.prepare()
+        with patch("mock_deadlines.observe", side_effect=ui.Failure("wrong visible phase")):
+            with self.assertRaises(ui.Failure):
+                runner.observe_then_export(baseline)
+        runner.exit_to_catalog.assert_not_called()
+        runner.export.assert_not_called()
+        self.assertEqual(runner.checks, [])
+
+    def test_final_export_and_timeout_comparison_use_distinct_new_report_paths(self):
+        runner, baseline, final, _ = self.prepare()
+        reports = set()
+        def verify(label, *arguments):
+            # The real verifier atomically creates each output exactly once.
+            report = label + "-proof.json"
+            if report in reports:
+                raise ui.Failure("OUTPUT_EXISTS")
+            reports.add(report)
+        runner.verify.side_effect = verify
+        def export(label):
+            runner.verify(label, "--inspect", final)
+            return final, EXAM_BACKUP
+        runner.export.side_effect = export
+        with patch("mock_deadlines.observe", return_value={"status": "passed"}):
+            runner.observe_then_export(baseline)
+        self.assertEqual(len(reports), 2)
+        self.assertIn("original-deadline-timeout-durable-backup", runner.checks)
+
+    def test_timeout_ui_without_verified_final_data_is_not_durable_success(self):
+        runner, baseline, _, _ = self.prepare()
+        runner.verify.side_effect = ui.Failure("Final backup changed an original answer")
+        with patch("mock_deadlines.observe", return_value={"status": "passed"}):
+            with self.assertRaises(ui.Failure):
+                runner.observe_then_export(baseline)
+        self.assertIn("real-time-listening-reading-timeout-ui", runner.checks)
+        self.assertNotIn("original-deadline-timeout-durable-backup", runner.checks)
+        runner.capture.assert_not_called()
+
+    def test_another_active_attempt_is_rejected_before_resuming(self):
+        runner, baseline, _, _ = self.prepare()
+        runner.attempt_id = "unexpected-attempt"
+        with self.assertRaises(ui.Failure):
+            runner.observe_then_export(baseline)
+        runner.click.assert_not_called()
+
+
 class AttemptOwnershipTests(OfflineCase):
     def history(self):
         pack = {"id": "page-packer-qa-only", "version": 1}

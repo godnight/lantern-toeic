@@ -192,11 +192,87 @@ function compareStates(context, baseline, snapshots, beforeImport = null) {
     finalPhase: previous.status, finalRevision: previous.revision, finalObservedAt: previous.lastObservedAt };
 }
 
+function compareTimeoutStates(context, baseline, final, model, now) {
+  const expectedKeys = [...context.expected.keys()].sort();
+  check(equal([...baseline.packages.keys()].sort(), expectedKeys)
+    && equal([...final.packages.keys()].sort(), expectedKeys),
+  'TIMEOUT_PACKAGES', 'Both timeout snapshots must contain the same two known packages');
+  check(equal([...baseline.attempts.keys()].sort(), [...final.attempts.keys()].sort()),
+    'TIMEOUT_ATTEMPTS', 'Timeout must not add, replace or remove any attempt');
+  check(baseline.activeId && !final.activeId, 'TIMEOUT_PHASE',
+    'Baseline must contain exactly one active attempt and final must contain none');
+  const before = baseline.attempts.get(baseline.activeId), after = final.attempts.get(baseline.activeId);
+  check(before.examId === context.examId
+    && equal(Object.fromEntries(Object.entries(before.answers).map(([q, a]) => [q, a.choice])), context.answers),
+  'TIMEOUT_BASELINE', 'The active baseline must be the known synthetic exam with exactly the two QA answers');
+  for (const [id, old] of baseline.rawAttempts) {
+    if (id !== before.id) check(equal(old, final.rawAttempts.get(id)),
+      'HISTORY_CHANGED', 'Submitted history changed across the timeout snapshots');
+  }
+  const rawBefore = baseline.rawAttempts.get(before.id), rawAfter = final.rawAttempts.get(before.id);
+  for (const field of ['kind', 'schemaVersion', ...STABLE]) {
+    check(equal(rawBefore[field], rawAfter[field]), 'TIMEOUT_STABLE',
+      'Timeout changed identity, deadlines, answers or their original saved times');
+  }
+  check(after.status === 'submitted' && after.submittedReason === 'timeout'
+    && after.submittedAt === before.readingDeadline && after.lastObservedAt === before.readingDeadline
+    && after.activeQuestion >= 101,
+  'TIMEOUT_FINAL', 'Final must already record natural timeout at the original reading deadline');
+  // Import's five-minute future allowance cannot attest a deadline not yet reached.
+  check(Number.isSafeInteger(now) && now >= after.submittedAt, 'TIMEOUT_NOT_DUE',
+    'Validation time has not yet reached the original reading deadline');
+  check(after.revision > before.revision && after.lastObservedAt > before.lastObservedAt
+    && (!before.clockRollback || after.clockRollback),
+  'TIMEOUT_REGRESSION', 'Timeout did not advance revisions/time or erased a clock-rollback marker');
+  for (const [q, milliseconds] of Object.entries(before.questionTimeMs)) {
+    check(Object.hasOwn(after.questionTimeMs, q) && after.questionTimeMs[q] >= milliseconds,
+      'QUESTION_TIME_REGRESSION', 'Question time was lost or decreased');
+  }
+  check(after.interruptions.length >= before.interruptions.length
+    && before.interruptions.every((event, i) => equal(event, after.interruptions[i])),
+  'INTERRUPTION_REGRESSION', 'Existing interruptions changed, disappeared or were reordered');
+  const appended = after.interruptions.slice(before.interruptions.length);
+  check(appended.every((event, i) => event.at >= before.lastObservedAt
+    && event.at < before.readingDeadline
+    && !equal(event, after.interruptions[before.interruptions.length + i - 1])),
+  'TIMEOUT_INTERRUPTION', 'New interruption predates the baseline, follows timeout or duplicates its predecessor');
+  check(after.revision >= before.revision + appended.length + 1, 'TIMEOUT_REVISION',
+    'Revision growth cannot account for the appended interruptions and timeout');
+  // Grade the validated saved final state. Never advance/repair an unsubmitted
+  // caller record and then mistake that derived state for an actual final export.
+  const pack = final.packages.get(model.examKey({ id: after.examId, version: after.examVersion })).pack;
+  const grade = plain(safeModel(() => model.gradeAttempt(pack, after), 'TIMEOUT_GRADE_MODEL'));
+  check(grade.total === 200 && grade.correct === 0 && grade.unanswered === 198,
+    'TIMEOUT_QA_RESULT', 'Actual model grade does not match the fixed synthetic two-answer QA scenario');
+  return { attemptId: after.id, ordinal: after.ordinal, historyAttemptCount: baseline.attempts.size - 1,
+    sameAttemptSet: true, submittedHistoryPreserved: true, stableFields: ['kind', 'schemaVersion', ...STABLE],
+    startedAt: after.startedAt, listeningDeadline: after.listeningDeadline, readingDeadline: after.readingDeadline,
+    submittedAt: after.submittedAt, submittedReason: after.submittedReason, finalPhase: after.status,
+    finalRevision: after.revision, finalObservedAt: after.lastObservedAt,
+    clockRollback: after.clockRollback, interruptionCount: after.interruptions.length,
+    resultMeaning: 'Synthetic QA assertion only; not a user score or evidence of uninterrupted foreground execution',
+    modelDerivedResult: grade };
+}
+
+function modeOf(args) {
+  const timeout = args['timeout-baseline'] || args['final-backup'];
+  if (timeout) {
+    check(args['timeout-baseline'] && args['final-backup'] && !args.inspect && !args.baseline
+      && !args.files && !args['before-import'], 'CLI_MODE',
+    'Timeout mode requires timeout-baseline plus final-backup and cannot mix other modes');
+    return 'timeout';
+  }
+  check(args.inspect ? !args.baseline && !args.files : args.baseline && args.files?.length === 4,
+    'CLI_MODE', 'Use inspect mode or baseline plus exactly four files');
+  return args.inspect ? 'inspect' : 'compare';
+}
+
 function parseArgs(argv) {
   const args = { repo: path.resolve(__dirname, '..') }, seen = new Set();
   for (let i = 0; i < argv.length; i++) {
     const key = argv[i];
-    check(['--repo', '--manifest', '--inspect', '--baseline', '--files', '--before-import', '--out'].includes(key)
+    check(['--repo', '--manifest', '--inspect', '--baseline', '--files', '--before-import', '--out',
+      '--timeout-baseline', '--final-backup'].includes(key)
       && !seen.has(key), 'CLI_ARGUMENT', 'Unknown or repeated CLI argument');
     seen.add(key);
     if (key === '--files') {
@@ -208,8 +284,7 @@ function parseArgs(argv) {
     }
   }
   check(args.manifest && args.out, 'CLI_ARGUMENT', 'Manifest and output paths are required');
-  check(args.inspect ? !args.baseline && !args.files : args.baseline && args.files?.length === 4,
-    'CLI_MODE', 'Use inspect mode or baseline plus exactly four files');
+  modeOf(args);
   return args;
 }
 function writeNewReport(filename, report) {
@@ -223,6 +298,7 @@ function writeNewReport(filename, report) {
   finally { if (created) { try { fs.unlinkSync(temp); } catch {} } }
 }
 async function verify(args, now = Date.now()) {
+  const mode = modeOf(args);
   const model = loadModel(args.repo), context = await loadManifest(args.manifest, model);
   const beforeImport = args['before-import'] ? await readBackup(args['before-import'], context, model, now) : null;
   const common = { kind: 'lantern-native-mock-verification', schemaVersion: 1, status: 'passed',
@@ -231,7 +307,14 @@ async function verify(args, now = Date.now()) {
     evidenceOrigin: 'Caller-supplied local JSON; a device export is not independently attested',
     packageFingerprintsMatchInputs: true,
     limitations: ['Not official test materials or hardware audio evidence', 'Not 45/120-minute live endurance evidence'] };
-  if (args.inspect) {
+  if (mode === 'timeout') {
+    const baseline = await readBackup(args['timeout-baseline'], context, model, now);
+    const final = await readBackup(args['final-backup'], context, model, now);
+    const compared = compareTimeoutStates(context, baseline, final, model, now);
+    return { ...common, mode, ...summary(final), ...compared,
+      baseline: summary(baseline), finalBackup: summary(final) };
+  }
+  if (mode === 'inspect') {
     const state = await readBackup(args.inspect, context, model, now);
     if (beforeImport) preserve(beforeImport, state);
     return { ...common, mode: 'inspect', ...summary(state),
@@ -260,5 +343,5 @@ async function main(argv) {
   }
 }
 module.exports = { OWNER, VerificationError, loadModel, loadManifest, validateBackup, readBackup,
-  summary, preserve, compareStates, parseArgs, writeNewReport, verify, main };
+  summary, preserve, compareStates, compareTimeoutStates, parseArgs, writeNewReport, verify, main };
 if (require.main === module) main(process.argv.slice(2)).then(code => { process.exitCode = code; });
