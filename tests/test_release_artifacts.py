@@ -204,6 +204,14 @@ class ArtifactIntegrationTests(unittest.TestCase):
             self.prepare()
         self.assertEqual((self.output / 'release-assets.json').read_bytes(), before)
 
+    def test_prepared_output_rejects_reused_code_from_pinned_previous_release(self):
+        previous = self.base / 'previous-build-info.json'
+        json_file(previous, {'schemaVersion': 1, 'version': '0.0.9', 'versionCode': 20005,
+                            'sourceCommit': 'b' * 40})
+        with self.assertRaisesRegex(ValueError, 'greater'):
+            pack.prepare(self.root, self.hap, self.report, self.output, previous, pack.sha256(previous))
+        self.assertFalse(self.output.exists())
+
 
 class InstallerTests(unittest.TestCase):
     def test_changed_archive_rejected_even_with_matching_length(self):

@@ -1,0 +1,299 @@
+[
+  {
+    "bounds": [
+      0,
+      0,
+      2584,
+      1828
+    ],
+    "children": [
+      {
+        "type": "Web",
+        "bounds": [
+          0,
+          107,
+          2584,
+          1751
+        ],
+        "children": [
+          {
+            "type": "rootWebArea",
+            "bounds": [
+              0,
+              107,
+              2584,
+              1751
+            ],
+            "scrollable": true,
+            "children": [
+              {
+                "type": "genericContainer",
+                "bounds": [
+                  0,
+                  107,
+                  2584,
+                  1751
+                ],
+                "clickable": true,
+                "children": [
+                  {
+                    "type": "genericContainer",
+                    "bounds": [
+                      0,
+                      107,
+                      2584,
+                      1751
+                    ],
+                    "clickable": true,
+                    "children": [
+                      {
+                        "type": "region",
+                        "bounds": [
+                          673,
+                          107,
+                          2517,
+                          1332
+                        ],
+                        "children": [
+                          {
+                            "type": "button",
+                            "text": "导入词库记录",
+                            "bounds": [
+                              1112,
+                              1210,
+                              1518,
+                              1329
+                            ],
+                            "clickable": true,
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "text": "https://lantern.local/"
+      },
+      {
+        "type": "SheetWrapper",
+        "bounds": [
+          0,
+          107,
+          2584,
+          1828
+        ],
+        "clickable": true,
+        "children": [
+          {
+            "type": "SheetPage",
+            "bounds": [
+              632,
+              144,
+              1952,
+              1684
+            ],
+            "clickable": true,
+            "children": [
+              {
+                "type": "NavDestination",
+                "bounds": [
+                  632,
+                  144,
+                  1952,
+                  1684
+                ],
+                "children": [
+                  {
+                    "type": "Row",
+                    "bounds": [
+                      632,
+                      144,
+                      1952,
+                      300
+                    ],
+                    "children": [
+                      {
+                        "type": "Text",
+                        "text": "我的手机",
+                        "bounds": [
+                          808,
+                          220,
+                          1029,
+                          284
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "Column",
+                        "bounds": [
+                          1478,
+                          196,
+                          1644,
+                          300
+                        ],
+                        "clickable": true,
+                        "children": [
+                          {
+                            "type": "Text",
+                            "text": "全选",
+                            "bounds": [
+                              1522,
+                              223,
+                              1600,
+                              273
+                            ],
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Row",
+                    "bounds": [
+                      654,
+                      351,
+                      901,
+                      403
+                    ],
+                    "clickable": true,
+                    "children": [
+                      {
+                        "type": "Text",
+                        "text": "我的手机",
+                        "bounds": [
+                          654,
+                          351,
+                          874,
+                          403
+                        ],
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Text",
+                    "text": "Download",
+                    "bounds": [
+                      901,
+                      351,
+                      1150,
+                      403
+                    ],
+                    "clickable": true,
+                    "children": []
+                  },
+                  {
+                    "type": "Text",
+                    "text": "LANTERN TOE...",
+                    "bounds": [
+                      1177,
+                      351,
+                      1547,
+                      403
+                    ],
+                    "children": []
+                  },
+                  {
+                    "type": "Column",
+                    "bounds": [
+                      632,
+                      432,
+                      1952,
+                      1355
+                    ],
+                    "children": [
+                      {
+                        "type": "List",
+                        "bounds": [
+                          632,
+                          564,
+                          1952,
+                          1355
+                        ],
+                        "scrollable": true,
+                        "children": [
+                          {
+                            "type": "ListItem",
+                            "bounds": [
+                              654,
+                              564,
+                              1930,
+                              764
+                            ],
+                            "clickable": true,
+                            "children": [
+                              {
+                                "type": "Row",
+                                "bounds": [
+                                  654,
+                                  564,
+                                  1930,
+                                  764
+                                ],
+                                "children": [
+                                  {
+                                    "type": "Text",
+                                    "text": "lantern-vocabulary-records-00000000-0000-4000-8000-000000000001.json",
+                                    "bounds": [
+                                      825,
+                                      586,
+                                      1530,
+                                      676
+                                    ],
+                                    "children": []
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Text",
+                    "text": "已选 0/1",
+                    "bounds": [
+                      676,
+                      1413,
+                      846,
+                      1471
+                    ],
+                    "children": []
+                  },
+                  {
+                    "type": "Text",
+                    "text": "完成",
+                    "bounds": [
+                      1770,
+                      1420,
+                      1848,
+                      1465
+                    ],
+                    "children": []
+                  },
+                  {
+                    "type": "Text",
+                    "text": "仅可访问所选文件",
+                    "bounds": [
+                      1175,
+                      1549,
+                      1450,
+                      1588
+                    ],
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

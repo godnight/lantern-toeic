@@ -1,0 +1,164 @@
+[
+  {
+    "bounds": [
+      0,
+      0,
+      1256,
+      2760
+    ],
+    "children": [
+      {
+        "type": "Web",
+        "bounds": [
+          0,
+          137,
+          1256,
+          2662
+        ],
+        "children": [
+          {
+            "type": "rootWebArea",
+            "bounds": [
+              0,
+              137,
+              1256,
+              2662
+            ],
+            "scrollable": true,
+            "children": [
+              {
+                "type": "genericContainer",
+                "bounds": [
+                  0,
+                  137,
+                  1256,
+                  2662
+                ],
+                "clickable": true,
+                "children": [
+                  {
+                    "type": "genericContainer",
+                    "bounds": [
+                      0,
+                      137,
+                      1256,
+                      2662
+                    ],
+                    "clickable": true,
+                    "children": [
+                      {
+                        "type": "region",
+                        "text": "完整听读模考",
+                        "bounds": [
+                          50,
+                          137,
+                          1207,
+                          2662
+                        ],
+                        "children": [
+                          {
+                            "type": "heading",
+                            "text": "浏览器合成验证 alpha · 非真实试卷",
+                            "bounds": [
+                              102,
+                              567,
+                              1155,
+                              674
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "paragraph",
+                            "text": "版本 1 · Synthetic browser QA only",
+                            "bounds": [
+                              102,
+                              706,
+                              1155,
+                              790
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "disclosureTriangle",
+                            "text": "来源与个人使用声明",
+                            "bounds": [
+                              102,
+                              831,
+                              1155,
+                              994
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "音频预检与新考试",
+                            "bounds": [
+                              102,
+                              1091,
+                              624,
+                              1251
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "heading",
+                            "text": "PDF page packing QA ONLY - 非真题",
+                            "bounds": [
+                              102,
+                              1534,
+                              1155,
+                              1747
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "paragraph",
+                            "text": "版本 1 · Original synthetic PDF QA fixture",
+                            "bounds": [
+                              102,
+                              1779,
+                              1155,
+                              1863
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "disclosureTriangle",
+                            "text": "来源与个人使用声明",
+                            "bounds": [
+                              102,
+                              1904,
+                              1155,
+                              2068
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "音频预检与新考试",
+                            "bounds": [
+                              102,
+                              2165,
+                              624,
+                              2324
+                            ],
+                            "clickable": true,
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "text": "https://lantern.local/"
+      }
+    ]
+  }
+]

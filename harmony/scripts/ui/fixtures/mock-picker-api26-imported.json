@@ -1,0 +1,118 @@
+[
+  {
+    "bounds": [
+      0,
+      0,
+      1256,
+      2760
+    ],
+    "children": [
+      {
+        "type": "Web",
+        "bounds": [
+          0,
+          137,
+          1256,
+          2662
+        ],
+        "children": [
+          {
+            "type": "rootWebArea",
+            "bounds": [
+              0,
+              137,
+              1256,
+              2662
+            ],
+            "scrollable": true,
+            "children": [
+              {
+                "type": "genericContainer",
+                "bounds": [
+                  0,
+                  137,
+                  1256,
+                  2662
+                ],
+                "clickable": true,
+                "children": [
+                  {
+                    "type": "region",
+                    "text": "完整听读模考",
+                    "bounds": [
+                      50,
+                      220,
+                      1207,
+                      2662
+                    ],
+                    "children": [
+                      {
+                        "type": "status",
+                        "text": "qa-only-pages.json：已导入",
+                        "bounds": [
+                          50,
+                          905,
+                          1207,
+                          990
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "导入题包 JSON",
+                        "bounds": [
+                          50,
+                          1018,
+                          615,
+                          1177
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "导出完整备份",
+                        "bounds": [
+                          642,
+                          1021,
+                          1207,
+                          1181
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "heading",
+                        "text": "PDF page packing QA ONLY - 非真题",
+                        "bounds": [
+                          102,
+                          1895,
+                          1155,
+                          2108
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "音频预检与新考试",
+                        "bounds": [
+                          102,
+                          2526,
+                          624,
+                          2662
+                        ],
+                        "clickable": true,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "text": "https://lantern.local/"
+      }
+    ]
+  }
+]
