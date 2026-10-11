@@ -88,6 +88,42 @@ test('encrypted, JavaScript, forms and missing inspection metadata fail closed',
   assert.equal(tool.parseAttachmentCount('0 embedded files\n'),0);
   for(const s of ['1 embedded files\n1: private.pdf','unknown',''])assert.throws(()=>tool.parseAttachmentCount(s));
 });
+
+test('password-free printable protected PDFs render without rewriting source bytes',async t=>{
+  const {dir,options}=await setup(t),calls=[];
+  const before=await fs.readFile(path.join(dir,'book.pdf'));
+  const protectedInfo=info().replace('Encrypted: no','Encrypted: yes (print:yes copy:no change:no addNotes:no algorithm:AES)');
+  const rendered=fakeRenderer(calls,async(command,args)=>command==='pdfinfo' && !args.includes('-box')?protectedInfo:undefined);
+  const result=await tool.packExamPages(options,deps(rendered));
+  assert.equal(result.report.documents[0].encrypted,true);
+  assert.equal(result.report.documents[0].printingAllowed,true);
+  assert.deepEqual(await fs.readFile(path.join(dir,'book.pdf')),before);
+  assert.equal(calls.filter(c=>c.command==='pdftoppm').length,2);
+  assert.ok(calls.every(c=>!c.args.includes('-upw') && !c.args.includes('-opw')));
+  assert.equal(model.parseExamPackage(JSON.parse(await fs.readFile(path.join(result.outputDirectory,'exam.json'),'utf8'))).questions.length,200);
+});
+
+test('protected PDF inspection rejects denied printing, ambiguous metadata and unknown permissions',()=>{
+  const encryption='yes (print:yes copy:no change:no addNotes:no algorithm:AES)';
+  for(const value of [encryption.replace('print:yes','print:no'),encryption.replace('copy:no','copy:unknown'),
+    encryption.replace('algorithm:AES','algorithm:unknown'),'yes (print:yes)',encryption+' trailing']) {
+    assert.throws(()=>tool.parsePdfInfo(info().replace('Encrypted: no','Encrypted: '+value)),e=>e.code==='PDF_ACTIVE');
+  }
+  for(const label of ['Encrypted: no','JavaScript: no','Form: none','Pages: 3']) {
+    assert.throws(()=>tool.parsePdfInfo(label+'\n'+info()),e=>e.code==='PDF_METADATA');
+  }
+  for(const cipher of ['RC4','AES','AES-256']) {
+    assert.equal(tool.parsePdfInfo(info().replace('Encrypted: no','Encrypted: '+encryption.replace('algorithm:AES','algorithm:'+cipher))).encrypted,true);
+  }
+});
+
+test('password-required input fails inspection before rendering or creating a package',async t=>{
+  const {dir,options}=await setup(t),calls=[];
+  const denied=fakeRenderer(calls,async(command)=>{if(command==='pdfinfo')throw new tool.PackerError('POPPLER','Cannot open input');});
+  await assert.rejects(tool.packExamPages(options,deps(denied)),e=>e.code==='POPPLER');
+  assert.equal(calls.filter(c=>c.command==='pdftoppm').length,0);
+  assert.deepEqual(await leftovers(dir),[]);
+});
 test('huge page dimensions, unknown size and malformed JPEG are rejected before output',()=>{
   assert.throws(()=>tool.parsePageSize('Page 1 size: 10000 x 10000 pts',1,192));
   assert.throws(()=>tool.parsePageSize('Page 2 size: 600 x 800 pts',1,192));
