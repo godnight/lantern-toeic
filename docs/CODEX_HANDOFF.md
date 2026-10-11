@@ -2,7 +2,15 @@
 
 更新：2026-10-11。代码仓库：[godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)。当前只维护Web/PWA和HarmonyOS；Android/iOS工程、专用工作流及Capacitor已删除，旧源码留在Git历史。
 
-## 最新接续：原生模考 runner 已通过独立短流程（2026-10-11）
+## 最新接续：完整官方练习题包已生成（2026-10-11）
+
+PR #33、#34均已合并，从最新main接续；本轮集成基线 `7407364bd373410d3cedbb423e770150779187c9`，树 `8de5ce459cab9a5ef85d5d173074dcc3a0455307` 与本机 `8b750702900577e77ff3c006cbcbf10d0da2da49` 一致。GitHub与本地仍是独立历史，不直接推送本地祖先。PR #34最终[Core](https://github.com/godnight/lantern-toeic/actions/runs/38120704905)及[main推送检查](https://github.com/godnight/lantern-toeic/actions/runs/38120839042)成功，201项学习/模型检查、22条浏览器及真实保护PDF转换有实际日志证据。
+
+私人 `vocab-work/research-full-exams/hau-ets-complete-practice-test-20261011/packed-ets-hau-complete-practice-1-v1/exam.json` 已生成，75,695,046字节，SHA-256 `0fe0f70125d683a16e53a78d1e6c44df06d912a98b1b55c1d7fbb97001f2e551`。HAU同一官方下载记录提供ETS64页题本及四部分WAV，已按Part顺序连接为44:31.092 MP3。200答案经两次独立可见页面复核，103组/39页及媒体字节与真实模型校验通过；浏览器真实导入/预检9项、题面/跨页/放大11项检查通过；独立鸿蒙内容模拟器的实际导入、预检、播放、冷启和完整备份已通过，最终1包0考试，见[材料验收报告](testing/ETS_COMPLETE_PRACTICE_2026-10-11.md)。当前1套官方完整练习卷，不能称多套历届真题。详细来源、音轨顺序陷阱及答案重叠文本层见[材料核查](research/OFFICIAL_EXAMS_2026-10-11.md)。下文“完整可听0套”属于此前阶段。
+
+手机可以拔掉，本轮不操作物理设备。既有LanternOffline7含两套合成包与未交卷QA记录，不得导入真实题包或清理数据；新内容验收使用LanternContent7，显式实例目录在D盘；实际运行完成后已释放锁，保留1套真实题包、0考试。每次接续先重新核对官方显式目录清单及目标绑定，不能沿用默认只列旧实例的清单或猜端口。原始材料、渲染、私人考试记录与设备信息不上传GitHub。工具/文档和私人材料不改App版本，不重发HAP/Web/Site。
+
+## 前期接续：原生模考 runner 已通过独立短流程（2026-10-11）
 
 PR #32、#33 已合并；#33合并提交为 `2c24bf058a0adc7b2fd1e20e2e54e8e8f41a72bf`。独立短流程与原截止续验均通过，最终文档提交 `6524deb0b772720c4aab37dddc2354fc261b98fe` 的[Core](https://github.com/godnight/lantern-toeic/actions/runs/38120468872)与[Harmony](https://github.com/godnight/lantern-toeic/actions/runs/38120468860)均成功；145项Python离线、198项学习检查及发布门禁29项Node/22项Python有分项证据。执行说明 `harmony/scripts/ui/MOCK.md`，报告 `docs/testing/HARMONY_MOCK_AUTOMATION_2026-10-11.md`。本轮只改工具/文档，不改release-manifest，不重发v0.3.0 HAP/Web/Site。
 
@@ -168,4 +176,4 @@ Windows 用 Node 24.13.1 和根目录锁定依赖。WSL 的 CLT 5.1.0.840 / SDK 
 
 ## 可直接交给Codex的任务
 
-> 接续 godnight/lantern-toeic。读取 AGENTS.md、本交接最上节、PROJECT_STATUS.md 和 TEAM.md；先核对PR #33与其后叠加的PR #34。未合并从对应分支接续，已合并从最新main开始。只维护HarmonyOS和Web/PWA。保留模拟器QA历史，不触碰物理手机；独立短流程与截止续验已分别完成，按最新PR状态收尾集成，不重复已取得的两小时截止证据。App仍为v0.3.0，工具/文档修改不重发HAP或Site。完整可听材料仍0套，勿把官方题本加答案视为音频齐备。按CONTRIBUTING.md提交、验证和更新交接。
+> 接续 godnight/lantern-toeic。读取 AGENTS.md、本交接最上节、PROJECT_STATUS.md 和 TEAM.md；PR #33/#34已合并，从最新main开始。只维护HarmonyOS和Web/PWA。保留既有模拟器QA历史，不触碰物理手机；独立短流程与截止续验已分别完成，不重复已取得的两小时截止证据。App仍为v0.3.0，工具/文档修改不重发HAP或Site。已生成1套HAU发布的ETS官方完整练习题包，实际使用验收及剩余材料以本交接最上节为准；继续搜集不同套，不把IIBC缺音频材料、第三方原创或样题计为完整真题。按CONTRIBUTING.md提交、验证和更新交接。

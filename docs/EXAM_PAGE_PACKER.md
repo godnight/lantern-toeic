@@ -55,4 +55,4 @@ Windows 建议将完整 Poppler 分发目录放在仅含 ASCII 字符的工具�
 
 `npm run test:page-packer` 验证结构、路径、排除页、听读隔离和失败输出。CI 用自有合成 PDF 实际运行 Poppler，再在独立浏览器中导入生成题包，验证图片字节、放大滚动、题组和成绩。合成 PDF、短静音 WAV、受控计时均不能证明真实官方卷、真实听音或两小时真机运行。
 
-权限加密兼容修正已在私人副本完成29项回归，并将自制、允许打印且无需输入密码的保护 PDF 经真实 Poppler 打包后运行既有22条浏览器流程，全部通过。未保护 fixture 的默认输出逐字节不变；本次记录不代表该修正已合并或其 CI 已通过，详见[测试记录](testing/EXAM_PAGE_PACKER_2026-10-11.md)。
+权限加密兼容修正已在[PR #34](https://github.com/godnight/lantern-toeic/pull/34)合并：29项packer回归通过，自制、允许打印且无需输入密码的保护 PDF 经真实 Poppler 打包后运行22条浏览器流程，全部通过。未保护 fixture 的默认输出逐字节不变；最终提交的[Core CI](https://github.com/godnight/lantern-toeic/actions/runs/38120704905)成功，详见[测试记录](testing/EXAM_PAGE_PACKER_2026-10-11.md)。

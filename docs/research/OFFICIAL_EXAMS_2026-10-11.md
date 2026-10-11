@@ -2,7 +2,20 @@
 
 核查日期：2026-10-11。范围为 ETS、IIBC、YBM/韩国托业官方、托业中国，以及本地 `content/exams`。各阶段取得材料与未取得部分分别记录；未将第三方试卷加入公开仓库或产品。
 
-## 最新进展：取得一套完整题本与答案，配套音频尚缺
+## 最新进展：一套 ETS 完整练习题包通过浏览器与鸿蒙导入验收
+
+[HAU 官方免费备考材料页](https://www.hau.gr/el-gr/exams/support/individuals/educational-testing-service-ets/free-preparation-material)的同一下载记录（13065，`TOEIC Listening and Reading Complete Practice Test`）提供64页题本和四部分配套WAV。封面明确由ETS编写，版权记为2017；它是官方完整练习卷，未证明对应某场历届实考，不能据PDF的2023元数据推定考试日期。
+
+现已生成1套私人 `official-practice` JSON，含200题、103组、39页题面与44:31.092完整音轨；JSON为75,695,046字节，SHA-256 `0fe0f70125d683a16e53a78d1e6c44df06d912a98b1b55c1d7fbb97001f2e551`。实际App模型解析、全部图片解码、媒体容量和映射复核通过；浏览器实际导入/预检9项及题面/跨页/放大11项检查通过，独立鸿蒙内容模拟器的实际导入、预检、播放、冷启与完整备份亦通过，最终1包0考试；详见[材料验收报告](../testing/ETS_COMPLETE_PRACTICE_2026-10-11.md)。浏览器结果不等同于物理手机验收。私人材料目录为 `vocab-work/research-full-exams/hau-ets-complete-practice-test-20261011`，不属于仓库。
+
+- PDF原件3,011,413字节，SHA-256 `1f35d7f155798b57ce41cf91ec20ec7f210be212e20ce5f18a3f44aa1a014e15`；采用PDF第3–41页，排除答案、听力文稿和空白答题纸。
+- 答案页存在三层重叠文本，不能直接取第一组文本提取结果。两次独立可见页面核对确认200项答案一致，103组含所有跨页续文；题型数量为6/25/39/30/30/16/54。
+- 官方ZIP为235,610,946字节，SHA-256 `56e1486b083c8bc63edd576a50c81a97a3e9f5d90967383abe9a69ad07bcc5d9`。ZIP内物理顺序为1/3/2/4，已按文件所示Part 1→2→3→4连接，未剪掉说明、例题或停顿。四个原WAV CRC及完整解码通过，派生MP3完整解码的样本数与原音频合计一致。
+- 派生MP3为42,738,460字节、128 kbps，SHA-256 `e356e1b1b8232f0d228b8e0a0cbbffca471b2ba734c973637304448d1e2885a1`。这是有损编码，不能称音频PCM字节不变；原件保持不变。配套关系由官方同记录、题本完整文稿和Part文件身份核对，尚未逐题人工听完。
+
+与IIBC 2020题本的代表题页和答案比对确认两套不同，不能借此音轨补IIBC缺口。当前是**1套文件完整的官方练习题包**，不是多套、不是已证实的历届实考试卷。原始PDF、音频、答案、渲染及JSON均私人保留，不进入GitHub、通用HAP、Web或Release。下文的“0套”均为取得本套前的阶段记录，不能再当作最新材料总数；可公开内置的授权情况仍单独判断。
+
+## 前期进展：IIBC完整题本与答案，配套音频尚缺
 
 已通过 [IIBC 官方活动公告](https://www.iibc-global.org/iibc/press/2020/p151.html)与[原下载页公开存档](https://web.archive.org/web/20200703011230id_/https://www.iibc-global.org/toeic/support/youtube_test/detail.html)核对来源，取得 2020-06-28 官方模考的完整 200 题题本、200 项答案和空白答题纸，保留在本机私人目录。这是官方模考练习；公告未证明它对应某场具名的历届实考。
 
