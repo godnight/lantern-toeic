@@ -2,21 +2,29 @@
 
 更新：2026-10-11。代码仓库：[godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)。当前只维护Web/PWA和HarmonyOS；Android/iOS工程、专用工作流及Capacitor已删除，旧源码留在Git历史。
 
-## 正在接续：原生模考独立 runner（2026-10-11）
+## 最新接续：原生模考 runner 已通过独立短流程（2026-10-11）
 
-PR #32 已合并。PR #33（分支 `test/harmony-mock-automation`）为草稿，已实现原生模考短回归、可选真实截止时间观察及最终备份校验；114项Python离线回归和198项学习检查通过。空Web等待和恢复旧快照的测试假设已修复：第89轮冷启后新增中断，应恢复最新B1，拒绝旧B0是App的正确保护；四份比较仍包含B0。同次考试的私人第90轮续验进行中，不能记为独立完整流程通过。先核对该分支最新PR状态再接续。新脚本说明 `harmony/scripts/ui/MOCK.md`，报告 `docs/testing/HARMONY_MOCK_AUTOMATION_2026-10-11.md`。长模式显式传 `--observe-deadlines`，整轮默认/最大8400秒；不可与其他观察争用设备。发布工具还补齐历史最高versionCode检查；不改release-manifest，不重发v0.3.0。
+PR #32 已合并。PR #33的独立短流程与原截止续验已通过；接续先核对其合并状态：已合并则从最新main开始，否则使用 `test/harmony-mock-automation` 分支。代码提交 `d0459feb05cc0fd6f963505988276c39eac84d81` 的[Core](https://github.com/godnight/lantern-toeic/actions/runs/38119790549)与[Harmony](https://github.com/godnight/lantern-toeic/actions/runs/38119790558)均成功；145项Python离线、198项学习检查及发布门禁29项Node/22项Python有分项证据。最终文档提交CI以PR检查为准。执行说明 `harmony/scripts/ui/MOCK.md`，报告 `docs/testing/HARMONY_MOCK_AUTOMATION_2026-10-11.md`。本轮只改工具/文档，不改release-manifest，不重发v0.3.0 HAP/Web/Site。
 
-原同次考试于10:44切换阅读、11:59自动交卷，原截止11:59:25.588（Asia/Shanghai）没有延后。10:34实例曾退出，重启同实例后继续观察，不能算连续两小时前台。观察进程与自动收尾均已终止；收尾先发现测试脚本把热补丁0占位值误作App版本，修复后12:02实际导出与原B3比对通过，证据 `87-original-timeout-final-backup-retry`。后续第89轮新考试仍须保留，不可直接再开独立测试。私有接续文件 `vocab-work/simulator-acceptance-20261011/CONTINUE-real-deadline-observer.txt` 记录实际后续进程与输出路径，以实时活进程/最终退出状态核验。用户已获知可以拔掉手机；不要触碰物理手机、清数据、改系统时钟或并发操作模拟器。
+第90轮同次考试续验通过并实际退出0（`90-latest-backup-continuation`）：最新B1两次恢复、拒绝旧B0后全数据保持、四份比较、自然LC→RC→超时交卷及最终导出均验证。原听力截止12:58:34.646、整卷截止14:13:34.646（Asia/Shanghai）保持；最终文件SHA-256为 `c5a4739bb1665f1a70a1c51c9666d08274281f665939b8b316a7971362e636a5`。这是第89轮同一记录的诊断续验，不是新长模式独立全程通过。
 
-## 最新接续：模拟器已完成部分模考验收（2026-10-11）
+第91–94轮失败与原证据保留；针对选择器过渡、屏外网格及导出后可信空Web完成先失败后修正。第95轮从独立CLI入口实际运行，15:04:06退出0、全部6项检查通过，证据 `95-independent-short-export-wait`。两包导入、预检、两答案冷启保存、四份真实备份及最新B1两次恢复均完成。独立复核确认原两条已交卷历史逐字段不变，仅新增ordinal 3，答案/保存时间/截止保持，恢复新增0套/0记录；B3为3,726,751字节，SHA-256 `7ed7fcedee4964e8932e64adb853a446a16427aaafb4e043f8ea415181de614e`。
+
+截至第95轮结束，runner已经退出，页面停在模考目录；新的合成QA考试仍未交卷，B3记录其为听力阶段，原听力/整卷截止15:45:20.838/17:00:20.838（Asia/Shanghai），计时未暂停。先读私人 `vocab-work/simulator-acceptance-20261011/CONTINUE-real-deadline-observer.txt` 并实时核对进程/锁与记录，不清数据、改时钟或无视这条未交卷记录另开测试。无需为本轮工具收尾再等两小时。用户已获知手机可以拔掉，本轮不操作物理手机。两段证据不覆盖全新单命令长模式、连续两小时前台、完整真实听力或新版真机。
+
+私人 `vocab-work/research-full-exams/iibc-2020-archive` 已取得 IIBC 2020 官方模考200题题本、200项答案和空白答题纸，103组题页映射已准备，仍缺匹配音频、未生成最终题包。Hachette公开CD2音频包已完整核验，CD1截断，尚无对应完整题本/答案，不能补IIBC缺口。完整可听导入包仍0套；继续由我们在线获取并核验题本/匹配音频/答案，不默认转回用户提供，也不使用静音凑包。来源及边界见[材料核查](research/OFFICIAL_EXAMS_2026-10-11.md)。
+
+PDF兼容修正已有草稿PR #34（`fix/printable-protected-exam-pdfs`），基于PR #33，尚未合并。其提交 `407e81e92303f0f0b2f4697344125af89e9267dc` 的[Core](https://github.com/godnight/lantern-toeic/actions/runs/38116263181)通过201项学习/模型检查、真实保护PDF转换和22条浏览器流程；未触发不适用的Harmony工作流。私人转换证据在 `vocab-work/pdf-printable-compatibility`；真实IIBC原件只核验元数据、0附件与封面渲染，不等于完整题包。Windows使用同版完整Poppler的ASCII工具目录，避免日文字形缺失。先让PR #33保留历史merge，再将PR #34 base改为main、核对7文件范围和最终CI；实际集成代码须与已验提案一致并运行29项packer回归。私人题本、答案、映射、原始布局和实际备份不加入Git。
+
+## 前期模拟器受控验收（2026-10-11）
 
 本人已明确同意并通过官方流程接受四份模拟器协议。既有 HarmonyOS 7 / API 26 镜像可用；CLI 原先使用了不匹配的 SDK 根目录，官方 Emulator.exe 的 `-imageRoot` 应指向包含 system-image 的用户 Huawei SDK 根目录，不能直接指向 system-image。不要再把协议确认或镜像下载列为当前阻塞。
 
 专用实例 LanternOffline7 已覆盖安装 v0.3.0 / 20006；每次操作仍须重新核查实例及显式 HDC 目标，禁止因手机已连接就改动用户正在使用的物理机。词库 runner 两处遮挡/快照缺陷已修复，35项离线检查及最终真实 smoke 通过。先核对 `fix/harmony-ui-occlusion` 对应 PR 状态，合并后从最新 main 接续；GitHub 与 Sites 的提交历史独立，不直接互推本地提交。
 
-模考受控 CLI 完成两套合成包导入、媒体预检、两答案冷启保存、原生下载与两次幂等恢复，四份实际备份经模型核验。图片放大、双向滚动、Back返回也通过。它尚非完整无人值守模考套件；完整真题、真实45分钟切换/两小时交卷及新版真机仍待验。详见 `docs/testing/HARMONY_MOCK_QA_2026-10-11.md`。本轮仅测试工具和文档，不重发已有HAP/Web/标签，不重部署Site。
+模考受控 CLI 完成两套合成包导入、媒体预检、两答案冷启保存、原生下载与两次幂等恢复，四份实际备份经模型核验。图片放大、双向滚动、Back返回也通过。后续真实截止、最终备份及独立短流程结果见最上节和自动化报告；完整可听真题、连续前台/真实听力和新版真机仍另验。详见 `docs/testing/HARMONY_MOCK_QA_2026-10-11.md`。本轮仅测试工具和文档，不重发已有HAP/Web/标签，不重部署Site。
 
-结束时模拟器停在成长足迹，原页合成模考保留2道答案，计时没有暂停或重置；已有学习页首答2题、录音0段的计数仍在，但未做全部旧数据逐字段迁移核验。接续勿卸载、清数据、修改系统时间或编辑应用私有数据库。本地证据位于 `vocab-work/simulator-acceptance-20261011`，不要将原始布局、设备信息或完整备份上传公开仓库。
+该前期阶段结束时模拟器停在成长足迹，原页合成模考保留2道答案，计时没有暂停或重置；已有学习页首答2题、录音0段的计数仍在，但未做全部旧数据逐字段迁移核验。接续勿卸载、清数据、修改系统时间或编辑应用私有数据库。本地证据位于 `vocab-work/simulator-acceptance-20261011`，不要将原始布局、设备信息或完整备份上传公开仓库。
 
 ## v0.3.0 发布与原页工具基线（2026-10-11）
 
@@ -30,7 +38,7 @@ Sites 版本 9 已部署对应功能，源提交 `2d342626cb23389021a10ba8b8b1b5
 
 整卷格式在 `docs/EXAM_IMPORT.md`，存储与计时设计在 RFC 0005；本机 228 项机器测试和 18 个浏览器流程通过，CI 也已运行浏览器门禁。新版本地签名 HAP 在私人交付目录，未安装到手机；旧真机录音/词库证据只适用于原验收范围。下一步在专用设备或本人明确交出且空闲的手机上验证完整卷/后台及真实听音，不卸载或清空学习数据；模拟器文件下载补充结果见最上节。
 
-多套官方完整卷仍未取得；私人交付仅有 60 题官方原样 PDF，不能当成整卷或公开打包。真实硬件验收、材料取得、手机号与云同步的账户配置仍待推进。发布与后续事项见 `docs/releases/v0.3.0-published.md`。
+发布时私人交付只有60题官方原样PDF；其后已取得一套 IIBC 完整官方模考题本和答案，仍缺匹配音频，当前状态见最上节。真实硬件验收、完整可听材料、手机号与云同步的账户配置仍待推进。发布与后续事项见 `docs/releases/v0.3.0-published.md`。
 
 ## v0.1.0 发布历史（2026-10-11）
 
@@ -82,7 +90,9 @@ bash scripts/codex-setup.sh
 
 该脚本只安装根目录锁定依赖，执行类型、内容、素材及行为检查。`mobile/`保留鸿蒙共享网页入口，没有单独依赖安装。首次安装需访问锁文件对应的npm源；普通Linux构建另需GNU `timeout`。不需要生产凭据即可运行源码检查。新Codex环境的仓库访问和安装网络权限须在其运行环境中配置，不随克隆自动继承。
 
-## 当前状态
+## 2026-09-19 历史状态快照
+
+以下表格与其后的当轮工具链说明保留历史；当前版本、真机及部署状态以上面的2026-10-11接续为准。
 
 | 项目 | 已完成 | 未完成或边界 |
 |---|---|---|
@@ -158,4 +168,4 @@ Windows 用 Node 24.13.1 和根目录锁定依赖。WSL 的 CLT 5.1.0.840 / SDK 
 
 ## 可直接交给Codex的任务
 
-> 接续 godnight/lantern-toeic。先核对 test/harmony-offline-validation 的 PR，未合并从该分支接续，已合并从最新 main 开始。读取 AGENTS.md、本交接及 docs/testing/HARMONY_QA_2026-09-19.md。只维护 HarmonyOS 和 Web/PWA。Windows SDK 和鸿蒙7模拟器已运行，华为本人登录已完成；按证据继续剩余真机签名、硬件录音与持久化验收。手机号和云同步不阻塞离线开发。按 CONTRIBUTING.md 提交、验证和更新交接。
+> 接续 godnight/lantern-toeic。读取 AGENTS.md、本交接最上节、PROJECT_STATUS.md 和 TEAM.md；先核对PR #33与其后叠加的PR #34。未合并从对应分支接续，已合并从最新main开始。只维护HarmonyOS和Web/PWA。保留模拟器QA历史，不触碰物理手机；独立短流程与截止续验已分别完成，按最新PR状态收尾集成，不重复已取得的两小时截止证据。App仍为v0.3.0，工具/文档修改不重发HAP或Site。完整可听材料仍0套，勿把官方题本加答案视为音频齐备。按CONTRIBUTING.md提交、验证和更新交接。
