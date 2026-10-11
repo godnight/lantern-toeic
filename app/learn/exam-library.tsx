@@ -23,7 +23,7 @@ export default function ExamLibrary({ownerId, onImport, disabled}: {ownerId:stri
   async function run(work:(signal:AbortSignal)=>Promise<void>) {
     if (locked.current || disabled) return;
     locked.current=true; setBusy(true); setError(''); setNotice(''); controller.current=new AbortController();
-    try {await work(controller.current.signal);} catch(cause) {if(alive.current)setError(cause instanceof Error?cause.message:'操作未完成');}
+    try {await work(controller.current.signal);} catch(cause) {if(alive.current){setNotice('');setError(cause instanceof Error?cause.message:'操作未完成');}}
     finally {locked.current=false; if(alive.current)setBusy(false);}
   }
   async function upload(files:File[], signal:AbortSignal) {
