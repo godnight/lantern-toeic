@@ -99,6 +99,18 @@ def catalog_button(node, title, version_line):
         ("heading", title), ("paragraph", version_line), ("disclosureTriangle", "来源与个人使用声明")]
 
 
+def picker_opening_shell(sheet):
+    """Exact API 26 initial shell from run 91; it permits waiting, never actions."""
+    def shape(value):
+        return (value.get("type"), ui.normalize(value.get("text")),
+                tuple(shape(child) for child in value.get("children", [])))
+    text = lambda label: ("Text", label, ())
+    button = lambda label: ("Button", "", (text(label),))
+    return shape(sheet.value) == ("SheetPage", "", (
+        ("__Common__", "", (("Stack", "", (button("最近"), button("浏览"))),)),
+        text("已选 (0)"), text("完成"), text("仅可访问所选项目"), ("Button", "", ())))
+
+
 def surface(tree, allow_picker=False):
     nodes = [n for n in ui.flatten(tree) if n.visible_bounds()]
     sheets = [n for n in nodes if n.value.get("type") == "SheetPage"]
@@ -114,6 +126,8 @@ def surface(tree, allow_picker=False):
                        or (n.value.get("type") == "Web" and n.value.get("text") == ORIGIN))
             if not belongs and (n.value.get("type") is not None or n.value.get("text") or n.value.get("clickable")):
                 raise ui.Failure("Unknown native overlay outside the picker")
+        if picker_opening_shell(sheet):
+            return "loading-picker", sheet
         kinds = {n.value.get("type") for n in ui.flatten(sheet.value)}
         labels = {ui.normalize(n.value.get("text")) for n in ui.flatten(sheet.value)}
         if "NavDestination" in kinds and "仅可访问所选文件" in labels:
@@ -193,6 +207,11 @@ class MockRunner(ui.Runner):
             while True:
                 tree = super().layout()
                 mode, _ = surface(tree, self.phase == "picker")
+                if mode == "loading-picker":
+                    if time.monotonic() >= deadline:
+                        raise ui.Failure("Native file picker stayed in its initial loading shell")
+                    time.sleep(min(.3, max(0, deadline - time.monotonic())))
+                    continue
                 if mode != "app":
                     return tree
                 roots = [n for n in ui.flatten(tree)
