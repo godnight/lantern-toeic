@@ -1,0 +1,257 @@
+[
+  {
+    "bounds": [
+      0,
+      0,
+      1256,
+      2760
+    ],
+    "children": [
+      {
+        "type": "Web",
+        "bounds": [
+          0,
+          137,
+          1256,
+          2662
+        ],
+        "children": [
+          {
+            "type": "rootWebArea",
+            "bounds": [
+              0,
+              137,
+              1256,
+              2662
+            ],
+            "scrollable": true,
+            "children": [
+              {
+                "type": "genericContainer",
+                "bounds": [
+                  0,
+                  137,
+                  1256,
+                  2662
+                ],
+                "clickable": true,
+                "children": [
+                  {
+                    "type": "genericContainer",
+                    "bounds": [
+                      0,
+                      137,
+                      1256,
+                      2662
+                    ],
+                    "clickable": true,
+                    "children": [
+                      {
+                        "type": "region",
+                        "text": "完整听读模考",
+                        "bounds": [
+                          50,
+                          137,
+                          1207,
+                          2662
+                        ],
+                        "children": [
+                          {
+                            "type": "article",
+                            "text": "第 1 题",
+                            "bounds": [
+                              50,
+                              137,
+                              1207,
+                              2662
+                            ],
+                            "children": [
+                              {
+                                "type": "button",
+                                "text": "放大本组材料图片 1",
+                                "bounds": [
+                                  102,
+                                  137,
+                                  1155,
+                                  949
+                                ],
+                                "clickable": true,
+                                "children": []
+                              },
+                              {
+                                "type": "heading",
+                                "text": "请查看本题组原页中的第 1 题；题文及选项以原页为准。",
+                                "bounds": [
+                                  102,
+                                  1092,
+                                  1155,
+                                  1299
+                                ],
+                                "children": []
+                              },
+                              {
+                                "type": "group",
+                                "text": "第 1 题选项",
+                                "bounds": [
+                                  102,
+                                  1368,
+                                  1155,
+                                  2147
+                                ],
+                                "children": [
+                                  {
+                                    "type": "legend",
+                                    "text": "第 1 题选项",
+                                    "bounds": [
+                                      98,
+                                      1364,
+                                      103,
+                                      1369
+                                    ],
+                                    "children": []
+                                  },
+                                  {
+                                    "type": "radioButton",
+                                    "text": "A",
+                                    "bounds": [
+                                      140,
+                                      1427,
+                                      186,
+                                      1473
+                                    ],
+                                    "clickable": true,
+                                    "children": []
+                                  },
+                                  {
+                                    "type": "staticText",
+                                    "text": "A",
+                                    "bounds": [
+                                      275,
+                                      1419,
+                                      313,
+                                      1486
+                                    ],
+                                    "children": []
+                                  },
+                                  {
+                                    "type": "radioButton",
+                                    "text": "B",
+                                    "bounds": [
+                                      140,
+                                      1630,
+                                      186,
+                                      1677
+                                    ],
+                                    "clickable": true,
+                                    "children": []
+                                  },
+                                  {
+                                    "type": "staticText",
+                                    "text": "B",
+                                    "bounds": [
+                                      272,
+                                      1622,
+                                      310,
+                                      1689
+                                    ],
+                                    "children": []
+                                  },
+                                  {
+                                    "type": "radioButton",
+                                    "text": "C",
+                                    "bounds": [
+                                      140,
+                                      1834,
+                                      186,
+                                      1880
+                                    ],
+                                    "clickable": true,
+                                    "children": []
+                                  },
+                                  {
+                                    "type": "staticText",
+                                    "text": "C",
+                                    "bounds": [
+                                      272,
+                                      1826,
+                                      310,
+                                      1893
+                                    ],
+                                    "children": []
+                                  },
+                                  {
+                                    "type": "radioButton",
+                                    "text": "D",
+                                    "bounds": [
+                                      140,
+                                      2037,
+                                      186,
+                                      2083
+                                    ],
+                                    "clickable": true,
+                                    "children": []
+                                  },
+                                  {
+                                    "type": "staticText",
+                                    "text": "D",
+                                    "bounds": [
+                                      276,
+                                      2029,
+                                      317,
+                                      2096
+                                    ],
+                                    "children": []
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "button",
+                                "text": "清除此题答案",
+                                "bounds": [
+                                  102,
+                                  2202,
+                                  376,
+                                  2357
+                                ],
+                                "clickable": true,
+                                "children": []
+                              },
+                              {
+                                "type": "button",
+                                "text": "上一题",
+                                "bounds": [
+                                  102,
+                                  2356,
+                                  1155,
+                                  2516
+                                ],
+                                "children": []
+                              },
+                              {
+                                "type": "button",
+                                "text": "下一题",
+                                "bounds": [
+                                  102,
+                                  2543,
+                                  1155,
+                                  2662
+                                ],
+                                "clickable": true,
+                                "children": []
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "text": "https://lantern.local/"
+      }
+    ]
+  }
+]

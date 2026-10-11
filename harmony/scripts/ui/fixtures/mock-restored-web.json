@@ -1,0 +1,220 @@
+[
+  {
+    "bounds": [
+      0,
+      0,
+      1256,
+      2760
+    ],
+    "children": [
+      {
+        "type": "Web",
+        "text": "https://lantern.local/",
+        "bounds": [
+          0,
+          137,
+          1256,
+          2662
+        ],
+        "children": [
+          {
+            "type": "rootWebArea",
+            "bounds": [
+              0,
+              137,
+              1256,
+              2662
+            ],
+            "scrollable": true,
+            "children": [
+              {
+                "type": "genericContainer",
+                "bounds": [
+                  0,
+                  137,
+                  1256,
+                  2662
+                ],
+                "clickable": true,
+                "children": [
+                  {
+                    "type": "region",
+                    "text": "完整听读模考",
+                    "bounds": [
+                      50,
+                      220,
+                      1207,
+                      2662
+                    ],
+                    "children": [
+                      {
+                        "type": "paragraph",
+                        "text": "LOCAL MOCK EXAM",
+                        "bounds": [
+                          50,
+                          247,
+                          1207,
+                          317
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "heading",
+                        "text": "完整听读模考",
+                        "bounds": [
+                          50,
+                          343,
+                          1207,
+                          458
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "退出模考",
+                        "bounds": [
+                          50,
+                          499,
+                          370,
+                          658
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "paragraph",
+                        "text": "个人题包仅保存在这台设备。未接入云同步；卸载或清理数据前请导出完整备份。",
+                        "bounds": [
+                          50,
+                          706,
+                          1207,
+                          874
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "status",
+                        "text": "qa-only-pages-20261011.json：内容相同，未重复导入",
+                        "bounds": [
+                          50,
+                          905,
+                          1207,
+                          1073
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "导入题包 JSON",
+                        "bounds": [
+                          50,
+                          1101,
+                          615,
+                          1261
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "导出完整备份",
+                        "bounds": [
+                          642,
+                          1105,
+                          1207,
+                          1264
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "恢复本机备份",
+                        "bounds": [
+                          50,
+                          1291,
+                          1207,
+                          1451
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "paragraph",
+                        "text": "可一次选择多份 JSON，每份独立保存；若中途失败，之前成功的文件仍保留，重新读取可查看。仅同一记录范围可恢复备份。",
+                        "bounds": [
+                          50,
+                          1482,
+                          1207,
+                          1733
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "paragraph",
+                        "text": "200 题 · 听力 45 分钟 / 阅读 75 分钟",
+                        "bounds": [
+                          102,
+                          1881,
+                          1155,
+                          1952
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "heading",
+                        "text": "浏览器合成验证 alpha · 非真实试卷",
+                        "bounds": [
+                          102,
+                          1978,
+                          1155,
+                          2085
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "paragraph",
+                        "text": "版本 1 · Synthetic browser QA only",
+                        "bounds": [
+                          102,
+                          2117,
+                          1155,
+                          2201
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "disclosureTriangle",
+                        "text": "来源与个人使用声明",
+                        "bounds": [
+                          102,
+                          2242,
+                          1155,
+                          2405
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "音频预检与新考试",
+                        "bounds": [
+                          102,
+                          2502,
+                          624,
+                          2662
+                        ],
+                        "clickable": true,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

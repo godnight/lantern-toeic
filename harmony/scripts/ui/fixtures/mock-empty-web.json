@@ -1,0 +1,23 @@
+[
+  {
+    "bounds": [
+      0,
+      0,
+      1256,
+      2760
+    ],
+    "children": [
+      {
+        "type": "Web",
+        "text": "https://lantern.local/",
+        "bounds": [
+          0,
+          137,
+          1256,
+          2662
+        ],
+        "children": []
+      }
+    ]
+  }
+]

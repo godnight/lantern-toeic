@@ -12,7 +12,7 @@ function fixture() {
     'lantern-v0.1.0-source.zip', 'QA.md', 'package-verification.json', 'build-info.json', 'SHA256SUMS.txt'];
   const sourceCommit = 'a'.repeat(40), sourceTree = 'b'.repeat(40);
   const blobs = new Map(names.map(name => [name, Buffer.from(name)]));
-  blobs.set('build-info.json', Buffer.from(JSON.stringify({version:'0.1.0', sourceCommit, sourceTree, hapSigning:'unsigned', signatureBlockAbsent:true})));
+  blobs.set('build-info.json', Buffer.from(JSON.stringify({schemaVersion:1, versionCode:20005, version:'0.1.0', sourceCommit, sourceTree, hapSigning:'unsigned', signatureBlockAbsent:true})));
   const plan = {schemaVersion:1, version:'0.1.0', sourceCommit, sourceTree,
     assets:names.map(name => ({name, bytes:blobs.get(name).length, sha256:hash(blobs.get(name))}))};
   return {plan, blobs, notes:'# Public QA prerelease'};
