@@ -43,6 +43,7 @@ jobs:
       - name: Build shared app and run real-browser mock-exam regression
         env:
           LANTERN_BROWSER_QA_DIR: ${{ runner.temp }}/lantern-browser-qa
+          LANTERN_DICTIONARY_QA_DIR: ${{ runner.temp }}/lantern-dictionary-browser-qa
           LANTERN_PAGE_PACK_QA_DIR: ${{ runner.temp }}/lantern-page-pack-qa
         run: |
           npm --prefix mobile run build
@@ -57,6 +58,8 @@ jobs:
           path: |
             ${{ runner.temp }}/lantern-browser-qa/result.json
             ${{ runner.temp }}/lantern-browser-qa/*.png
+            ${{ runner.temp }}/lantern-dictionary-browser-qa/result.json
+            ${{ runner.temp }}/lantern-dictionary-browser-qa/*.png
           if-no-files-found: ignore
           retention-days: 14
       - name: Apply migrations to an empty local SQLite database
