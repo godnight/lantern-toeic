@@ -2,13 +2,13 @@ import {
   EXAM_LIMITS, advanceAttempt, answerQuestion, assertOwner, createAttempt, examKey,
   fingerprintExam, gradeAttempt, isRecord, jsonBytes, parseExamPackage, parseLimitedJson,
   markInterrupted, selectQuestion, submitAttempt, validateAttempt,
-  type ExamAttempt, type ExamPackage, type ExamResult, type ExamSource, type InterruptionReason,
+  type ExamAttempt, type ExamFormat, type ExamPackage, type ExamResult, type ExamSource, type InterruptionReason,
 } from './exam-model';
 
 export type ExamSummary = {
   key: string; id: string; version: number; title: string; source: ExamSource;
   fingerprint: string; bytes: number; importedAt: number;
-  listeningDurationMs?: number;
+  listeningDurationMs?: number; format?: ExamFormat;
 };
 export type SavedExamAttempt = { attempt: ExamAttempt; result?: ExamResult };
 export type ExamBackup = { kind: 'lantern-exam-backup'; schemaVersion: 1; ownerId: string; packages: ExamPackage[]; attempts: ExamAttempt[] };
@@ -31,7 +31,7 @@ function randomId(): string {
 }
 function summary(row: CatalogRow): ExamSummary {
   const { key, id, version, title, source, fingerprint, bytes, importedAt } = row;
-  return { key, id, version, title, source, fingerprint, bytes, importedAt, ...(row.definition.listeningDurationMs === undefined ? {} : { listeningDurationMs: row.definition.listeningDurationMs }) };
+  return { key, id, version, title, source, fingerprint, bytes, importedAt, ...(row.definition.listeningDurationMs === undefined ? {} : { listeningDurationMs: row.definition.listeningDurationMs }), ...(row.definition.format === undefined ? {} : { format: row.definition.format }) };
 }
 function definitionExam(row: CatalogRow): ExamPackage { return { ...row.definition, assets: [] }; }
 function saved(attempt: ExamAttempt, row: CatalogRow): SavedExamAttempt {
@@ -99,6 +99,16 @@ export class ExamRepository {
       await request(tx.objectStore('packages').add({ ownerId: this.ownerId, key, exam } satisfies PackageRow));
       await request(tx.objectStore('catalog').add(row));
       return { status: 'imported', summary: summary(row) };
+    });
+  }
+  /** Explicit user action only; every package needed by a saved attempt is retained. */
+  async removeUnusedPackage(key: string): Promise<void> {
+    return this.transaction(STORES, 'readwrite', async tx => {
+      const row = await this.catalog(tx, key);
+      const history = await this.owned<AttemptRow>(tx, 'attempts');
+      if (history.some(r => r.attempt.examId === row.id && r.attempt.examVersion === row.version)) throw new Error('这份题包已有考试记录，不能移除；原题包和记录保留。');
+      await request(tx.objectStore('packages').delete([this.ownerId, key]));
+      await request(tx.objectStore('catalog').delete([this.ownerId, key]));
     });
   }
   async listAttempts(): Promise<SavedExamAttempt[]> {
@@ -217,8 +227,8 @@ export async function openExamRepository(ownerId: string, options: { factory?: I
   if (!factory) throw new Error('当前浏览器不支持本机 IndexedDB，未退回不可靠的临时存储');
   const db = await new Promise<IDBDatabase>((resolve, reject) => {
     let blocked = false;
-    // The version gate prevents older code from ignoring declared LC durations in stored packages.
-    const r = factory.open(options.name ?? 'lantern-private-exams-v1', 2);
+    // The version gate prevents older code from ignoring stored format profiles or LC durations.
+    const r = factory.open(options.name ?? 'lantern-private-exams-v1', 3);
     r.onupgradeneeded = () => {
       for (const name of STORES) {
         if (r.result.objectStoreNames.contains(name)) continue;

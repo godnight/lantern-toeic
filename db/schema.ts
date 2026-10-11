@@ -1,4 +1,4 @@
-import {integer, sqliteTable, text, primaryKey} from 'drizzle-orm/sqlite-core';
+import {integer, sqliteTable, text, primaryKey, uniqueIndex} from 'drizzle-orm/sqlite-core';
 export const profiles=sqliteTable('profiles',{userId:text('user_id').primaryKey(),body:text('body').notNull(),updatedAt:text('updated_at').notNull()});
 export const attempts=sqliteTable('attempts',{id:text('id').primaryKey(),userId:text('user_id').notNull(),qid:text('qid').notNull(),choice:integer('choice').notNull(),correct:integer('correct',{mode:'boolean'}).notNull(),createdAt:text('created_at').notNull(),seconds:integer('seconds').notNull(),mode:text('mode').notNull()});
 export const checkins=sqliteTable('checkins',{id:text('id').primaryKey(),userId:text('user_id').notNull(),body:text('body').notNull(),createdAt:text('created_at').notNull()});
@@ -7,3 +7,4 @@ const mutableColumns=()=>({userId:text('user_id').notNull(),entityId:text('entit
 export const questionMarks=sqliteTable('question_marks',mutableColumns(),table=>[primaryKey({columns:[table.userId,table.entityId]})]);
 export const resourceTasks=sqliteTable('resource_tasks',mutableColumns(),table=>[primaryKey({columns:[table.userId,table.entityId]})]);
 export const vocabularyEvents=sqliteTable('vocabulary_events',{userId:text('user_id').notNull(),eventId:text('event_id').notNull(),body:text('body').notNull()},table=>[primaryKey({columns:[table.userId,table.eventId]})]);
+export const examLibrary=sqliteTable('exam_library',{id:text('id').primaryKey(),userId:text('user_id').notNull(),objectKey:text('object_key').notNull(),manifest:text('manifest').notNull(),bytes:integer('bytes').notNull(),sha256:text('sha256').notNull(),state:text('state').notNull(),createdAt:text('created_at').notNull()},table=>[uniqueIndex('exam_library_owner_sha').on(table.userId,table.sha256)]);

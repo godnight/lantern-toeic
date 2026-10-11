@@ -70,7 +70,7 @@ function refKey(ref) { return `${ref.documentId}:${ref.page}`; }
 function validateRecipe(r, model) {
   record(r,['kind','schemaVersion','exam','documents','audioFile','answers','groups','pageReview','audioReviewed'],'配方');
   check(r.kind==='lantern-exam-page-recipe' && r.schemaVersion===1,'RECIPE','配方格式或版本不支持。');
-  record(r.exam,['id','version','title','source','listeningDurationMs'],'试卷信息');
+  record(r.exam,['id','version','title','source','listeningDurationMs','format'],'试卷信息');
   check(ID.test(r.exam.id) && integer(r.exam.version,1,1000000),'RECIPE','题包 ID 或版本无效。');
   record(r.pageReview,['reviewed','excludedPages'],'页面核对');
   check(r.pageReview.reviewed===true && r.audioReviewed===true,'REVIEW_REQUIRED',
@@ -84,7 +84,7 @@ function validateRecipe(r, model) {
   }
   relativeFile(r.audioFile); check(/\.(mp3|wav)$/i.test(r.audioFile),'AUDIO','音频只接受本地 MP3 或 WAV。');
   check(Array.isArray(r.answers) && r.answers.length===200,'ANSWERS','答案必须恰好包含 200 项。');
-  for(let n=1;n<=200;n++)check(typeof r.answers[n-1]==='string' && (model.questionPart(n)===2?/^[ABC]$/:/^[ABCD]$/).test(r.answers[n-1]),'ANSWERS','答案须为大写 A-D，Part 2 只能为 A-C。');
+  for(let n=1;n<=200;n++)check(typeof r.answers[n-1]==='string' && (model.questionPart(n,r.exam.format)===2?/^[ABC]$/:/^[ABCD]$/).test(r.answers[n-1]),'ANSWERS','答案须为大写 A-D，Part 2 只能为 A-C。');
   const parseRef=(v)=>{record(v,['documentId','page'],'页码引用');check(typeof v.documentId==='string' && docs.has(v.documentId) && integer(v.page,1,LIMITS.pagesPerPdf),'PAGE','页码引用不存在或超出限额。');};
   check(Array.isArray(r.pageReview.excludedPages) && r.pageReview.excludedPages.length<=LIMITS.pagesPerPdf*LIMITS.documents,'PAGE','必须显式提供 excludedPages 列表，可为空。');
   const excluded=new Set();
@@ -117,7 +117,7 @@ function buildPackage(recipe, pageAssets, audio, model) {
     choices:g.part===2?['A','B','C']:['A','B','C','D'],answer:'ABCD'.indexOf(recipe.answers[number-1])}))).sort((a,b)=>a.number-b.number);
   const assets=[...new Map([...pageAssets.values()].map(a=>[a.id,a])).values(),{id:'listening-audio',...audio}];
   try{return model.parseExamPackage({kind:'lantern-toeic-exam',schemaVersion:1,...recipe.exam,listeningAudioId:'listening-audio',assets,groups,questions});}
-  catch{fail('MODEL_VALIDATION','题包未通过现行 200 题结构、素材、来源或容量校验；请核对配方。');}
+  catch{fail('MODEL_VALIDATION','题包未通过所声明的 200 题结构、素材、来源或容量校验；请核对配方。');}
 }
 function parsePdfInfo(text) {
   const value=(label)=>{
@@ -268,6 +268,7 @@ async function packExamPages(options, dependencies={}) {
     }
     const exam=buildPackage(recipe,pageAssets,audio,model),json=JSON.stringify(exam);
     const report={kind:'lantern-exam-page-mapping-report',schemaVersion:1,examId:exam.id,examVersion:exam.version,questions:200,
+      ...(exam.format===undefined?{}:{format:exam.format}),
       examSha256:crypto.createHash('sha256').update(json).digest('hex'),examBytes:Buffer.byteLength(json),assetBytes:total,
       documents:recipe.documents.map(d=>{const v=documents.get(d.id);return {id:d.id,sha256:v.sha256,bytes:v.bytes,pages:v.pages,encrypted:v.encrypted,printingAllowed:v.printingAllowed,javascript:v.javascript,form:v.form,attachments:v.attachments};}),
       audio:{mime:audio.mime,bytes:audioBytes.length,sha256:crypto.createHash('sha256').update(audioBytes).digest('hex'),reviewedByImporter:true,decodedByTool:false,

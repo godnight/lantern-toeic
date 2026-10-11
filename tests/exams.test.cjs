@@ -362,20 +362,20 @@ test('tampered duration backups fail atomically before any new package or histor
   }
   source.close();r.close();
 });
-test('v1 to v2 upgrade preserves all raw rows without add, put, delete or clear',async()=>{
+test('v1 to v3 upgrade preserves all raw rows without add, put, delete or clear',async()=>{
   const factory=new IDBFactory(),name='legacy-migration',old=await seedLegacy(factory,name),before=await rawRows(old);old.close();
   const originals={};let r;
   for(const method of ['add','put','delete','clear']) {originals[method]=IDBObjectStore.prototype[method];IDBObjectStore.prototype[method]=function(){throw new Error('Upgrade must not rewrite any row');};}
   try{r=await durationRepo(factory,name);}finally{for(const [method,fn] of Object.entries(originals))IDBObjectStore.prototype[method]=fn;}
-  const inspect=await rawOpen(factory,name,2);assert.equal(inspect.version,2);assert.deepEqual(await rawRows(inspect),before);inspect.close();
+  const inspect=await rawOpen(factory,name,3);assert.equal(inspect.version,3);assert.deepEqual(await rawRows(inspect),before);inspect.close();
   const restored=(await r.listAttempts())[0].attempt;assert.equal(restored.listeningDeadline-start,2700000);assert.equal(restored.answers[1].choice,1);r.close();
 });
-test('upgrading closes a cooperative v1 tab and old code cannot reopen the v2 database',async()=>{
+test('upgrading closes a cooperative v1 tab and old code cannot reopen the v3 database',async()=>{
   const factory=new IDBFactory(),name='legacy-tab',old=await seedLegacy(factory,name);let changed=false;old.onversionchange=()=>{changed=true;old.close();};
   const r=await durationRepo(factory,name);assert.equal(changed,true);
   await assert.rejects(rawOpen(factory,name,1),error=>error.name==='VersionError');assert.equal((await r.listAttempts()).length,1);r.close();
 });
 test('a newer database is rejected without changing its version or rows',async()=>{
-  const factory=new IDBFactory(),name='future-version',db=await rawOpen(factory,name,3,db=>db.createObjectStore('sentinel'));
-  db.close();await assert.rejects(durationRepo(factory,name),error=>error.name==='VersionError');const after=await rawOpen(factory,name,3);assert.deepEqual(Array.from(after.objectStoreNames),['sentinel']);after.close();
+  const factory=new IDBFactory(),name='future-version',db=await rawOpen(factory,name,4,db=>db.createObjectStore('sentinel'));
+  db.close();await assert.rejects(durationRepo(factory,name),error=>error.name==='VersionError');const after=await rawOpen(factory,name,4);assert.deepEqual(Array.from(after.objectStoreNames),['sentinel']);after.close();
 });

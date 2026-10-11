@@ -17,7 +17,7 @@ function load(file, imports, globals = {}) {
     if (name === '@/release-manifest.json') return {default:JSON.parse(fs.readFileSync(root + '/release-manifest.json','utf8'))};
     if (!(name in imports)) throw Error('Unexpected import: ' + name);
     return imports[name];
-  }, Date, Intl, Map, Set, structuredClone, crypto: {randomUUID}, Blob, URL, AbortController, ...globals}, {filename: file});
+  }, Date, Intl, Map, Set, structuredClone, crypto: {randomUUID}, Blob, URL, URLSearchParams, AbortController, ...globals}, {filename: file});
   return exports;
 }
 
@@ -45,7 +45,7 @@ function environment({reverse = false} = {}) {
   const toast = Object.assign(() => {}, {success: text => messages.success.push(text), error: text => messages.error.push(text)});
   const browser = {
     document: {documentElement: {dataset: {},style:{setProperty(){}}}, hidden: false},
-    window: {addEventListener: (name, fn) => listeners.set(name, fn), removeEventListener: name => listeners.delete(name), scrollTo() {}},
+    window: {location:{search:''}, addEventListener: (name, fn) => listeners.set(name, fn), removeEventListener: name => listeners.delete(name), scrollTo() {}},
     navigator: {get onLine() {return online;}},
     localStorage, setInterval: () => 1, clearInterval() {}, setTimeout, clearTimeout,
     fetch: async (url, init) => {
