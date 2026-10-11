@@ -1,5 +1,13 @@
 # Codex 开发交接
 
+## 完整音轨修复与 v0.3.1 接续（2026-10-11）
+
+当前工作为 [PR #38](https://github.com/godnight/lantern-toeic/pull/38)，分支 `fix/complete-listening-duration`；接续先核对合并和发布状态。v0.3.1 / 20007 支持完整音轨声明与实际时长预检，旧题包保持字节/指纹，IndexedDB 原地升至版本 2，旧 App 不再能打开该模考库。229 项模型/学习、34 项发布契约和 26 条浏览器流程通过。
+
+本机 SDK 26 HAP 编译/490资源核验及专用内容模拟器覆盖升级已通过，升级前后和二次冷启 B0/B1/B2 的 75,695,155 字节完整备份完全一致；范围仅为 1 真实题包/0 考试，不能扩大成旧活动考试或物理手机验收。测试与发布门禁见 [v0.3.1 报告](testing/TEST_EXECUTION_v0.3.1.md)，公开附件由 Linux 固定 SDK 另行构建，Site 仍保持所有者私有。
+
+第二套 Vol.4 Test 1 私人题包已生成，39页/200题，原音45:52.521，声明45:53，必须使用新版。实际音频末组三题在45分钟后，不得裁尾或去掉声明适配旧版。材料与目标App验收详见 [材料核查](research/OFFICIAL_EXAMS_2026-10-11.md)。不操作用户手机；继续只用明确归属的专用模拟器。
+
 更新：2026-10-11。代码仓库：[godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)。当前只维护Web/PWA和HarmonyOS；Android/iOS工程、专用工作流及Capacitor已删除，旧源码留在Git历史。
 
 ## 最新接续：完整官方练习题包已生成（2026-10-11）

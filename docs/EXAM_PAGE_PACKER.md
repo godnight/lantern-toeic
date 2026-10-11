@@ -31,7 +31,7 @@ Windows 建议将完整 Poppler 分发目录放在仅含 ASCII 字符的工具�
 | 字段 | 含义 |
 | --- | --- |
 | `kind` / `schemaVersion` | `lantern-exam-page-recipe` / `1` |
-| `exam` | `id`、`version`、`title`、`source`，沿用[题包格式](EXAM_IMPORT.md) |
+| `exam` | `id`、`version`、`title`、`source`，可选 `listeningDurationMs`，沿用[题包格式](EXAM_IMPORT.md) |
 | `documents` | `{id,file}[]`，`file` 为配方目录内的 PDF 相对路径 |
 | `audioFile` | 同目录内整场 MP3/WAV 的相对路径 |
 | `answers` | 恰好 200 个大写 A/B/C/D，按题号排列；Part 2 只能 A/B/C |
@@ -43,6 +43,8 @@ Windows 建议将完整 Poppler 分发目录放在仅含 ASCII 字符的工具�
 `passageCount` 指材料篇数，不是 PDF 页数。Part 6 为 1；Part 7 单篇为 1，多篇为 2 或 3。一篇材料跨两页时，篇数仍为 1，`pages` 有两个引用。Part 1/3/4/5/6/7 必须引用原卷页面；Part 2 可以没有图片，直接依据整场音频作答。题号、题组及选项数量最终由 App 使用的同一个校验器检查。
 
 `reviewed:true` 是整理者声明，不是软件认证。声明前应确认：所有引用页都没有答案/解析；听力引用页不含阅读部分；没有漏掉续页、图表或跨页文本；200 项答案与题号逐一对应；音轨完整且匹配该卷。工具能拒绝已声明排除页和听读共用页，但不能通过 PDF 语义自动识别漏标的答案页或错配音轨。
+
+完整音轨需要不同于旧默认 45 分钟的计时时，在 `exam.listeningDurationMs` 填入经核对的整轨长度，向上取整秒并以毫秒表示。例如 45:52.521 填 `2753000`；须为 40–50 分钟内的整秒。字段进入题包指纹，映射报告的 `audio.listeningDurationMs` 保留声明；工具不自动测音轨、裁切或转码。不填写时旧配方输出保持原样。带该字段的题包需要支持此扩展的新版 App，具体预检及兼容限制见[题包说明](EXAM_IMPORT.md)。
 
 ## 转换后的核对
 

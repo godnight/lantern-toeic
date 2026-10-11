@@ -1,12 +1,12 @@
 'use client';
 
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import {isNativeForeground, registerNativeBack, subscribeNativeState} from '@/lib/native-host';
-import {EXAM_LIMITS, LISTENING_MS, advanceAttempt, examKey, presentExam,
+import {EXAM_LIMITS, READING_MS, advanceAttempt, examKey, getListeningDurationMs, presentExam,
   type ExamAttempt, type ExamPackage, type ExamResult, type InterruptionReason} from '@/lib/exam-model';
 import {openExamRepository, type ExamRepository, type ExamSummary, type SavedExamAttempt} from '@/lib/exam-storage';
-import {ExamAssetUrls, ExamUiSession, StaleExamOwner, attachExamMedia, audioOffsetSeconds, clockText, remainingMs, trySaveExamExit, verifyExamImage} from '@/lib/exam-ui';
+import {ExamAssetUrls, ExamUiSession, StaleExamOwner, attachExamMedia, audioOffsetSeconds, checkExamAudioDuration, clockText, remainingMs, trySaveExamExit, verifyExamImage} from '@/lib/exam-ui';
 import './mock-exam.css';
 
 type Props = {ownerId: string | null; onClose: () => void};
@@ -46,6 +46,11 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [imagePreview, setImagePreview] = useState<{url: string; label: string} | null>(null);
   const [preflight, setPreflight] = useState(false), [heard, setHeard] = useState(false);
+  const preflightRef = useRef({url: '', ready: false});
+  const updatePreflight = useCallback((ready: boolean, url: string) => {
+    // Media events invalidate this synchronously, before a Start click can use stale React state.
+    preflightRef.current = {url, ready}; setPreflight(ready);
+  }, []);
   const [assetState, setAssetState] = useState<{exam: ExamPackage | null; urls: Record<string, string>}>({exam: null, urls: {}});
   const urls = assetState.exam === exam ? assetState.urls : {};
   const [imageCheck, setImageCheck] = useState<{exam: ExamPackage | null; state: 'pending' | 'ready' | 'error'}>({exam: null, state: 'pending'});
@@ -105,7 +110,7 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
   }, [ownerId]); // owner is immutable until the keyed component unmounts.
 
   useEffect(() => {
-    setAssetState({exam: null, urls: {}}); setPreflight(false); setHeard(false);
+    setAssetState({exam: null, urls: {}}); updatePreflight(false, ''); setHeard(false);
     if (!exam) return;
     const owned = new ExamAssetUrls(exam);
     try { setAssetState({exam, urls: Object.fromEntries(exam.assets.map(asset => [asset.id, owned.get(asset.id)]))}); }
@@ -195,8 +200,13 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
     });
   }
   async function start() {
-    if (!exam || !preflight || !heard || !imagesReady || document.hidden || !isNativeForeground()) return;
-    await perform(repo => repo.startAttempt(examKey(exam)), apply);
+    const matchesMedia = () => !!exam && preflightRef.current.ready && preflightRef.current.url === urls[exam.listeningAudioId];
+    if (!exam || !preflight || !matchesMedia() || !heard || !imagesReady || document.hidden || !isNativeForeground()) return;
+    await perform(repo => {
+      // Recheck after the FIFO wait: durationchange/error may have invalidated this source.
+      if (!matchesMedia() || document.hidden || !isNativeForeground()) throw new Error('音频预检状态已变化，请重新试听后开始。');
+      return repo.startAttempt(examKey(exam));
+    }, apply);
   }
   async function select(number: number) {
     if (durableSubmitted) { setReviewNumber(number); return; }
@@ -276,7 +286,7 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
       {!catalog.packages.length ? <div className="panel mock-empty"><h3>还没有可用的完整题包</h3><p>导入你有权个人使用的完整听读 JSON 题包后，才能开始 200 题模考。</p>
         <p>这里没有预装完整真题，也不会用演示题拼成“真题卷”。题包须含正文或扫描图片、选项、答案和完整听力音频。</p></div> :
         <div className="mock-catalog">{catalog.packages.map(item => <article className="panel" key={item.key}>
-          <p className="eyebrow">200 题 · 听力 45 分钟 / 阅读 75 分钟</p><h3>{item.title}</h3><p className="mock-muted">版本 {item.version} · {item.source.title}</p>
+          <p className="eyebrow">200 题 · 听力 {clockText(getListeningDurationMs(item))} / 阅读 {clockText(READING_MS)}</p><h3>{item.title}</h3><p className="mock-muted">版本 {item.version} · {item.source.title}</p>
           <details><summary>来源与个人使用声明</summary><p>{item.source.publisher}</p><p>{item.source.reference}</p><p>{item.source.rightsStatement}</p><p>以上为导入者填写，程序未认证来源或授权。</p></details>
           <button className="button secondary" disabled={busy || !!active} onClick={() => void openPackage(item.key).catch(ignore)}>音频预检与新考试</button></article>)}</div>}
       <section className="mock-history"><h3>已交卷记录</h3>{catalog.attempts.filter(row => row.attempt.status === 'submitted').length ?
@@ -288,12 +298,13 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
     </> : <>
       {(!saved || !imagesReady) && <div className="mock-media-status"><p role="status">{imagesReady ? '题包图片已通过本机解码预检。' : imageCheck.exam === exam && imageCheck.state === 'error' ? '材料图片预检失败，不能开始新考试。' : '正在逐张检查材料图片…'}</p>
         {!imagesReady && imageCheck.state === 'error' && <button className="button secondary" disabled={busy} onClick={() => {clearError(); setImageCheck({exam, state: 'pending'}); setImageRetry(n => n + 1);}}>重试图片预检</button>}</div>}
-      <ExamAudio key={examKey(exam)} url={urls[exam.listeningAudioId] || ''} attempt={displayed} durableSubmitted={!!durableSubmitted}
-        onPreflight={setPreflight} onInterruption={interrupt} onRefresh={() => refresh()} busy={busy}/>
-      {!saved ? <article className="panel mock-preflight"><h3>开始前确认</h3><p>听力开始后按 45 分钟截止，随后进入 75 分钟阅读；进入阅读后不能返回听力。退出、后台和重启都不暂停计时。</p>
+      <ExamAudio key={examKey(exam)} url={urls[exam.listeningAudioId] || ''} declaredListeningDurationMs={exam.listeningDurationMs}
+        effectiveListeningDurationMs={getListeningDurationMs(exam)} attempt={displayed} durableSubmitted={!!durableSubmitted}
+        onPreflight={updatePreflight} onInterruption={interrupt} onRefresh={() => refresh()} busy={busy}/>
+      {!saved ? <article className="panel mock-preflight"><h3>开始前确认</h3><p>本套听力按 {clockText(getListeningDurationMs(exam))} 截止，随后进入 {clockText(READING_MS)} 阅读；进入阅读后不能返回听力。退出、后台和重启都不暂停计时。</p>
         <label className="mock-checkbox"><input type="checkbox" checked={heard} onChange={event => setHeard(event.target.checked)}/><span>我已试听，确认声音可听清，且这段音频包含本卷完整听力。</span></label>
-        <p>程序仅检查可解码与播放状态，不能代替你确认扬声器和材料完整性。</p>
-        <div className="mock-actions"><button className="button primary" disabled={busy || !preflight || !heard || !imagesReady} onClick={() => void start().catch(ignore)}>开始新考试 · 立即计时</button>
+        <p>程序检查可解码、时长匹配与播放状态，不能代替你确认扬声器和材料完整性。</p>
+        <div className="mock-actions"><button className="button primary" disabled={busy || !preflight || preflightRef.current.url !== urls[exam.listeningAudioId] || !heard || !imagesReady} onClick={() => void start().catch(ignore)}>开始新考试 · 立即计时</button>
           <button className="button secondary" disabled={busy} onClick={() => setExam(null)}>返回题包</button></div></article> : <>
         {durableSubmitted ? <Results result={saved.result!} attempt={saved.attempt}/> : <div className="panel mock-clock">
           <div><b>{displayed?.status === 'listening' ? '听力 LC' : displayed?.status === 'reading' ? '阅读 RC' : '时间已到'}</b>
@@ -358,6 +369,7 @@ export function QuestionBody({question, selected, submitted, disabled, onAnswer}
 function Results({result, attempt}: {result: ExamResult; attempt: ExamAttempt}) {
   return <article className="panel mock-results"><p className="eyebrow">{result.firstAttempt ? '首次完整模考' : `复测第 ${result.ordinal - 1} 次`} · {attempt.submittedReason === 'timeout' ? '到时自动交卷' : '主动交卷'}</p>
     <h3>正确 {result.correct}/200 · 漏答 {result.unanswered}</h3><p>听力 {result.listeningCorrect}/100 · 阅读 {result.readingCorrect}/100 · 总用时 {clockText(result.elapsedMs)}</p>
+    <p>本次听力时限 {clockText(attempt.listeningDeadline - attempt.startedAt)} · 阅读时限 {clockText(attempt.readingDeadline - attempt.listeningDeadline)}</p>
     <p className="mock-muted">各 Part 用时是当前题驻留的墙钟时间，包含后台和离开，不代表有效专注时间。</p>
     <div className="mock-table-wrap"><table><caption>各 Part 成绩</caption><thead><tr><th>Part</th><th>正确/总题</th><th>漏答</th><th>正确率</th><th>用时</th></tr></thead>
       <tbody>{result.parts.map(part => <tr key={part.part}><th scope="row">{part.part}</th><td>{part.correct}/{part.total}</td><td>{part.unanswered}</td><td>{Math.round(part.accuracy * 100)}%</td><td>{clockText(part.timeMs)}</td></tr>)}</tbody></table></div>
@@ -368,13 +380,16 @@ function Results({result, attempt}: {result: ExamResult; attempt: ExamAttempt}) 
   </article>;
 }
 
-function ExamAudio({url, attempt, durableSubmitted, onPreflight, onInterruption, onRefresh, busy}: {
-  url: string; attempt: ExamAttempt | null; durableSubmitted: boolean;
-  onPreflight: (ready: boolean) => void; onInterruption: (reason: InterruptionReason) => Promise<void>;
+export function ExamAudio({url, declaredListeningDurationMs, effectiveListeningDurationMs, attempt, durableSubmitted, onPreflight, onInterruption, onRefresh, busy}: {
+  url: string; declaredListeningDurationMs?: number; effectiveListeningDurationMs: number;
+  attempt: ExamAttempt | null; durableSubmitted: boolean;
+  onPreflight: (ready: boolean, url: string) => void; onInterruption: (reason: InterruptionReason) => Promise<void>;
   onRefresh: () => Promise<void>; busy: boolean;
 }) {
   const audio = useRef<HTMLAudioElement | null>(null), mounted = useRef(false), generation = useRef(0);
-  const latest = useRef({attempt, onInterruption, onRefresh}); latest.current = {attempt, onInterruption, onRefresh};
+  const latest = useRef({url, declaredListeningDurationMs, effectiveListeningDurationMs, attempt, onPreflight, onInterruption, onRefresh});
+  latest.current = {url, declaredListeningDurationMs, effectiveListeningDurationMs, attempt, onPreflight, onInterruption, onRefresh};
+  const metadataDuration = useRef<number>(NaN);
   const [duration, setDuration] = useState(0), [playable, setPlayable] = useState(false), [played, setPlayed] = useState(false);
   const [state, setState] = useState<'idle' | 'playing' | 'paused' | 'ended' | 'error'>('idle'), [error, setError] = useState('');
   const intentionalPause = useRef(false), controlledSeek = useRef(false), failureLogged = useRef(false);
@@ -383,7 +398,7 @@ function ExamAudio({url, attempt, durableSubmitted, onPreflight, onInterruption,
   function stop() { generation.current++; playbackWanted.current = false; intentionalPause.current = true; audio.current?.pause(); }
   async function recordFailure(reason: InterruptionReason, text: string) {
     if (!mounted.current) return;
-    stop(); setState('error'); setError(text);
+    stop(); setPlayable(false); setPlayed(false); latest.current.onPreflight(false, latest.current.url); setState('error'); setError(text);
     if (!failureLogged.current && !inactive(latest.current.attempt)) {
       failureLogged.current = true;
       await latest.current.onInterruption(reason);
@@ -394,7 +409,8 @@ function ExamAudio({url, attempt, durableSubmitted, onPreflight, onInterruption,
     if (!player || !snapshot || snapshot.status !== 'listening' || document.hidden || !isNativeForeground()) return;
     const ticket = ++generation.current;
     try {
-      if (!Number.isFinite(player.duration) || player.duration <= 0) throw new Error('音频时长尚未读取，请重试加载。');
+      const check = durationCheck(player);
+      if (!check.ready) throw new Error(check.error);
       const target = audioOffsetSeconds(snapshot, Date.now(), player.duration);
       if (Math.abs(player.currentTime - target) > 1) {
         await latest.current.onInterruption('audio-seek');
@@ -403,22 +419,52 @@ function ExamAudio({url, attempt, durableSubmitted, onPreflight, onInterruption,
         player.currentTime = audioOffsetSeconds(snapshot, Date.now(), player.duration);
       }
       if (!mounted.current || generation.current !== ticket || latest.current.attempt?.status !== 'listening') return;
+      const alignedCheck = durationCheck(player);
+      if (!alignedCheck.ready) throw new Error(alignedCheck.error);
       if (player.currentTime >= player.duration - 0.05) {setState('ended'); return;}
       intentionalPause.current = false; playbackWanted.current = true; setError('');
       await player.play();
-      if (!mounted.current || generation.current !== ticket || document.hidden || !isNativeForeground()) {player.pause(); return;}
+      if (!mounted.current || generation.current !== ticket || latest.current.attempt?.status !== 'listening' || document.hidden || !isNativeForeground()) {player.pause(); return;}
+      const playingCheck = durationCheck(player);
+      if (!playingCheck.ready) throw new Error(playingCheck.error);
       failureLogged.current = false; setState('playing');
     } catch (cause) {
       if (mounted.current && generation.current === ticket) await recordFailure('audio-failure', `音频未能播放：${message(cause)} 计时继续，请重试。`);
     }
   }
+  function durationCheck(player: HTMLAudioElement) {
+    const current = latest.current;
+    if (!current.url || player !== audio.current || player.getAttribute('src') !== current.url) {
+      return {ready: false, error: '音频来源已变化，请重新加载并试听。'};
+    }
+    return checkExamAudioDuration(player.duration, current.declaredListeningDurationMs, current.effectiveListeningDurationMs);
+  }
+  function clearPreflight() {
+    metadataDuration.current = NaN; setDuration(0); setPlayable(false); setPlayed(false);
+    latest.current.onPreflight(false, latest.current.url);
+  }
+  function readDuration(player: HTMLAudioElement) {
+    if (player !== audio.current || player.getAttribute('src') !== latest.current.url) return false;
+    if (!Object.is(metadataDuration.current, player.duration)) {
+      // A changed measurement needs a new successful play; a prior preview cannot certify it.
+      metadataDuration.current = player.duration; setPlayed(false);
+      latest.current.onPreflight(false, latest.current.url);
+    }
+    setDuration(player.duration);
+    const check = durationCheck(player);
+    if (!check.ready) {void recordFailure('audio-failure', check.error).catch(ignore); return false;}
+    return true;
+  }
   const playRef = useRef(playAligned); playRef.current = playAligned;
   useEffect(() => {
-    mounted.current = true;
+    mounted.current = true; clearPreflight(); setState('idle'); setError(''); failureLogged.current = false;
     const detach = attachExamMedia(audio.current, url);
     return () => {mounted.current = false; stop(); clearTimeout(stall.current); detach();};
-  }, [url]);
-  useEffect(() => { onPreflight(!attempt && playable && played && Number.isFinite(duration) && duration > 0); }, [attempt, playable, played, duration, onPreflight]);
+  }, [url, declaredListeningDurationMs, effectiveListeningDurationMs]);
+  const durationMatch = checkExamAudioDuration(duration, declaredListeningDurationMs, effectiveListeningDurationMs);
+  useEffect(() => {
+    onPreflight(!!url && !attempt && playable && played && !error && durationMatch.ready, url);
+  }, [url, attempt, playable, played, error, durationMatch.ready, onPreflight]);
   useEffect(() => {
     if (attempt?.status === 'listening') {
       if ((audio.current?.readyState ?? 0) >= 1) {
@@ -452,10 +498,15 @@ function ExamAudio({url, attempt, durableSubmitted, onPreflight, onInterruption,
     return () => {document.removeEventListener('visibilitychange', update); unsubscribe();};
   }, []);
   return <section hidden={durableSubmitted || attempt?.status === 'reading'} className="panel mock-audio" aria-label={attempt ? '考试听力播放' : '听力音频预检'}><h3>{attempt ? '听力播放' : '音频预检'}</h3>
-    <audio ref={audio} src={url || undefined} preload="metadata" controls={!attempt} controlsList="nodownload noplaybackrate" onLoadedMetadata={event => {
-      const value = event.currentTarget.duration; setDuration(Number.isFinite(value) ? value : 0);
-    }} onCanPlay={() => setPlayable(true)} onPlaying={() => {setPlayable(true); setPlayed(true); setState('playing'); clearTimeout(stall.current);}}
-      onError={() => {setPlayable(false); void recordFailure('audio-failure', '音频无法解码或加载；请检查题包。考试计时不会暂停。').catch(ignore);}}
+    <audio ref={audio} src={url || undefined} preload="metadata" controls={!attempt} controlsList="nodownload noplaybackrate" onLoadedMetadata={event => {readDuration(event.currentTarget);}}
+      onDurationChange={event => {readDuration(event.currentTarget);}}
+      onEmptied={clearPreflight} onLoadStart={clearPreflight}
+      onCanPlay={event => {setPlayable(readDuration(event.currentTarget));}}
+      onPlaying={event => {
+        if (!readDuration(event.currentTarget)) return;
+        setPlayable(true); setPlayed(true); setError(''); setState('playing'); clearTimeout(stall.current);
+      }}
+      onError={() => {clearPreflight(); void recordFailure('audio-failure', '音频无法解码或加载；请检查题包。考试计时不会暂停。').catch(ignore);}}
       onPause={() => {
         if (!audio.current?.paused) return; // Ignore an already superseded preview pause event.
         if (!audio.current?.ended && !intentionalPause.current && latest.current.attempt?.status === 'listening' && !document.hidden && isNativeForeground())
@@ -471,11 +522,12 @@ function ExamAudio({url, attempt, durableSubmitted, onPreflight, onInterruption,
         if (!controlledSeek.current && latest.current.attempt?.status === 'listening')
           void recordFailure('audio-seek', '音频位置发生变化，恢复时将重新对齐已用时间。').catch(ignore);
       }} onSeeked={() => {controlledSeek.current = false;}}/>
-    <p>音频时长：{duration ? clockText(duration * 1000) : '读取中…'} · 听力计时固定 45:00</p>
-    {!attempt && <p className="mock-muted">先点击播放器试听。{duration > 0 && Math.abs(duration * 1000 - LISTENING_MS) > 60_000 && '音频时长与 45 分钟明显不同，请先核对整卷材料是否完整。'}</p>}
+    <p>音频时长：{Number.isFinite(duration) && duration > 0 ? clockText(duration * 1000) : '读取中…'} · 本套听力时限 {clockText(effectiveListeningDurationMs)} · 阅读 {clockText(READING_MS)}</p>
+    {!attempt && <p className="mock-muted">先点击播放器试听。{declaredListeningDurationMs === undefined ? '本套未声明听力时长，沿用 45:00；超过时限的音轨须核对后使用新版本。' : '本套使用题包声明的听力时长，须与实际音轨匹配；声明不代表材料已获认证。'}</p>}
+    {attempt && <p className="mock-muted">本次沿用已保存的听力截止 {new Date(attempt.listeningDeadline).toLocaleTimeString()}；音频重载或结束不改变计时。</p>}
     {attempt?.status === 'listening' && <><p role="status">{state === 'playing' ? '正在播放整场听力' : state === 'ended' ? '音频已结束；听力阶段按原截止时间结束。' : '音频当前未播放；倒计时继续。'}</p>
       {state !== 'playing' && state !== 'ended' && <div className="mock-actions"><button className="button secondary" disabled={busy} onClick={() => void playAligned().catch(ignore)}>按已用时间恢复听力</button>
-        <button className="text-button" disabled={busy} onClick={() => {audio.current?.load(); setError('正在重新加载，请稍后点击恢复听力。');}}>重新加载音频</button></div>}</>}
+        <button className="text-button" disabled={busy} onClick={() => {stop(); clearPreflight(); audio.current?.load(); setError('正在重新加载，请稍后点击恢复听力。');}}>重新加载音频</button></div>}</>}
     {attempt?.status === 'reading' && <p>听力阶段已结束，音频已停止；无法返回听力修改答案。</p>}
     {error && <p role="alert">{error}</p>}
   </section>;

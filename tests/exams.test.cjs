@@ -246,3 +246,136 @@ test('five-minute clock skew is bounded and valid future section deadlines are n
     assert.equal(restored.clockRollback,true,'Tolerated skew remains visible; it is not silently certified as normal');r.close();
   }
 });
+
+// Declared LC duration, immutable clocks and database-version compatibility.
+const duration = 2753000;
+const declared = (ms = duration, id = 'declared-duration') => ({...fixture(id),listeningDurationMs:ms});
+const parsed = ms => model.parseExamPackage(declared(ms));
+const make = (exam, now = start, id = 'duration-attempt') => model.createAttempt(exam,{id,ownerId:'alice',fingerprint:'sha256:'+'a'.repeat(64),ordinal:1,now});
+async function durationRepo(factory = new IDBFactory(), name = 'duration-tests', owner = 'alice') {return storage.openExamRepository(owner,{factory,name});}
+function rawOpen(factory, name, version, upgrade) {
+  return new Promise((resolve,reject)=>{const r=factory.open(name,version);r.onupgradeneeded=()=>upgrade?.(r.result,r.transaction);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+}
+async function rawRows(db) {
+  return new Promise((resolve,reject)=>{const tx=db.transaction(['packages','catalog','attempts'],'readonly'),rows={};
+    for(const name of ['packages','catalog','attempts']) {const r=tx.objectStore(name).getAll();r.onsuccess=()=>{rows[name]=r.result;};}
+    tx.oncomplete=()=>resolve(plain(rows));tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);
+  });
+}
+async function seedLegacy(factory, name) {
+  const db=await rawOpen(factory,name,1,db=>{for(const storeName of ['packages','catalog','attempts']) {
+    const store=db.createObjectStore(storeName,{keyPath:storeName==='attempts'?['ownerId','id']:['ownerId','key']});store.createIndex('owner','ownerId',{unique:false});
+  }});
+  const exam=model.parseExamPackage(fixture()),fingerprint=await model.fingerprintExam(exam),key=model.examKey(exam),{assets,...definition}=exam;
+  const attempt=model.answerQuestion(model.createAttempt(exam,{id:'legacy-active',ownerId:'alice',fingerprint,ordinal:1,now:start}),1,1,start+100);
+  const catalog={ownerId:'alice',key,id:exam.id,version:exam.version,title:exam.title,source:exam.source,fingerprint,bytes:model.jsonBytes(exam),importedAt:start,definition};
+  await new Promise((resolve,reject)=>{const tx=db.transaction(['packages','catalog','attempts'],'readwrite');
+    tx.objectStore('packages').add({ownerId:'alice',key,exam});tx.objectStore('catalog').add(catalog);tx.objectStore('attempts').add({ownerId:'alice',id:attempt.id,attempt});
+    tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);
+  });
+  return db;
+}
+
+test('legacy normalization remains byte-identical by its pre-change SHA and has no injected duration',async()=>{
+  const exam=model.parseExamPackage(fixture()),json=JSON.stringify(exam);
+  assert.equal(Object.hasOwn(exam,'listeningDurationMs'),false);
+  assert.equal(crypto.createHash('sha256').update(json).digest('hex'),'501d84ae36785f03b2fe56d2ca3a89bcbd3357479c21e8d48e11dd0e6827cbbc');
+  assert.equal(await model.fingerprintExam(exam),'sha256:501d84ae36785f03b2fe56d2ca3a89bcbd3357479c21e8d48e11dd0e6827cbbc');
+  const a=make(exam);assert.equal(a.listeningDeadline-start,2700000);assert.equal(a.readingDeadline-a.listeningDeadline,4500000);
+  assert.deepEqual(plain(model.validateAttempt(a,exam,'alice',a.fingerprint)),plain(a));
+});
+test('declared whole-second LC durations preserve both engineering bounds and canonical object order',async()=>{
+  for(const ms of [2400000,duration,3000000]) {const exam=parsed(ms);assert.equal(exam.listeningDurationMs,ms);assert.equal(model.getListeningDurationMs(exam),ms);}
+  const input=declared(),reordered={listeningDurationMs:duration,...fixture('declared-duration')};
+  assert.equal(JSON.stringify(model.parseExamPackage(input)),JSON.stringify(model.parseExamPackage(reordered)));
+  assert.notEqual(await model.fingerprintExam(parsed(duration)),await model.fingerprintExam(parsed(duration+1000)));
+});
+test('duration declarations reject wrong types, fractions, non-second units and out-of-range values',()=>{
+  for(const value of [null,'2753000',true,NaN,Infinity,-1,0,2399000,3001000,2752521,2753000.5]) {
+    assert.throws(()=>model.parseExamPackage(declared(value)),/听力.*时长|时长.*听力|整秒/);
+  }
+  assert.throws(()=>model.createAttempt({...model.parseExamPackage(fixture()),listeningDurationMs:3001000},{id:'invalid-direct',ownerId:'alice',fingerprint:'sha256:'+'a'.repeat(64),ordinal:1,now:start}),/时长/);
+});
+test('declared LC locks at its exact boundary and retains all 75 reading minutes',()=>{
+  for(const ms of [2400000,duration,3000000]) {
+    const exam=parsed(ms),a=make(exam);assert.equal(a.listeningDeadline,start+ms);assert.equal(a.readingDeadline,start+ms+4500000);
+    assert.equal(model.advanceAttempt(a,start+ms-1).status,'listening');
+    assert.throws(()=>model.answerQuestion(a,101,0,start+ms-1),/阶段/);
+    const last=model.answerQuestion(a,100,0,start+ms-1);assert.equal(last.answers[100].savedAt,start+ms-1);
+    const rc=model.advanceAttempt(last,start+ms);assert.equal(rc.status,'reading');assert.equal(rc.activeQuestion,101);
+    assert.throws(()=>model.answerQuestion(rc,100,1,start+ms),/阶段/);
+    assert.equal(model.answerQuestion(rc,101,0,start+ms).answers[101].savedAt,start+ms);
+    assert.equal(model.advanceAttempt(rc,rc.readingDeadline-1).status,'reading');
+    const end=model.advanceAttempt(rc,rc.readingDeadline);assert.equal(end.status,'submitted');assert.equal(end.submittedAt,rc.readingDeadline);
+    assert.deepEqual(plain(model.validateAttempt(end,exam,'alice',end.fingerprint)),plain(end));
+    assert.equal(end.questionTimeMs[101],4500000);
+  }
+  assert.equal(model.advanceAttempt(make(parsed()),start+2700000).status,'listening');
+});
+test('declared attempts reject forged clocks, cross-stage saved times and redistributed LC accounting',()=>{
+  const exam=parsed(),a=make(exam),rc=model.advanceAttempt(a,start+duration+100);
+  const edits=[v=>v.listeningDeadline++,v=>v.readingDeadline++,v=>{v.listeningDeadline=start+2700000;v.readingDeadline=start+7200000;},v=>{v.questionTimeMs[1]--;v.questionTimeMs[101]++;},v=>{v.answers[100]={choice:0,savedAt:start+duration};},v=>{v.answers[101]={choice:0,savedAt:start+duration-1};}];
+  for(const edit of edits){const bad=plain(rc);edit(bad);assert.throws(()=>model.validateAttempt(bad,exam,'alice',a.fingerprint));}
+  const back=model.advanceAttempt(rc,start+duration-500);assert.equal(back.clockRollback,true);assert.equal(back.listeningDeadline,a.listeningDeadline);assert.equal(back.readingDeadline,a.readingDeadline);
+  assert.deepEqual(plain(model.validateAttempt(back,exam,'alice',a.fingerprint)),plain(back));
+});
+test('Date upper bound accounts for actual declared LC length',()=>{
+  for(const ms of [2400000,3000000]) {const exam=parsed(ms),latest=8640000000000000-ms-4500000,a=make(exam,latest);
+    assert.equal(a.readingDeadline,8640000000000000);assert.throws(()=>make(exam,latest+1),/开始时间/);
+    assert.deepEqual(plain(model.validateAttempt(a,exam,'alice',a.fingerprint)),plain(a));
+  }
+});
+test('catalog summaries expose only declared durations without rewriting legacy package shape',async()=>{
+  const r=await durationRepo();await r.importPackage(fixture(),start);const {summary}=await r.importPackage(declared(),start+1);
+  assert.equal(summary.listeningDurationMs,duration);const listed=await r.listPackages();
+  assert.equal(listed.find(x=>x.id==='declared-duration').listeningDurationMs,duration);assert.equal(Object.hasOwn(listed.find(x=>x.id==='structural-test-only'),'listeningDurationMs'),false);
+  assert.equal((await r.getPackage(summary.key)).listeningDurationMs,duration);r.close();
+});
+test('changing duration requires a new package version and retake sequence spans versions',async()=>{
+  const r=await durationRepo(),{summary}=await r.importPackage(declared(),start);await r.startAttempt(summary.key,start,'one');
+  await assert.rejects(r.importPackage(declared(duration+1000)),/冲突/);assert.equal((await r.getPackage(summary.key)).listeningDurationMs,duration);
+  const v2={...declared(duration+1000),version:2},second=await r.importPackage(v2,start+1);
+  const next=await r.startAttempt(second.summary.key,start+duration+4500000,'two');assert.equal(next.attempt.ordinal,2);assert.equal(next.attempt.listeningDeadline-next.attempt.startedAt,duration+1000);
+  const prior=(await r.listAttempts()).find(x=>x.attempt.id==='one').attempt;assert.equal(prior.listeningDeadline,start+duration);assert.equal(prior.submittedAt,start+duration+4500000);r.close();
+});
+test('cold reopen retains LC answers after 45 minutes and persists exact custom expiry',async()=>{
+  const factory=new IDBFactory();let r=await durationRepo(factory),{summary}=await r.importPackage(declared(),start);await r.startAttempt(summary.key,start,'resume');await r.answer('resume',100,2,start+2700000);r.close();
+  r=await durationRepo(factory);let row=await r.resumeAttempt('resume',start+duration-1);assert.equal(row.attempt.status,'listening');assert.equal(row.attempt.answers[100].choice,2);
+  row=await r.resumeAttempt('resume',start+duration);assert.equal(row.attempt.status,'reading');assert.equal(row.attempt.readingDeadline,start+duration+4500000);
+  const late=await r.resumeAttempt('resume',start+duration+4500000+1000);assert.equal(late.attempt.submittedAt,start+duration+4500000);assert.equal(late.result.elapsedMs,duration+4500000);assert.equal(late.result.parts.slice(0,4).reduce((n,p)=>n+p.timeMs,0),duration);r.close();
+});
+test('mixed old and declared backups are idempotent while preserving history and later answers',async()=>{
+  const source=await durationRepo(),legacy=await source.importPackage(fixture(),start);await source.startAttempt(legacy.summary.key,start,'old');await source.answer('old',1,1,start+100);await source.resumeAttempt('old',start+7200000);
+  const old=plain((await source.listAttempts())[0]),nextStart=start+7200000,added=await source.importPackage(declared(),nextStart);await source.startAttempt(added.summary.key,nextStart,'new');await source.answer('new',2,1,nextStart+100);
+  const backup=await source.exportBackup(),r=await durationRepo(),now=nextStart+duration+100;
+  assert.deepEqual(plain(await r.importBackup(backup,now)),{packagesAdded:2,attemptsAdded:2});assert.deepEqual(plain(await r.importBackup(backup,now+100)),{packagesAdded:0,attemptsAdded:0});
+  assert.deepEqual(plain((await r.listAttempts()).find(x=>x.attempt.id==='old')),old);
+  const current=(await r.listAttempts()).find(x=>x.attempt.id==='new').attempt;assert.equal(current.listeningDeadline,nextStart+duration);assert.equal(current.status,'reading');
+  await r.answer('new',101,0,now+200);await assert.rejects(r.importBackup(backup,now+300),/冲突/);assert.equal((await r.listAttempts()).find(x=>x.attempt.id==='new').attempt.answers[101].choice,0);source.close();r.close();
+});
+test('tampered duration backups fail atomically before any new package or history is written',async()=>{
+  const source=await durationRepo(),{summary}=await source.importPackage(declared(),start);await source.startAttempt(summary.key,start,'declared');await source.answer('declared',1,1,start+100);
+  const original=plain(await source.exportBackup()),r=await durationRepo();await r.importPackage(fixture('existing'),start);const before=plain(await r.exportBackup());
+  for(const edit of [b=>b.attempts[0].listeningDeadline++,b=>b.attempts[0].readingDeadline++,b=>{delete b.packages[0].listeningDurationMs;},b=>b.packages[0].listeningDurationMs+=1000,b=>b.attempts[0].answers[100]={choice:0,savedAt:start+duration}]) {
+    const bad=plain(original);edit(bad);bad.packages.unshift(model.parseExamPackage(fixture('must-not-appear')));
+    await assert.rejects(r.importBackup(bad,start+200));assert.deepEqual(plain(await r.exportBackup()),before);
+  }
+  source.close();r.close();
+});
+test('v1 to v2 upgrade preserves all raw rows without add, put, delete or clear',async()=>{
+  const factory=new IDBFactory(),name='legacy-migration',old=await seedLegacy(factory,name),before=await rawRows(old);old.close();
+  const originals={};let r;
+  for(const method of ['add','put','delete','clear']) {originals[method]=IDBObjectStore.prototype[method];IDBObjectStore.prototype[method]=function(){throw new Error('Upgrade must not rewrite any row');};}
+  try{r=await durationRepo(factory,name);}finally{for(const [method,fn] of Object.entries(originals))IDBObjectStore.prototype[method]=fn;}
+  const inspect=await rawOpen(factory,name,2);assert.equal(inspect.version,2);assert.deepEqual(await rawRows(inspect),before);inspect.close();
+  const restored=(await r.listAttempts())[0].attempt;assert.equal(restored.listeningDeadline-start,2700000);assert.equal(restored.answers[1].choice,1);r.close();
+});
+test('upgrading closes a cooperative v1 tab and old code cannot reopen the v2 database',async()=>{
+  const factory=new IDBFactory(),name='legacy-tab',old=await seedLegacy(factory,name);let changed=false;old.onversionchange=()=>{changed=true;old.close();};
+  const r=await durationRepo(factory,name);assert.equal(changed,true);
+  await assert.rejects(rawOpen(factory,name,1),error=>error.name==='VersionError');assert.equal((await r.listAttempts()).length,1);r.close();
+});
+test('a newer database is rejected without changing its version or rows',async()=>{
+  const factory=new IDBFactory(),name='future-version',db=await rawOpen(factory,name,3,db=>db.createObjectStore('sentinel'));
+  db.close();await assert.rejects(durationRepo(factory,name),error=>error.name==='VersionError');const after=await rawOpen(factory,name,3);assert.deepEqual(Array.from(after.objectStoreNames),['sentinel']);after.close();
+});

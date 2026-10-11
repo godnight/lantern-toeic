@@ -6,7 +6,7 @@
 
 1. 选择一份或多份完整题包 JSON；每份独立校验和保存。同 ID、同版本、同内容重复导入不会增加副本；改版须递增版本。
 2. 打开题包，完成音频试听与图片解码预检，确认声音可听清、材料完整。
-3. 开始后听力固定 45 分钟、阅读固定 75 分钟。不能提前进入阅读或返回听力；后台、退出和重启不暂停。恢复听力按已经过的时间定位，并记录中断。
+3. 听力按本套显示的时长截止，未声明的旧题包为 45 分钟；阅读固定 75 分钟。不能提前进入阅读或返回听力；后台、退出和重启不暂停。恢复听力按已经过的时间定位，并记录中断。
 4. 阅读阶段可确认提前交卷，到时自动交卷。只有保存成功才显示成绩、答案与解析；漏答按错误计。首次与复测保留为独立记录。
 5. 题包首页导出完整备份，检查系统下载文件确实存在。备份包含私人题文、答案、音频与记录；不要公开分享。当前只能在同一记录范围恢复，不提供 Web 与鸿蒙跨账号迁移。
 
@@ -23,6 +23,7 @@
 | `source` | `classification`、`title`、`rightsStatement`；可含 `publisher`、`reference` |
 | `assets` | `{id,mime,base64}[]`；原始文件的标准 base64，不含 data URL 前缀 |
 | `listeningAudioId` | 本套整场听力音频的素材 ID |
+| `listeningDurationMs` | 可选：已核对完整音轨的听力时长，毫秒安全整数、整秒、40–50 分钟；缺字段为旧默认 45 分钟 |
 | `groups` | `{id,part,questionNumbers,passages,imageIds}[]` |
 | `questions` | `{number,part,groupId,prompt,choices,answer,explanation?}[]` |
 
@@ -32,7 +33,11 @@
 
 Part 1/2/5 每组 1 题，Part 3/4 每组 3 题，Part 6 每组 4 题和一份材料。Part 7 前 29 题为单篇材料（每组 2–4 题），后 25 题为多篇材料（每组 5 题，2–3 份材料）。`passages` 存完整纯文字；扫描图可用空字符串占据材料份数并引用图片。Part 1 必须有图，Part 6/7 必须有正文或图片。图片没有自动 OCR 无障碍文字，宜同时提供正文。
 
-允许 PNG、JPEG、WebP、MP3、WAV；禁止外部资源、SVG、HTML、脚本和未引用素材。校验结构与可解码不能证明材料正确或完整，音频声音与题文答案对应仍需人工确认。音频不要求恰好 2700 秒，但与 45 分钟明显不同时会提示核对。
+允许 PNG、JPEG、WebP、MP3、WAV；禁止外部资源、SVG、HTML、脚本和未引用素材。校验结构与可解码不能证明材料正确或完整，音频声音与题文答案对应仍需人工确认。
+
+声明听力时长前须确认音轨完整且与题本匹配，再将完整媒体秒数向上取整、乘以 1000。App 预检要求实际音轨不长于声明，且差值至多 1.5 秒；超出时阻止新开考，不能以删音频或变速来通过。无声明旧包实际音轨长于 45 分钟也不能新开考，须核对后制作带声明的新版本。40–50 分钟是本产品的防误填范围，不是官方考场规则；背景见 [RFC 0006](rfcs/0006-complete-listening-duration.md)。
+
+时长属于题包指纹，修改须新版本；已开始考试的截止不改写。新版支持旧题包与旧备份，但带声明的新包要求新版 App。存储升级后，旧版 App/旧页面会拒绝打开模考库，请升级或刷新，不要卸载或清空数据。
 
 限额：单题包 JSON 96 MiB，音频 50 MiB，单图 6 MiB，解码素材合计 64 MiB，最多 100 素材；每账号 20 套、192 MiB 规范化 JSON 和 1000 次记录；完整备份 224 MiB。设备实际配额可能更小，低内存手机大文件尚未验收。失败事务不会留下半包或覆盖旧答题。
 
@@ -40,6 +45,6 @@ Part 1/2/5 每组 1 题，Part 3/4 每组 3 题，Part 6 每组 4 题和一份�
 
 ## 开发与测试
 
-核心为 `lib/exam-model.ts`、`lib/exam-storage.ts`，UI 为 `app/learn/mock-exam.tsx`、`lib/exam-ui.ts`。独立 IndexedDB `lantern-private-exams-v1`；答题只读取不含大音频的目录，事务完成后才提示保存。不要用清空整库来处理恢复错误。
+核心为 `lib/exam-model.ts`、`lib/exam-storage.ts`，UI 为 `app/learn/mock-exam.tsx`、`lib/exam-ui.ts`。独立 IndexedDB 名称仍为 `lantern-private-exams-v1`，数据库版本升至 2；升级不改写已有题包或记录。答题只读取不含大音频的目录，事务完成后才提示保存。不要用清空整库来处理恢复错误。
 
 执行 `npm run test:exams`。浏览器回归先执行 `npm --prefix mobile run build`，安装 Playwright Chromium 后运行 `npm run test:browser`；使用专用本机端口 4175 和全新上下文，报告默认在系统临时目录。CI 每个 PR 和 Release 自动执行。`tests/fixtures/synthetic-exam.cjs` 仅供自动化控制变量，不含真实试卷，不得复制到 public、产品题库或发布附件冒充真题。开发测试与浏览器、模拟器、真机和两小时媒体验收分别记录。
