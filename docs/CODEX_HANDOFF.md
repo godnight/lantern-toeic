@@ -4,9 +4,9 @@
 
 ## 正在接续：原生模考独立 runner（2026-10-11）
 
-PR #32 已合并。PR #33（分支 `test/harmony-mock-automation`）为草稿，已实现原生模考短回归、可选真实截止时间观察及最终备份校验；99项Python离线回归和198项学习检查通过，实际新runner live仍待执行。先核对该分支最新PR状态再接续。新脚本说明 `harmony/scripts/ui/MOCK.md`，报告 `docs/testing/HARMONY_MOCK_AUTOMATION_2026-10-11.md`。长模式显式传 `--observe-deadlines`，整轮默认/最大8400秒；不可与现有观察争用设备。发布工具还补齐历史最高versionCode检查；不改release-manifest，不重发v0.3.0。
+PR #32 已合并。PR #33（分支 `test/harmony-mock-automation`）为草稿，已实现原生模考短回归、可选真实截止时间观察及最终备份校验；101项Python离线回归和198项学习检查通过，实际新runner live仍待执行。先核对该分支最新PR状态再接续。新脚本说明 `harmony/scripts/ui/MOCK.md`，报告 `docs/testing/HARMONY_MOCK_AUTOMATION_2026-10-11.md`。长模式显式传 `--observe-deadlines`，整轮默认/最大8400秒；不可与其他观察争用设备。发布工具还补齐历史最高versionCode检查；不改release-manifest，不重发v0.3.0。
 
-当前专用模拟器被只读真实计时观察独占：原同次考试于10:44切换阅读，整卷原截止11:59:25.588（Asia/Shanghai）。10:34实例退出，旧观察已失败；重启原实例后继续观察，不能算连续两小时前台。私有接续文件 `vocab-work/simulator-acceptance-20261011/CONTINUE-real-deadline-observer.txt` 记录实际进程与输出路径；以活进程/最终退出状态核验，不仅看json的running。观察真正结束、实际最终备份核验并保全后，才能启动新runner。不要触碰物理手机、清数据、改系统时钟或并发操作模拟器。
+原同次考试于10:44切换阅读、11:59自动交卷，原截止11:59:25.588（Asia/Shanghai）没有延后。10:34实例曾退出，重启同实例后继续观察，不能算连续两小时前台。观察进程与自动收尾均已终止；收尾先发现测试脚本把热补丁0占位值误作App版本，修复后12:02实际导出与原B3比对通过，证据 `87-original-timeout-final-backup-retry`。模拟器现为题包目录且旧考试已交卷，可独占运行新套件。私有接续文件 `vocab-work/simulator-acceptance-20261011/CONTINUE-real-deadline-observer.txt` 记录实际后续进程与输出路径，以实时活进程/最终退出状态核验。不要触碰物理手机、清数据、改系统时钟或并发操作模拟器。
 
 ## 最新接续：模拟器已完成部分模考验收（2026-10-11）
 
