@@ -318,6 +318,38 @@ class MockRunner(ui.Runner):
         self.io.cli("ui", "click", str(round((b[0]+b[2])/2)), str(round((b[1]+b[3])/2)), label="mock-click")
         time.sleep(.25)
 
+    def picker_file(self, filename, tree):
+        if filename not in self.io.downloads:
+            raise ui.Failure("Picker file is not one of this run's verified files")
+        # API 26 omits offscreen grid items and remembers its scroll position.
+        # Check the current viewport first, then search up and down in this grid.
+        for direction in ("up", "down"):
+            previous = None
+            for attempt in range(13):
+                mode, sheet = surface(tree, True)
+                if sheet is None:
+                    raise ui.Failure("Picker closed before selecting the intended file")
+                nodes = [n for n in ui.flatten(tree) if any(p is sheet.value for p in n.parents)]
+                matches = [n for n in nodes if n.value.get("type") == "Text"
+                           and ui.normalize(n.value.get("text")) == filename and n.visible_bounds()]
+                if matches:
+                    return ui.unique(matches, "allowlisted picker label")
+                if mode != "instant-picker":
+                    raise ui.Failure("Verified picker file is not visible in the known native grid")
+                grid = ui.unique([n for n in nodes if n.value.get("type") == "Grid"
+                                  and n.value.get("scrollable") is True
+                                  and n.value.get("enabled") is not False and n.visible_bounds()],
+                                 "native picker file grid")
+                viewport = tuple((n.value.get("type"), ui.normalize(n.value.get("text")), tuple(n.visible_bounds()))
+                                 for n in nodes if any(p is grid.value for p in n.parents) and n.visible_bounds())
+                if attempt == 12 or viewport == previous:
+                    break
+                previous = viewport
+                # Preserve the validated sheet/grid and scroller snapshot identity.
+                super().scroll(direction, grid)
+                tree = self.layout()
+        raise ui.Failure("Verified picker file not visible after bounded native grid search")
+
     def picker(self, filename):
         if filename not in self.io.downloads:
             raise ui.Failure("Picker file is not one of this run's verified files")
@@ -329,6 +361,9 @@ class MockRunner(ui.Runner):
             _, sheet = surface(tree, True)
             if sheet is None:
                 raise ui.Failure("Picker closed before selecting the intended file")
+            if label == filename:
+                self.tap_node(self.picker_file(filename, tree))
+                continue
             all_nodes = list(ui.flatten(tree))
             def choices(text):
                 return [n for n in all_nodes if any(p is sheet.value for p in n.parents)
