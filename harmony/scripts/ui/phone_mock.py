@@ -205,7 +205,8 @@ class MockRunner(ui.Runner):
 
     def layout(self):
         parent_end = self.io.end
-        deadline = min(parent_end, time.monotonic() + 15)
+        started = time.monotonic()
+        deadline = min(parent_end, started + 15)
         self.io.end = deadline
         try:
             while True:
@@ -237,6 +238,13 @@ class MockRunner(ui.Runner):
                 # closes. Retry this exact empty shape without any UI interaction.
                 if roots or len(webs) != 1 or webs[0].value.get("children") != []:
                     raise ui.Failure("Unexpected application accessibility structure")
+                # Native export can leave a trusted Web accessibility shell
+                # empty for more than 15 seconds before it recovers.
+                # Only this known shape outside the picker gets a longer read-only
+                # wait, measured from this call's start, never from each retry.
+                if self.phase != "picker":
+                    deadline = min(parent_end, started + 60)
+                    self.io.end = deadline
                 if time.monotonic() >= deadline:
                     raise ui.Failure("Application accessibility content stayed empty")
                 time.sleep(min(.3, max(0, deadline - time.monotonic())))

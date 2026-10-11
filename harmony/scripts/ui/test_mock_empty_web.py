@@ -1,7 +1,9 @@
 """Offline tests of the actual repo MockRunner.layout; never calls a device.
 
 Two reduced layouts are real captures from failed run 88. Fault layouts below
-are explicit mutations. The subprocess guard makes accidental live calls fail.
+are explicit mutations. Delayed recovery and command durations are simulated;
+run 94's live recovery is separate evidence. The subprocess guard makes
+accidental live calls fail.
 """
 import copy
 import json
@@ -31,6 +33,7 @@ class EmptyWebLayoutTests(unittest.TestCase):
         self.frames = [fixture("mock-empty-web.json"), fixture("mock-restored-web.json")]
         self.calls = []
         self.call_duration = 0.0
+        self.call_durations = []
         self.runner = object.__new__(mock.MockRunner)
         self.runner.phase = "catalog"
         self.runner.tree = None
@@ -45,10 +48,12 @@ class EmptyWebLayoutTests(unittest.TestCase):
             if label != "layout" or "layout" not in argv:
                 raise AssertionError("No action, HDC, screenshot or other command during layout waiting")
             case.calls.append({"timeout": timeout, "end": transport.end})
-            if case.call_duration > timeout:
+            duration = (case.call_durations[min(len(case.calls) - 1, len(case.call_durations) - 1)]
+                        if case.call_durations else case.call_duration)
+            if duration > timeout:
                 case.clock += timeout
                 raise ui.Failure("OFFLINE simulated command timeout")
-            case.clock += case.call_duration
+            case.clock += duration
             return json.dumps(case.frames[min(len(case.calls) - 1, len(case.frames) - 1)], ensure_ascii=False)
         self.enterContext(patch.object(ui.Transport, "command", command))
 
@@ -64,7 +69,8 @@ class EmptyWebLayoutTests(unittest.TestCase):
         self.assertIs(self.runner.tree, tree)
         self.assertEqual(len(self.calls), 2)
         self.assertLessEqual(self.clock, 15)
-        self.assertTrue(all(0 < row["timeout"] <= 15 for row in self.calls))
+        self.assertEqual(self.calls[0]["timeout"], 15)
+        self.assertTrue(all(0 < row["timeout"] <= 35 for row in self.calls))
         self.assert_restored_budget()
 
     def test_status_still_requires_real_saved_notice_after_empty_web(self):
@@ -80,12 +86,12 @@ class EmptyWebLayoutTests(unittest.TestCase):
         self.assertEqual(len(self.calls), 1)
         self.assert_restored_budget()
 
-    def test_persistent_empty_web_fails_at_15_seconds_and_restores_budget(self):
+    def test_persistent_empty_web_fails_at_60_seconds_and_restores_budget(self):
         self.frames = [self.frames[0]]
         with self.assertRaises(ui.Failure): self.runner.layout()
-        self.assertLessEqual(self.clock, 15)
-        self.assertGreaterEqual(self.clock, 14.9)
-        self.assertTrue(all(row["end"] <= 15 for row in self.calls))
+        self.assertLessEqual(self.clock, 60)
+        self.assertGreaterEqual(self.clock, 59.9)
+        self.assertTrue(all(row["end"] <= 60 for row in self.calls))
         self.assert_restored_budget()
 
     def test_parent_budget_shorter_than_15_is_not_extended(self):
@@ -101,6 +107,63 @@ class EmptyWebLayoutTests(unittest.TestCase):
         with self.assertRaisesRegex(ui.Failure, "timeout"): self.runner.layout()
         self.assertEqual(len(self.calls), 1)
         self.assertLessEqual(self.clock, 15)
+        self.assert_restored_budget()
+
+    def test_trusted_empty_web_recovers_after_more_than_15_seconds(self):
+        self.frames = [self.frames[0]] * 10 + [self.frames[1]]
+        self.call_duration = 2
+        tree = self.runner.layout()
+        self.assertEqual(tree, self.frames[-1])
+        self.assertGreater(self.clock, 15)
+        self.assertLess(self.clock, 60)
+        self.assertEqual(len(self.calls), 11)
+        self.assertEqual(self.calls[0]["end"], 15)
+        self.assertTrue(all(row["end"] == 60 for row in self.calls[1:]))
+        self.assert_restored_budget()
+
+    def test_empty_web_in_picker_phase_retains_15_second_cap(self):
+        self.runner.phase = "picker"
+        self.frames = [self.frames[0]]
+        with self.assertRaises(ui.Failure): self.runner.layout()
+        self.assertLessEqual(self.clock, 15)
+        self.assertGreaterEqual(self.clock, 14.9)
+        self.assertTrue(all(row["end"] <= 15 for row in self.calls))
+        self.assert_restored_budget()
+
+    def test_extended_empty_web_still_stops_at_a_20_second_parent_budget(self):
+        self.frames = [self.frames[0]]
+        self.runner.io.end = 20.0
+        with self.assertRaises(ui.Failure): self.runner.layout()
+        self.assertLessEqual(self.clock, 20)
+        self.assertGreaterEqual(self.clock, 19.9)
+        self.assertTrue(all(row["end"] <= 20 for row in self.calls))
+        self.assert_restored_budget(20.0)
+
+    def test_60_second_deadline_is_from_entry_not_restarted_after_each_empty_frame(self):
+        self.frames = [self.frames[0]]
+        self.call_duration = 10
+        with self.assertRaises(ui.Failure): self.runner.layout()
+        self.assertLessEqual(self.clock, 60)
+        self.assertGreaterEqual(self.clock, 59.9)
+        self.assertEqual(self.calls[0]["end"], 15)
+        self.assertTrue(all(row["end"] == 60 for row in self.calls[1:]))
+        self.assert_restored_budget()
+
+    def test_command_timeout_after_empty_frame_is_not_retried_or_extended(self):
+        self.call_durations = [0, 40]
+        with self.assertRaisesRegex(ui.Failure, "timeout"): self.runner.layout()
+        self.assertEqual(len(self.calls), 2)
+        self.assertEqual([row["timeout"] for row in self.calls], [15, 35])
+        self.assertLessEqual(self.clock, 60)
+        self.assert_restored_budget()
+
+    def test_last_cli_call_cannot_run_beyond_60_second_deadline(self):
+        self.frames = [self.frames[0]]
+        self.call_duration = 2
+        with self.assertRaisesRegex(ui.Failure, "timeout"): self.runner.layout()
+        self.assertLessEqual(self.clock, 60)
+        self.assertGreaterEqual(self.clock, 59.9)
+        self.assertLess(self.calls[-1]["timeout"], self.call_duration)
         self.assert_restored_budget()
 
     def test_untrusted_origin_native_overlay_and_dialog_fail_without_retry(self):
