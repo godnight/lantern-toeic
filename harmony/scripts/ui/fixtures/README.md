@@ -9,3 +9,5 @@
 `mock-deadline-listening.json` 与 `mock-deadline-reading.json` 来自同日实际只读观察保存的听力/阅读布局，按同一属性白名单裁减。测试中的结果、遮挡、错误与时钟变化均为明确的内存扰动；不存在声称来自未来实测的交卷夹具。
 
 `mock-installed-bundle.json` 是实际 `bm dump -n com.lantern.toeic` 的最小安装元数据，不是布局；仅保留包名、App/模块版本和热补丁版本占位层级。删去账号、令牌、签名、设备及安装时间字段。热补丁的0不能与App的20006混为同一版本。
+
+`mock-empty-web.json` / `mock-restored-web.json` 来自首轮新runner实际导入后相邻的两次结构：系统短暂只暴露可信Web空壳，随后恢复并显示文件内容相同。它们验证有时限的只读等待；未知弹窗、异源、结构冲突和预算耗尽仍失败，不将空壳当成导入成功。
