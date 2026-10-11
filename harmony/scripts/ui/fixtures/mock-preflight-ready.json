@@ -1,0 +1,199 @@
+[
+  {
+    "bounds": [
+      0,
+      0,
+      1256,
+      2760
+    ],
+    "children": [
+      {
+        "type": "Web",
+        "bounds": [
+          0,
+          137,
+          1256,
+          2662
+        ],
+        "children": [
+          {
+            "type": "rootWebArea",
+            "bounds": [
+              0,
+              137,
+              1256,
+              2662
+            ],
+            "scrollable": true,
+            "children": [
+              {
+                "type": "genericContainer",
+                "bounds": [
+                  0,
+                  137,
+                  1256,
+                  2662
+                ],
+                "clickable": true,
+                "children": [
+                  {
+                    "type": "genericContainer",
+                    "bounds": [
+                      0,
+                      137,
+                      1256,
+                      2662
+                    ],
+                    "clickable": true,
+                    "children": [
+                      {
+                        "type": "region",
+                        "text": "完整听读模考",
+                        "bounds": [
+                          50,
+                          137,
+                          1207,
+                          2580
+                        ],
+                        "children": [
+                          {
+                            "type": "region",
+                            "text": "听力音频预检",
+                            "bounds": [
+                              50,
+                              137,
+                              1207,
+                              910
+                            ],
+                            "children": [
+                              {
+                                "type": "heading",
+                                "text": "音频预检",
+                                "bounds": [
+                                  102,
+                                  150,
+                                  1155,
+                                  257
+                                ],
+                                "children": []
+                              },
+                              {
+                                "type": "button",
+                                "text": "播放",
+                                "bounds": [
+                                  137,
+                                  337,
+                                  250,
+                                  450
+                                ],
+                                "clickable": true,
+                                "children": []
+                              },
+                              {
+                                "type": "slider",
+                                "text": "已播放时间：0:00, 音频时间进度条",
+                                "bounds": [
+                                  503,
+                                  337,
+                                  1008,
+                                  450
+                                ],
+                                "clickable": true,
+                                "children": []
+                              },
+                              {
+                                "type": "button",
+                                "text": "静音",
+                                "bounds": [
+                                  1007,
+                                  337,
+                                  1120,
+                                  450
+                                ],
+                                "clickable": true,
+                                "children": []
+                              },
+                              {
+                                "type": "paragraph",
+                                "text": "音频时长：0:20 · 听力计时固定 45:00",
+                                "bounds": [
+                                  102,
+                                  529,
+                                  1155,
+                                  622
+                                ],
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "type": "heading",
+                            "text": "开始前确认",
+                            "bounds": [
+                              102,
+                              1024,
+                              1155,
+                              1131
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "checkBox",
+                            "text": "我已试听，确认声音可听清，且这段音频包含本卷完整听力。",
+                            "bounds": [
+                              102,
+                              1533,
+                              173,
+                              1604
+                            ],
+                            "clickable": true,
+                            "children": []
+                          },
+                          {
+                            "type": "staticText",
+                            "text": "我已试听，确认声音可听清，且这段音频包含本卷完整听力。",
+                            "bounds": [
+                              214,
+                              1535,
+                              1111,
+                              1694
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "开始新考试 · 立即计时",
+                            "bounds": [
+                              102,
+                              2006,
+                              1155,
+                              2166
+                            ],
+                            "children": []
+                          },
+                          {
+                            "type": "button",
+                            "text": "返回题包",
+                            "bounds": [
+                              102,
+                              2193,
+                              1155,
+                              2353
+                            ],
+                            "clickable": true,
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "text": "https://lantern.local/"
+      }
+    ]
+  }
+]

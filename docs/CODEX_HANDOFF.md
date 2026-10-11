@@ -2,6 +2,12 @@
 
 更新：2026-10-11。代码仓库：[godnight/lantern-toeic](https://github.com/godnight/lantern-toeic)。当前只维护Web/PWA和HarmonyOS；Android/iOS工程、专用工作流及Capacitor已删除，旧源码留在Git历史。
 
+## 正在接续：原生模考独立 runner（2026-10-11）
+
+PR #32 已合并。新分支 `test/harmony-mock-automation` 已实现原生模考短回归和备份校验，离线检查通过，实际live仍待执行；先核对该分支最新PR状态再接续。新脚本说明 `harmony/scripts/ui/MOCK.md`，报告 `docs/testing/HARMONY_MOCK_AUTOMATION_2026-10-11.md`。发布工具还补齐历史最高versionCode检查；不改release-manifest，不重发v0.3.0。
+
+当前专用模拟器被只读真实计时观察独占：原同次考试于10:44切换阅读，整卷原截止11:59:25.588（Asia/Shanghai）。10:34实例退出，旧观察已失败；重启原实例后继续观察，不能算连续两小时前台。私有接续文件 `vocab-work/simulator-acceptance-20261011/CONTINUE-real-deadline-observer.txt` 记录实际进程与输出路径；以活进程/最终退出状态核验，不仅看json的running。观察真正结束、实际最终备份核验并保全后，才能启动新runner。不要触碰物理手机、清数据、改系统时钟或并发操作模拟器。
+
 ## 最新接续：模拟器已完成部分模考验收（2026-10-11）
 
 本人已明确同意并通过官方流程接受四份模拟器协议。既有 HarmonyOS 7 / API 26 镜像可用；CLI 原先使用了不匹配的 SDK 根目录，官方 Emulator.exe 的 `-imageRoot` 应指向包含 system-image 的用户 Huawei SDK 根目录，不能直接指向 system-image。不要再把协议确认或镜像下载列为当前阻塞。

@@ -82,7 +82,31 @@ def toolchain_info(clt, report):
     }
 
 
-def prepare(root, hap, verification, output):
+def check_previous_version(configured, source, previous=None, expected_sha256=None):
+    """An explicitly pinned local baseline is a precheck, never proof of current GitHub history."""
+    code = configured['versionCode']
+    if type(code) is not int or code < 20005:
+        raise ValueError('App build number must be an integer >= 20005')
+    if previous is None and expected_sha256 is None:
+        return
+    if previous is None or not re.fullmatch(r'[a-f0-9]{64}', expected_sha256 or ''):
+        raise ValueError('Previous build-info file and verified SHA256 must be supplied together')
+    raw = Path(previous).read_bytes()
+    if len(raw) > 262144 or hashlib.sha256(raw).hexdigest() != expected_sha256:
+        raise ValueError('Previous build-info SHA256 mismatch or excessive size')
+    info = json.loads(raw)
+    if (info.get('schemaVersion') != 1 or type(info.get('versionCode')) is not int
+            or info['versionCode'] < 1 or not re.fullmatch(r'\d+\.\d+\.\d+', info.get('version', ''))
+            or not re.fullmatch(r'[a-f0-9]{40}', info.get('sourceCommit', ''))):
+        raise ValueError('Invalid previous build-info identity')
+    if info['version'] == configured['versionName']:
+        if info['sourceCommit'] != source or info['versionCode'] != code:
+            raise ValueError('Same-version retry must keep source and versionCode unchanged')
+    elif code <= info['versionCode']:
+        raise ValueError('New versionCode must be greater than the supplied previous release')
+
+
+def prepare(root, hap, verification, output, previous=None, previous_sha256=None):
     root, output = root.resolve(), output.resolve()
     if output.exists() and any(output.iterdir()):
         raise ValueError('Artifact output must be an empty directory')
@@ -94,8 +118,8 @@ def prepare(root, hap, verification, output):
         if json.loads((root / package).read_text('utf-8'))['version'] != version:
             raise ValueError('Package version mismatch: ' + package)
     configured = json.loads((root / 'harmony/AppScope/app.json5').read_text('utf-8'))['app']
-    if configured['versionName'] != version or configured['versionCode'] < 20005:
-        raise ValueError('App version mismatch or non-increasing build number')
+    if configured['versionName'] != version:
+        raise ValueError('App version mismatch')
     profile = json.loads((root / 'harmony/build-profile.json5').read_text('utf-8'))
     if profile['app'].get('signingConfigs'):
         raise ValueError('Public build source must not contain signing configuration')
@@ -103,6 +127,7 @@ def prepare(root, hap, verification, output):
     tree = git(root, 'rev-parse', 'HEAD^{tree}')
     if os.environ.get('GITHUB_SHA', source) != source or git(root, 'status', '--porcelain', '--untracked-files=no'):
         raise ValueError('Build source is not the clean workflow commit')
+    check_previous_version(configured, source, previous, previous_sha256)
     app = plain_unsigned_zip(hap)
     if app['versionName'] != version or app['versionCode'] != configured['versionCode']:
         raise ValueError('HAP does not match configured app version')
@@ -172,6 +197,8 @@ if __name__ == '__main__':
     parser.add_argument('--hap', type=Path, required=True)
     parser.add_argument('--verification', type=Path, required=True)
     parser.add_argument('--output', type=Path, default=Path('release-assets'))
+    parser.add_argument('--previous-build-info', type=Path, help='Previously verified release build-info; offline precheck only')
+    parser.add_argument('--previous-build-info-sha256', help='SHA256 independently verified against the published attachment')
     args = parser.parse_args()
-    result = prepare(args.root, args.hap, args.verification, args.output)
+    result = prepare(args.root, args.hap, args.verification, args.output, args.previous_build_info, args.previous_build_info_sha256)
     print(json.dumps({'artifacts': len(result['assets']), 'sourceCommit': result['sourceCommit']}))

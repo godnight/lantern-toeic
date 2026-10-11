@@ -40,11 +40,7 @@ export async function loadArtifacts(directory) {
     blobs.set(asset.name, bytes);
   }
   const info = JSON.parse(blobs.get('build-info.json').toString('utf8'));
-  assert.equal(info.sourceCommit, plan.sourceCommit);
-  assert.equal(info.sourceTree, plan.sourceTree);
-  assert.equal(info.version, plan.version);
-  assert.equal(info.hapSigning, 'unsigned');
-  assert.equal(info.signatureBlockAbsent, true);
+  validateBuildInfo(info, plan);
   return {plan, blobs};
 }
 
@@ -120,6 +116,72 @@ async function matchesAsset(api, actual, expected) {
   return bytes && bytes.length === expected.bytes && hash(bytes) === expected.sha256;
 }
 
+function validateBuildInfo(info, plan) {
+  assert.equal(info.schemaVersion, 1);
+  assert.equal(info.version, plan.version);
+  assert.equal(info.sourceCommit, plan.sourceCommit);
+  assert.equal(info.sourceTree, plan.sourceTree);
+  assert.equal(info.hapSigning, 'unsigned');
+  assert.equal(info.signatureBlockAbsent, true);
+  assert(Number.isSafeInteger(info.versionCode) && info.versionCode >= 20005, 'Invalid native versionCode');
+  return info;
+}
+
+async function publishedNativeHistory(api) {
+  const releases = [], seen = new Set();
+  let complete = false;
+  for (let page = 1; page <= 20; page++) {
+    const items = await api(`/releases?per_page=100&page=${page}`);
+    assert(Array.isArray(items) && items.length <= 100, 'Invalid release history response');
+    for (const release of items) {
+      assert(!seen.has(release.id), 'Release history changed during pagination; retry read');
+      seen.add(release.id);
+      if (!release.draft) releases.push(release); // Includes both stable and prerelease.
+    }
+    if (items.length < 100) {complete = true; break;}
+  }
+  assert(complete, 'Release history exceeded its bounded search');
+  const result = [];
+  for (const release of releases) {
+    const assets = await assetsFor(api, release);
+    const infos = assets.filter(x => x.name === 'build-info.json');
+    const haps = assets.filter(x => /\.hap$/i.test(x.name));
+    // Historical source/Web-only releases have no native code to compare.
+    if (!infos.length && !haps.length && !release.body?.includes('<!-- lantern-release:')) continue;
+    assert(infos.length === 1 && haps.length === 1, 'Published native release has missing or duplicate version evidence');
+    const metadata = infos[0];
+    assert(metadata.state === 'uploaded' && metadata.size > 0 && metadata.size <= 262144, 'Invalid historical build-info asset');
+    const bytes = await api(`/releases/assets/${metadata.id}`, {binary:true});
+    assert(Buffer.isBuffer(bytes) && bytes.length === metadata.size, 'Historical build-info byte count mismatch');
+    if (metadata.digest) assert.equal(metadata.digest, 'sha256:' + hash(bytes), 'Historical build-info digest mismatch');
+    const info = JSON.parse(bytes.toString('utf8'));
+    assert(/^v\d+\.\d+\.\d+$/.test(release.tag_name), 'Invalid native release tag');
+    assert(/^[a-f0-9]{40}$/.test(info.sourceCommit) && /^[a-f0-9]{40}$/.test(info.sourceTree), 'Invalid historical source identity');
+    validateBuildInfo(info, {version:release.tag_name.slice(1), sourceCommit:info.sourceCommit, sourceTree:info.sourceTree});
+    assert.equal(await tagCommit(api, release.tag_name), info.sourceCommit, 'Historical tag/source mismatch');
+    const source = await api(`/contents/harmony/AppScope/app.json5?ref=${info.sourceCommit}`);
+    assert(source?.encoding === 'base64' && source.size > 0 && source.size <= 262144, 'Missing native source version evidence');
+    const app = JSON.parse(Buffer.from(source.content, 'base64').toString('utf8')).app;
+    assert.equal(app.bundleName, 'com.lantern.toeic', 'Historical bundle identity mismatch');
+    assert.equal(app.versionName, info.version, 'Historical source version mismatch');
+    assert.equal(app.versionCode, info.versionCode, 'Historical source versionCode mismatch');
+    const name = `lantern-v${info.version}-harmony-unsigned.hap`;
+    const recorded = info.artifacts?.filter(x => x.name === name) || [];
+    assert.equal(recorded.length, 1, 'Historical build-info must bind the native artifact');
+    assert(Number.isSafeInteger(recorded[0].bytes) && recorded[0].bytes > 0 && /^[a-f0-9]{64}$/.test(recorded[0].sha256), 'Invalid historical HAP hash');
+    assert.equal(haps[0].name, name, 'Historical native artifact name mismatch');
+    assert(await matchesAsset(api, haps[0], recorded[0]), 'Historical HAP differs from build-info');
+    result.push(info);
+  }
+  return result;
+}
+
+async function assertNewVersionCode(api, info) {
+  const history = await publishedNativeHistory(api);
+  const highest = history.reduce((value, prior) => Math.max(value, prior.versionCode), 0);
+  assert(info.versionCode > highest, `New native versionCode ${info.versionCode} must exceed every published native release (${highest})`);
+}
+
 export async function publishRelease({plan, blobs, notes, api}) {
   validatePlan(plan);
   // Validate all local bytes before any remote mutation, including callers used by tests.
@@ -128,6 +190,7 @@ export async function publishRelease({plan, blobs, notes, api}) {
     assert.equal(blobs.get(item.name).length, item.bytes);
     assert.equal(hash(blobs.get(item.name)), item.sha256);
   }
+  const info = validateBuildInfo(JSON.parse(blobs.get('build-info.json').toString('utf8')), plan);
   const tag = 'v' + plan.version;
   const checkTag = async () => {
     const sha = await tagCommit(api, tag);
@@ -136,6 +199,8 @@ export async function publishRelease({plan, blobs, notes, api}) {
   };
   await checkTag();
   let release = await findRelease(api, tag);
+  // Published identical tags keep the existing read-only byte-for-byte retry path.
+  if (!release || release.draft) await assertNewVersionCode(api, info);
   const body = notes + `\n\nSource: ${plan.sourceCommit}\nTree: ${plan.sourceTree}\n${marker(plan)}\n`;
   if (!release) {
     release = await api('/releases', {method: 'POST', json: {tag_name: tag, target_commitish: plan.sourceCommit, name: `${tag} · 鸿蒙离线测试版`, body, draft: true, prerelease: true, make_latest: 'false'}});
@@ -171,6 +236,8 @@ export async function publishRelease({plan, blobs, notes, api}) {
   for (const item of plan.assets) assert(await matchesAsset(api, assets.find(x => x.name === item.name), item), `Final artifact check failed: ${item.name}`);
   await checkTag();
   if (release.draft) {
+    // Recheck after a long upload; CI already serializes the entire release workflow.
+    await assertNewVersionCode(api, info);
     await assertDraft();
     release = await api('/releases/' + release.id, {method: 'PATCH', json: {body, draft: false, prerelease: true, make_latest: 'false'}});
   }
