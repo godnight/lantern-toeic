@@ -1,0 +1,17 @@
+{
+  "name": "com.lantern.toeic",
+  "versionCode": 20006,
+  "versionName": "0.3.0",
+  "applicationInfo": {
+    "bundleName": "com.lantern.toeic",
+    "versionCode": 20006,
+    "appQuickFix": {
+      "versionCode": 0,
+      "deployedAppqfInfo": {"versionCode": 0},
+      "deployingAppqfInfo": {"versionCode": 0}
+    }
+  },
+  "hapModuleInfos": [
+    {"bundleName": "com.lantern.toeic", "moduleName": "entry", "versionCode": 20006}
+  ]
+}

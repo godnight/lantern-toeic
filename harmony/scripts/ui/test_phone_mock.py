@@ -660,9 +660,46 @@ class TransportAndLockTests(OfflineCase):
         with self.assertRaises(ui.Failure):
             runner.preflight_target()
         runner.io.cli.assert_not_called()
-        runner.io.hdc.return_value = '{"versionCode": 20006}'
+        runner.io.hdc.return_value = (FIXTURES / "mock-installed-bundle.json").read_text(encoding="utf-8")
         runner.preflight_target()
         self.assertTrue(runner.target_verified)
+
+    def test_actual_bundle_dump_prefix_and_uninstalled_quickfix_do_not_change_app_version(self):
+        runner = self.make_runner()
+        runner.io.emulator_inventory.return_value = [{"name": runner.args.instance,
+            "serial": runner.args.device, "status": "running"}]
+        runner.io.hdc.return_value = "com.lantern.toeic:\n" + (FIXTURES / "mock-installed-bundle.json").read_text(encoding="utf-8")
+        runner.preflight_target()
+        self.assertTrue(runner.target_verified)
+        runner.io.cli.assert_not_called()
+
+    def test_matching_nested_version_cannot_hide_wrong_bundle_or_conflicting_app_module_version(self):
+        good = json.loads((FIXTURES / "mock-installed-bundle.json").read_text(encoding="utf-8"))
+        # Fault perturbations of the real shape, not additional device captures.
+        bad = []
+        for keys, value in [(("name",), "other.app"), (("versionCode",), 20005),
+                            (("applicationInfo", "bundleName"), "other.app"),
+                            (("applicationInfo", "versionCode"), 20005),
+                            (("hapModuleInfos", 0, "versionCode"), 20005),
+                            (("hapModuleInfos", 0, "bundleName"), "other.app"),
+                            (("versionCode",), "20006"), (("hapModuleInfos",), [])]:
+            row = copy.deepcopy(good)
+            parent = row
+            for key in keys[:-1]:
+                parent = parent[key]
+            parent[keys[-1]] = value
+            bad.append(json.dumps(row))
+        bad.extend(["other.app:\n" + json.dumps(good), json.dumps(good) + "\n{}",
+                    json.dumps(good).replace('"name":', '"versionCode": 20005, "name":', 1)])
+        for raw in bad:
+            runner = self.make_runner()
+            runner.io.emulator_inventory.return_value = [{"name": runner.args.instance,
+                "serial": runner.args.device, "status": "running"}]
+            runner.io.hdc.return_value = raw
+            with self.subTest(raw=raw), self.assertRaises(ui.Failure):
+                runner.preflight_target()
+            self.assertFalse(runner.target_verified)
+            runner.io.cli.assert_not_called()
 
     def test_command_timeout_is_capped_to_remaining_budget_and_expiry_sends_nothing(self):
         transport = mock.MockTransport(self.args(), {"packages": []})

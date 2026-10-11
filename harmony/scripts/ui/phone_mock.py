@@ -26,6 +26,36 @@ def read_json(path):
     return json.loads(Path(path).read_text(encoding="utf-8-sig"))
 
 
+def installed_version(raw, bundle):
+    # bm dump includes zero-valued quick-fix placeholders. Only the bundle,
+    # application and installed module versions identify the installed app.
+    text = raw.strip()
+    if text.startswith(bundle + ":"):
+        text = text[len(bundle) + 1:].strip()
+    def unique_fields(pairs):
+        fields = {}
+        for key, value in pairs:
+            if key in fields:
+                raise ValueError("Duplicate field")
+            fields[key] = value
+        return fields
+    try:
+        data = json.loads(text, object_pairs_hook=unique_fields)
+        if not isinstance(data, dict) or data.get("name") != bundle:
+            raise ValueError("Wrong bundle")
+        version = data.get("versionCode")
+        app, modules = data.get("applicationInfo"), data.get("hapModuleInfos")
+        if type(version) is not int or version <= 0 or not isinstance(modules, list) or not modules:
+            raise ValueError("Invalid version or modules")
+        for entry in [app, *modules]:
+            if (not isinstance(entry, dict) or entry.get("bundleName") != bundle
+                    or type(entry.get("versionCode")) is not int or entry["versionCode"] != version):
+                raise ValueError("Conflicting installed metadata")
+        return version
+    except (ValueError, TypeError):
+        raise ui.Failure("Installed bundle metadata is malformed or inconsistent") from None
+
+
 def owned_attempt(before, current, pack, start_window):
     """After both files pass the real model, prove ownership before force-stop."""
     old = {a["id"]: a for a in before["attempts"]}
@@ -161,8 +191,7 @@ class MockRunner(ui.Runner):
         if len(selected) != 1 or selected[0].get("serial") != self.args.device or selected[0].get("status") != "running":
             raise ui.Failure("Explicit device must identify the dedicated running instance")
         raw = self.io.hdc("shell", "bm", "dump", "-n", self.args.bundle, label="installed-version")
-        versions = {int(s) for s in re.findall(r'"versionCode"\s*:\s*(\d+)', raw)}
-        if versions != {self.args.expected_version_code}:
+        if installed_version(raw, self.args.bundle) != self.args.expected_version_code:
             raise ui.Failure("Installed versionCode differs from the prepared test version")
         self.target_verified = True
         self.checks.append("dedicated-instance-and-installed-version")
