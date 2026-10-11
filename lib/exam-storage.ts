@@ -8,6 +8,7 @@ import {
 export type ExamSummary = {
   key: string; id: string; version: number; title: string; source: ExamSource;
   fingerprint: string; bytes: number; importedAt: number;
+  listeningDurationMs?: number;
 };
 export type SavedExamAttempt = { attempt: ExamAttempt; result?: ExamResult };
 export type ExamBackup = { kind: 'lantern-exam-backup'; schemaVersion: 1; ownerId: string; packages: ExamPackage[]; attempts: ExamAttempt[] };
@@ -30,7 +31,7 @@ function randomId(): string {
 }
 function summary(row: CatalogRow): ExamSummary {
   const { key, id, version, title, source, fingerprint, bytes, importedAt } = row;
-  return { key, id, version, title, source, fingerprint, bytes, importedAt };
+  return { key, id, version, title, source, fingerprint, bytes, importedAt, ...(row.definition.listeningDurationMs === undefined ? {} : { listeningDurationMs: row.definition.listeningDurationMs }) };
 }
 function definitionExam(row: CatalogRow): ExamPackage { return { ...row.definition, assets: [] }; }
 function saved(attempt: ExamAttempt, row: CatalogRow): SavedExamAttempt {
@@ -216,9 +217,11 @@ export async function openExamRepository(ownerId: string, options: { factory?: I
   if (!factory) throw new Error('当前浏览器不支持本机 IndexedDB，未退回不可靠的临时存储');
   const db = await new Promise<IDBDatabase>((resolve, reject) => {
     let blocked = false;
-    const r = factory.open(options.name ?? 'lantern-private-exams-v1', 1);
+    // The version gate prevents older code from ignoring declared LC durations in stored packages.
+    const r = factory.open(options.name ?? 'lantern-private-exams-v1', 2);
     r.onupgradeneeded = () => {
       for (const name of STORES) {
+        if (r.result.objectStoreNames.contains(name)) continue;
         const store = r.result.createObjectStore(name, { keyPath: name === 'attempts' ? ['ownerId', 'id'] : ['ownerId', 'key'] });
         store.createIndex('owner', 'ownerId', { unique: false });
       }

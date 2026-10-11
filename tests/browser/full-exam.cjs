@@ -19,7 +19,7 @@ const OWNER = 'harmony-local-device';
 const DB = 'lantern-private-exams-v1';
 const BASE_TIME = new Date('2026-10-11T06:00:00.000Z');
 const report = { scope: 'Local production Harmony shared frontend; synthetic QA only', origin: ORIGIN,
-  limitations: ['Synthetic 200-question structures are not TOEIC test papers.', '20-second silent WAV checks decoder/playback events, not audible sound or complete listening content.', 'Desktop Chrome with resized viewports is not ArkWeb/real-device acceptance.', 'Clock fast-forward validates deadline logic, not two-hour endurance.'],
+  limitations: ['Synthetic 200-question structures are not TOEIC test papers.', '20-second and 45:53 silent WAVs check decoder/playback events and timing compatibility, not audible sound or complete listening content.', 'Desktop Chrome with resized viewports is not ArkWeb/real-device acceptance.', 'Clock fast-forward validates deadline logic, not two-hour endurance.'],
   startedAt: new Date().toISOString(), steps: [], screenshots: [], pageErrors: [], consoleErrors: [], blockedExternal: [], httpErrors: [] };
 let browser, context, page, preview, cleanupPromise;
 let ownsOutput = false;
@@ -242,19 +242,19 @@ async function layout(stage) {
   }
   await page.setViewportSize({width:390,height:844}); return rows;
 }
-async function preflight(title, allowStart = true) {
+async function preflight(title, allowStart = true, expectedSeconds = 20) {
   const card = page.locator('.mock-catalog article').filter({has:page.getByRole('heading',{name:title,exact:true})});
   await (await enabled(card.getByRole('button',{name:'音频预检与新考试',exact:true}))).click();
   const start = page.getByRole('button',{name:'开始新考试 · 立即计时',exact:true});
   await visible(start); assert.equal(await start.isDisabled(), true);
   const audio = page.locator('.mock-audio audio');
-  await eventually(()=>audio.evaluate(a=>a.readyState>=2 && a.duration===20 && !a.error), 'Synthetic PCM audio did not decode');
+  await eventually(()=>audio.evaluate((a,seconds)=>a.readyState>=2 && a.duration===seconds && !a.error,expectedSeconds), 'Synthetic PCM audio did not decode');
   // Click Chrome's native audio-control play button; do not call play() or dispatch events.
   const box = await audio.boundingBox(); assert.ok(box && box.width > 50 && box.height > 20);
   await audio.click({position:{x:25,y:box.height/2}});
   await eventually(()=>audio.evaluate(a=>!a.paused && a.currentTime>0), 'Native player click did not start decoded audio');
   await page.getByRole('checkbox').check();
-  if(allowStart)await enabled(start);else assert.equal(await start.isDisabled(),true,'Bad images must prevent starting even after audio preview');
+  if(allowStart)await enabled(start);else assert.equal(await start.isDisabled(),true,'Failed media checks must prevent starting even after audio preview');
   return {durationSeconds:await audio.evaluate(a=>a.duration),decoded:true,playing:true,confirmation:'Automated only for synthetic QA; no human hearing/full-paper acceptance claimed'};
 }
 async function answer(number, choice) {
@@ -407,6 +407,8 @@ async function downloadBackup(name) {
     await freshContext();await newPage();
     await require('./page-pack-flow.cjs')({page,step,click,importViaUI,preflight,idle,enter,currentAttempt,screenshot,layout,fixtureDir:process.env.LANTERN_PAGE_PACK_QA_DIR});
   }
+  await require('./listening-duration-flow.cjs')({getPage:()=>page,step,click,importViaUI,preflight,idle,enter,currentAttempt,
+    screenshot,state,freshContext,newPage,eventually,visible,output:OUT,basePackage:packages[0]});
   await step('no uncaught JS errors, local HTTP failures or external requests',async()=>{assert.deepEqual(report.pageErrors,[]); assert.deepEqual(report.httpErrors,[]);assert.deepEqual(report.blockedExternal,[]);return {pageErrors:0,httpErrors:0,blockedExternal:0,consoleErrors:report.consoleErrors};});
   report.status='passed';
 })().catch(async error=>{

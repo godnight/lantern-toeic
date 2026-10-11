@@ -44,6 +44,36 @@ test('valid recipe uses the actual complete-200 model and explicit passage count
   const g=r.groups.find(g=>g.part===7);g.pages.push({documentId:'book',page:4});assert.equal(g.passageCount,1);
   assert.doesNotThrow(()=>tool.validateRecipe(r,model));
 });
+
+test('declared listening duration survives rendering and report without changing legacy package shape',async t=>{
+  const legacy=await setup(t),declaredRecipe=recipe();declaredRecipe.exam.listeningDurationMs=2753000;
+  const declared=await setup(t,declaredRecipe);
+  const oldResult=await tool.packExamPages(legacy.options,deps());
+  const newResult=await tool.packExamPages(declared.options,deps());
+  const oldBytes=await fs.readFile(path.join(oldResult.outputDirectory,'exam.json'));
+  // Captured from the 69e7f6f packer/model and this unchanged synthetic recipe/renderer.
+  assert.equal(oldBytes.length,45184);
+  assert.equal(require('node:crypto').createHash('sha256').update(oldBytes).digest('hex'),'e61563d19bc8aaa9260a26d18f3561b30e03f94b1d043b1a23b733ddd1bd0707');
+  const oldExam=JSON.parse(oldBytes.toString('utf8'));
+  const newExam=JSON.parse(await fs.readFile(path.join(newResult.outputDirectory,'exam.json'),'utf8'));
+  assert.equal(Object.hasOwn(oldExam,'listeningDurationMs'),false);
+  assert.equal(Object.hasOwn(oldResult.report.audio,'listeningDurationMs'),false);
+  assert.equal(newExam.listeningDurationMs,2753000);
+  assert.equal(newResult.report.audio.listeningDurationMs,2753000);
+  assert.equal(newResult.report.audio.decodedByTool,false);
+  delete newExam.listeningDurationMs;
+  assert.deepEqual(newExam,oldExam);
+  assert.equal(newResult.report.audio.sha256,oldResult.report.audio.sha256);
+});
+
+test('invalid listening declarations fail the real model before any PDF rendering',async t=>{
+  for(const value of [null,'2753000',2753000.5,2753001,2399000,3001000]) {
+    const r=recipe();r.exam.listeningDurationMs=value;
+    const {options}=await setup(t,r),calls=[];
+    await assert.rejects(tool.packExamPages(options,deps(fakeRenderer(calls))),e=>e.code==='MODEL_VALIDATION');
+    assert.equal(calls.length,0);
+  }
+});
 test('answers must be exactly 200 uppercase options and Part 2 never D',()=>{
   for(const edit of [r=>r.answers.pop(),r=>r.answers.push('A'),r=>r.answers[0]='a',r=>r.answers[6]='D',r=>r.answers[0]='A\n',r=>r.answers[0]=0]) {
     const r=recipe();edit(r);assert.throws(()=>tool.validateRecipe(r,model),e=>e.code==='ANSWERS');

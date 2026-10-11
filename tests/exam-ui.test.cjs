@@ -11,7 +11,7 @@ const ts = require(path.join(application, 'node_modules/typescript'));
 const React = require(path.join(application, 'node_modules/react'));
 const runtime = require(path.join(application, 'node_modules/react/jsx-runtime'));
 const {renderToStaticMarkup} = require(path.join(application, 'node_modules/react-dom/server'));
-function load(file, imports) {
+function load(file, imports, globals = {}) {
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(file, 'utf8'), {compilerOptions: {
     module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX,
@@ -20,7 +20,7 @@ function load(file, imports) {
     if (!(name in imports)) throw Error('Unexpected import: ' + name);
     return imports[name];
   }, Date, Intl, Map, Set, Promise, Error, URL, Blob, TextEncoder, Uint8Array, Uint32Array, atob, btoa,
-    setTimeout, clearTimeout, crypto: globalThis.crypto}, {filename: file});
+    setTimeout, clearTimeout, crypto: globalThis.crypto, ...globals}, {filename: file});
   return exports;
 }
 const model = load(path.join(engineRoot, 'lib/exam-model.ts'), {});
@@ -193,4 +193,142 @@ test('unresolved owner shows an honest blocked state and opens no anonymous stor
 test('changing owner produces a different keyed subtree before effects run', () => {
   const alice = component.default({ownerId:'alice', onClose() {}}), bob = component.default({ownerId:'bob', onClose() {}});
   assert.equal(alice.key, 'alice'); assert.equal(bob.key, 'bob'); assert.notEqual(alice.key, bob.key);
+});
+
+
+test('declared 45:53 accepts a 45:52.521 metadata value without changing the declaration', () => {
+  const check = ui.checkExamAudioDuration(2752.521, 2_753_000, 2_753_000);
+  assert.equal(check.ready, true); assert.equal(check.error, '');
+});
+
+test('declared duration rejects invalid metadata and a longer source instead of truncating it', () => {
+  for (const value of [0, -1, NaN, Infinity, -Infinity]) assert.equal(ui.checkExamAudioDuration(value, 2_753_000, 2_753_000).ready, false);
+  assert.equal(ui.checkExamAudioDuration(2753.001, 2_753_000, 2_753_000).ready, false);
+  assert.equal(ui.checkExamAudioDuration(2753, 2_753_000, 2_753_000).ready, true);
+});
+
+test('declared duration has an inclusive 1500ms shorter-media tolerance, not an arbitrary minute warning', () => {
+  assert.equal(ui.checkExamAudioDuration(2751.5, 2_753_000, 2_753_000).ready, true);
+  assert.equal(ui.checkExamAudioDuration(2751.499, 2_753_000, 2_753_000).ready, false);
+  assert.equal(ui.checkExamAudioDuration(20, 2_753_000, 2_753_000).ready, false);
+});
+
+test('legacy short QA and 44:31 audio remain compatible, but new legacy starts longer than 45min are blocked', () => {
+  for (const duration of [20, 2671.09161, 2700]) assert.equal(ui.checkExamAudioDuration(duration, undefined, model.LISTENING_MS).ready, true);
+  const long = ui.checkExamAudioDuration(2752.521, undefined, model.LISTENING_MS);
+  assert.equal(long.ready, false); assert.match(long.error, /45:00.*新版本/);
+});
+
+test('duration gate refuses inconsistent declarations or effective defaults', () => {
+  for (const declaration of [null, NaN, 0, 2753000.5, 2753521, 2399000, 3001000]) assert.equal(ui.checkExamAudioDuration(2752.5, declaration, 2753000).ready, false);
+  assert.equal(ui.checkExamAudioDuration(2752.5, 2753000, 2700000).ready, false);
+  assert.equal(ui.checkExamAudioDuration(2700, undefined, 2753000).ready, false);
+});
+
+test('long listening recovery and ended media never rebase stored absolute deadlines', () => {
+  const a = {...attempt(), listeningDeadline:2754000, readingDeadline:7254000};
+  const before = JSON.stringify(a);
+  assert.equal(ui.remainingMs(a, 2701000), 53000);
+  assert.equal(ui.audioOffsetSeconds(a, 2754000, 2752.521), 2752.521);
+  assert.equal(ui.remainingMs(a, 2754000), 0);
+  assert.equal(ui.remainingMs({...a, status:'reading'}, 2754000), 4500000);
+  assert.equal(JSON.stringify(a), before);
+});
+
+
+// Executes the actual ExamAudio handlers/effects with a small synchronous hook/media double.
+// This is an offline lifecycle regression, not browser decoding or a human listening check.
+function audioHarness(initial = {}) {
+  let slots = [], index = 0, dirty = false, effects = [], tree, audioNode, props;
+  const callbacks = [], interruptions = [], listeners = new Map();
+  const player = {duration:2752.521, currentTime:0, readyState:4, paused:true, ended:false, playbackRate:1,
+    attributes:new Map(), playCalls:0, pauseCalls:0,
+    getAttribute(key) {return this.attributes.get(key) ?? null;}, setAttribute(key,value) {this.attributes.set(key,value);},
+    removeAttribute(key) {this.attributes.delete(key);}, load() {}, pause() {this.paused=true; this.pauseCalls++;},
+    async play() {this.paused=false; this.playCalls++;}};
+  const hooks = {
+    useRef(value) {const i=index++; return slots[i] ||= {current:value};},
+    useState(value) {const i=index++; if (!(i in slots)) slots[i] = typeof value === 'function' ? value() : value;
+      return [slots[i], next => {const value=typeof next==='function' ? next(slots[i]) : next; if (!Object.is(slots[i],value)) {slots[i]=value;dirty=true;}}];},
+    useEffect(work,deps) {const i=index++, old=slots[i];
+      if (!old || !deps || deps.some((v,n)=>!Object.is(v,old.deps?.[n]))) effects.push(()=>{old?.cleanup?.(); slots[i]={deps,cleanup:work()};});},
+    useCallback(work,deps) {const i=index++, old=slots[i]; if (!old || deps.some((v,n)=>!Object.is(v,old.deps[n]))) slots[i]={deps,work}; return slots[i].work;},
+  };
+  const document = {hidden:false, addEventListener:(n,f)=>listeners.set(n,f),removeEventListener:n=>listeners.delete(n)};
+  const mod=load(path.join(root,'app/learn/mock-exam.tsx'), {
+    react:hooks,'react/jsx-runtime':runtime,'@/components/ui/dialog':dialog,
+    '@/lib/native-host':{isNativeForeground:()=>true,subscribeNativeState:()=>()=>{}},
+    '@/lib/exam-model':model,'@/lib/exam-storage':{},'@/lib/exam-ui':ui,'./mock-exam.css':{},
+  },{document});
+  function nodes(node) {
+    if (!node || typeof node!=='object') return [];
+    return [node,...React.Children.toArray(node.props?.children).flatMap(nodes)];
+  }
+  function flush() {
+    let turns=0;
+    do {if (++turns>20) throw Error('Audio lifecycle did not settle'); dirty=false;index=0;effects=[];
+      tree=mod.ExamAudio(props); audioNode=nodes(tree).find(n=>n.type==='audio'); audioNode.props.ref.current=player;
+      for (const effect of effects) effect();
+    } while(dirty);
+  }
+  props={url:'blob:one',declaredListeningDurationMs:2753000,effectiveListeningDurationMs:2753000,
+    attempt:null,durableSubmitted:false,busy:false,onPreflight:(ready,url)=>callbacks.push({ready,url}),
+    onInterruption:async reason=>interruptions.push(reason),onRefresh:async()=>{},...initial};flush();
+  return {player,callbacks,interruptions,
+    get ready(){return callbacks.at(-1)?.ready;},get tree(){return tree;},
+    async fire(name,duration) {if (duration!==undefined) player.duration=duration;
+      audioNode.props[name]({currentTarget:player});await Promise.resolve();await Promise.resolve();flush();},
+    async click(text) {const button=nodes(tree).find(n=>n.type==='button' && n.props.children===text);
+      assert.ok(button,'Expected actual audio action '+text);button.props.onClick();await Promise.resolve();await Promise.resolve();flush();},
+    update(next) {props={...props,...next};flush();},
+    dispose(){for(const slot of slots)slot?.cleanup?.();},
+  };
+}
+
+test('actual Audio preflight needs matching metadata AND successful playing; durationchange revokes it immediately', async () => {
+  const h=audioHarness();
+  await h.fire('onLoadedMetadata');await h.fire('onCanPlay');assert.equal(h.ready,false);
+  await h.fire('onPlaying');assert.equal(h.ready,true);
+  await h.fire('onDurationChange',2753.001);assert.equal(h.ready,false);assert.ok(h.player.paused);
+  await h.fire('onDurationChange',2752.521);await h.fire('onCanPlay');assert.equal(h.ready,false);
+  await h.fire('onPlaying');assert.equal(h.ready,true);h.dispose();
+});
+
+test('valid metadata change also needs a fresh play and cannot inherit the old preview', async () => {
+  const h=audioHarness();await h.fire('onPlaying');assert.equal(h.ready,true);
+  await h.fire('onDurationChange',2752.6);assert.equal(h.ready,false);
+  await h.fire('onPlaying');assert.equal(h.ready,true);h.dispose();
+});
+
+test('actual Audio error and reload clear played state until the same source plays again', async () => {
+  const h=audioHarness();await h.fire('onPlaying');assert.equal(h.ready,true);
+  await h.fire('onError');assert.equal(h.ready,false);
+  await h.fire('onCanPlay');assert.equal(h.ready,false);
+  await h.fire('onPlaying');assert.equal(h.ready,true);
+  await h.fire('onEmptied');assert.equal(h.ready,false);h.dispose();
+});
+
+test('actual Audio source/declaration change resets readiness; owner remount has no prior media approval', async () => {
+  const h=audioHarness();await h.fire('onPlaying');assert.equal(h.ready,true);
+  h.update({url:'blob:two'});assert.equal(h.ready,false);assert.equal(h.player.getAttribute('src'),'blob:two');
+  await h.fire('onPlaying');assert.equal(h.ready,true);
+  h.update({declaredListeningDurationMs:2754000,effectiveListeningDurationMs:2754000});assert.equal(h.ready,false);
+  h.dispose();const owner=audioHarness({url:'blob:new-owner'});assert.equal(owner.ready,false);owner.dispose();
+});
+
+test('restored mismatching recording never plays and logs failure without changing the saved deadline', async () => {
+  const restored={...attempt(),id:'restored',startedAt:Date.now()-1000,listeningDeadline:Date.now()+2699000,readingDeadline:Date.now()+7199000};
+  const before=JSON.stringify(restored);
+  const h=audioHarness({attempt:restored,declaredListeningDurationMs:undefined,effectiveListeningDurationMs:2700000});
+  await h.fire('onLoadedMetadata');await h.click('按已用时间恢复听力');
+  assert.equal(h.player.playCalls,0);assert.deepEqual(h.interruptions,['audio-failure']);
+  assert.equal(JSON.stringify(restored),before);h.dispose();
+});
+
+test('actual ended event does not submit or move LC early; saved stage change stops playback', async () => {
+  const now=Date.now(), restored={...attempt(),id:'restored',startedAt:now-1000,lastObservedAt:now,listeningDeadline:now+2752000,readingDeadline:now+7252000};
+  const before=JSON.stringify(restored),h=audioHarness({attempt:restored});
+  await h.fire('onLoadedMetadata');await h.fire('onEnded');
+  assert.equal(JSON.stringify(restored),before);assert.equal(restored.status,'listening');
+  h.update({attempt:{...restored,status:'reading'}});assert.equal(h.player.paused,true);assert.equal(h.tree.props.hidden,true);h.dispose();
 });
