@@ -55,6 +55,90 @@ class LayoutTests(unittest.TestCase):
             ui.parse_layout("warning: device unavailable\n[]")
 
 
+class FixedChromeTests(unittest.TestCase):
+    def tree(self, target_bounds):
+        # Geometry from live failure 17-vocab-smoke/0011, without personal nodes.
+        return [{"type": "Web", "text": "https://lantern.local/", "bounds": [0, 137, 1256, 2662], "children": [
+            {"type": "rootWebArea", "bounds": [0, 137, 1256, 2662], "scrollable": True, "children": [
+                {"type": "sectionHeader", "text": "学习状态", "bounds": [0, 137, 1256, 538], "children": [
+                    {"type": "button", "text": "本机保存", "bounds": [581, 181, 813, 301], "clickable": True}]},
+                {"type": "button", "text": "托业场景词库", "bounds": target_bounds, "clickable": True},
+                {"type": "navigation", "text": "主导航", "bounds": [0, 2408, 1256, 2662], "children": [
+                    {"type": "button", "text": "训练之境", "bounds": [270, 2439, 503, 2635], "clickable": True},
+                    {"type": "button", "text": "温故知新", "bounds": [512, 2439, 745, 2635], "clickable": True}]}]}]}]
+
+    def args(self):
+        return argparse.Namespace(dedicated_test_device=False, duplicate_import=False, word="reservation")
+
+    def test_live_vocabulary_target_under_nav_is_not_clickable(self):
+        tree = self.tree([42, 2463, 1215, 2662])
+        node = ui.unique(ui.find_nodes(tree, text="托业场景词库", visible=False), "raw target")
+        self.assertEqual(ui.find_nodes(tree, text="托业场景词库", clickable=True), [])
+        self.assertIsNone(ui.click_bounds(node, tree))
+        with self.assertRaises(ui.Failure):
+            ui.safe_click(node, self.args(), tree)
+
+    def test_partly_covered_target_uses_only_fragment_above_bottom_nav(self):
+        tree = self.tree([42, 2300, 1215, 2600])
+        node = ui.unique(ui.find_nodes(tree, text="托业场景词库", clickable=True), "target")
+        self.assertEqual(ui.click_bounds(node, tree), (42, 2300, 1215, 2408))
+
+    def test_header_occlusion_is_subtracted_from_content(self):
+        tree = self.tree([42, 300, 1215, 620])
+        node = ui.unique(ui.find_nodes(tree, text="托业场景词库", clickable=True), "target")
+        self.assertEqual(ui.click_bounds(node, tree), (42, 538, 1215, 620))
+
+    def test_fixed_chrome_own_buttons_keep_their_bounds(self):
+        tree = self.tree([42, 800, 1215, 1000])
+        for text, expected in [("训练之境", (270, 2439, 503, 2635)), ("本机保存", (581, 181, 813, 301))]:
+            node = ui.unique(ui.find_nodes(tree, text=text, clickable=True), "chrome button")
+            self.assertEqual(ui.click_bounds(node, tree), expected)
+        ui.safe_click(ui.unique(ui.find_nodes(tree, text="训练之境", clickable=True), "navigation"), self.args(), tree)
+
+    def test_swipe_region_excludes_both_fixed_siblings(self):
+        tree = self.tree([42, 2463, 1215, 2662])
+        scroller = ui.unique(ui.find_nodes(tree, types={"rootWebArea"}), "scroller")
+        self.assertEqual(ui.click_bounds(scroller, tree), (0, 538, 1256, 2408))
+
+    def test_tap_scrolls_covered_target_then_uses_refreshed_safe_center(self):
+        runner = ui.Runner(self.args(), Mock())
+        layouts = iter([self.tree([42, 2463, 1215, 2662]), self.tree([42, 1200, 1215, 1400])])
+        def layout():
+            runner.tree = next(layouts)
+            return runner.tree
+        runner.layout = layout
+        runner.scroll = Mock()
+        with patch.object(ui.time, "sleep"):
+            runner.tap(text="托业场景词库", types={"button"})
+        runner.scroll.assert_called_once()
+        runner.io.cli.assert_called_once_with("ui", "click", "628", "1300", label="click")
+
+    def test_scroll_keeps_scroller_and_chrome_in_same_snapshot(self):
+        tree = self.tree([42, 1100, 1215, 1400])
+        for node in ui.flatten(tree):
+            if node.value.get("type") == "sectionHeader":
+                node.value["bounds"] = [0, 137, 1256, 900]
+            if node.value.get("type") == "navigation":
+                node.value["bounds"] = [0, 1000, 1256, 2662]
+        runner = ui.Runner(self.args(), Mock())
+        runner.tree = tree
+        runner.layout = Mock(return_value=json.loads(json.dumps(tree)))
+        scroller = ui.unique(ui.find_nodes(tree, types={"rootWebArea"}), "scroller")
+        with patch.object(ui.time, "sleep"):
+            runner.scroll("down", scroller)
+        runner.io.cli.assert_called_once_with("ui", "swipe", "942", "976", "942", "930", "--speed", "800", label="scroll")
+        runner.layout.assert_not_called()
+
+    def test_scroll_rejects_node_from_a_discarded_snapshot(self):
+        tree = self.tree([42, 1100, 1215, 1400])
+        scroller = ui.unique(ui.find_nodes(tree, types={"rootWebArea"}), "scroller")
+        runner = ui.Runner(self.args(), Mock())
+        runner.tree = json.loads(json.dumps(tree))
+        with self.assertRaises(ui.Failure):
+            runner.scroll("down", scroller)
+        runner.io.cli.assert_not_called()
+
+
 class BackupTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
