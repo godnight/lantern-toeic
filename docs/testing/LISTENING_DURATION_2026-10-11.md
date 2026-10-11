@@ -1,6 +1,6 @@
 # 完整音轨计时兼容验证
 
-日期：2026-10-11。对应 [Issue #37](https://github.com/godnight/lantern-toeic/issues/37) 和 [RFC 0006](../rfcs/0006-complete-listening-duration.md)。当前记录本机模型、存储、打包器及浏览器结果；新版 HAP、模拟器覆盖升级、GitHub CI 和发布还需单独完成。
+日期：2026-10-11。对应 [Issue #37](https://github.com/godnight/lantern-toeic/issues/37) 和 [RFC 0006](../rfcs/0006-complete-listening-duration.md)。本文记录模型、存储、打包器及浏览器结果；新版 HAP 编译和模拟器覆盖升级已通过，详情及发布门禁见 [v0.3.1 报告](TEST_EXECUTION_v0.3.1.md)。
 
 ## 风险与验证设计
 
@@ -25,6 +25,6 @@
 
 ## 边界与接续
 
-合成题目、静音 WAV、桌面 Chrome 和浏览器时钟推进只验证代码与媒体兼容；不证明真实卷音频与题文逐题匹配、人耳音质、自然两小时耐久或 Pura X Max 硬件。候选实际音轨的末题位置、来源及配对另行核验；没有裁切或变速真实音频。
+合成题目、静音 WAV、桌面 Chrome 和浏览器时钟推进只验证代码与媒体兼容；不证明真实卷音频与题文逐题匹配、人耳音质、自然两小时耐久或 Pura X Max 硬件。另行完成的本地 ASR 与题面抽样核对确认真实音轨第 32–34、98–100 题配对，第 100 题提示约在 45:35–45:41，旧固定截止确会截断末组。该抽样不是全 100 题人工精听或特定实考场次认证；原轨未裁切或变速，也未上传外部识别服务。
 
-私人证据在 `vocab-work/listening-duration-acceptance-20261011/`，浏览器第二轮为 `browser-second/result.json`；模型和 UI 红绿记录、旧 packer 基准在两份对应私有 proposal 目录。没有使用物理手机或已有长期合成模考的模拟器。发布前须完成专用内容模拟器覆盖升级和最终提交的 CI，记录新版本产物及校验值。
+私人证据在 `vocab-work/listening-duration-acceptance-20261011/`，浏览器第二轮为 `browser-second/result.json`，升级三轮备份对比为 `native-upgrade/proof-B0-B1-B2.json`；模型和 UI 红绿记录、旧 packer 基准在两份对应私有 proposal 目录。没有使用物理手机或已有长期合成模考的模拟器。最终提交 CI 和公开产物摘要随 v0.3.1 发布记录核对。
