@@ -45,7 +45,7 @@ Core 和 Release 工作流均加入实际 PDF 转换及4条后续浏览器流程
 
 ## 同日补充：可打印权限加密 PDF
 
-状态：以下为私人副本的本机验证，未据此声明修正已进入 main 或 GitHub CI 已通过。改动仅涉及本机打包工具和测试，不改变 App、题包格式或已发布版本。
+状态：修正见[PR #34](https://github.com/godnight/lantern-toeic/pull/34)，在PR #33合并后跟随最新main集成，本地29项packer回归通过；最终基线CI及合并状态以该PR为准。首版提交 `407e81e92303f0f0b2f4697344125af89e9267dc` 的[Core运行38116263181](https://github.com/godnight/lantern-toeic/actions/runs/38116263181)已成功；实际job `114401642878` 日志确认201项学习/模型检查和22条浏览器流程通过，并执行带 `--printable-protected` 的原创PDF生成及真实Poppler转换。下表保留本机验证，GitHub CI结论与之分别记录。改动仅涉及本机打包工具、测试及文档，不改变App、题包格式或已发布版本。
 
 后续取得的 IIBC 2020 官方模考题本可以无需输入密码正常读取，且明确允许打印，但旧解析器将所有 `Encrypted: yes` 文件一律拒绝，实际复现 `PDF_ACTIVE`。修正仅接受正常无密码调用返回的完整已知权限记录且 `print:yes` 的情况；报告保留 `encrypted:true` 和 `printingAllowed:true`。禁止打印、未知权限、重复或缺失关键字段、JavaScript、表单及附件仍拒绝。没有新增密码参数、重写或解除原件保护。
 

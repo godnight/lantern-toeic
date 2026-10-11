@@ -22,6 +22,10 @@ START = "开始新考试 · 立即计时"
 BACKUP = re.compile(r"lantern-exam-backup-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.json")
 
 
+class PickerNotReady(ui.Failure):
+    """A bounded read-only wait is possible; this surface allows no actions."""
+
+
 def read_json(path):
     return json.loads(Path(path).read_text(encoding="utf-8-sig"))
 
@@ -99,6 +103,18 @@ def catalog_button(node, title, version_line):
         ("heading", title), ("paragraph", version_line), ("disclosureTriangle", "来源与个人使用声明")]
 
 
+def picker_opening_shell(sheet):
+    """Exact API 26 initial shell from run 91; it permits waiting, never actions."""
+    def shape(value):
+        return (value.get("type"), ui.normalize(value.get("text")),
+                tuple(shape(child) for child in value.get("children", [])))
+    text = lambda label: ("Text", label, ())
+    button = lambda label: ("Button", "", (text(label),))
+    return shape(sheet.value) == ("SheetPage", "", (
+        ("__Common__", "", (("Stack", "", (button("最近"), button("浏览"))),)),
+        text("已选 (0)"), text("完成"), text("仅可访问所选项目"), ("Button", "", ())))
+
+
 def surface(tree, allow_picker=False):
     nodes = [n for n in ui.flatten(tree) if n.visible_bounds()]
     sheets = [n for n in nodes if n.value.get("type") == "SheetPage"]
@@ -114,13 +130,15 @@ def surface(tree, allow_picker=False):
                        or (n.value.get("type") == "Web" and n.value.get("text") == ORIGIN))
             if not belongs and (n.value.get("type") is not None or n.value.get("text") or n.value.get("clickable")):
                 raise ui.Failure("Unknown native overlay outside the picker")
+        if picker_opening_shell(sheet):
+            return "loading-picker", sheet
         kinds = {n.value.get("type") for n in ui.flatten(sheet.value)}
         labels = {ui.normalize(n.value.get("text")) for n in ui.flatten(sheet.value)}
         if "NavDestination" in kinds and "仅可访问所选文件" in labels:
             return "confirm-picker", sheet
         if {"Grid", "GridItem", "Column"} <= kinds and "我的手机" in labels:
             return "instant-picker", sheet
-        raise ui.Failure("Unrecognized native picker structure")
+        raise PickerNotReady("Unrecognized native picker structure")
     webs = [n for n in nodes if n.value.get("type") == "Web"]
     if len(webs) != 1 or webs[0].value.get("text") != ORIGIN:
         raise ui.Failure("Expected the packaged app; unlock/permissions are never automated")
@@ -187,12 +205,28 @@ class MockRunner(ui.Runner):
 
     def layout(self):
         parent_end = self.io.end
-        deadline = min(parent_end, time.monotonic() + 15)
+        started = time.monotonic()
+        deadline = min(parent_end, started + 15)
         self.io.end = deadline
         try:
             while True:
                 tree = super().layout()
-                mode, _ = surface(tree, self.phase == "picker")
+                try:
+                    mode, _ = surface(tree, self.phase == "picker")
+                except PickerNotReady:
+                    # Only a single sheet that passed every existing overlay
+                    # guard may settle. No action can use an unrecognized tree.
+                    if self.phase != "picker":
+                        raise
+                    if time.monotonic() >= deadline:
+                        raise ui.Failure("Native file picker did not reach a recognized ready structure") from None
+                    time.sleep(min(.3, max(0, deadline - time.monotonic())))
+                    continue
+                if mode == "loading-picker":
+                    if time.monotonic() >= deadline:
+                        raise ui.Failure("Native file picker stayed in its initial loading shell")
+                    time.sleep(min(.3, max(0, deadline - time.monotonic())))
+                    continue
                 if mode != "app":
                     return tree
                 roots = [n for n in ui.flatten(tree)
@@ -204,6 +238,13 @@ class MockRunner(ui.Runner):
                 # closes. Retry this exact empty shape without any UI interaction.
                 if roots or len(webs) != 1 or webs[0].value.get("children") != []:
                     raise ui.Failure("Unexpected application accessibility structure")
+                # Native export can leave a trusted Web accessibility shell
+                # empty for more than 15 seconds before it recovers.
+                # Only this known shape outside the picker gets a longer read-only
+                # wait, measured from this call's start, never from each retry.
+                if self.phase != "picker":
+                    deadline = min(parent_end, started + 60)
+                    self.io.end = deadline
                 if time.monotonic() >= deadline:
                     raise ui.Failure("Application accessibility content stayed empty")
                 time.sleep(min(.3, max(0, deadline - time.monotonic())))
@@ -299,6 +340,38 @@ class MockRunner(ui.Runner):
         self.io.cli("ui", "click", str(round((b[0]+b[2])/2)), str(round((b[1]+b[3])/2)), label="mock-click")
         time.sleep(.25)
 
+    def picker_file(self, filename, tree):
+        if filename not in self.io.downloads:
+            raise ui.Failure("Picker file is not one of this run's verified files")
+        # API 26 omits offscreen grid items and remembers its scroll position.
+        # Check the current viewport first, then search up and down in this grid.
+        for direction in ("up", "down"):
+            previous = None
+            for attempt in range(13):
+                mode, sheet = surface(tree, True)
+                if sheet is None:
+                    raise ui.Failure("Picker closed before selecting the intended file")
+                nodes = [n for n in ui.flatten(tree) if any(p is sheet.value for p in n.parents)]
+                matches = [n for n in nodes if n.value.get("type") == "Text"
+                           and ui.normalize(n.value.get("text")) == filename and n.visible_bounds()]
+                if matches:
+                    return ui.unique(matches, "allowlisted picker label")
+                if mode != "instant-picker":
+                    raise ui.Failure("Verified picker file is not visible in the known native grid")
+                grid = ui.unique([n for n in nodes if n.value.get("type") == "Grid"
+                                  and n.value.get("scrollable") is True
+                                  and n.value.get("enabled") is not False and n.visible_bounds()],
+                                 "native picker file grid")
+                viewport = tuple((n.value.get("type"), ui.normalize(n.value.get("text")), tuple(n.visible_bounds()))
+                                 for n in nodes if any(p is grid.value for p in n.parents) and n.visible_bounds())
+                if attempt == 12 or viewport == previous:
+                    break
+                previous = viewport
+                # Preserve the validated sheet/grid and scroller snapshot identity.
+                super().scroll(direction, grid)
+                tree = self.layout()
+        raise ui.Failure("Verified picker file not visible after bounded native grid search")
+
     def picker(self, filename):
         if filename not in self.io.downloads:
             raise ui.Failure("Picker file is not one of this run's verified files")
@@ -310,6 +383,9 @@ class MockRunner(ui.Runner):
             _, sheet = surface(tree, True)
             if sheet is None:
                 raise ui.Failure("Picker closed before selecting the intended file")
+            if label == filename:
+                self.tap_node(self.picker_file(filename, tree))
+                continue
             all_nodes = list(ui.flatten(tree))
             def choices(text):
                 return [n for n in all_nodes if any(p is sheet.value for p in n.parents)
