@@ -1,17 +1,30 @@
 # LANTERN 主题素材库
 
-美术版本0.2.0，与应用版本分别管理。现有8幅原创交付图、19条已确认来源的参考入口、1条待核验候选。
+美术版本 0.3.0，与应用版本分别管理。当前四套角色主题使用用户提供的 AI 同人插画：蓝湖、白花、雪山、水晶山峰。每套包含横幅、手机横幅和缩略图，共 12 个 WebP，合计 1,483,078 字节。
 
-- [空洞氛围：深蓝圣巢](themes/hollow-knight/README.md)
-- [丝歌氛围：绯红丝歌](themes/silksong/README.md)
-- [主题配置与哈希](themes.json)
+桌面横幅保持原图 1672 × 941，手机图为 960 × 540，缩略图为 480 × 270。仅等比压缩；不裁切、不放大。页面在窄屏将完整横幅放在文字之前，桌面用主题焦点调整展示位置。
+
+- [当前主题、图片尺寸和哈希](themes.json)
+- [原图来源与派生文件记录](theme-art-provenance-2026-10-12.json)
+- [历史氛围主题配置](themes-legacy.json)
 - [官方素材目录与下载入口](official/README.md)：仅来源元数据；未复制原图。
-- [手机竖图生成记录](portrait-generation-2026-09-08.json)：完整prompt、实际像素与来源。
 
-## 实际素材包
+旧主题 ID hollow / silk / paper 分别对应蓝湖 / 雪山 / 白花，新主题使用 crystal；既有偏好可以继续读取。小骑士与黄蜂女不出现在同一套主题；蓝湖中的奎若是原有支线场景角色。
 
-[深蓝原创包](../public/art-packs/hollow-originals-v0.2.3.zip) · [绯红原创包](../public/art-packs/silk-originals-v0.2.3.zip)。每包含当前横/竖图、manifest与README；图片保持原始像素，以WebP quality94保存。全部8幅历史与当前素材均在public/images及themes.json登记。
+## 来源和许可
 
-官方游戏图和第三方二创均不进入应用包。CC BY 4.0只覆盖项目贡献者拥有的权利，不保证AI输出的排他版权。题库文本、美术和外部来源分别管理。
+这四幅图由用户从既有素材中选定并授权本次集成和 GitHub 提交。它们是 AI 生成的同人图，不是官方游戏原画；底层角色等权利仍属于各自权利人，不能套用项目题库的 CC BY 4.0 或代码的 MIT 许可。每个文件均独立记录来源、许可说明、尺寸和 SHA-256。外部参考库保留 19 条入口，仅存链接。
 
-素材改动须更新真实尺寸、SHA-256、生成说明、主题版本及下载包。执行npm run validate:art；新增图还须实际解码检查并完成Web/窄屏视觉验收。
+## 历史素材
+
+历史 8 幅氛围插画保留在 public/images，配置登记在 themes-legacy.json。旧素材包未更改：
+
+- [深蓝原创包](../public/art-packs/hollow-originals-v0.2.3.zip)
+- [绯红原创包](../public/art-packs/silk-originals-v0.2.3.zip)
+- [深蓝历史说明](themes/hollow-knight/README.md)
+- [绯红历史说明](themes/silksong/README.md)
+- [旧手机竖图生成记录](portrait-generation-2026-09-08.json)
+
+历史 CC BY 4.0 声明只覆盖项目贡献者拥有的权利，不保证 AI 输出的排他版权，不扩展到新角色插画。
+
+素材改动须更新真实尺寸、SHA-256、来源和主题版本。执行 npm run validate:art；新增图还须实际解码检查并完成桌面与窄屏视觉验收。

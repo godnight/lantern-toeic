@@ -10,10 +10,13 @@ assert.equal(catalogue.schemaVersion,1);
 assert.match(catalogue.artVersion,/^\d+\.\d+\.\d+$/);
 const ids=new Set();let count=0;
 for(const theme of catalogue.themes){
- assert(['hollow','silk','paper'].includes(theme.id)&&!ids.has(theme.id));ids.add(theme.id);
+ assert(['hollow','silk','paper','crystal'].includes(theme.id)&&!ids.has(theme.id));ids.add(theme.id);
  assert(theme.name&&theme.direction&&theme.version);
  for(const color of theme.palette)assert.match(color,/^#[0-9a-f]{6}$/i);
- for(const path of [theme.image,theme.portrait].filter(Boolean))assert(theme.assets.some(a=>a.path===path),'Theme image missing from asset manifest');
+ assert(['hollow','silk'].includes(theme.family));
+ assert(['water','snow','petals','crystal'].includes(theme.motion));
+ assert(theme.alt && theme.thumbnail);
+ for(const path of [theme.image,theme.portrait,theme.thumbnail])assert(theme.assets.some(a=>a.path===path),'Theme image missing from asset manifest');
  if(theme.download){assert(theme.download.startsWith('/art-packs/')&&!theme.download.includes('..'));assert.equal(createHash('sha256').update(readFileSync(resolve(root,'public','.'+theme.download))).digest('hex'),theme.downloadSha256,'Stale theme archive');}
  const assetIds=new Set();
  for(const asset of theme.assets){
@@ -24,11 +27,22 @@ for(const theme of catalogue.themes){
   assert(asset.width>0&&asset.height>0&&asset.author&&asset.license&&asset.provenance&&asset.status==='approved');count++;
  }
 }
-assert.equal(ids.size,3);
+assert.equal(ids.size,4);
+const companionArt=JSON.parse(readFileSync(resolve(root,'art/theme-art-provenance-2026-10-12.json'),'utf8'));
+const companionPaths=new Set();
+for(const asset of companionArt.assets){
+ assert(asset.path.startsWith('/images/themes-v3/')&&!asset.path.includes('..'));
+ assert(!companionPaths.has(asset.path));companionPaths.add(asset.path);
+ assert(asset.sourceFile&&asset.sourceSha256&&asset.encoding);
+ const bytes=readFileSync(resolve(root,'public','.'+asset.path));
+ assert.equal(createHash('sha256').update(bytes).digest('hex'),asset.sha256,'Stale companion art: '+asset.id);
+ assert.equal(bytes.length,asset.bytes);
+}
+for(const theme of catalogue.themes)for(const asset of theme.assets)assert(companionPaths.has(asset.path),'Untracked companion art');
 const referenceIds=new Set();
 for(const item of references){
  assert(item.id&&!referenceIds.has(item.id));referenceIds.add(item.id);
- assert(ids.has(item.theme)&&['character','scene','boss'].includes(item.category));
+ assert(['hollow','silk'].includes(item.theme)&&['character','scene','boss'].includes(item.category));
  for(const url of [item.sourceUrl,item.imageUrl].filter(Boolean))assert.equal(new URL(url).protocol,'https:');
  assert(item.title&&item.author&&item.checkedAt&&['link-only','pending'].includes(item.rightsStatus));
 }

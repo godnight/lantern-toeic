@@ -1,5 +1,12 @@
 # Codex 开发交接
 
+## 角色主题改造（2026-10-12）
+
+Issue #44：四套主题为蓝湖小骑士、白花黄蜂女、雪山黄蜂女、水晶山峰小骑士。主题统一驱动主横幅、任务缩略图和页面配色，手机保留横幅完整构图。轻动效默认关闭，支持系统减少动态、模态、离屏及浏览器/鸿蒙后台暂停；保留旧偏好 ID，新增 crystal。
+
+本地类型、内容、素材、Web 与共享前端构建通过；327 项学习/动效测试、34 项构建检查及 22 项模考、14 项查词、33 项主题浏览器检查通过，详见[主题验收](testing/THEME_REDESIGN_2026-10-12.md)。新主题随共享前端源码提交，本轮不生成或安装 HAP。素材来源与权利说明见 art/theme-art-provenance-2026-10-12.json。
+
+
 ## v0.3.3：个人题包库与旧题型，已部署并安装（2026-10-12）
 
 [PR #43](https://github.com/godnight/lantern-toeic/pull/43) 的分支为 `feat/private-exam-library`，基线为 `feat/dictionary-expansion`；该基线包含 PR #42 词库扩展。接续先核对这两个 PR 的实时合并与检查状态，不能从旧 `main` 直接假定具备本版功能。GitHub 与 Sites 为独立历史，不直接混推。版本为 0.3.3 / 20009；本报告不把本机通过等同 GitHub CI 或 GitHub Release 已完成。

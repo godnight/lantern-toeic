@@ -3,7 +3,7 @@ import {migrateStudyData,mergeData,validQuestionMark,validResourceTask,validStud
 
 const id=z.string().uuid();
 const stamp=z.string().datetime();
-const profile=z.object({name:z.string().min(1).max(40),lrGoal:z.number().int().min(10).max(990),speakingGoal:z.number().int().min(0).max(200),examDate:z.string().refine(v=>v===''||validStudyDate(v)),dailyMinutes:z.number().int().min(5).max(120),timezone:z.string().refine(v=>{try{new Intl.DateTimeFormat('en',{timeZone:v});return true;}catch{return false;}}),theme:z.enum(['hollow','silk','paper']),weeklyTarget:z.number().int().min(1).max(7),onboarded:z.boolean()});
+const profile=z.object({name:z.string().min(1).max(40),lrGoal:z.number().int().min(10).max(990),speakingGoal:z.number().int().min(0).max(200),examDate:z.string().refine(v=>v===''||validStudyDate(v)),dailyMinutes:z.number().int().min(5).max(120),timezone:z.string().refine(v=>{try{new Intl.DateTimeFormat('en',{timeZone:v});return true;}catch{return false;}}),theme:z.enum(['hollow','silk','paper','crystal']),weeklyTarget:z.number().int().min(1).max(7),onboarded:z.boolean()});
 const backup=z.object({
  schemaVersion:z.union([z.literal(1),z.literal(2)]).optional(),
  profile,
