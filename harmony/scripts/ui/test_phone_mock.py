@@ -80,6 +80,7 @@ class OfflineCase(unittest.TestCase):
                 "file": str(file), "deviceFile": PAGES}
         io = Mock()
         io.out = self.root
+        io.end = self.clock.monotonic() + 120
         io.downloads = {PAGES, LEGACY_BACKUP}
         runner = mock.MockRunner(self.args(), io, {"examId": pack["id"], "packages": [pack]})
         return runner

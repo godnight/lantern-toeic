@@ -185,6 +185,31 @@ class MockRunner(ui.Runner):
         self.phase = "main"
         self.picker_filename = None
 
+    def layout(self):
+        parent_end = self.io.end
+        deadline = min(parent_end, time.monotonic() + 15)
+        self.io.end = deadline
+        try:
+            while True:
+                tree = super().layout()
+                mode, _ = surface(tree, self.phase == "picker")
+                if mode != "app":
+                    return tree
+                roots = [n for n in ui.flatten(tree)
+                         if n.value.get("type") == "rootWebArea" and n.visible_bounds()]
+                if len(roots) == 1:
+                    return tree
+                webs = [n for n in ui.flatten(tree) if n.value.get("type") == "Web" and n.visible_bounds()]
+                # API 26 briefly exposes only the known Web shell after its picker
+                # closes. Retry this exact empty shape without any UI interaction.
+                if roots or len(webs) != 1 or webs[0].value.get("children") != []:
+                    raise ui.Failure("Unexpected application accessibility structure")
+                if time.monotonic() >= deadline:
+                    raise ui.Failure("Application accessibility content stayed empty")
+                time.sleep(min(.3, max(0, deadline - time.monotonic())))
+        finally:
+            self.io.end = parent_end
+
     def preflight_target(self):
         rows = self.io.emulator_inventory()
         selected = [row for row in rows if row.get("name") == self.args.instance]
