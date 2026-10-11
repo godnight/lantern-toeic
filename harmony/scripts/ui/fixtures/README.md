@@ -13,3 +13,5 @@
 `mock-empty-web.json` / `mock-restored-web.json` 来自首轮新runner实际导入后相邻的两次结构：系统短暂只暴露可信Web空壳，随后恢复并显示文件内容相同。它们验证有时限的只读等待；未知弹窗、异源、结构冲突和预算耗尽仍失败，不将空壳当成导入成功。
 
 `mock-picker-api26-opening.json` / `mock-picker-api26-download-91.json` 来自选择器首次打开的空壳与随后成熟目录，验证有界只读等待。`mock-picker-api26-crowded-92.json` 来自24项目录的首屏：系统只暴露9个备份，目标合成题包在屏外；备份UUID均替换为固定占位值。滚动后的目标帧复用已有脱敏夹具，帧间转换是离线模拟，不能据此声称真实滚动已通过。
+
+`mock-picker-api26-composite-93.json` / `mock-picker-api26-ready-93.json` 是同次实际打开时先出现的“内部存储／正在加载”复合结构与随后正常目录。未知内部结构仍不可操作；仅通过单一选择器和既有覆盖检查的布局允许在原预算内只读等待成熟页面。
