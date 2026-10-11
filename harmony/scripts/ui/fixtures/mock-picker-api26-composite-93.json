@@ -1,0 +1,478 @@
+[
+  {
+    "bounds": [
+      0,
+      0,
+      1256,
+      2760
+    ],
+    "children": [
+      {
+        "type": "Web",
+        "text": "https://lantern.local/",
+        "bounds": [
+          0,
+          137,
+          1256,
+          2662
+        ],
+        "children": [
+          {
+            "type": "rootWebArea",
+            "bounds": [
+              0,
+              137,
+              1256,
+              2662
+            ],
+            "scrollable": true,
+            "children": [
+              {
+                "type": "genericContainer",
+                "bounds": [
+                  0,
+                  137,
+                  1256,
+                  2662
+                ],
+                "clickable": true,
+                "children": [
+                  {
+                    "type": "region",
+                    "text": "完整听读模考",
+                    "bounds": [
+                      50,
+                      220,
+                      1207,
+                      2662
+                    ],
+                    "children": [
+                      {
+                        "type": "paragraph",
+                        "text": "LOCAL MOCK EXAM",
+                        "bounds": [
+                          50,
+                          247,
+                          1207,
+                          317
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "heading",
+                        "text": "完整听读模考",
+                        "bounds": [
+                          50,
+                          343,
+                          1207,
+                          458
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "退出模考",
+                        "bounds": [
+                          50,
+                          499,
+                          370,
+                          658
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "paragraph",
+                        "text": "个人题包仅保存在这台设备。未接入云同步；卸载或清理数据前请导出完整备份。",
+                        "bounds": [
+                          50,
+                          706,
+                          1207,
+                          874
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "status",
+                        "text": "已发起备份下载，请在系统下载目录确认文件存在。备份包含题包、答案、音频及本机记录。",
+                        "bounds": [
+                          50,
+                          905,
+                          1207,
+                          1073
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "导入题包 JSON",
+                        "bounds": [
+                          50,
+                          1101,
+                          615,
+                          1261
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "导出完整备份",
+                        "bounds": [
+                          642,
+                          1105,
+                          1207,
+                          1264
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "恢复本机备份",
+                        "bounds": [
+                          50,
+                          1291,
+                          1207,
+                          1451
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "paragraph",
+                        "text": "可一次选择多份 JSON，每份独立保存；若中途失败，之前成功的文件仍保留，重新读取可查看。仅同一记录范围可恢复备份。",
+                        "bounds": [
+                          50,
+                          1482,
+                          1207,
+                          1733
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "paragraph",
+                        "text": "200 题 · 听力 45 分钟 / 阅读 75 分钟",
+                        "bounds": [
+                          102,
+                          1881,
+                          1155,
+                          1952
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "heading",
+                        "text": "浏览器合成验证 alpha · 非真实试卷",
+                        "bounds": [
+                          102,
+                          1978,
+                          1155,
+                          2085
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "paragraph",
+                        "text": "版本 1 · Synthetic browser QA only",
+                        "bounds": [
+                          102,
+                          2117,
+                          1155,
+                          2201
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "disclosureTriangle",
+                        "text": "来源与个人使用声明",
+                        "bounds": [
+                          102,
+                          2242,
+                          1155,
+                          2405
+                        ],
+                        "clickable": true,
+                        "children": []
+                      },
+                      {
+                        "type": "button",
+                        "text": "音频预检与新考试",
+                        "bounds": [
+                          102,
+                          2502,
+                          624,
+                          2662
+                        ],
+                        "clickable": true,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "SheetWrapper",
+        "bounds": [
+          0,
+          137,
+          1256,
+          2760
+        ],
+        "clickable": true,
+        "children": [
+          {
+            "type": "SheetPage",
+            "bounds": [
+              0,
+              164,
+              1256,
+              2760
+            ],
+            "clickable": true,
+            "children": [
+              {
+                "type": "__Common__",
+                "bounds": [
+                  98,
+                  192,
+                  654,
+                  388
+                ],
+                "children": [
+                  {
+                    "type": "Stack",
+                    "bounds": [
+                      98,
+                      220,
+                      654,
+                      361
+                    ],
+                    "clickable": true,
+                    "children": [
+                      {
+                        "type": "Button",
+                        "bounds": [
+                          105,
+                          227,
+                          374,
+                          354
+                        ],
+                        "clickable": true,
+                        "children": [
+                          {
+                            "type": "Text",
+                            "text": "最近",
+                            "bounds": [
+                              190,
+                              262,
+                              289,
+                              319
+                            ],
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "type": "Button",
+                        "bounds": [
+                          378,
+                          227,
+                          647,
+                          354
+                        ],
+                        "clickable": true,
+                        "children": [
+                          {
+                            "type": "Text",
+                            "text": "浏览",
+                            "bounds": [
+                              463,
+                              262,
+                              562,
+                              319
+                            ],
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "__Common__",
+                "bounds": [
+                  0,
+                  388,
+                  1004,
+                  2361
+                ],
+                "children": [
+                  {
+                    "type": "Text",
+                    "text": "没有文件",
+                    "bounds": [
+                      278,
+                      1556,
+                      475,
+                      1613
+                    ],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "text": "已选 (0)",
+                "bounds": [
+                  0,
+                  2433,
+                  4,
+                  2507
+                ],
+                "children": []
+              },
+              {
+                "type": "Text",
+                "text": "完成",
+                "bounds": [
+                  738,
+                  2442,
+                  906,
+                  2498
+                ],
+                "children": []
+              },
+              {
+                "type": "Text",
+                "text": "仅可访问所选项目",
+                "bounds": [
+                  225,
+                  2585,
+                  576,
+                  2641
+                ],
+                "children": []
+              },
+              {
+                "type": "Column",
+                "bounds": [
+                  56,
+                  224,
+                  189,
+                  357
+                ],
+                "clickable": true,
+                "children": [
+                  {
+                    "type": "SymbolGlyph",
+                    "bounds": [
+                      91,
+                      259,
+                      154,
+                      322
+                    ],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "text": "内部存储",
+                "bounds": [
+                  217,
+                  260,
+                  497,
+                  342
+                ],
+                "children": []
+              },
+              {
+                "type": "Column",
+                "bounds": [
+                  906,
+                  224,
+                  1039,
+                  357
+                ],
+                "clickable": true,
+                "children": []
+              },
+              {
+                "type": "Column",
+                "bounds": [
+                  1067,
+                  224,
+                  1200,
+                  357
+                ],
+                "clickable": true,
+                "children": []
+              },
+              {
+                "type": "Column",
+                "bounds": [
+                  56,
+                  360,
+                  1200,
+                  556
+                ],
+                "clickable": true,
+                "children": [
+                  {
+                    "type": "Search",
+                    "bounds": [
+                      56,
+                      388,
+                      1200,
+                      528
+                    ],
+                    "children": [
+                      {
+                        "type": "SearchField",
+                        "bounds": [
+                          182,
+                          388,
+                          1074,
+                          528
+                        ],
+                        "children": []
+                      },
+                      {
+                        "type": "SymbolGlyph",
+                        "bounds": [
+                          98,
+                          430,
+                          154,
+                          486
+                        ],
+                        "clickable": true,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "text": "正在加载...",
+                "bounds": [
+                  513,
+                  1715,
+                  743,
+                  1772
+                ],
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

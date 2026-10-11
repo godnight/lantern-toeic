@@ -22,6 +22,10 @@ START = "开始新考试 · 立即计时"
 BACKUP = re.compile(r"lantern-exam-backup-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.json")
 
 
+class PickerNotReady(ui.Failure):
+    """A bounded read-only wait is possible; this surface allows no actions."""
+
+
 def read_json(path):
     return json.loads(Path(path).read_text(encoding="utf-8-sig"))
 
@@ -134,7 +138,7 @@ def surface(tree, allow_picker=False):
             return "confirm-picker", sheet
         if {"Grid", "GridItem", "Column"} <= kinds and "我的手机" in labels:
             return "instant-picker", sheet
-        raise ui.Failure("Unrecognized native picker structure")
+        raise PickerNotReady("Unrecognized native picker structure")
     webs = [n for n in nodes if n.value.get("type") == "Web"]
     if len(webs) != 1 or webs[0].value.get("text") != ORIGIN:
         raise ui.Failure("Expected the packaged app; unlock/permissions are never automated")
@@ -206,7 +210,17 @@ class MockRunner(ui.Runner):
         try:
             while True:
                 tree = super().layout()
-                mode, _ = surface(tree, self.phase == "picker")
+                try:
+                    mode, _ = surface(tree, self.phase == "picker")
+                except PickerNotReady:
+                    # Only a single sheet that passed every existing overlay
+                    # guard may settle. No action can use an unrecognized tree.
+                    if self.phase != "picker":
+                        raise
+                    if time.monotonic() >= deadline:
+                        raise ui.Failure("Native file picker did not reach a recognized ready structure") from None
+                    time.sleep(min(.3, max(0, deadline - time.monotonic())))
+                    continue
                 if mode == "loading-picker":
                     if time.monotonic() >= deadline:
                         raise ui.Failure("Native file picker stayed in its initial loading shell")
