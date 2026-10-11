@@ -11,3 +11,10 @@
 
 /* Keep the question reachable on narrow screens during a timed sitting. */
 .mock-exam.is-running .mock-heading h2{font-size:1.2rem}.mock-exam.is-running .mock-audio{padding:12px 18px;margin:12px 0}.mock-exam.is-running .mock-audio h3{display:none}.mock-exam.is-running .mock-audio p{font-size:.85rem;margin:4px 0}.mock-exam.is-running .mock-clock{padding:14px 18px;margin:12px 0}.mock-exam.is-running .mock-clock p{margin:3px 0;font-size:.85rem}.mock-exam.is-running .mock-status:empty{display:none}.mock-exam.is-running .mock-answer-card{padding:10px 16px}.mock-exam.is-running .mock-answer-card details{margin:0}.mock-exam.is-running .mock-heading{margin-bottom:8px}
+.mock-library{margin-block:1.25rem;background:linear-gradient(125deg,rgba(155,173,150,.1),transparent)}
+.mock-library-heading{display:flex;justify-content:space-between;gap:1rem;align-items:center;flex-wrap:wrap}
+.mock-library-tag{font-size:.78rem;letter-spacing:.03em;color:var(--muted-foreground);border:1px solid var(--border);border-radius:2rem;padding:.4rem .75rem}
+.mock-library-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:1rem}
+.mock-library-item{border-top:1px solid var(--border);padding-top:1rem;min-width:0;overflow-wrap:anywhere}
+.mock-library-item h4{font-size:1rem;margin:.2rem 0 .6rem}
+.mock-library .mock-actions{align-items:center;flex-wrap:wrap}

@@ -6,6 +6,24 @@ export const EXAM_LIMITS = Object.freeze({
   assets: 100, packages: 20, attempts: 1000,
 });
 export const PART_COUNTS = [6, 25, 39, 30, 30, 16, 54] as const;
+export type ExamFormat = 'legacy-2006';
+const LEGACY_PART_COUNTS = [10, 30, 30, 30, 40, 12, 48] as const;
+/** Omission preserves the current format and canonical bytes of existing packages. */
+function readExamFormat(value: unknown): ExamFormat | undefined {
+  if (value === undefined) return undefined;
+  if (value !== 'legacy-2006') fail('不支持的题型版本');
+  return value;
+}
+export function getExamProfile(format?: ExamFormat) {
+  const legacy = readExamFormat(format) === 'legacy-2006';
+  return {
+    label: legacy ? '2006 版旧题型' : '现行题型',
+    partCounts: legacy ? LEGACY_PART_COUNTS : PART_COUNTS,
+    part6GroupSize: legacy ? 3 : 4,
+    singlePassageEnd: legacy ? 180 : 175,
+    singlePassageMaxQuestions: legacy ? 5 : 4,
+  };
+}
 export const LISTENING_MS = 45 * 60 * 1000;
 export const READING_MS = 75 * 60 * 1000;
 export const IMPORT_CLOCK_SKEW_MS = 5 * 60 * 1000;
@@ -20,6 +38,7 @@ export type ExamQuestion = { number: number; part: Part; groupId: string; prompt
 export type ScoreBand = { minCorrect: number; maxCorrect: number; minScore: number; maxScore: number };
 export type ExamPackage = {
   kind: 'lantern-toeic-exam'; schemaVersion: 1; id: string; version: number; title: string;
+  format?: ExamFormat;
   source: ExamSource; listeningAudioId: string; assets: ExamAsset[]; groups: ExamGroup[]; questions: ExamQuestion[];
   listeningDurationMs?: number;
   scoreRanges?: { source: string; listening: ScoreBand[]; reading: ScoreBand[] };
@@ -28,6 +47,7 @@ export type InterruptionReason = 'background' | 'audio-failure' | 'audio-interru
 export type ExamInterruption = { reason: InterruptionReason; at: number };
 export type ExamAttempt = {
   kind: 'lantern-exam-attempt'; schemaVersion: 1; id: string; ownerId: string;
+  format?: ExamFormat;
   examId: string; examVersion: number; fingerprint: string; ordinal: number;
   startedAt: number; listeningDeadline: number; readingDeadline: number; lastObservedAt: number;
   status: 'listening' | 'reading' | 'submitted'; activeQuestion: number;
@@ -80,10 +100,11 @@ function array(value: unknown, min: number, max: number, context: string): unkno
   return value;
 }
 export function assertOwner(owner: string): string { return str(owner, '本机账号范围', 200); }
-export function questionPart(number: number): Part {
+export function questionPart(number: number, format?: ExamFormat): Part {
   integer(number, 1, 200, '题号');
+  const counts = getExamProfile(format).partCounts;
   let end = 0;
-  for (let p = 1; p <= 7; p++) { end += PART_COUNTS[p - 1]; if (number <= end) return p as Part; }
+  for (let p = 1; p <= 7; p++) { end += counts[p - 1]; if (number <= end) return p as Part; }
   return 7;
 }
 export function examKey(exam: Pick<ExamPackage, 'id' | 'version'>): string { return `${exam.id}@${exam.version}`; }
@@ -125,8 +146,9 @@ function readBands(value: unknown, context: string): ScoreBand[] {
 export function parseExamPackage(input: string | unknown): ExamPackage {
   const raw = typeof input === 'string' ? parseLimitedJson(input, EXAM_LIMITS.importBytes) : input;
   const e = record(raw, '题包');
-  keys(e, ['kind', 'schemaVersion', 'id', 'version', 'title', 'source', 'listeningAudioId', 'assets', 'groups', 'questions', 'scoreRanges', 'listeningDurationMs'], '题包');
+  keys(e, ['kind', 'schemaVersion', 'id', 'version', 'title', 'source', 'listeningAudioId', 'assets', 'groups', 'questions', 'scoreRanges', 'listeningDurationMs', 'format'], '题包');
   if (e.kind !== 'lantern-toeic-exam' || e.schemaVersion !== 1) fail('题包格式或版本不支持');
+  const format = readExamFormat(e.format), profile = getExamProfile(format);
   const s = record(e.source, '来源'); keys(s, ['classification', 'title', 'publisher', 'reference', 'rightsStatement'], '来源');
   if (!['official-past', 'official-practice', 'original', 'other'].includes(String(s.classification))) fail('来源类别无效');
   const source: ExamSource = { classification: s.classification as ExamSource['classification'], title: str(s.title, '来源名称', 500), rightsStatement: str(s.rightsStatement, '导入者使用依据', 4000) };
@@ -154,8 +176,8 @@ export function parseExamPackage(input: string | unknown): ExamPackage {
   if (!assets.some(a => a.id === listeningAudioId && a.mime.startsWith('audio/'))) fail('缺少整场听力音频');
   const questions: ExamQuestion[] = array(e.questions, 200, 200, '完整听读试题').map((raw, i) => {
     const q = record(raw, `第 ${i + 1} 题`); keys(q, ['number', 'part', 'groupId', 'prompt', 'choices', 'answer', 'explanation'], '试题');
-    const number = integer(q.number, i + 1, i + 1, '连续题号'), part = questionPart(number);
-    if (q.part !== part) fail(`第 ${number} 题 Part 与现行 200 题结构不符`);
+    const number = integer(q.number, i + 1, i + 1, '连续题号'), part = questionPart(number, format);
+    if (q.part !== part) fail(`第 ${number} 题 Part 与所声明的 200 题结构不符`);
     const count = part === 2 ? 3 : 4;
     const result: ExamQuestion = { number, part, groupId: id(q.groupId, '题组 ID'), prompt: str(q.prompt, '题干', 10000, part <= 2), choices: array(q.choices, count, count, '选项').map(c => str(c, '选项', 3000)), answer: integer(q.answer, 0, count - 1, '正确选项（从 0 开始）') };
     if (q.explanation !== undefined) result.explanation = str(q.explanation, '解析', 20000, true);
@@ -178,20 +200,23 @@ export function parseExamPackage(input: string | unknown): ExamPackage {
       usedAssets.add(aid); return aid;
     });
     if (new Set(imageIds).size !== imageIds.length) fail('题组图片引用重复');
-    const expected = part === 3 || part === 4 ? 3 : part === 6 ? 4 : part <= 5 ? 1 : 0;
+    const expected = part === 3 || part === 4 ? 3 : part === 6 ? profile.part6GroupSize : part <= 5 ? 1 : 0;
     if (expected && questionNumbers.length !== expected) fail(`Part ${part} 题组题数不完整`);
     if (part === 1 && !imageIds.length) fail('Part 1 必须有照片');
     if ((part === 6 || part === 7) && !passages.some(t => t.trim()) && !imageIds.length) fail('阅读题组缺少正文或扫描图片');
     if (part === 6 && passages.length !== 1) fail('Part 6 每组需要一份材料');
     if (part === 7) {
-      const single = questionNumbers[0] <= 175;
-      if (single ? questionNumbers.some(n => n > 175) || passages.length !== 1 || questionNumbers.length < 2 || questionNumbers.length > 4 : passages.length < 2 || questionNumbers.length !== 5) fail('Part 7 须含前 29 道单篇材料与后 25 道多篇材料，题组不能跨界');
+      const single = questionNumbers[0] <= profile.singlePassageEnd;
+      const invalidSingle = questionNumbers.some(n => n > profile.singlePassageEnd) || passages.length !== 1 || questionNumbers.length < 2 || questionNumbers.length > profile.singlePassageMaxQuestions;
+      const invalidMultiple = (format === 'legacy-2006' ? passages.length !== 2 : passages.length < 2) || questionNumbers.length !== 5;
+      if (single ? invalidSingle : invalidMultiple) fail(format === 'legacy-2006' ? '旧题型 Part 7 须含 153–180 单篇及 181–200 双篇，题组不能跨界' : 'Part 7 须含前 29 道单篇材料与后 25 道多篇材料，题组不能跨界');
     }
     return { id: gid, part, questionNumbers, passages, imageIds };
   }).sort((a, b) => a.questionNumbers[0] - b.questionNumbers[0]);
   if (grouped.size !== 200 || questions.some(q => !groupIds.has(q.groupId))) fail('题组没有完整覆盖 200 道题');
   if (usedAssets.size !== assets.length) fail('题包含未引用素材，请移除无关文件');
   const exam: ExamPackage = { kind: 'lantern-toeic-exam', schemaVersion: 1, id: id(e.id, '题包 ID'), version: integer(e.version, 1, 1000000, '题包版本'), title: str(e.title, '题包标题', 300), source, listeningAudioId, assets, groups, questions };
+  if (format !== undefined) exam.format = format;
   // Omit the legacy default to preserve existing normalized bytes and fingerprints.
   if (e.listeningDurationMs !== undefined) exam.listeningDurationMs = readListeningDurationMs(e.listeningDurationMs);
   if (e.scoreRanges !== undefined) {
@@ -231,10 +256,11 @@ export function createAssetUrl(exam: ExamPackage, assetId: string): string {
 }
 
 export function createAttempt(exam: ExamPackage, options: { id: string; ownerId: string; fingerprint: string; ordinal: number; now: number }): ExamAttempt {
+  const format = readExamFormat(exam.format);
   const listeningMs = getListeningDurationMs(exam);
   const now = integer(options.now, 0, 8640000000000000 - listeningMs - READING_MS, '开始时间');
   if (!/^sha256:[a-f0-9]{64}$/.test(options.fingerprint)) fail('题包摘要无效');
-  return { kind: 'lantern-exam-attempt', schemaVersion: 1, id: id(options.id, '考试记录 ID'), ownerId: assertOwner(options.ownerId), examId: exam.id, examVersion: exam.version, fingerprint: options.fingerprint, ordinal: integer(options.ordinal, 1, EXAM_LIMITS.attempts, '考试次数'), startedAt: now, listeningDeadline: now + listeningMs, readingDeadline: now + listeningMs + READING_MS, lastObservedAt: now, status: 'listening', activeQuestion: 1, answers: {}, questionTimeMs: {}, revision: 1, clockRollback: false, interruptions: [] };
+  return { kind: 'lantern-exam-attempt', schemaVersion: 1, id: id(options.id, '考试记录 ID'), ownerId: assertOwner(options.ownerId), examId: exam.id, examVersion: exam.version, fingerprint: options.fingerprint, ordinal: integer(options.ordinal, 1, EXAM_LIMITS.attempts, '考试次数'), startedAt: now, listeningDeadline: now + listeningMs, readingDeadline: now + listeningMs + READING_MS, lastObservedAt: now, status: 'listening', activeQuestion: 1, answers: {}, questionTimeMs: {}, revision: 1, clockRollback: false, interruptions: [], ...(format === undefined ? {} : { format }) };
 }
 function addTime(attempt: ExamAttempt, number: number, duration: number) { if (duration > 0) attempt.questionTimeMs[number] = (attempt.questionTimeMs[number] || 0) + duration; }
 /** Deadline-based: background, closed pages and restarts consume the same exam clock. */
@@ -263,7 +289,7 @@ export function selectQuestion(value: ExamAttempt, number: number, now: number):
 }
 export function answerQuestion(value: ExamAttempt, number: number, choice: number | null, now: number): ExamAttempt {
   const a = selectQuestion(value, number, now);
-  if (choice !== null) integer(choice, 0, questionPart(number) === 2 ? 2 : 3, '选项');
+  if (choice !== null) integer(choice, 0, questionPart(number, a.format) === 2 ? 2 : 3, '选项');
   const answers = { ...a.answers };
   if (choice === null) delete answers[number]; else answers[number] = { choice, savedAt: a.lastObservedAt };
   return { ...a, answers, revision: a.revision + 1 };
@@ -294,11 +320,11 @@ export function presentExam(exam: ExamPackage, attempt: ExamAttempt) {
     groups: exam.groups.filter(g => attempt.status === 'submitted' || (attempt.status === 'listening' ? g.part <= 4 : g.part >= 5)),
   };
 }
-function assertExamMatch(exam: ExamPackage, attempt: ExamAttempt) { if (exam.id !== attempt.examId || exam.version !== attempt.examVersion) fail('记录与题包版本不匹配'); }
+function assertExamMatch(exam: ExamPackage, attempt: ExamAttempt) { if (exam.id !== attempt.examId || exam.version !== attempt.examVersion || readExamFormat(exam.format) !== readExamFormat(attempt.format)) fail('记录与题包版本或题型不匹配'); }
 export function gradeAttempt(exam: ExamPackage, attempt: ExamAttempt): ExamResult {
   assertExamMatch(exam, attempt);
   if (attempt.status !== 'submitted' || attempt.submittedAt === undefined) fail('交卷前不显示答案或成绩');
-  const parts: PartResult[] = PART_COUNTS.map((total, i) => ({ part: (i + 1) as Part, total, correct: 0, unanswered: 0, accuracy: 0, timeMs: 0 }));
+  const parts: PartResult[] = getExamProfile(exam.format).partCounts.map((total, i) => ({ part: (i + 1) as Part, total, correct: 0, unanswered: 0, accuracy: 0, timeMs: 0 }));
   for (const q of exam.questions) {
     const p = parts[q.part - 1], answer = attempt.answers[q.number];
     if (!answer) p.unanswered++; else if (answer.choice === q.answer) p.correct++;
@@ -318,7 +344,9 @@ export function gradeAttempt(exam: ExamPackage, attempt: ExamAttempt): ExamResul
 export function validateAttempt(value: unknown, exam: ExamPackage, ownerId: string, fingerprint: string, importNow?: number): ExamAttempt {
   const listeningMs = getListeningDurationMs(exam);
   const r = record(value, '考试记录');
-  keys(r, ['kind','schemaVersion','id','ownerId','examId','examVersion','fingerprint','ordinal','startedAt','listeningDeadline','readingDeadline','lastObservedAt','status','activeQuestion','answers','questionTimeMs','revision','clockRollback','interruptions','submittedAt','submittedReason'], '考试记录');
+  keys(r, ['kind','schemaVersion','id','ownerId','examId','examVersion','fingerprint','ordinal','startedAt','listeningDeadline','readingDeadline','lastObservedAt','status','activeQuestion','answers','questionTimeMs','revision','clockRollback','interruptions','submittedAt','submittedReason','format'], '考试记录');
+  const format = readExamFormat(r.format);
+  if (format !== readExamFormat(exam.format)) fail('考试记录题型与题包不匹配');
   if (r.kind !== 'lantern-exam-attempt' || r.schemaVersion !== 1 || r.ownerId !== ownerId || r.examId !== exam.id || r.examVersion !== exam.version || r.fingerprint !== fingerprint) fail('考试记录账号、题包或摘要不匹配');
   const start = integer(r.startedAt, 0, 8640000000000000 - listeningMs - READING_MS, '开始时间');
   if (r.listeningDeadline !== start + listeningMs || r.readingDeadline !== start + listeningMs + READING_MS) fail('考试截止时间不可改写');
@@ -338,7 +366,7 @@ export function validateAttempt(value: unknown, exam: ExamPackage, ownerId: stri
     if (!/^(?:[1-9]\d?|1\d\d|200)$/.test(key)) fail('作答题号无效');
     const number = Number(key), a = record(value, '作答'); keys(a, ['choice', 'savedAt'], '作答');
     const savedAt = integer(a.savedAt, number <= 100 ? start : Number(r.listeningDeadline), Math.min(observed, (number <= 100 ? Number(r.listeningDeadline) : Number(r.readingDeadline)) - 1), '作答时间');
-    answers[key] = { choice: integer(a.choice, 0, questionPart(number) === 2 ? 2 : 3, '答案选项'), savedAt };
+    answers[key] = { choice: integer(a.choice, 0, questionPart(number, format) === 2 ? 2 : 3, '答案选项'), savedAt };
   }
   let totalTime = 0, listeningTime = 0;
   for (const [key, value] of Object.entries(record(r.questionTimeMs, '题目用时'))) {
@@ -353,7 +381,7 @@ export function validateAttempt(value: unknown, exam: ExamPackage, ownerId: stri
     const at = integer(item.at, previousInterruption, observed, '中断时间'); previousInterruption = at;
     return { reason: item.reason as InterruptionReason, at };
   });
-  return { kind: 'lantern-exam-attempt', schemaVersion: 1, id: id(r.id, '考试记录 ID'), ownerId, examId: exam.id, examVersion: exam.version, fingerprint, ordinal: integer(r.ordinal, 1, EXAM_LIMITS.attempts, '考试次数'), startedAt: start, listeningDeadline: start + listeningMs, readingDeadline: start + listeningMs + READING_MS, lastObservedAt: observed, status: r.status as ExamAttempt['status'], activeQuestion, answers, questionTimeMs: times, revision: integer(r.revision, 1, Number.MAX_SAFE_INTEGER, '记录版本'), clockRollback: r.clockRollback as boolean, interruptions, ...(submitted ? { submittedAt: observed, submittedReason: r.submittedReason as 'manual' | 'timeout' } : {}) };
+  return { kind: 'lantern-exam-attempt', schemaVersion: 1, id: id(r.id, '考试记录 ID'), ownerId, examId: exam.id, examVersion: exam.version, fingerprint, ordinal: integer(r.ordinal, 1, EXAM_LIMITS.attempts, '考试次数'), startedAt: start, listeningDeadline: start + listeningMs, readingDeadline: start + listeningMs + READING_MS, lastObservedAt: observed, status: r.status as ExamAttempt['status'], activeQuestion, answers, questionTimeMs: times, revision: integer(r.revision, 1, Number.MAX_SAFE_INTEGER, '记录版本'), clockRollback: r.clockRollback as boolean, interruptions, ...(submitted ? { submittedAt: observed, submittedReason: r.submittedReason as 'manual' | 'timeout' } : {}), ...(format === undefined ? {} : { format }) };
 }
 
 export function isRecord(value: unknown): value is Record<string, unknown> { return !!value && typeof value === 'object' && !Array.isArray(value); }
