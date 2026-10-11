@@ -120,11 +120,19 @@ function buildPackage(recipe, pageAssets, audio, model) {
   catch{fail('MODEL_VALIDATION','题包未通过现行 200 题结构、素材、来源或容量校验；请核对配方。');}
 }
 function parsePdfInfo(text) {
-  const value=(label)=>text.match(new RegExp('^'+label+':\\s*(.*?)\\s*$','mi'))?.[1];
-  check(value('Encrypted')==='no' && value('JavaScript')==='no' && value('Form')==='none','PDF_ACTIVE','PDF 必须明确为未加密、无 JavaScript、无交互表单；未知状态拒绝。');
+  const value=(label)=>{
+    const matches=text.split(/\r?\n/).filter(line=>line.startsWith(label+':'));
+    check(matches.length===1,'PDF_METADATA','PDF 检查字段缺失或重复，无法确认文件状态。');
+    return matches[0].slice(label.length+1).trim();
+  };
+  const encryption=value('Encrypted');
+  // pdfinfo runs without passwords. Keep the source intact and only render when printing is allowed.
+  const printable=/^yes \(print:yes copy:(?:yes|no) change:(?:yes|no) addNotes:(?:yes|no) algorithm:(?:RC4|AES|AES-256)\)$/.test(encryption);
+  check((encryption==='no' || printable) && value('JavaScript')==='no' && value('Form')==='none','PDF_ACTIVE',
+    'PDF 须无需密码即可打开并允许打印，且无 JavaScript、无交互表单；未知状态拒绝。');
   const count=Number(value('Pages'));
   check(integer(count,1,LIMITS.pagesPerPdf),'PDF_PAGES','PDF 页数无效或超过限额。');
-  return {pages:count,encrypted:false,javascript:false,form:'none'};
+  return {pages:count,encrypted:encryption!=='no',printingAllowed:true,javascript:false,form:'none'};
 }
 function parseAttachmentCount(text) {
   check(/^0 embedded files\s*$/.test(text.trim()),'PDF_ATTACHMENTS','PDF 附件检查失败或存在附件。');
@@ -261,7 +269,7 @@ async function packExamPages(options, dependencies={}) {
     const exam=buildPackage(recipe,pageAssets,audio,model),json=JSON.stringify(exam);
     const report={kind:'lantern-exam-page-mapping-report',schemaVersion:1,examId:exam.id,examVersion:exam.version,questions:200,
       examSha256:crypto.createHash('sha256').update(json).digest('hex'),examBytes:Buffer.byteLength(json),assetBytes:total,
-      documents:recipe.documents.map(d=>{const v=documents.get(d.id);return {id:d.id,sha256:v.sha256,bytes:v.bytes,pages:v.pages,encrypted:v.encrypted,javascript:v.javascript,form:v.form,attachments:v.attachments};}),
+      documents:recipe.documents.map(d=>{const v=documents.get(d.id);return {id:d.id,sha256:v.sha256,bytes:v.bytes,pages:v.pages,encrypted:v.encrypted,printingAllowed:v.printingAllowed,javascript:v.javascript,form:v.form,attachments:v.attachments};}),
       audio:{mime:audio.mime,bytes:audioBytes.length,sha256:crypto.createHash('sha256').update(audioBytes).digest('hex'),reviewedByImporter:true,decodedByTool:false},
       pages:mapping,excludedPages:recipe.pageReview.excludedPages.map(p=>({...p,pdfSha256:documents.get(p.documentId).sha256})),
       checks:{modelValidated:true,onlyReferencedPagesRendered:true,crossSectionPhysicalPagesRejected:true,reviewedByImporter:true},

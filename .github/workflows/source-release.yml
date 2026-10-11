@@ -44,12 +44,12 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Convert an original synthetic PDF through real Poppler
+      - name: Convert an original printable-protected PDF through real Poppler
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y poppler-utils
           python -m pip install reportlab==4.4.9
-          python tests/fixtures/create-page-packer-fixture.py --out-dir "$RUNNER_TEMP/lantern-page-pack-qa"
+          python tests/fixtures/create-page-packer-fixture.py --out-dir "$RUNNER_TEMP/lantern-page-pack-qa" --printable-protected
           node scripts/pack-exam-pages.cjs --recipe "$RUNNER_TEMP/lantern-page-pack-qa/recipe.json"
       - name: Exercise the shared app in a real browser before release
         env:
