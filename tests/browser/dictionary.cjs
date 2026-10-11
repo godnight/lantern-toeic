@@ -9,10 +9,11 @@ const {chromium}=require('playwright');
 const ROOT=path.resolve(__dirname,'../..');
 const OUT=path.resolve(process.env.LANTERN_DICTIONARY_QA_DIR||path.join(ROOT,'reports/dictionary-browser-'+Date.now()));
 const report={scope:'Local production shared frontend, fresh Chrome profiles; not Harmony device acceptance or Service Worker offline caching',steps:[],errors:[]};
-let server,browser;
+let server,browser,outputReady=false;
 async function step(name,fn){await fn();report.steps.push({name,status:'passed'});}
 (async()=>{
- await fs.mkdir(OUT,{recursive:false});
+ await fs.mkdir(path.dirname(OUT),{recursive:true});
+ await fs.mkdir(OUT,{recursive:false});outputReady=true;
  const dist=path.join(ROOT,'mobile/dist');
  const metadata=JSON.parse(await fs.readFile(path.join(ROOT,'content/dictionary-metadata.json'),'utf8'));
  await step('built dictionary bytes and SHA match the current source metadata',async()=>{
@@ -54,4 +55,4 @@ async function step(name,fn){await fn();report.steps.push({name,status:'passed'}
  await step('bad checksum leaves original words usable and retry recovers',async()=>{await failed.getByRole('alert').filter({hasText:'词典文件校验失败'}).waitFor();await failed.getByLabel('搜索单词或中文释义').fill('reservation');await failed.getByRole('heading',{name:'reservation',exact:true}).waitFor();await failed.getByRole('button',{name:'重试加载词典',exact:true}).click();await failed.getByRole('button',{name:'英汉查词',exact:true}).click();await failed.getByText(/词典已就绪/).waitFor();});
  await failedContext.close();
  assert.deepEqual(report.errors,[]);report.status='passed';
-})().catch(error=>{report.status='failed';report.error=String(error.stack||error);process.exitCode=1;}).finally(async()=>{if(browser)await browser.close();if(server)await new Promise(resolve=>server.close(resolve));report.finishedAt=new Date().toISOString();await fs.writeFile(path.join(OUT,'result.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({status:report.status,checks:report.steps.length,output:OUT,error:report.error}));});
+})().catch(error=>{report.status='failed';report.error=String(error.stack||error);process.exitCode=1;}).finally(async()=>{if(browser)await browser.close();if(server)await new Promise(resolve=>server.close(resolve));report.finishedAt=new Date().toISOString();if(outputReady)await fs.writeFile(path.join(OUT,'result.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({status:report.status,checks:report.steps.length,output:OUT,error:report.error}));});

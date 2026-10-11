@@ -54,6 +54,7 @@ jobs:
       - name: Exercise the shared app in a real browser before release
         env:
           LANTERN_BROWSER_QA_DIR: ${{ runner.temp }}/lantern-browser-qa
+          LANTERN_DICTIONARY_QA_DIR: ${{ runner.temp }}/lantern-dictionary-browser-qa
           LANTERN_PAGE_PACK_QA_DIR: ${{ runner.temp }}/lantern-page-pack-qa
         run: |
           node node_modules/playwright/cli.js install --with-deps chromium
@@ -67,6 +68,8 @@ jobs:
           path: |
             ${{ runner.temp }}/lantern-browser-qa/result.json
             ${{ runner.temp }}/lantern-browser-qa/*.png
+            ${{ runner.temp }}/lantern-dictionary-browser-qa/result.json
+            ${{ runner.temp }}/lantern-dictionary-browser-qa/*.png
           if-no-files-found: ignore
           retention-days: 14
       - name: Restore the pinned public CLT archive
