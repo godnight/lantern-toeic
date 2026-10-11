@@ -21,6 +21,7 @@ export type ScoreBand = { minCorrect: number; maxCorrect: number; minScore: numb
 export type ExamPackage = {
   kind: 'lantern-toeic-exam'; schemaVersion: 1; id: string; version: number; title: string;
   source: ExamSource; listeningAudioId: string; assets: ExamAsset[]; groups: ExamGroup[]; questions: ExamQuestion[];
+  listeningDurationMs?: number;
   scoreRanges?: { source: string; listening: ScoreBand[]; reading: ScoreBand[] };
 };
 export type InterruptionReason = 'background' | 'audio-failure' | 'audio-interrupted' | 'audio-seek';
@@ -65,6 +66,14 @@ function id(value: unknown, context: string): string {
 function integer(value: unknown, low: number, high: number, context: string): number {
   if (!Number.isSafeInteger(value) || (value as number) < low || (value as number) > high) fail(`${context}范围无效`);
   return value as number;
+}
+function readListeningDurationMs(value: unknown): number {
+  const duration = integer(value, 40 * 60 * 1000, 50 * 60 * 1000, '听力时长');
+  if (duration % 1000) fail('听力时长须为整秒');
+  return duration;
+}
+export function getListeningDurationMs(exam: Pick<ExamPackage, 'listeningDurationMs'>): number {
+  return exam.listeningDurationMs === undefined ? LISTENING_MS : readListeningDurationMs(exam.listeningDurationMs);
 }
 function array(value: unknown, min: number, max: number, context: string): unknown[] {
   if (!Array.isArray(value) || value.length < min || value.length > max) fail(`${context}数量无效`);
@@ -116,7 +125,7 @@ function readBands(value: unknown, context: string): ScoreBand[] {
 export function parseExamPackage(input: string | unknown): ExamPackage {
   const raw = typeof input === 'string' ? parseLimitedJson(input, EXAM_LIMITS.importBytes) : input;
   const e = record(raw, '题包');
-  keys(e, ['kind', 'schemaVersion', 'id', 'version', 'title', 'source', 'listeningAudioId', 'assets', 'groups', 'questions', 'scoreRanges'], '题包');
+  keys(e, ['kind', 'schemaVersion', 'id', 'version', 'title', 'source', 'listeningAudioId', 'assets', 'groups', 'questions', 'scoreRanges', 'listeningDurationMs'], '题包');
   if (e.kind !== 'lantern-toeic-exam' || e.schemaVersion !== 1) fail('题包格式或版本不支持');
   const s = record(e.source, '来源'); keys(s, ['classification', 'title', 'publisher', 'reference', 'rightsStatement'], '来源');
   if (!['official-past', 'official-practice', 'original', 'other'].includes(String(s.classification))) fail('来源类别无效');
@@ -183,6 +192,8 @@ export function parseExamPackage(input: string | unknown): ExamPackage {
   if (grouped.size !== 200 || questions.some(q => !groupIds.has(q.groupId))) fail('题组没有完整覆盖 200 道题');
   if (usedAssets.size !== assets.length) fail('题包含未引用素材，请移除无关文件');
   const exam: ExamPackage = { kind: 'lantern-toeic-exam', schemaVersion: 1, id: id(e.id, '题包 ID'), version: integer(e.version, 1, 1000000, '题包版本'), title: str(e.title, '题包标题', 300), source, listeningAudioId, assets, groups, questions };
+  // Omit the legacy default to preserve existing normalized bytes and fingerprints.
+  if (e.listeningDurationMs !== undefined) exam.listeningDurationMs = readListeningDurationMs(e.listeningDurationMs);
   if (e.scoreRanges !== undefined) {
     const ranges = record(e.scoreRanges, '参考分数区间'); keys(ranges, ['source', 'listening', 'reading'], '参考分数区间');
     exam.scoreRanges = { source: str(ranges.source, '本套参考区间出处', 2000), listening: readBands(ranges.listening, '听力参考区间'), reading: readBands(ranges.reading, '阅读参考区间') };
@@ -220,9 +231,10 @@ export function createAssetUrl(exam: ExamPackage, assetId: string): string {
 }
 
 export function createAttempt(exam: ExamPackage, options: { id: string; ownerId: string; fingerprint: string; ordinal: number; now: number }): ExamAttempt {
-  const now = integer(options.now, 0, 8640000000000000 - LISTENING_MS - READING_MS, '开始时间');
+  const listeningMs = getListeningDurationMs(exam);
+  const now = integer(options.now, 0, 8640000000000000 - listeningMs - READING_MS, '开始时间');
   if (!/^sha256:[a-f0-9]{64}$/.test(options.fingerprint)) fail('题包摘要无效');
-  return { kind: 'lantern-exam-attempt', schemaVersion: 1, id: id(options.id, '考试记录 ID'), ownerId: assertOwner(options.ownerId), examId: exam.id, examVersion: exam.version, fingerprint: options.fingerprint, ordinal: integer(options.ordinal, 1, EXAM_LIMITS.attempts, '考试次数'), startedAt: now, listeningDeadline: now + LISTENING_MS, readingDeadline: now + LISTENING_MS + READING_MS, lastObservedAt: now, status: 'listening', activeQuestion: 1, answers: {}, questionTimeMs: {}, revision: 1, clockRollback: false, interruptions: [] };
+  return { kind: 'lantern-exam-attempt', schemaVersion: 1, id: id(options.id, '考试记录 ID'), ownerId: assertOwner(options.ownerId), examId: exam.id, examVersion: exam.version, fingerprint: options.fingerprint, ordinal: integer(options.ordinal, 1, EXAM_LIMITS.attempts, '考试次数'), startedAt: now, listeningDeadline: now + listeningMs, readingDeadline: now + listeningMs + READING_MS, lastObservedAt: now, status: 'listening', activeQuestion: 1, answers: {}, questionTimeMs: {}, revision: 1, clockRollback: false, interruptions: [] };
 }
 function addTime(attempt: ExamAttempt, number: number, duration: number) { if (duration > 0) attempt.questionTimeMs[number] = (attempt.questionTimeMs[number] || 0) + duration; }
 /** Deadline-based: background, closed pages and restarts consume the same exam clock. */
@@ -304,11 +316,12 @@ export function gradeAttempt(exam: ExamPackage, attempt: ExamAttempt): ExamResul
 
 /** Validate persisted/imported attempts rather than trusting backup grades or clocks. */
 export function validateAttempt(value: unknown, exam: ExamPackage, ownerId: string, fingerprint: string, importNow?: number): ExamAttempt {
+  const listeningMs = getListeningDurationMs(exam);
   const r = record(value, '考试记录');
   keys(r, ['kind','schemaVersion','id','ownerId','examId','examVersion','fingerprint','ordinal','startedAt','listeningDeadline','readingDeadline','lastObservedAt','status','activeQuestion','answers','questionTimeMs','revision','clockRollback','interruptions','submittedAt','submittedReason'], '考试记录');
   if (r.kind !== 'lantern-exam-attempt' || r.schemaVersion !== 1 || r.ownerId !== ownerId || r.examId !== exam.id || r.examVersion !== exam.version || r.fingerprint !== fingerprint) fail('考试记录账号、题包或摘要不匹配');
-  const start = integer(r.startedAt, 0, 8640000000000000 - LISTENING_MS - READING_MS, '开始时间');
-  if (r.listeningDeadline !== start + LISTENING_MS || r.readingDeadline !== start + LISTENING_MS + READING_MS) fail('考试截止时间不可改写');
+  const start = integer(r.startedAt, 0, 8640000000000000 - listeningMs - READING_MS, '开始时间');
+  if (r.listeningDeadline !== start + listeningMs || r.readingDeadline !== start + listeningMs + READING_MS) fail('考试截止时间不可改写');
   const observed = integer(r.lastObservedAt, start, Number(r.readingDeadline), '记录时间'), activeQuestion = integer(r.activeQuestion, 1, 200, '当前题号');
   if (importNow !== undefined) {
     integer(importNow, 0, 8640000000000000, '备份导入时间');
@@ -330,9 +343,9 @@ export function validateAttempt(value: unknown, exam: ExamPackage, ownerId: stri
   let totalTime = 0, listeningTime = 0;
   for (const [key, value] of Object.entries(record(r.questionTimeMs, '题目用时'))) {
     if (!/^(?:[1-9]\d?|1\d\d|200)$/.test(key)) fail('用时题号无效');
-    times[key] = integer(value, 0, LISTENING_MS + READING_MS, '题目用时'); totalTime += times[key]; if (Number(key) <= 100) listeningTime += times[key];
+    times[key] = integer(value, 0, listeningMs + READING_MS, '题目用时'); totalTime += times[key]; if (Number(key) <= 100) listeningTime += times[key];
   }
-  if (totalTime !== observed - start || listeningTime !== Math.min(observed - start, LISTENING_MS)) fail('题目用时与考试时钟不一致');
+  if (totalTime !== observed - start || listeningTime !== Math.min(observed - start, listeningMs)) fail('题目用时与考试时钟不一致');
   let previousInterruption = start;
   const interruptions: ExamInterruption[] = array(r.interruptions, 0, 2048, '中断记录').map(raw => {
     const item = record(raw, '中断记录'); keys(item, ['reason', 'at'], '中断记录');
@@ -340,7 +353,7 @@ export function validateAttempt(value: unknown, exam: ExamPackage, ownerId: stri
     const at = integer(item.at, previousInterruption, observed, '中断时间'); previousInterruption = at;
     return { reason: item.reason as InterruptionReason, at };
   });
-  return { kind: 'lantern-exam-attempt', schemaVersion: 1, id: id(r.id, '考试记录 ID'), ownerId, examId: exam.id, examVersion: exam.version, fingerprint, ordinal: integer(r.ordinal, 1, EXAM_LIMITS.attempts, '考试次数'), startedAt: start, listeningDeadline: start + LISTENING_MS, readingDeadline: start + LISTENING_MS + READING_MS, lastObservedAt: observed, status: r.status as ExamAttempt['status'], activeQuestion, answers, questionTimeMs: times, revision: integer(r.revision, 1, Number.MAX_SAFE_INTEGER, '记录版本'), clockRollback: r.clockRollback as boolean, interruptions, ...(submitted ? { submittedAt: observed, submittedReason: r.submittedReason as 'manual' | 'timeout' } : {}) };
+  return { kind: 'lantern-exam-attempt', schemaVersion: 1, id: id(r.id, '考试记录 ID'), ownerId, examId: exam.id, examVersion: exam.version, fingerprint, ordinal: integer(r.ordinal, 1, EXAM_LIMITS.attempts, '考试次数'), startedAt: start, listeningDeadline: start + listeningMs, readingDeadline: start + listeningMs + READING_MS, lastObservedAt: observed, status: r.status as ExamAttempt['status'], activeQuestion, answers, questionTimeMs: times, revision: integer(r.revision, 1, Number.MAX_SAFE_INTEGER, '记录版本'), clockRollback: r.clockRollback as boolean, interruptions, ...(submitted ? { submittedAt: observed, submittedReason: r.submittedReason as 'manual' | 'timeout' } : {}) };
 }
 
 export function isRecord(value: unknown): value is Record<string, unknown> { return !!value && typeof value === 'object' && !Array.isArray(value); }

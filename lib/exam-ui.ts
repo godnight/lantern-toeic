@@ -1,4 +1,4 @@
-import {createAssetUrl, type ExamAttempt, type ExamPackage} from '@/lib/exam-model';
+import {LISTENING_MS, createAssetUrl, getListeningDurationMs, type ExamAttempt, type ExamPackage} from '@/lib/exam-model';
 import type {ExamRepository} from '@/lib/exam-storage';
 
 export class StaleExamOwner extends Error {
@@ -47,6 +47,30 @@ export function audioOffsetSeconds(attempt: ExamAttempt, now: number, duration: 
 export function clockText(ms: number): string {
   const seconds = Math.max(0, Math.ceil(ms / 1000));
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
+
+/** Metadata is a compatibility gate, not proof of a complete or correctly paired recording. */
+export function checkExamAudioDuration(durationSeconds: number, declaredMs: number | undefined,
+  effectiveMs: number): {ready: boolean; error: string} {
+  try {
+    if (getListeningDurationMs(declaredMs === undefined ? {} : {listeningDurationMs: declaredMs}) !== effectiveMs) {
+      return {ready: false, error: '题包听力时长声明与计时不一致，请重新核对题包。'};
+    }
+  } catch {
+    return {ready: false, error: '题包听力时长声明无效，请重新核对题包。'};
+  }
+  if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) {
+    return {ready: false, error: '音频时长尚未读取或无效，请重试加载。'};
+  }
+  const measuredMs = durationSeconds * 1000;
+  if (declaredMs === undefined) {
+    return measuredMs <= LISTENING_MS ? {ready: true, error: ''} :
+      {ready: false, error: '音频超过旧题包的 45:00 听力时限，不能开始新考试。请核对完整音轨后制作带时长声明的新版本。'};
+  }
+  const gap = declaredMs - measuredMs;
+  return gap >= 0 && gap <= 1500 ? {ready: true, error: ''} :
+    {ready: false, error: '音频实测时长与本套声明不符，不能开始新考试或恢复播放。请核对音轨与题包版本；已有考试截止不变。'};
 }
 
 /** Restores src after StrictMode's setup → cleanup → setup probe. */

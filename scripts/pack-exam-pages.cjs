@@ -70,7 +70,7 @@ function refKey(ref) { return `${ref.documentId}:${ref.page}`; }
 function validateRecipe(r, model) {
   record(r,['kind','schemaVersion','exam','documents','audioFile','answers','groups','pageReview','audioReviewed'],'配方');
   check(r.kind==='lantern-exam-page-recipe' && r.schemaVersion===1,'RECIPE','配方格式或版本不支持。');
-  record(r.exam,['id','version','title','source'],'试卷信息');
+  record(r.exam,['id','version','title','source','listeningDurationMs'],'试卷信息');
   check(ID.test(r.exam.id) && integer(r.exam.version,1,1000000),'RECIPE','题包 ID 或版本无效。');
   record(r.pageReview,['reviewed','excludedPages'],'页面核对');
   check(r.pageReview.reviewed===true && r.audioReviewed===true,'REVIEW_REQUIRED',
@@ -270,7 +270,8 @@ async function packExamPages(options, dependencies={}) {
     const report={kind:'lantern-exam-page-mapping-report',schemaVersion:1,examId:exam.id,examVersion:exam.version,questions:200,
       examSha256:crypto.createHash('sha256').update(json).digest('hex'),examBytes:Buffer.byteLength(json),assetBytes:total,
       documents:recipe.documents.map(d=>{const v=documents.get(d.id);return {id:d.id,sha256:v.sha256,bytes:v.bytes,pages:v.pages,encrypted:v.encrypted,printingAllowed:v.printingAllowed,javascript:v.javascript,form:v.form,attachments:v.attachments};}),
-      audio:{mime:audio.mime,bytes:audioBytes.length,sha256:crypto.createHash('sha256').update(audioBytes).digest('hex'),reviewedByImporter:true,decodedByTool:false},
+      audio:{mime:audio.mime,bytes:audioBytes.length,sha256:crypto.createHash('sha256').update(audioBytes).digest('hex'),reviewedByImporter:true,decodedByTool:false,
+        ...(exam.listeningDurationMs===undefined?{}:{listeningDurationMs:exam.listeningDurationMs})},
       pages:mapping,excludedPages:recipe.pageReview.excludedPages.map(p=>({...p,pdfSha256:documents.get(p.documentId).sha256})),
       checks:{modelValidated:true,onlyReferencedPagesRendered:true,crossSectionPhysicalPagesRejected:true,reviewedByImporter:true},
       limitations:['页面无答案/解析、听力页不含阅读材料，以及题本与答案同卷，仅为导入者人工声明；程序不识别页面语义或核对答案正确性。',
