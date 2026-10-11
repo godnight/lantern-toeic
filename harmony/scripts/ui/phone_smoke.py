@@ -73,6 +73,51 @@ def flatten(tree, parents=()):
         yield from flatten(tree.get("children", []), parents + (tree,))
 
 
+def click_bounds(node, tree):
+    """Visible clickable fragment after known fixed app chrome is subtracted.
+
+    Accessibility bounds clip ancestors, but do not describe fixed siblings.
+    Only the packaged app's named navigation/status chrome is inferred here;
+    unknown dialogs and permission prompts remain blocked by safe_click.
+    """
+    area = node.visible_bounds()
+    if not area:
+        return None
+    surface = next((p for p in reversed(node.parents)
+                    if p.get("type") == "Web" and p.get("text") == "https://lantern.local/"), None)
+    if surface is None:
+        return area
+    fragments = [area]
+    for cover in flatten(tree):
+        value = cover.value
+        known = ((value.get("type") == "navigation" and normalize(value.get("text")) == "主导航")
+                 or (value.get("type") == "sectionHeader" and normalize(value.get("text")) == "学习状态"))
+        if not known or not any(p is surface for p in cover.parents):
+            continue
+        # The chrome's own buttons are actionable; its content siblings are not.
+        if value is node.value or any(p is value for p in node.parents):
+            continue
+        overlay = cover.visible_bounds()
+        if not overlay:
+            continue
+        remaining = []
+        for fragment in fragments:
+            overlap = intersect(fragment, overlay)
+            if overlap[2] <= overlap[0] or overlap[3] <= overlap[1]:
+                remaining.append(fragment)
+                continue
+            left, top, right, bottom = fragment
+            x1, y1, x2, y2 = overlap
+            remaining.extend((candidate for candidate in
+                              [(left, top, right, y1), (left, y2, right, bottom),
+                               (left, y1, x1, y2), (x2, y1, right, y2)]
+                              if candidate[2] - candidate[0] >= 24 and candidate[3] - candidate[1] >= 28))
+        fragments = remaining
+        if not fragments:
+            return None
+    return max(fragments, key=lambda b: (b[2] - b[0]) * (b[3] - b[1]))
+
+
 def find_nodes(tree, text=None, regex=None, types=None, clickable=False, visible=True):
     result = []
     for node in flatten(tree):
@@ -87,7 +132,7 @@ def find_nodes(tree, text=None, regex=None, types=None, clickable=False, visible
             continue
         if value.get("enabled") is False:
             continue
-        if visible and not node.visible_bounds():
+        if visible and not (click_bounds(node, tree) if clickable else node.visible_bounds()):
             continue
         result.append(node)
     return result
@@ -108,6 +153,8 @@ def safe_click(node, args, tree, picker_labels=()):
     """Default click allowlist is a second gate, independent of workflow branches."""
     text = normalize(node.value.get("text"))
     web = app_node(node)
+    if click_bounds(node, tree) is None:
+        raise Failure("Target is covered by fixed app chrome; scroll before clicking")
     if picker_labels:
         if not args.dedicated_test_device or not args.duplicate_import:
             raise Failure("Native picker clicks require dedicated duplicate-import mode")
@@ -267,11 +314,15 @@ class Runner:
             time.sleep(0.3)
 
     def scroll(self, direction, scroller=None):
-        tree = self.layout()
+        # locate() passes a node from its immediately preceding layout. Keep that
+        # pair together: refreshing only the tree loses the node's parent identity.
+        tree = self.layout() if scroller is None else self.tree
         if scroller is None:
             candidates = [n for n in flatten(tree) if n.value.get("type") == "rootWebArea" and n.visible_bounds()]
             scroller = unique(candidates, "main web scroller")
-        b = scroller.visible_bounds()
+        elif not any(n.value is scroller.value for n in flatten(tree)):
+            raise Failure("Scroller is from a discarded layout; locate it again")
+        b = click_bounds(scroller, tree)
         if not b:
             raise Failure("Scroller is not visible")
         # Avoid a desktop sidebar and a folded phone's bottom navigation.
@@ -307,7 +358,9 @@ class Runner:
     def tap(self, **selector):
         node = self.locate(**selector)
         safe_click(node, self.args, self.tree, self.picker_labels)
-        b = node.visible_bounds()
+        b = click_bounds(node, self.tree)
+        if not b:
+            raise Failure("Target became covered before click")
         # Fresh current bounds, never captured coordinates or personal node identifiers.
         self.io.cli("ui", "click", str(round((b[0] + b[2]) / 2)), str(round((b[1] + b[3]) / 2)), label="click")
         time.sleep(0.25)
@@ -337,7 +390,9 @@ class Runner:
         # Each fresh vocabulary mount has an empty query; do not append to unknown text.
         if normalize(field.value.get("text")):
             raise Failure("Search field is not empty after fresh navigation")
-        b = field.visible_bounds()
+        b = click_bounds(field, self.tree)
+        if not b:
+            raise Failure("Search field is covered by fixed app chrome")
         self.io.cli("ui", "text", self.args.word, str(round((b[0]+b[2])/2)), str(round((b[1]+b[3])/2)), label="search")
         self.expect(text=self.args.word, types={"textField"})
         self.io.hdc("shell", "uitest", "uiInput", "keyEvent", "Back", label="dismiss-keyboard")

@@ -1,9 +1,11 @@
-鸿蒙真机 UI 自动化草案（2026-10-11）
+鸿蒙设备 UI 自动化（2026-10-11）
 
 交付状态
-Python 3.11+ 标准库 runner，已基于保存的真机布局做离线回归。
-此草案没有连接或操作当前手机；真实设备首次执行仍须由集成负责人验收。
-不把离线夹具测试称作真机端到端通过。官方 CLI 帮助已在本机核对。
+Python 3.11+ 标准库 runner，35 项离线检查通过；已在 HarmonyOS 7 / API 26
+专用模拟器、v0.3.0 实际完成默认非写入词库 smoke。物理手机上的本 runner 尚未执行。
+首次 live 暴露固定导航遮挡及布局快照混用，两项均先复现、修复、回归后重新 live 通过。
+报告：[模拟器验收与缺陷闭环](../../../docs/testing/HARMONY_MOCK_QA_2026-10-11.md)。
+模考导入/备份已另行受控操作验证，尚未成为本 runner 的无人值守模考套件。
 
 文件
   phone_smoke.py                  真实 CLI/HDC runner 与备份比较器
@@ -61,6 +63,9 @@ Python 3.11+ 标准库 runner，已基于保存的真机布局做离线回归。
 定位与限界
 每次操作刷新 ui layout --format json，以可见 text/type 唯一匹配，再计算当前 bounds。
 剪裁 scrollable / Web / dialog 祖先，避免旧布局里 LIBRARY 节点被侧栏 footer 遮挡。
+对同一 Web 内已知“主导航”和“学习状态”扣除遮挡，保留其自身按钮；完全遮挡时
+先滚动再定位。点击、搜索输入和滑动采用剩余可操作区域。滚动节点与遮挡树必须来自
+同一布局快照；旧快照节点直接拒绝，未知弹窗仍不自动操作。
 缺失节点最多六次滚动；重复候选直接失败。滑动坐标是当前滚动区的比例，不是屏幕常量。
 仅在新挂载词库中识别唯一 textField；输入后检查文字确实更新。
 键盘用 HDC uitest Back 收起，随后必须重新找到词条；不能收起时按失败取证，不盲点。
@@ -89,8 +94,8 @@ UI树无法证明所有覆盖/层叠关系；因此每一段保留截图，并�
 验证与集成
   python -m unittest -v test_phone_smoke.py
 所有测试只读 fixtures 或临时目录，不运行 HDC、不运行手机 UI。
-集成时可放入 harmony/scripts/ui/，把离线测试加入 CI；有设备的实际 run 单独在
-受控 Windows 自托管执行器调度。先验收一次 runner 能驱动已安装版本，再启用无人值守。
+离线测试已纳入 CI；有设备的实际 run 需单独在受控 Windows 自托管执行器调度。
+专用模拟器默认 smoke 已 live 通过；写入/重复导入扩展及物理机仍需各自验收。
 通过 task scheduler/CI 定期调用只需设备保持可用；不依赖聊天代理一直运行。
 应使用设备锁（CI concurrency 或文件锁）、独立证据目录和失败通知，避免多轮争抢设备。
 沿用现有 tests/native-lifecycle.test.cjs、tests/vocabulary.test.cjs、
@@ -100,4 +105,9 @@ tests/repo-review-regressions.test.cjs 验证状态机/幂等；本 runner 验�
 本机 @deveco/deveco-cli README 的 ui layout/click/text/swipe/screenshot/log 帮助；
 vocab-work/phone-registration 中 2026-10-11 折叠/展开布局、词库实测与导入证据；
 components/ui/sidebar.tsx 的独立 overflow-auto，vocabulary-library.tsx 的可见标签及备份按钮。
-没有修改 Sites checkout；本目录由 root 决定如何审查与集成。
+模拟器启动排查
+首次协议须由本人确认；本机此次已明确同意并完成官方接受流程。
+若 CLI 报没有镜像，先核查已安装镜像与启动参数；不要据此重复下载或重置实例。
+本次 CLI 指向 Studio SDK，镜像却在用户 Huawei SDK 下，改用官方 Emulator.exe
+的 -imageRoot 指向包含 system-image 的 SDK 根目录后正常启动。不是直接指向
+system-image 子目录。以 emulator list、HDC boot.completed 和实际 UI 联合确认就绪。
