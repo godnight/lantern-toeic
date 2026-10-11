@@ -4,7 +4,7 @@
 
 第95轮从独立CLI入口运行，在15:04:06实际退出0，全部6项检查通过：两套合成包导入、媒体预检、两题作答、冷启动、四份真实备份和两次最新B1恢复。独立复核确认各备份与其稳定副本逐字节一致，原两条已交卷历史逐字段保持，仅新增ordinal 3；两答案、保存时间和截止不变，恢复新增0套/0记录。第90轮另以既有考试续验完成自然LC→RC→超时交卷及最终原生持久化，原整卷截止14:13:34.646（Asia/Shanghai）未延后。
 
-第91–94轮文件选择器瞬态、屏外网格和导出后可信空Web的失败均保留，先复现、修正再设备重跑；145项Python离线回归通过。代码提交 `d0459feb05cc0fd6f963505988276c39eac84d81` 的[Core](https://github.com/godnight/lantern-toeic/actions/runs/38119790549)与[Harmony](https://github.com/godnight/lantern-toeic/actions/runs/38119790558)均成功；198项学习检查、类型检查和发布门禁29项Node/22项Python另有分项证据。接续先核对PR #33合并状态：已合并从最新main开始，否则使用 `test/harmony-mock-automation`；最终文档提交CI以PR为准。详见[自动化报告](testing/HARMONY_MOCK_AUTOMATION_2026-10-11.md)。
+第91–94轮文件选择器瞬态、屏外网格和导出后可信空Web的失败均保留，先复现、修正再设备重跑；145项Python离线回归通过。代码提交 `d0459feb05cc0fd6f963505988276c39eac84d81` 的[Core](https://github.com/godnight/lantern-toeic/actions/runs/38119790549)与[Harmony](https://github.com/godnight/lantern-toeic/actions/runs/38119790558)均成功；198项学习检查、类型检查和发布门禁29项Node/22项Python另有分项证据。PR #33已合并（2c24bf0）；最终文档提交6524deb的Core 38120468872与Harmony 38120468860均成功。详见[自动化报告](testing/HARMONY_MOCK_AUTOMATION_2026-10-11.md)。
 
 两段证据分别是同次截止续验与独立短流程，未验证全新单命令长模式、连续两小时前台或完整真实听力；新版真机也未验。本轮仅改工具和文档，不重发HAP/Web/Site，不占用物理手机。
 
@@ -12,7 +12,7 @@
 
 已通过 IIBC 官方公告及原下载链接的公开存档取得2020官方模考42页完整200题题本、1页完整答案和空白答题纸。私人映射包含103组/200答案；42页题本及答案页已复核，答案转录差异0、原件SHA保持。这不等于逐题语言审校或听力验收。配套音频未取得，未生成最终题包，完整可听导入包仍为0套；未证实对应某场历年实考。来源与摘要见[材料核查](research/OFFICIAL_EXAMS_2026-10-11.md)。
 
-可打印且无需输入密码的权限加密PDF兼容修正已提交草稿[PR #34](https://github.com/godnight/lantern-toeic/pull/34)，基于PR #33，尚未合并。其提交 `407e81e92303f0f0b2f4697344125af89e9267dc` 的[Core检查](https://github.com/godnight/lantern-toeic/actions/runs/38116263181)通过201项学习/模型检查和22条浏览器流程，包含原创保护PDF的真实Poppler转换；该CI证据不代表真实题本已有音频或可用整卷。先收尾PR #33，再核对PR #34调整基线后的最终差异与CI。
+可打印且无需输入密码的权限加密PDF兼容修正见[PR #34](https://github.com/godnight/lantern-toeic/pull/34)，已跟随合并后的PR #33改以main为基线，本地集成29项packer回归通过。首版提交 `407e81e92303f0f0b2f4697344125af89e9267dc` 的[Core检查](https://github.com/godnight/lantern-toeic/actions/runs/38116263181)通过201项学习/模型检查和22条浏览器流程，包含原创保护PDF的真实Poppler转换；最终基线CI与合并状态以PR #34为准。该CI证据不代表真实题本已有音频或可用整卷。
 
 ## v0.3.0 模拟器模考验收与 runner 修复（2026-10-11）
 
