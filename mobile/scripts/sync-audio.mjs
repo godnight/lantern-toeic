@@ -11,7 +11,8 @@ const manifest = JSON.parse(await readFile(path.join(source, 'manifest.json'), '
 const questions = JSON.parse(await readFile(path.join(root, 'content/questions.json'), 'utf8'));
 const speaking = JSON.parse(await readFile(path.join(root, 'content/speaking.json'), 'utf8'));
 const vocabulary = JSON.parse(await readFile(path.join(root, 'content/vocabulary.json'), 'utf8'));
-const required = new Set(vocabulary.map(word=>word.word));
+const expansion = JSON.parse(await readFile(path.join(root, 'content/vocabulary-expansion.json'), 'utf8'));
+const required = new Set([...vocabulary,...expansion].map(word=>word.word));
 for (const question of questions) {
   for (const word of question.vocabulary || []) required.add(word.word);
   if (question.part <= 4) required.add(question.audioText || question.transcript || question.prompt);

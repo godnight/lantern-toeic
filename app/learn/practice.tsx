@@ -9,7 +9,7 @@ import {Progress} from '@/components/ui/progress';
 import {toast} from 'sonner';
 import {createId,PARTS,normalizeText,type Question,type Attempt} from '@/lib/study-model';
 import {bundledLessonAudio,createBundledPlayback} from '@/lib/lesson-audio';
-export function SpeechPlayer({text,label='播放音频'}:{text:string;label?:string}){
+export function SpeechPlayer({text,label='播放音频',sourceLabel='原创练习'}:{text:string;label?:string;sourceLabel?:string}){
  const [playing,setPlaying]=useState(false);const [rate,setRate]=useState('1');const utter=useRef<SpeechSynthesisUtterance|null>(null);
  const clip=bundledLessonAudio(text);const audio=useRef<HTMLAudioElement|null>(null);const playback=useRef<ReturnType<typeof createBundledPlayback>|null>(null);
  useEffect(()=>{
@@ -27,7 +27,7 @@ export function SpeechPlayer({text,label='播放音频'}:{text:string;label?:str
   u.onend=()=>setPlaying(false);u.onerror=event=>{setPlaying(false);if(event.error!=='canceled'&&event.error!=='interrupted')toast.error('朗读失败，请检查设备的英语语音设置。');};
   utter.current=u;setPlaying(true);window.speechSynthesis.speak(u);
  };
- return <div className="audio-player">{clip&&<audio ref={audio} src={clip} preload="none" hidden/>}<button className="play-circle" aria-label={playing?'停止朗读':label} onClick={play}>{playing?<Pause size={18}/>:<Play size={18} fill="currentColor"/>}</button><div className="audio-meta"><b>{label}</b><small>{clip?'原创练习 · 内置合成语音':'原创练习 · 系统朗读'}</small></div><div className={'wave '+(playing?'playing':'')} aria-hidden="true">{Array.from({length:25},(_,i)=><i key={i} style={{height:(8+(i*13%24))+'px',animationDelay:(i*.06)+'s'}}/>)}</div><Select value={rate} onValueChange={v=>{stop();setRate(v);}}><SelectTrigger aria-label="语速" className="speed-select"><SelectValue/></SelectTrigger><SelectContent>{['0.7','0.85','1','1.15'].map(r=><SelectItem key={r} value={r}>{r}×</SelectItem>)}</SelectContent></Select></div>
+ return <div className="audio-player">{clip&&<audio ref={audio} src={clip} preload="none" hidden/>}<button className="play-circle" aria-label={playing?'停止朗读':label} onClick={play}>{playing?<Pause size={18}/>:<Play size={18} fill="currentColor"/>}</button><div className="audio-meta"><b>{label}</b><small>{sourceLabel+' · '+(clip?'内置合成语音':'系统朗读')}</small></div><div className={'wave '+(playing?'playing':'')} aria-hidden="true">{Array.from({length:25},(_,i)=><i key={i} style={{height:(8+(i*13%24))+'px',animationDelay:(i*.06)+'s'}}/>)}</div><Select value={rate} onValueChange={v=>{stop();setRate(v);}}><SelectTrigger aria-label="语速" className="speed-select"><SelectValue/></SelectTrigger><SelectContent>{['0.7','0.85','1','1.15'].map(r=><SelectItem key={r} value={r}>{r}×</SelectItem>)}</SelectContent></Select></div>
 }
 export default function Practice({queue,attempts,onAttempt,onClose,onFinish}:{queue:Question[];attempts:Attempt[];onAttempt:(a:Attempt)=>boolean;onClose:()=>void;onFinish:(minutes:number)=>void}){
  const [index,setIndex]=useState(0);const [choice,setChoice]=useState('');const [submitted,setSubmitted]=useState(false);const [correct,setCorrect]=useState(0);const [finished,setFinished]=useState(false);const [dictation,setDictation]=useState('');const [dictationDone,setDictationDone]=useState(false);const start=useRef(Date.now());const qStart=useRef(Date.now());

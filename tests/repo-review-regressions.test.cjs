@@ -14,6 +14,7 @@ function load(file, imports, globals = {}) {
     compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX}
   }).outputText;
   vm.runInNewContext(code, {exports, require: name => {
+    if (name === '@/release-manifest.json') return {default:JSON.parse(fs.readFileSync(root + '/release-manifest.json','utf8'))};
     if (!(name in imports)) throw Error('Unexpected import: ' + name);
     return imports[name];
   }, Date, Intl, Map, Set, structuredClone, crypto: {randomUUID}, Blob, URL, AbortController, ...globals}, {filename: file});

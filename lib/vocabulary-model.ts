@@ -1,13 +1,13 @@
 import {createId} from './study-model';
 export {createId as vocabularyId} from './study-model';
-export type Word = {id:string;word:string;pos:string;meaning:string;category:string;example:string;translation:string;collocation:string};
+export type Word = {id:string;word:string;pos:string;meaning:string;category:string;example:string;translation:string;collocation:string;phonetics?:string[];senses?:{pos:string;meaning:string}[];etymology?:string;forms?:string[];source?:'wiktionary'|'lantern-expansion'};
 export const CATEGORIES:Record<string,string>={office:'办公事务',people:'招聘与人事',meetings:'会议与培训',finance:'财务与账单',sales:'销售与客户',logistics:'采购与物流',travel:'出差与交通',hospitality:'酒店与餐饮',technology:'技术与通信',facilities:'场地与维护',health:'健康与福利',services:'社区与生活服务',questions:'题内词汇'};
 export type VocabularyEvent = {id:string;wordId:string;createdAt:string} & ({type:'mark';starred:boolean;revision:number}|{type:'review';grade:'again'|'remembered'});
 export type VocabularyBackup={kind:'lantern-vocabulary';schemaVersion:1;events:VocabularyEvent[]};
 export const searchText=(value:string)=>value.normalize('NFKC').toLowerCase().trim().replace(/\s+/g,' ');
 export function searchWords(words:Word[],query:string,category='all') {
  const terms=searchText(query).split(' ').filter(Boolean);
- return words.filter(w=>(category==='all'||w.category===category)&&terms.every(term=>searchText([w.word,w.meaning,w.collocation,w.example,w.translation].join(' ')).includes(term)));
+ return words.filter(w=>(category==='all'||w.category===category)&&terms.every(term=>searchText([w.word,w.meaning,w.collocation,w.example,w.translation,...(w.senses||[]).map(s=>s.meaning),...(w.forms||[])].join(' ')).includes(term)));
 }
 const ID=/^[a-zA-Z0-9-]{1,100}$/;
 export function validVocabularyEvent(value:unknown):value is VocabularyEvent {
