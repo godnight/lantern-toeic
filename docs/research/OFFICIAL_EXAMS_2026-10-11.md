@@ -2,7 +2,7 @@
 
 核查日期：2026-10-11。范围为 ETS、IIBC、YBM/韩国托业官方、托业中国，以及本地 `content/exams`。各阶段取得材料与未取得部分分别记录；未将第三方试卷加入公开仓库或产品。
 
-## 最新进展：一套 ETS 完整练习题包已生成，使用验收进行中
+## 最新进展：一套 ETS 完整练习题包通过浏览器与鸿蒙导入验收
 
 [HAU 官方免费备考材料页](https://www.hau.gr/el-gr/exams/support/individuals/educational-testing-service-ets/free-preparation-material)的同一下载记录（13065，`TOEIC Listening and Reading Complete Practice Test`）提供64页题本和四部分配套WAV。封面明确由ETS编写，版权记为2017；它是官方完整练习卷，未证明对应某场历届实考，不能据PDF的2023元数据推定考试日期。
 
