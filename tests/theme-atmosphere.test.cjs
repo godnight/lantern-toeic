@@ -11,7 +11,7 @@ const ts = require(path.join(root, 'node_modules/typescript'));
 // localStorage, and browser event/observer surfaces are simulated.
 function load(file, imports = {}, globals = {}) {
   const exports = {};
-  const source = ts.transpileModule(fs.readFileSync(path.join(root, file), 'utf8'), {
+  const source = ts.transpileModule(fs.readFileSync(path.isAbsolute(file) ? file : path.join(root, file), 'utf8'), {
     compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX},
   }).outputText;
   vm.runInNewContext(source, {
@@ -81,7 +81,7 @@ function atmosphereHarness({preference, reduced = false, hidden = false, foregro
     return () => {nativeSubscriptions--; unsubscribe();};
   }};
   const jsx = (type, props) => ({type, props});
-  const Component = load('app/learn/theme-atmosphere.tsx', {
+  const Component = load(process.env.LANTERN_ATMOSPHERE_COMPONENT || 'app/learn/theme-atmosphere.tsx', {
     react, 'react/jsx-runtime': {jsx, jsxs: jsx, Fragment: 'fragment'},
     'lucide-react': {Wind: 'Wind'}, '@/lib/native-host': trackedNative,
   }, globals).default;
@@ -107,7 +107,7 @@ function atmosphereHarness({preference, reduced = false, hidden = false, foregro
     props = {...props, ...patch};
     renderOnce();
     const all = nodes(renderOnce());
-    return {layer: all.find(node => node.props?.className === 'theme-atmosphere'), button: all.find(node => node.type === 'button')};
+    return {all, layer: all.find(node => node.props?.className === 'theme-atmosphere'), button: all.find(node => node.type === 'button')};
   }
   function cleanup() {for (const slot of slots) if (slot?.cleanup) {slot.cleanup(); slot.cleanup = undefined;}}
   return {
@@ -123,16 +123,23 @@ function atmosphereHarness({preference, reduced = false, hidden = false, foregro
   };
 }
 
-test('ambient motion starts off and an explicit toggle persists only its appearance preference', t => {
+test('new devices default on without writing storage, while explicit off survives reload', t => {
   const h = atmosphereHarness(); t.after(h.cleanup);
-  assert.equal(h.active(), false);
-  assert.equal(h.render().button.props['aria-pressed'], false);
-  h.toggle(); assert.equal(h.active(), true);
-  assert.deepEqual(h.writes, [['lantern-scene-motion-v1', 'on']]);
-  const reloaded = atmosphereHarness({preference: h.storage.get('lantern-scene-motion-v1')}); t.after(reloaded.cleanup);
-  assert.equal(reloaded.active(), true);
+  assert.equal(h.active(), true);
+  assert.equal(h.render().button.props['aria-pressed'], true);
+  assert.deepEqual(h.writes, [], 'a default is not an explicit user preference');
   h.toggle(); assert.equal(h.active(), false);
-  assert.deepEqual(h.writes, [['lantern-scene-motion-v1', 'on'], ['lantern-scene-motion-v1', 'off']]);
+  assert.deepEqual(h.writes, [['lantern-scene-motion-v1', 'off']]);
+  const reloaded = atmosphereHarness({preference: h.storage.get('lantern-scene-motion-v1')}); t.after(reloaded.cleanup);
+  assert.equal(reloaded.active(), false);
+  assert.equal(reloaded.render().button.props['aria-pressed'], false);
+  h.toggle(); assert.equal(h.active(), true);
+  assert.deepEqual(h.writes, [['lantern-scene-motion-v1', 'off'], ['lantern-scene-motion-v1', 'on']]);
+  for (const preference of ['on', '', 'unexpected']) {
+    const other = atmosphereHarness({preference}); t.after(other.cleanup);
+    assert.equal(other.active(), true, 'only explicit off disables motion');
+    assert.deepEqual(other.writes, []);
+  }
 });
 
 test('native background pauses enabled motion even when document.hidden stays false', t => {
@@ -166,12 +173,19 @@ test('browser and native visibility both have to recover before motion resumes',
   h.setHidden(false); assert.equal(h.active(), true);
 });
 
-test('the focus pause prop survives theme changes and restores only an enabled scene', t => {
+test('focus pause survives all five scene kinds with nine particles, water and glow layers', t => {
   const h = atmosphereHarness({preference: 'on'}); t.after(h.cleanup);
   assert.equal(h.active(), true);
   assert.equal(h.active({paused: true}), false);
-  assert.equal(h.active({kind: 'snow'}), false);
-  assert.equal(h.render().layer.props['data-kind'], 'snow');
+  for (const kind of ['water', 'snow', 'petals', 'crystal', 'rain']) {
+    assert.equal(h.active({kind}), false);
+    const view = h.render();
+    assert.equal(view.layer.props['data-kind'], kind);
+    assert.equal(view.layer.props['aria-hidden'], 'true');
+    assert.equal(view.all.filter(node => node.props?.className === 'ambient-particle').length, 9);
+    assert.equal(view.all.filter(node => node.props?.className === 'ambient-water').length, 1);
+    assert.equal(view.all.filter(node => node.props?.className === 'ambient-glow').length, 1);
+  }
   assert.equal(h.active({paused: false}), true);
   h.toggle();
   assert.equal(h.active({paused: true}), false);
@@ -179,7 +193,7 @@ test('the focus pause prop survives theme changes and restores only an enabled s
 });
 
 test('reduced motion disables the toggle, pauses immediately and preserves the explicit choice', t => {
-  const h = atmosphereHarness({preference: 'on', reduced: true}); t.after(h.cleanup);
+  const h = atmosphereHarness({reduced: true}); t.after(h.cleanup);
   assert.equal(h.active(), false);
   assert.equal(h.render().button.props.disabled, true);
   assert.equal(h.render().button.props['aria-pressed'], true);
@@ -188,6 +202,9 @@ test('reduced motion disables the toggle, pauses immediately and preserves the e
   assert.equal(h.render().button.props.disabled, false);
   h.setReduced(true); assert.equal(h.active(), false);
   assert.deepEqual(h.writes, []);
+  const disabled = atmosphereHarness({preference: 'off', reduced: true}); t.after(disabled.cleanup);
+  disabled.setReduced(false);
+  assert.equal(disabled.active(), false, 'system preference changes cannot override explicit off');
 });
 
 test('offscreen scenes pause without overriding focus pause when they become visible', t => {
@@ -224,9 +241,12 @@ test('batched intersection transitions use the latest scene visibility', t => {
   assert.equal(h.active(), false);
 });
 
-test('unavailable storage still permits a session-only choice and no IntersectionObserver is tolerated', t => {
+test('unavailable storage defaults on, allows session-only off and tolerates no IntersectionObserver', t => {
   const h = atmosphereHarness({storageThrows: true, intersectionAvailable: false}); t.after(h.cleanup);
-  assert.equal(h.active(), false);
+  assert.equal(h.active(), true);
+  h.toggle(); assert.equal(h.active(), false);
+  h.setNativeForeground(false); h.setNativeForeground(true);
+  assert.equal(h.active(), false, 'returning to foreground cannot erase a session-only off choice');
   h.toggle(); assert.equal(h.active(), true);
   h.setNativeForeground(false); assert.equal(h.active(), false);
   h.setNativeForeground(true); assert.equal(h.active(), true);
