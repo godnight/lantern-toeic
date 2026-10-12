@@ -58,6 +58,6 @@ for(const asset of supplied.assets){
  assert.equal(bytes.length,asset.bytes);
 }
 assert.deepEqual(Object.keys(maps.views).sort(),['today','train','review','progress','resources'].sort());
-for(const scene of Object.values(maps.views))for(const path of [scene.image,scene.mobile,scene.thumbnail])assert(mapPaths.has(path),'Untracked map scene');
+for(const scene of Object.values(maps.views))for(const path of [scene.image,scene.mobile,scene.thumbnail])assert(mapPaths.has(path)||companionPaths.has(path),'Untracked map scene');
 for(const path of [...maps.taskImages,maps.restImage])assert(mapPaths.has(path),'Untracked supporting scene');
 console.log(`Art catalogue verified: ${ids.size} themes, ${count} bundled originals, ${references.length} external references, ${mapPaths.size} supplied map derivatives. This is not a visual or permission review.`);

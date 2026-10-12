@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "artVersion": "0.3.0",
+  "artVersion": "0.3.1",
   "themes": [
     {
       "id": "hollow",
@@ -67,7 +67,9 @@
           "status": "approved"
         }
       ],
-      "download": ""
+      "download": "",
+      "paletteName": "深蓝圣巢",
+      "paletteNote": "幽蓝微光 · 安静专注"
     },
     {
       "id": "paper",
@@ -134,7 +136,9 @@
           "status": "approved"
         }
       ],
-      "download": ""
+      "download": "",
+      "paletteName": "晨光书页",
+      "paletteNote": "明亮纸色 · 清晰阅读"
     },
     {
       "id": "silk",
@@ -148,9 +152,9 @@
       "motion": "snow",
       "position": "35% 55%",
       "palette": [
-        "#171e2a",
-        "#222d3c",
-        "#e7c6b2",
+        "#1c141b",
+        "#2b1d27",
+        "#edb8c5",
         "#bbcfe6"
       ],
       "version": "2.0.0",
@@ -201,7 +205,9 @@
           "status": "approved"
         }
       ],
-      "download": ""
+      "download": "",
+      "paletteName": "绯红丝歌",
+      "paletteNote": "绯红暮色 · 温暖沉静"
     },
     {
       "id": "crystal",
@@ -268,7 +274,9 @@
           "status": "approved"
         }
       ],
-      "download": ""
+      "download": "",
+      "paletteName": "晶紫微光",
+      "paletteNote": "柔紫晶光 · 静心练习"
     }
   ]
 }

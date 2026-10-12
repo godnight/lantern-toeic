@@ -20,7 +20,7 @@ export default function ThemeLibrary({selected,onApply,onBack}:{selected:Theme;o
   <Tabs value={id} onValueChange={value=>{setId(value);setCategory('all');}}><TabsList className="resource-tabs art-theme-tabs">{catalogue.themes.map(t=><TabsTrigger value={t.id} key={t.id}>{t.name}</TabsTrigger>)}</TabsList></Tabs>
   <div className={'art-overview art-'+theme.id}>
    <div className="art-overview-image">{theme.image?<img src={theme.image} alt={theme.alt} width={1672} height={941}/>:<Palette size={70}/>}</div>
-   <div className="art-overview-copy"><p className="eyebrow">{theme.english} / {theme.version}</p><h2>{theme.name}</h2><p>{theme.direction}</p><div className="art-swatches">{theme.palette.map(color=><span key={color}><i style={{background:color}}/>{color}</span>)}</div><button className="button primary" onClick={()=>onApply(theme.id)}>{selected===theme.id?<><Check size={16}/>正在使用</>:<>使用这个主题<ArrowUpRight size={16}/></>}</button></div>
+   <div className="art-overview-copy"><p className="eyebrow">{theme.english} / {theme.version}</p><h2>{theme.name}</h2><p>{theme.direction}</p><p>界面配色：{theme.paletteName}</p><div className="art-swatches">{theme.palette.map(color=><span key={color}><i style={{background:color}}/>{color}</span>)}</div><button className="button primary" onClick={()=>onApply(theme.id)}>{selected===theme.id?<><Check size={16}/>正在使用此配色</>:<>使用这套配色<ArrowUpRight size={16}/></>}</button></div>
   </div>
   {theme.download&&<div className="art-download-row"><a className="button primary" href={theme.download} download><Download size={16}/>下载原创素材包</a><p>桌面横图＋手机竖图，含来源和使用说明。</p></div>}
   <div className="section-heading"><h2>应用素材</h2><span>{theme.assets.length} 幅 · AI 主题插画</span></div>
