@@ -508,3 +508,144 @@ test('a late GET cannot roll back a newer profile already acknowledged by anothe
   assert.equal(first.timers.size, 0,
     'Profile freshness protection alone must not create a polling loop');
 });
+
+// Actual hook with synthetic owner, storage and cloud responses.
+const chooseAppearance=(api,theme)=>api.saveTheme(theme);
+
+test('theme-only save before first Web GET preserves all existing cloud settings',async()=>{
+ let releaseGet,firstGet=true;const remote=base();
+ remote.profile={...remote.profile,name:'Cloud learner',dailyMinutes:45,lrGoal:800,theme:'paper'};
+ const expected={...remote.profile,theme:'crystal'};
+ remote.attempts=[{...attempt(randomUUID(),'2026-01-01T00:00:00.000Z'),qid:'p1-01'}];
+ const h=hookHarness(new Map(),{handle:async(url,init,request)=>{
+  if(init?.method==='POST'){
+   if(request.body.type==='profile')remote.profile=request.body.data;
+   if(request.body.type==='theme')remote.profile={...remote.profile,...request.body.data};
+   return {ok:true};
+  }
+  const snapshot={...structuredClone(remote),owner:'alice',hasProfile:true};
+  if(firstGet){firstGet=false;await new Promise(resolve=>{releaseGet=resolve;});}
+  return {ok:true,json:async()=>snapshot};
+ }});
+ h.setOnline(true);h.render('alice');await flush();
+ assert.equal(h.render().ready,true);
+ assert.equal(chooseAppearance(h.render(),'crystal'),true);
+ assert.equal(h.render().data.profile.theme,'crystal','appearance updates immediately');
+ releaseGet();await flush();await flush();await h.render().syncNow();
+ assert.deepEqual(JSON.parse(JSON.stringify(remote.profile)),expected);
+ assert.deepEqual(JSON.parse(JSON.stringify(h.render().data.profile)),expected);
+ assert.deepEqual(JSON.parse(JSON.stringify(h.render().data.attempts)),JSON.parse(JSON.stringify(remote.attempts)));
+ assert.deepEqual(h.requests.filter(x=>x.body?.type==='theme').map(x=>x.body.data),[{theme:'crystal'}]);
+ assert.equal(h.requests.some(x=>x.body?.type==='profile'),false);
+});
+
+test('theme-only save never sends stale cached settings over newer cloud settings',async()=>{
+ const remote=base();remote.profile={...remote.profile,name:'Remote update',dailyMinutes:60,lrGoal:900};
+ const cached=base();cached.profile={...cached.profile,name:'Old cache',dailyMinutes:15,lrGoal:650};
+ const h=hookHarness(new Map([['lantern-v1-alice',JSON.stringify({data:cached})]]),{handle:async(url,init,request)=>{
+  if(init?.method==='POST'){
+   if(request.body.type==='profile')remote.profile=request.body.data;
+   if(request.body.type==='theme')remote.profile={...remote.profile,...request.body.data};
+   return {ok:true};
+  }
+  return {ok:true,json:async()=>({...structuredClone(remote),owner:'alice',hasProfile:true})};
+ }});
+ h.render('alice');await flush();chooseAppearance(h.render(),'silk');
+ h.setOnline(true);await h.render().syncNow();
+ assert.equal(remote.profile.name,'Remote update');assert.equal(remote.profile.dailyMinutes,60);assert.equal(remote.profile.lrGoal,900);
+ assert.equal(h.render().data.profile.name,'Remote update');assert.equal(h.render().data.profile.theme,'silk');
+});
+
+test('rapid theme-only choices converge while a preceding upload is in flight',async()=>{
+ let releasePost,firstPost=true;const remote=base();remote.profile={...remote.profile,name:'Keep name',dailyMinutes:45};
+ const h=hookHarness(new Map(),{handle:async(url,init,request)=>{
+  if(init?.method==='POST'){
+   if(firstPost){firstPost=false;await new Promise(resolve=>{releasePost=resolve;});}
+   assert.equal(request.body.type,'theme');assert.deepEqual(Object.keys(request.body.data),['theme']);
+   remote.profile={...remote.profile,...request.body.data};return {ok:true};
+  }
+  return {ok:true,json:async()=>({...structuredClone(remote),owner:'alice',hasProfile:true})};
+ }});
+ h.setOnline(true);h.render('alice');await flush();await h.render().syncNow();
+ chooseAppearance(h.render(),'silk');await flush();
+ chooseAppearance(h.render(),'paper');chooseAppearance(h.render(),'crystal');
+ releasePost();await flush();await flush();await h.render().syncNow();
+ assert.equal(remote.profile.theme,'crystal');assert.equal(h.render().data.profile.theme,'crystal');
+ assert.equal(remote.profile.name,'Keep name');assert.equal(remote.profile.dailyMinutes,45);
+});
+
+test('legacy pending full profiles remain supported beside the new theme-only journal',async()=>{
+ const remote=base();
+ const h=hookHarness(new Map(),{handle:async(url,init,request)=>{
+  if(init?.method==='POST'){
+   if(request.body.type==='profile')remote.profile=request.body.data;
+   if(request.body.type==='theme')remote.profile={...remote.profile,...request.body.data};
+   return {ok:true};
+  }
+  return {ok:true,json:async()=>({...structuredClone(remote),owner:'alice',hasProfile:true})};
+ }});
+ h.render('alice');await flush();
+ h.render().saveProfile({...h.render().data.profile,name:'Intentional settings update',dailyMinutes:45});
+ chooseAppearance(h.render(),'crystal');h.setOnline(true);await h.render().syncNow();
+ assert.equal(remote.profile.name,'Intentional settings update');assert.equal(remote.profile.dailyMinutes,45);assert.equal(remote.profile.theme,'crystal');
+ assert.ok(h.requests.some(x=>x.body?.type==='profile'));assert.ok(h.requests.some(x=>x.body?.type==='theme'));
+ assert.equal(h.render().issues.length,0);
+});
+
+test('a rejected theme-only upload retains local appearance and pending data for retry',async()=>{
+ const h=hookHarness(new Map(),{remote:{hasProfile:true},handle:async(url,init)=>{
+  if(init?.method==='POST')return {ok:false,status:400,headers:new Headers()};
+ }});
+ h.render('alice');await flush();chooseAppearance(h.render(),'silk');
+ h.setOnline(true);await h.render().syncNow();
+ assert.equal(h.render().data.profile.theme,'silk');
+ assert.equal(JSON.parse(h.storage.get('lantern-v1-alice:profile')).theme,'silk');
+ assert.ok(h.render().issues.some(x=>x.kind==='op'&&x.status==='blocked'));
+ assert.ok(h.requests.some(x=>x.body?.type==='theme'));
+});
+
+test('stale tab theme-only choice preserves newer local settings awaiting sync', async()=>{
+ const data=base();data.profile.name='Original';
+ const storage=new Map([['lantern-v1-alice',JSON.stringify({data})],['lantern-v1-alice:profile',JSON.stringify(data.profile)]]);
+ const server={...base(),hasProfile:true,profile:{...data.profile}};
+ const handle=async(url,init,request)=>{
+  if(init?.method==='POST'){
+   if(request.body.type==='profile')server.profile=request.body.data;
+   if(request.body.type==='theme')server.profile={...server.profile,...request.body.data};
+   return {ok:true};
+  }
+  return {ok:true,json:async()=>({...structuredClone(server),owner:'alice'})};
+ };
+ const first=hookHarness(storage,{handle}),second=hookHarness(storage,{handle});
+ first.render();second.render();await flush();
+ first.render().saveProfile({...first.render().data.profile,name:'Newer local settings',dailyMinutes:45});
+ second.render().saveTheme('crystal');
+ assert.equal(JSON.parse(storage.get('lantern-v1-alice:profile')).name,'Newer local settings','A theme-only action must not roll back newer settings in durable storage');
+ second.setOnline(true);await second.render().syncNow();
+ assert.equal(server.profile.name,'Newer local settings');assert.equal(server.profile.dailyMinutes,45);assert.equal(server.profile.theme,'crystal');
+});
+
+test('older theme upload finishing after a second tab cannot replace the latest choice', async()=>{
+ const data=base();data.profile.name='Kept';
+ const storage=new Map([['lantern-v1-alice',JSON.stringify({data})],['lantern-v1-alice:profile',JSON.stringify(data.profile)]]);
+ const server={...base(),hasProfile:true,profile:{...data.profile}};
+ let releaseOldPost,enteredOldPost;
+ const entered=new Promise(resolve=>enteredOldPost=resolve);const waiting=new Promise(resolve=>releaseOldPost=resolve);
+ let hold=true;
+ const handle=(holds)=>async(url,init,request)=>{
+  if(init?.method==='POST'){
+   if(holds&&hold){hold=false;enteredOldPost();await waiting;}
+   if(request.body.type==='theme')server.profile={...server.profile,...request.body.data};
+   return {ok:true};
+  }
+  return {ok:true,json:async()=>({...structuredClone(server),owner:'alice'})};
+ };
+ const first=hookHarness(storage,{handle:handle(true)}),second=hookHarness(storage,{handle:handle(false)});
+ first.render();second.render();await flush();first.setOnline(true);await first.render().syncNow();
+ first.render().saveTheme('silk');await entered;
+ second.render().saveTheme('crystal');second.setOnline(true);await second.render().syncNow();
+ assert.equal(server.profile.theme,'crystal');
+ releaseOldPost();await flush();await flush();
+ assert.equal(JSON.parse(storage.get('lantern-v1-alice:profile')).theme,'crystal');
+ assert.equal(server.profile.theme,'crystal');
+});

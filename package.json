@@ -24,7 +24,8 @@
     "test:page-packer": "node --test tests/exam-page-packer.test.cjs",
     "test:dictionary": "node --test tests/dictionary.test.cjs tests/dictionary-ui.test.cjs",
     "test:dictionary:browser": "node tests/browser/dictionary.cjs",
-    "test:themes:browser": "node tests/browser/theme-browser.cjs"
+    "test:themes:browser": "node tests/browser/theme-browser.cjs",
+    "test:themes:web:browser": "node tests/browser/theme-browser.cjs --web"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

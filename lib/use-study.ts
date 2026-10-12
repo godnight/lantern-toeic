@@ -1,9 +1,9 @@
 'use client';
 import {useState,useEffect,useRef,useCallback} from 'react';
 import {toast} from 'sonner';
-import {createId,EMPTY_DATA,migrateStudyData,mergeData,mergeMutableRecords,validQuestionMark,validResourceTask,compareMutableRecords,uniqueById,type StudyData,type Profile,type Attempt,type Checkin,type Recording,type QuestionMark,type ResourceTask} from './study-model';
+import {createId,EMPTY_DATA,migrateStudyData,mergeData,mergeMutableRecords,validQuestionMark,validResourceTask,compareMutableRecords,uniqueById,type StudyData,type Profile,type Theme,type Attempt,type Checkin,type Recording,type QuestionMark,type ResourceTask} from './study-model';
 import {restoreStudyBackup} from './study-backup';
-type Op={id:string;owner:string|null;type:'profile'|'attempt'|'checkin'|'questionMark'|'resourceTask';data:Profile|Attempt|Checkin|QuestionMark|ResourceTask};
+type Op={id:string;owner:string|null;type:'profile'|'theme'|'attempt'|'checkin'|'questionMark'|'resourceTask';data:Profile|{theme:Theme}|Attempt|Checkin|QuestionMark|ResourceTask};
 function openAudioDB():Promise<IDBDatabase>{return new Promise((resolve,reject)=>{const r=indexedDB.open('lantern-audio',1);r.onupgradeneeded=()=>r.result.createObjectStore('audio');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 export async function putAudio(key:string,blob:Blob){const db=await openAudioDB();return new Promise<void>((resolve,reject)=>{const tx=db.transaction('audio','readwrite');tx.objectStore('audio').put(blob,key);tx.oncomplete=()=>{db.close();resolve();};tx.onerror=()=>{db.close();reject(tx.error);};});}
 export async function getAudio(key:string):Promise<Blob|undefined>{const db=await openAudioDB();return new Promise((resolve,reject)=>{const tx=db.transaction('audio');const r=tx.objectStore('audio').get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);tx.oncomplete=()=>db.close();});}
@@ -70,8 +70,18 @@ export function useStudy(owner:string|null){
      // into a permanently rejected dependent task.
      if(op.type==='resourceTask'&&pending().some(parent=>parent.type==='checkin'&&(parent.data as Checkin).id===(op.data as ResourceTask).checkinId)){waitingForCheckin.push(op);continue;}
      if(!valid())return;if(!eligible('op',op.id))continue;if(budget--<=0){dirty.current=true;break;}
-     let r:Response;try{r=(await request('/api/study',{method:'POST',headers:{'Content-Type':'application/json','X-Lantern-Owner':owner},body:JSON.stringify(op.type==='profile'?{...op,data:readSnapshot(key).profile}:op)})).response;}catch{if(!valid())return;failure('op',op.id,0);continue;}
+     const outgoing=op.type==='profile'?{...op,data:readSnapshot(key).profile}:op.type==='theme'?{...op,data:{theme:readSnapshot(key).profile.theme}}:op;
+     let r:Response;try{r=(await request('/api/study',{method:'POST',headers:{'Content-Type':'application/json','X-Lantern-Owner':owner},body:JSON.stringify(outgoing)})).response;}catch{if(!valid())return;failure('op',op.id,0);continue;}
      if(!valid())return;if(!r.ok){if([401,403,409].includes(r.status)){failure('session','account',r.status);stopped=true;break;}failure('op',op.id,r.status,undefined,r.headers?.get('Retry-After'));continue;}
+     if(op.type==='theme'){
+      const latest=readSnapshot(key).profile.theme;
+      if((outgoing.data as {theme:Theme}).theme!==latest){
+       // Another tab may have acknowledged this operation while our older
+       // request was still in flight. Reassert the newest durable choice.
+       const repair:Op={id:createId(),owner,type:'theme',data:{theme:latest}};
+       localStorage.setItem(key+':op:'+repair.id,JSON.stringify(repair));dirty.current=true;
+      }
+     }
      localStorage.setItem(key+':ack:'+op.id,'1');clear('op',op.id);
     }
     if(waitingForCheckin.some(op=>!pending().some(parent=>parent.type==='checkin'&&(parent.data as Checkin).id===(op.data as ResourceTask).checkinId)))dirty.current=true;
@@ -87,7 +97,7 @@ export function useStudy(owner:string|null){
      localStorage.setItem(key+':recording:'+rec.id,JSON.stringify({...rec,uploaded:true}));clear('recording',rec.id);persist({...current.current,recordings:current.current.recordings.map(x=>x.id===rec.id?{...x,uploaded:true}:x)});
     }
     if(stopped||!valid())break;
-    const profileBeforeRead=localStorage.getItem(key+':profile');
+    const profileBeforeRead=readSnapshot(key).profile;
     const {response:r,payload}=await request('/api/study',{cache:'no-store'},true);if(!valid())return;
     if(!r.ok){failure('session','account',r.status,undefined,r.headers?.get('Retry-After'));stopped=true;break;}
     const remote=payload as StudyData & {owner:string;hasProfile:boolean};if(!valid())return;
@@ -100,9 +110,14 @@ export function useStudy(owner:string|null){
     clear('session','account');
     // A remote acknowledgement repairs stale per-recording metadata as well as the snapshot.
     for(const rec of remote.recordings.filter(r=>r.uploaded)){localStorage.setItem(key+':recording:'+rec.id,JSON.stringify(rec));clear('recording',rec.id);}
-    const local=readSnapshot(key);const profileChanged=profileBeforeRead!==localStorage.getItem(key+':profile');
+    const local=readSnapshot(key);const queued=pending();
+    const settingsChanged=(Object.keys(local.profile) as Array<keyof Profile>).some(field=>field!=='theme'&&local.profile[field]!==profileBeforeRead[field]);
     const merged=mergeData(local,remote);
-    if(profileChanged||pending().some(x=>x.type==='profile')||!remote.hasProfile)merged.profile=local.profile;else localStorage.setItem(key+':profile',JSON.stringify(remote.profile));persist(merged);
+    // Full settings operations retain their established behavior. A theme-only
+    // choice must merge into cloud settings, especially before the first GET.
+    if(settingsChanged||queued.some(x=>x.type==='profile')||!remote.hasProfile)merged.profile=local.profile;
+    else if(local.profile.theme!==profileBeforeRead.theme||queued.some(x=>x.type==='theme'))merged.profile={...remote.profile,theme:local.profile.theme};
+    localStorage.setItem(key+':profile',JSON.stringify(merged.profile));persist(merged);
     if(!dirty.current||budget<=0)break;
    }
   }catch{if(valid()){try{failure('session','account',0);}catch{toast.error('本机存储不足，同步未完成，请导出学习记录');}}}
@@ -125,8 +140,14 @@ export function useStudy(owner:string|null){
   return()=>{generation.current++;dirty.current=false;if(retryTimer.current)clearTimeout(retryTimer.current);retryTimer.current=null;window.removeEventListener('online',online);window.removeEventListener('focus',online);window.removeEventListener('storage',changed);};
  },[key,syncNow,persist]);
  const retryIssue=(issue:SyncIssue)=>{if(activeKey.current!==key)return;try{localStorage.removeItem(key+':sync:'+issue.kind+':'+issue.id);setIssues(syncIssues(key));void syncNow();}catch{toast.error('本机存储不可用，请保留记录后重试');}};
- const enqueue=(type:Op['type'],value:Op['data'],d:StudyData):boolean=>{if(activeKey.current!==key||readOnly.current)return false;const op:Op={id:createId(),owner,type,data:value};try{readSnapshot(key);localStorage.setItem(key+':op:'+op.id,JSON.stringify(op));if(type==='profile')localStorage.setItem(key+':profile',JSON.stringify(value));}catch{toast.error('本机存储不可用或记录版本不兼容，记录尚未保存');return false;}persist(d);setSync('pending');void syncNow();return true;};
+ const enqueue=(type:Op['type'],value:Op['data'],d:StudyData):boolean=>{if(activeKey.current!==key||readOnly.current)return false;const op:Op={id:createId(),owner,type,data:value};try{readSnapshot(key);localStorage.setItem(key+':op:'+op.id,JSON.stringify(op));if(type==='profile'||type==='theme')localStorage.setItem(key+':profile',JSON.stringify(d.profile));}catch{toast.error('本机存储不可用或记录版本不兼容，记录尚未保存');return false;}persist(d);setSync('pending');void syncNow();return true;};
  const saveProfile=(p:Profile)=>enqueue('profile',p,{...current.current,profile:p});
+ const saveTheme=(theme:Theme)=>{
+  if(activeKey.current!==key||readOnly.current)return false;
+  // Another tab may have saved settings before its storage event reaches us.
+  const latest=editableSnapshot();if(!latest)return false;
+  return enqueue('theme',{theme},{...latest,profile:{...latest.profile,theme}});
+ };
  const addAttempt=(a:Attempt)=>enqueue('attempt',a,{...current.current,attempts:uniqueById([...current.current.attempts,a])});
  const addCheckin=(c:Checkin)=>enqueue('checkin',c,{...current.current,checkins:uniqueById([...current.current.checkins,c])});
  const editableSnapshot=()=>{try{return readSnapshot(key);}catch{readOnly.current=true;setSync('blocked');toast.error('学习记录版本不兼容或本机存储不可用，请更新应用后重试');return null;}};
@@ -169,5 +190,5 @@ export function useStudy(owner:string|null){
   localStorage.setItem(key+':recording:'+r.id,JSON.stringify(r));persist({...latest,recordings:uniqueById([...latest.recordings,r])});setSync('pending');void syncNow();
  };
  const recordingUrl=async(r:Recording)=>{const blob=await getAudio(key+':'+r.id);if(blob)return URL.createObjectURL(blob);if(owner&&r.uploaded)return '/api/recordings?id='+encodeURIComponent(r.id);throw Error('找不到这段本机录音，也没有已确认的云端副本');};
- return {data,ready,sync,issues,syncNow,retryIssue,saveProfile,addAttempt,addCheckin,saveQuestionMark,saveResourceTask,restoreBackup,addRecording,recordingUrl};
+ return {data,ready,sync,issues,syncNow,retryIssue,saveProfile,saveTheme,addAttempt,addCheckin,saveQuestionMark,saveResourceTask,restoreBackup,addRecording,recordingUrl};
 }

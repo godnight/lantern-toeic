@@ -16,16 +16,21 @@ const repoRequire = createRequire(path.join(REPO, 'package.json'));
 const {chromium} = repoRequire('playwright');
 const catalogue = repoRequire('./art/themes.json');
 
-const PORT = Number(process.env.LANTERN_THEME_QA_PORT || 4187);
+const MODE=process.argv.includes('--web')?'web':process.env.LANTERN_THEME_QA_MODE||'native';
+assert.ok(['native','web'].includes(MODE),'LANTERN_THEME_QA_MODE must be native or web');
+const PORT = Number(process.env.LANTERN_THEME_QA_PORT || (MODE==='web'?4188:4187));
 assert.ok(Number.isInteger(PORT) && PORT >= 1024 && PORT <= 65535, 'Invalid local QA port');
 const ORIGIN = `http://127.0.0.1:${PORT}`;
 let OUT;
-const report = {scope:'Theme QA on an owned local production build; isolated headless browser only',origin:ORIGIN,
+const report = {scope:'Independent navigation scenes and palettes in isolated '+MODE+' frontend QA',mode:MODE,origin:ORIGIN,
   limitations:['Desktop Chrome at four viewport widths is not physical-device or ArkWeb acceptance.', 'Screenshot inspection remains a separate visual review step.'],
   startedAt:new Date().toISOString(),steps:[],screenshots:[],pageErrors:[],consoleErrors:[],blockedExternal:[],httpErrors:[]};
 let browser, context, page, preview, cleanupPromise;
 let ownsOutput = false;
 const ownerToken = crypto.randomBytes(24).toString('hex');
+const QA_OWNER='synthetic-theme-qa-'+ownerToken;
+let webFixture;
+let mockCalls=[];
 
 async function allocateOutput() {
   if (process.env.LANTERN_THEME_QA_DIR) {
@@ -54,19 +59,40 @@ async function launchBrowser() {
   report.browser = {executable:executablePath || chromium.executablePath(),playwright:repoRequire('playwright/package.json').version};
   return chromium.launch({...(executablePath ? {executablePath} : {}),headless:true});
 }
+async function prepareWebFixture(){
+ const directory=path.join(OUT,'web-fixture');await fs.mkdir(directory);
+ const posix=file=>file.replaceAll('\\','/');
+ const entry=`import React from ${JSON.stringify(posix(repoRequire.resolve('react')))};
+import {createRoot} from ${JSON.stringify(posix(repoRequire.resolve('react-dom/client')))};
+import StudyApp from ${JSON.stringify(posix(path.join(REPO,'app/study-app.tsx')))};
+import ${JSON.stringify(posix(path.join(REPO,'app/globals.css')))};
+createRoot(document.getElementById('root')).render(React.createElement(React.StrictMode,null,React.createElement(StudyApp,{owner:${JSON.stringify(QA_OWNER)}})));
+`;
+ await fs.writeFile(path.join(directory,'entry.tsx'),entry,{flag:'wx'});
+ await fs.writeFile(path.join(directory,'index.html'),'<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="root"></div><script type="module" src="./entry.tsx"></script></body></html>',{flag:'wx'});
+ const config=`import react from ${JSON.stringify(pathToFileURL(repoRequire.resolve('@vitejs/plugin-react')).href)};
+import tailwind from ${JSON.stringify(pathToFileURL(repoRequire.resolve('@tailwindcss/postcss')).href)};
+export default {root:${JSON.stringify(directory)},base:'./',publicDir:${JSON.stringify(path.join(REPO,'public'))},plugins:[react()],css:{postcss:{plugins:[tailwind()]}},resolve:{alias:{'@':${JSON.stringify(REPO)}},dedupe:[]},build:{outDir:'dist',emptyOutDir:true}};
+`;
+ const configFile=path.join(directory,'vite.config.mjs');await fs.writeFile(configFile,config,{flag:'wx'});
+ report.webFixture={syntheticOwner:QA_OWNER,directory,studyAppSha256:crypto.createHash('sha256').update(await fs.readFile(path.join(REPO,'app/study-app.tsx'))).digest('hex'),nativeMode:false,api:'context-local in-memory /api/study mock; no real login or production endpoint'};
+ report.limitations.push('Web fixture tests real StudyApp with nativeMode=false and a synthetic owner; authentication, SSR and D1/R2 are not exercised.');
+ return{configFile,directory};
+}
 async function startPreview() {
-  await fs.access(path.join(REPO,'mobile/dist/index.html')).catch(()=>{throw new Error('Build the shared production frontend first: npm --prefix mobile run build');});
+ if(MODE==='web')webFixture=await prepareWebFixture();
+ else await fs.access(path.join(REPO,'mobile/dist/index.html')).catch(()=>{throw new Error('Build the shared production frontend first: npm --prefix mobile run build');});
   // Friendly early failure, followed by strictPort inside the actual Vite process.
   await new Promise((resolve,reject)=>{
     const probe=net.createServer(); probe.once('error',error=>reject(new Error(`Local QA port ${PORT} is unavailable: ${error.code}`)));
     probe.listen({host:'127.0.0.1',port:PORT,exclusive:true},()=>probe.close(resolve));
   });
-  const config = {vite:pathToFileURL(repoRequire.resolve('vite')).href,configFile:path.join(REPO,'mobile/vite.config.ts'),port:PORT,token:ownerToken};
-  const worker = `const c=JSON.parse(process.argv[1]); (async()=>{const {preview}=await import(c.vite);const server=await preview({configFile:c.configFile,logLevel:'error',preview:{host:'127.0.0.1',port:c.port,strictPort:true,open:false},plugins:[{name:'lantern-owned-qa-preview',configurePreviewServer(s){s.middlewares.use((req,res,next)=>{res.setHeader('X-Lantern-QA-Owner',c.token);next();});}}]});process.send({ready:true,pid:process.pid}); const close=()=>server.httpServer.close(()=>process.exit(0)); process.on('SIGTERM',close); process.on('SIGINT',close);})().catch(error=>{console.error(error.stack||error);process.exit(1);});`;
+  const config = {vite:pathToFileURL(repoRequire.resolve('vite')).href,configFile:webFixture?.configFile||path.join(REPO,'mobile/vite.config.ts'),buildFirst:MODE==='web',port:PORT,token:ownerToken};
+  const worker = `const c=JSON.parse(process.argv[1]); (async()=>{const {build,preview}=await import(c.vite);if(c.buildFirst)await build({configFile:c.configFile,configLoader:'native',logLevel:'error'});const server=await preview({configFile:c.configFile,...(c.buildFirst?{configLoader:'native'}:{}),logLevel:'error',preview:{host:'127.0.0.1',port:c.port,strictPort:true,open:false},plugins:[{name:'lantern-owned-qa-preview',configurePreviewServer(s){s.middlewares.use((req,res,next)=>{res.setHeader('X-Lantern-QA-Owner',c.token);next();});}}]});process.send({ready:true,pid:process.pid}); const close=()=>server.httpServer.close(()=>process.exit(0)); process.on('SIGTERM',close); process.on('SIGINT',close);})().catch(error=>{console.error(error.stack||error);process.exit(1);});`;
   preview = spawn(process.execPath,['-e',worker,JSON.stringify(config)],{cwd:REPO,stdio:['ignore','pipe','pipe','ipc'],windowsHide:true,detached:process.platform!=='win32'});
   let logs=''; const capture=data=>{logs=(logs+data.toString()).slice(-12000);}; preview.stdout.on('data',capture);preview.stderr.on('data',capture);
   await new Promise((resolve,reject)=>{
-    const timeout=setTimeout(()=>reject(new Error('Owned Vite preview did not become ready: '+logs)),30000);
+    const timeout=setTimeout(()=>reject(new Error('Owned Vite preview did not become ready: '+logs)),120000);
     preview.once('error',error=>{clearTimeout(timeout);reject(error);});
     preview.once('exit',(code,signal)=>{clearTimeout(timeout);reject(new Error(`Owned Vite preview exited (${code}/${signal}): ${logs}`));});
     preview.once('message',message=>{if(message?.ready && message.pid===preview.pid){clearTimeout(timeout);resolve();}else{clearTimeout(timeout);reject(new Error('Unexpected preview readiness message'));}});
@@ -123,147 +149,126 @@ for (const signal of ['SIGINT','SIGTERM']) process.once(signal,()=>{
 });
 
 
+
 const WIDTHS=[320,390,840,1440];
-const EXPECTED_THEMES=[
-  {id:'hollow',slug:'blue-lake',motion:'water'},
-  {id:'paper',slug:'white-flowers',motion:'petals'},
-  {id:'silk',slug:'snowy-ridge',motion:'snow'},
-  {id:'crystal',slug:'crystal-peak',motion:'crystal'}
+const PALETTES=['hollow','paper','silk','crystal'];
+const BACKGROUNDS={hollow:'rgb(12, 24, 38)',paper:'rgb(236, 237, 230)',silk:'rgb(28, 20, 27)',crystal:'rgb(27, 25, 41)'};
+let paletteSamples=[];
+const SCENES=[
+ {id:'today',label:'今日旅程',slug:'blue-lake',image:'/images/themes-v3/blue-lake-wide.webp',mobile:'/images/themes-v3/blue-lake-mobile.webp',thumbnail:'/images/themes-v3/blue-lake-thumb.webp',motion:'water'},
+ {id:'train',label:'训练之境',slug:'crystal-peak',image:'/images/themes-v3/crystal-peak-wide.webp',mobile:'/images/themes-v3/crystal-peak-mobile.webp',thumbnail:'/images/themes-v3/crystal-peak-thumb.webp',motion:'crystal'},
+ {id:'review',label:'温故知新',slug:'city-of-tears',image:'/images/maps/city-of-tears.webp',mobile:'/images/maps/city-of-tears-mobile.webp',thumbnail:'/images/maps/city-of-tears-thumb.webp',motion:'none'},
+ {id:'progress',label:'成长足迹',slug:'snowy-ridge',image:'/images/themes-v3/snowy-ridge-wide.webp',mobile:'/images/themes-v3/snowy-ridge-mobile.webp',thumbnail:'/images/themes-v3/snowy-ridge-thumb.webp',motion:'snow'},
+ {id:'resources',label:'学习书库',slug:'white-flowers',image:'/images/themes-v3/white-flowers-wide.webp',mobile:'/images/themes-v3/white-flowers-mobile.webp',thumbnail:'/images/themes-v3/white-flowers-thumb.webp',motion:'petals'}
 ];
+const TASK_IMAGES=['/images/maps/listening.webp','/images/maps/reading.webp','/images/maps/speaking.webp'];
 const MOTION_KEY='lantern-scene-motion-v1';
-async function step(name, action) {
-  const begin=Date.now();
-  try {const details=await action();report.steps.push({name,status:'passed',elapsedMs:Date.now()-begin,...(details===undefined?{}:{details})});console.log(JSON.stringify({step:name,status:'passed'}));}
-  catch(error){report.steps.push({name,status:'failed',elapsedMs:Date.now()-begin,error:String(error.stack||error)});throw error;}
+const labelOf=theme=>theme.paletteName||theme.name;
+async function step(name,action){const began=Date.now();try{const details=await action();report.steps.push({name,status:'passed',elapsedMs:Date.now()-began,...(details===undefined?{}:{details})});console.log(JSON.stringify({step:name,status:'passed'}));}catch(error){report.steps.push({name,status:'failed',elapsedMs:Date.now()-began,error:String(error.stack||error)});throw error;}}
+async function eventually(check,message,timeout=15000){const end=Date.now()+timeout;let last;do{try{const result=await check();if(result)return result;}catch(error){last=error;}await new Promise(resolve=>setTimeout(resolve,100));}while(Date.now()<end);throw new Error(message+(last?': '+last.message:''));}
+async function screenshot(name){const file=path.join(OUT,name+'.png');await page.screenshot({path:file,fullPage:true,animations:'disabled'});report.screenshots.push(file);}
+function webState(){return{owner:QA_OWNER,schemaVersion:2,profile:{name:'Synthetic theme QA',lrGoal:650,speakingGoal:0,examDate:'2026-12-20',dailyMinutes:25,timezone:'Asia/Shanghai',theme:'hollow',weeklyTarget:4,onboarded:true},hasProfile:false,attempts:[],checkins:[],recordings:[],questionMarks:[],resourceTasks:[]};}
+async function freshPage(width){
+ if(context)await context.close();const remote=webState();
+ context=await browser.newContext({viewport:{width,height:width===1440?1000:900},locale:'zh-CN',timezoneId:'Asia/Shanghai',reducedMotion:'no-preference',serviceWorkers:'block'});
+ await context.route('**/*',async route=>{
+  const request=route.request(),url=new URL(request.url());
+  if((url.protocol==='http:'||url.protocol==='https:')&&url.origin!==ORIGIN){report.blockedExternal.push(url.origin+url.pathname);return route.abort('blockedbyclient');}
+  if(MODE==='web'&&url.pathname==='/api/study'){
+   const row={width,method:request.method(),at:Date.now()};mockCalls.push(row);
+   if(request.method()==='GET')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(remote)});
+   if(request.method()==='POST'){
+    try{const operation=request.postDataJSON();row.type=operation.type;row.theme=operation.data?.theme;
+    assert.equal(request.headers()['x-lantern-owner'],QA_OWNER,'Web UI must identify the synthetic owner');
+    assert.equal(operation.type,'theme','Palette UI must use the dedicated theme operation');assert.deepEqual(Object.keys(operation.data),['theme'],'Theme operation must not send the entire profile');assert.ok(PALETTES.includes(operation.data.theme));
+    remote.profile={...remote.profile,theme:operation.data.theme};remote.hasProfile=true;return route.fulfill({status:200,contentType:'application/json',body:'{"ok":true}'});
+    }catch(error){report.mockErrors||=[];report.mockErrors.push(String(error.stack||error));return route.fulfill({status:422,contentType:'application/json',body:JSON.stringify({error:'Synthetic QA contract failure'})});}
+   }
+   return route.fulfill({status:405,body:'Unsupported QA API method'});
+  }
+  return route.continue();
+ });
+ page=await context.newPage();page.setDefaultTimeout(15000);
+ page.on('pageerror',error=>report.pageErrors.push(String(error)));
+ page.on('console',msg=>{if(msg.type()==='error')report.consoleErrors.push(msg.text().slice(0,1000));});
+ page.on('response',response=>{if(response.status()>=400&&response.url().startsWith(ORIGIN)&&!response.url().endsWith('/favicon.ico'))report.httpErrors.push({url:response.url(),status:response.status()});});
+ await page.goto(ORIGIN+'/',{waitUntil:'networkidle'});assert.equal(new URL(page.url()).origin,ORIGIN);await ready();
 }
-async function eventually(check,message,timeout=15000) {
-  const until=Date.now()+timeout;let last;
-  do{try{const result=await check();if(result)return result;}catch(error){last=error;}
-    await new Promise(resolve=>setTimeout(resolve,100));
-  }while(Date.now()<until);
-  throw new Error(message+(last?': '+last.message:''));
-}
-async function screenshot(name) {
-  const file=path.join(OUT,name+'.png');await page.screenshot({path:file,fullPage:true,animations:'disabled'});report.screenshots.push(file);
-}
-async function freshPage(width) {
-  if(context)await context.close();
-  context=await browser.newContext({viewport:{width,height:width===1440?1000:900},locale:'zh-CN',timezoneId:'Asia/Shanghai',reducedMotion:'no-preference',serviceWorkers:'block'});
-  await context.route('**/*',route=>{
-    const url=new URL(route.request().url());
-    if((url.protocol==='http:'||url.protocol==='https:')&&url.origin!==ORIGIN){report.blockedExternal.push(url.origin+url.pathname);return route.abort('blockedbyclient');}
-    return route.continue();
-  });
-  page=await context.newPage();page.setDefaultTimeout(15000);
-  page.on('pageerror',error=>report.pageErrors.push(String(error)));
-  page.on('console',msg=>{if(msg.type()==='error')report.consoleErrors.push(msg.text().slice(0,1000));});
-  page.on('response',response=>{if(response.status()>=400&&response.url().startsWith(ORIGIN)&&!response.url().endsWith('/favicon.ico'))report.httpErrors.push({url:response.url(),status:response.status()});});
-  await page.goto(ORIGIN+'/',{waitUntil:'networkidle'});
-  assert.equal(new URL(page.url()).origin,ORIGIN);
-  await ready();
-}
-async function ready(){await eventually(()=>page.getByRole('button',{name:'开始今日练习',exact:true}).isEnabled(),'Today practice did not become ready');}
+async function ready(){await eventually(()=>page.getByRole('button',{name:'开始今日练习',exact:true}).isEnabled(),'Today screen did not become ready');}
+async function paletteColors(id,width){const colors=await page.locator('.atlas-workspace').evaluate(el=>({background:getComputedStyle(el).backgroundColor,foreground:getComputedStyle(el).color}));assert.equal(colors.background,BACKGROUNDS[id],'Palette '+id+' is selected but its visible workspace background is overridden');paletteSamples.push({width,id,...colors});return colors;}
 async function rootTheme(id){await page.waitForFunction(expected=>document.documentElement.dataset.theme===expected,id);}
 async function active(value){await eventually(async()=>await page.locator('.theme-atmosphere').getAttribute('data-active')===String(value),'Atmosphere active state should be '+value);}
-async function closeModal(){await page.keyboard.press('Escape');await eventually(async()=>await page.getByRole('dialog').count()===0,'Modal did not close with Escape');}
+async function closeModal(){await page.keyboard.press('Escape');await eventually(async()=>await page.getByRole('dialog').count()===0,'Dialog did not close');}
 async function openPicker(){await page.getByRole('button',{name:'选择主题',exact:true}).click();await page.getByRole('dialog',{name:'选择主题',exact:true}).waitFor({state:'visible'});}
-async function selectTheme(theme){
-  await openPicker();
-  const radio=page.getByRole('dialog',{name:'选择主题',exact:true}).getByRole('radio',{name:theme.name,exact:true});
-  await radio.click();await eventually(()=>radio.isChecked(),'Selected theme radio did not become checked');await rootTheme(theme.id);await closeModal();
+async function finishPicker(){await page.getByRole('dialog',{name:'选择主题',exact:true}).getByRole('button',{name:'完成',exact:true}).click();await eventually(async()=>await page.getByRole('dialog').count()===0,'Done button did not close picker');}
+async function navigate(scene,width){const button=width<768?page.locator('.mobile-nav').getByRole('button',{name:scene.label,exact:true}):page.locator('.study-sidebar .atlas-nav').filter({hasText:scene.label});await button.click();await page.locator('.atlas-workspace[data-region="'+scene.id+'"]').waitFor({state:'visible'});await page.locator('.region-map').scrollIntoViewIfNeeded();}
+async function imageInfo(locator){await eventually(()=>locator.evaluate(img=>img.complete&&img.naturalWidth>0),'Image failed to decode');return locator.evaluate(img=>({path:new URL(img.currentSrc).pathname,width:img.naturalWidth,height:img.naturalHeight,alt:img.alt,fit:getComputedStyle(img).objectFit,position:getComputedStyle(img).objectPosition}));}
+async function hero(scene,width){
+ const image=page.locator('.region-art img'),expected=width<=767?scene.mobile:scene.image;
+ await eventually(()=>image.evaluate((img,wanted)=>img.complete&&img.naturalWidth>0&&new URL(img.currentSrc).pathname===wanted,expected),'Wrong/undecoded '+scene.id+' hero at '+width);
+ const info=await imageInfo(image);assert.ok(info.width>=600&&info.height>=330,'Unexpected low-resolution hero');
+ if(scene.motion==='none')assert.equal(await page.locator('.scene-motion-toggle').count(),0,'Static review scene must not offer unrelated motion');
+ else assert.equal(await page.locator('.theme-atmosphere').getAttribute('data-kind'),scene.motion,'Motion must follow navigation scene, not global palette');
+ return info;
 }
-async function layout(stage){
-  const dimensions=await page.evaluate(()=>({width:innerWidth,clientWidth:document.documentElement.clientWidth,documentWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,
-    overflowing:[...document.querySelectorAll('main,section,article,button,[role=dialog]')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&(r.left < -1||r.right > innerWidth+1);}).slice(0,12).map(el=>({tag:el.tagName,cls:String(el.className),right:el.getBoundingClientRect().right}))}));
-  assert.ok(dimensions.documentWidth<=dimensions.clientWidth+1,stage+' document horizontal overflow: '+JSON.stringify(dimensions));
-  assert.ok(dimensions.bodyWidth<=dimensions.clientWidth+1,stage+' body horizontal overflow: '+JSON.stringify(dimensions));
-  const dialog=page.getByRole('dialog');
-  if(await dialog.count()){
-    const box=await dialog.boundingBox();assert.ok(box&&box.x>=-1&&box.x+box.width<=dimensions.width+1,stage+' dialog extends beyond viewport');
-  }
-  return dimensions;
-}
-async function hero(theme,width){
-  const expected=width<=767?theme.portrait:theme.image;
-  const img=page.locator('.region-art img');
-  await eventually(()=>img.evaluate((image,expectedPath)=>image.complete&&image.naturalWidth>0&&new URL(image.currentSrc).pathname===expectedPath,expected),'Wrong or undecoded hero '+theme.id+' at '+width);
-  const info=await img.evaluate(image=>({src:new URL(image.currentSrc).pathname,width:image.naturalWidth,height:image.naturalHeight,alt:image.alt,fit:getComputedStyle(image).objectFit,box:{width:image.getBoundingClientRect().width,height:image.getBoundingClientRect().height}}));
-  assert.equal(info.alt,theme.alt);assert.ok(info.width>=900&&info.height>=500,'Hero is unexpectedly low resolution');
-  if(width<=1000){assert.equal(info.fit,'contain','Mobile/tablet hero should preserve the complete character');assert.ok(Math.abs(info.box.width/info.box.height-16/9)<0.025,'Mobile hero should retain landscape aspect ratio');}
-  assert.equal(await page.locator('.theme-atmosphere').getAttribute('data-kind'),theme.motion);
-  // Other visible image elements must decode too; offscreen lazy images are not forced into the page.
-  const visibleImages=page.locator('img:visible');
-  for(let i=0;i<await visibleImages.count();i++){
-    const image=visibleImages.nth(i),bounds=await image.boundingBox();
-    if(bounds&&bounds.y<900&&bounds.y+bounds.height>0)await eventually(()=>image.evaluate(el=>el.complete&&el.naturalWidth>0),'Visible image failed to decode');
-  }
-  return info;
-}
-async function preference(expected){assert.equal(await page.evaluate(key=>localStorage.getItem(key),MOTION_KEY),expected);}
-async function computedMotion(expected){
-  const styles=await page.locator('.ambient-particle').evaluateAll(nodes=>nodes.map(node=>({state:getComputedStyle(node).animationPlayState,name:getComputedStyle(node).animationName,opacity:getComputedStyle(node).opacity})));
-  assert.equal(styles.length,9);
-  if(expected==='reduced')assert.ok(styles.every(style=>style.name==='none'&&Number(style.opacity)===0),'Reduced-motion must hide and remove particle animations');
-  else assert.ok(styles.every(style=>style.state===expected),'Unexpected particle play states: '+JSON.stringify(styles));
-  return styles;
+async function layout(stage){const dimensions=await page.evaluate(()=>({width:innerWidth,clientWidth:document.documentElement.clientWidth,documentWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,overflowing:[...document.querySelectorAll('main,section,article,button,[role=dialog]')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&(r.left < -1||r.right > innerWidth+1);}).slice(0,12).map(el=>({tag:el.tagName,cls:String(el.className),right:el.getBoundingClientRect().right}))}));assert.ok(dimensions.documentWidth<=dimensions.clientWidth+1,stage+' document overflow '+JSON.stringify(dimensions));assert.ok(dimensions.bodyWidth<=dimensions.clientWidth+1,stage+' body overflow '+JSON.stringify(dimensions));if(await page.getByRole('dialog').count()){const box=await page.getByRole('dialog').boundingBox();assert.ok(box&&box.x>=-1&&box.x+box.width<=dimensions.width+1,'Dialog exceeds viewport');}return dimensions;}
+async function preference(value){assert.equal(await page.evaluate(key=>localStorage.getItem(key),MOTION_KEY),value);}
+async function computedMotion(expected){const styles=await page.locator('.ambient-particle').evaluateAll(nodes=>nodes.map(node=>({state:getComputedStyle(node).animationPlayState,name:getComputedStyle(node).animationName,opacity:getComputedStyle(node).opacity})));assert.equal(styles.length,9);if(expected==='reduced')assert.ok(styles.every(style=>style.name==='none'&&Number(style.opacity)===0),'Reduced motion still animates');else assert.ok(styles.every(style=>style.state===expected),'Unexpected particle state '+JSON.stringify(styles));return styles;}
+async function choosePalette(theme,method){
+ await openPicker();const dialog=page.getByRole('dialog',{name:'选择主题',exact:true}),radio=dialog.getByRole('radio',{name:labelOf(theme),exact:true}),card=dialog.locator('.theme-option').filter({has:page.getByRole('radio',{name:labelOf(theme),exact:true})});
+ if(method==='image')await card.locator('.theme-image').click();
+ else if(method==='title')await card.getByRole('heading',{name:labelOf(theme),exact:true}).click();
+ else if(method==='radio')await radio.click();
+ else{
+  // Radix defers arrow focus to a macrotask. Keep the key down through that focus
+  // change, as a real keypress does, instead of racing it with a zero-delay keyup.
+  const previous=catalogue.themes.find(theme=>theme.id==='crystal');await dialog.getByRole('radio',{name:labelOf(previous),exact:true}).focus();
+  await page.keyboard.down('ArrowRight');try{await eventually(()=>radio.isChecked(),'ArrowRight did not wrap crystal to hollow');}finally{await page.keyboard.up('ArrowRight');}
+ }
+ await eventually(()=>radio.isChecked(),method+' did not select '+theme.id);await rootTheme(theme.id);
+ assert.equal(await dialog.isVisible(),true,'Picker must stay open while comparing palettes');
+ await layout('palette-'+method);return{dialog,radio};
 }
 (async()=>{
-  await allocateOutput();
-  assert.deepEqual(catalogue.themes.map(theme=>theme.id),EXPECTED_THEMES.map(theme=>theme.id),'Expected the four approved themes only');
-  for(const expected of EXPECTED_THEMES){const actual=catalogue.themes.find(theme=>theme.id===expected.id);assert.equal(actual.slug,expected.slug);assert.equal(actual.motion,expected.motion);}
-  await startPreview();browser=await launchBrowser();
-  for(const width of WIDTHS){
-    await step(`${width}px: fresh context defaults to blue lake and no motion`,async()=>{
-      await freshPage(width);await rootTheme('hollow');await active(false);assert.equal(await page.getByRole('button',{name:'开启轻动效',exact:true}).getAttribute('aria-pressed'),'false');return{width,emptyIsolatedContext:true};
-    });
-    await step(`${width}px: picker presents four decoded previews without overflow`,async()=>{
-      await openPicker();const modal=page.getByRole('dialog',{name:'选择主题',exact:true});assert.equal(await modal.getByRole('radio').count(),4);
-      for(const theme of catalogue.themes)await modal.getByRole('radio',{name:theme.name,exact:true}).waitFor({state:'visible'});
-      const images=await modal.locator('.theme-image').evaluateAll(async nodes=>Promise.all(nodes.map(async node=>{
-        const raw=getComputedStyle(node).backgroundImage;const match=raw.match(/^url\(["']?(.*?)["']?\)$/);if(!match)throw new Error('Theme preview has no image');
-        const image=new Image();image.src=match[1];await image.decode();return{path:new URL(image.src).pathname,width:image.naturalWidth,height:image.naturalHeight};
-      })));
-      assert.equal(images.length,4);for(const theme of catalogue.themes)assert.ok(images.some(image=>image.path===theme.image&&image.width>0),'Missing picker image '+theme.id);
-      const dimensions=await layout('theme-picker');await screenshot(`theme-picker-${width}`);await closeModal();return{images,dimensions};
-    });
-    for(const theme of catalogue.themes){
-      await step(`${width}px: ${theme.slug} selection, image, motion and reload persistence`,async()=>{
-        await selectTheme(theme);const before=await hero(theme,width);await active(false);
-        await page.getByRole('button',{name:'开启轻动效',exact:true}).click();await active(true);await computedMotion('running');await preference('on');
-        await page.reload({waitUntil:'networkidle'});await ready();await rootTheme(theme.id);await hero(theme,width);await active(true);await preference('on');
-        await page.getByRole('button',{name:'关闭轻动效',exact:true}).click();await active(false);await computedMotion('paused');await preference('off');
-        await page.reload({waitUntil:'networkidle'});await ready();await rootTheme(theme.id);await hero(theme,width);await active(false);await preference('off');
-        const dimensions=await layout(theme.slug);await screenshot(`${theme.slug}-${width}`);return{image:before,dimensions,themeAndBothMotionPreferencesSurviveReload:true};
-      });
-    }
-    await step(`${width}px: open theme and practice modals pause motion, close resumes`,async()=>{
-      await page.getByRole('button',{name:'开启轻动效',exact:true}).click();await active(true);
-      await openPicker();await active(false);await computedMotion('paused');await closeModal();await active(true);
-      await page.getByRole('button',{name:'开始今日练习',exact:true}).click();await page.locator('.practice-dialog').waitFor({state:'visible'});
-      await active(false);await computedMotion('paused');const dimensions=await layout('practice-modal');await screenshot(`practice-modal-${width}`);
-      await closeModal();await page.locator('.region-map').scrollIntoViewIfNeeded();await active(true);await preference('on');return{themeDialog:true,practiceDialog:true,dimensions};
-    });
-    await step(`${width}px: prefers-reduced-motion disables effects without erasing preference`,async()=>{
-      await page.emulateMedia({reducedMotion:'reduce'});await active(false);
-      const button=page.getByRole('button',{name:'系统已减弱动态',exact:true});await eventually(()=>button.isDisabled(),'Reduced-motion toggle should be disabled');assert.equal(await button.getAttribute('aria-pressed'),'true');await computedMotion('reduced');await preference('on');
-      await page.reload({waitUntil:'networkidle'});await ready();await active(false);await computedMotion('reduced');await preference('on');
-      await page.emulateMedia({reducedMotion:'no-preference'});await active(true);await computedMotion('running');await preference('on');
-      await page.getByRole('button',{name:'关闭轻动效',exact:true}).click();await active(false);await preference('off');return{disabledWhileReduced:true,preferenceRetained:true,resumedAfterSettingRestored:true};
-    });
-  }
-  await step('no uncaught JavaScript errors, failed local requests or external traffic',async()=>{
-    assert.deepEqual(report.pageErrors,[]);assert.deepEqual(report.httpErrors,[]);assert.deepEqual(report.blockedExternal,[]);assert.deepEqual(report.consoleErrors,[]);
-    return{pageErrors:0,httpErrors:0,blockedExternal:0,consoleErrors:0};
+ await allocateOutput();assert.deepEqual(catalogue.themes.map(theme=>theme.id),PALETTES,'Expected four palette IDs in radio order');
+ await startPreview();browser=await launchBrowser();
+ for(const width of WIDTHS){
+  await step(`${width}px: isolated fresh ${MODE} entry, default palette and blue lake`,async()=>{await freshPage(width);await rootTheme('hollow');await active(false);return await hero(SCENES[0],width);});
+  await step(`${width}px: three distinct task images and original sidebar artwork`,async()=>{
+   const tasks=page.locator('.task-scene');assert.equal(await tasks.count(),3);const taskImages=[];
+   for(let index=0;index<3;index++){const task=tasks.nth(index);await task.scrollIntoViewIfNeeded();const info=await imageInfo(task);assert.equal(info.path,TASK_IMAGES[index]);taskImages.push(info);}
+   if(width>=768){for(const scene of SCENES){const image=page.locator('.study-sidebar .atlas-nav').filter({hasText:scene.label}).locator('img');const info=await imageInfo(image);assert.equal(info.path,scene.thumbnail,'Wrong sidebar thumbnail for '+scene.id);}const rest=page.locator('.rest-stop img');await rest.scrollIntoViewIfNeeded();assert.equal((await imageInfo(rest)).path,'/images/maps/dirtmouth.webp');}
+   await page.locator('.region-map').scrollIntoViewIfNeeded();return{taskImages,sidebarChecked:width>=768};
   });
-  report.status='passed';
-})().catch(async error=>{
-  report.status='failed';report.error=String(error.stack||error);
-  if(page&&!page.isClosed()){try{await screenshot('failure');report.lastUrl=page.url();report.lastBody=(await page.locator('body').innerText()).slice(0,15000);}catch{}}
-  process.exitCode=1;
-}).finally(async()=>{
-  try{await cleanup();}catch(error){report.status='failed';report.cleanupError=String(error.stack||error);process.exitCode=1;}
-  report.finishedAt=new Date().toISOString();report.outputDirectory=OUT;
-  if(ownsOutput)await fs.writeFile(path.join(OUT,'result.json'),JSON.stringify(report,null,2),{flag:'wx'});
-  console.log(JSON.stringify({status:report.status,passed:report.steps.filter(step=>step.status==='passed').length,failed:report.steps.filter(step=>step.status==='failed').length,output:OUT,error:report.error?.split('\n').slice(0,3).join('\n')}));
-  if(report.cleanupError)setTimeout(()=>process.exit(1),100).unref();
-});
+  for(const scene of SCENES)await step(`${width}px: ${scene.id} keeps its own scene, motion and layout`,async()=>{
+   await navigate(scene,width);const image=await hero(scene,width);const dimensions=await layout(scene.id);
+   if(scene.motion!=='none'){await page.getByRole('button',{name:'开启轻动效',exact:true}).click();await active(true);await computedMotion('running');await page.getByRole('button',{name:'关闭轻动效',exact:true}).click();await active(false);}
+   await screenshot(`${scene.id}-${width}`);return{image,motion:scene.motion,dimensions};
+  });
+  const interactions=[['paper','image'],['silk','title'],['crystal','radio'],['hollow','keyboard']];
+  for(const [index,[id,method]]of interactions.entries())await step(`${width}px: palette ${id} by ${method}, fixed scenes and reload`,async()=>{
+   const scene=SCENES[index+1],theme=catalogue.themes.find(theme=>theme.id===id);await navigate(scene,width);const before=await hero(scene,width);await choosePalette(theme,method);
+   if(index===0){assert.equal(await page.getByRole('dialog').getByRole('radio').count(),4);await screenshot(`palette-picker-${width}`);}
+   await finishPicker();const colors=await paletteColors(id,width);assert.deepEqual(await hero(scene,width),before,'Palette changed current navigation artwork');
+   await page.reload({waitUntil:'networkidle'});await ready();await rootTheme(id);assert.deepEqual(await paletteColors(id,width),colors,'Visible palette colors changed after reload');await hero(SCENES[0],width);
+   await navigate(scene,width);await hero(scene,width);const dimensions=await layout('palette-'+id);await screenshot(`palette-${id}-${width}`);
+   return{interaction:method,currentScene:scene.id,theme:id,colors,dimensions,unchangedSceneAfterPaletteAndReload:true};
+  });
+  await step(`${width}px: all four palettes have distinct rendered background and foreground`,async()=>{const samples=paletteSamples.filter(row=>row.width===width);assert.equal(new Set(samples.map(row=>row.background)).size,4,'Four palette choices collapse to fewer workspace background colors');assert.equal(new Set(samples.map(row=>row.foreground)).size,4,'Four palette choices collapse to fewer text colors');return samples;});
+  await step(`${width}px: motion on and off persist across reload`,async()=>{
+   await navigate(SCENES[0],width);await page.getByRole('button',{name:'开启轻动效',exact:true}).click();await active(true);await preference('on');
+   await page.reload({waitUntil:'networkidle'});await ready();await active(true);await preference('on');
+   await page.getByRole('button',{name:'关闭轻动效',exact:true}).click();await active(false);await preference('off');await page.reload({waitUntil:'networkidle'});await ready();await active(false);await preference('off');
+  });
+  await step(`${width}px: theme and practice dialogs pause motion and closing resumes`,async()=>{
+   await page.getByRole('button',{name:'开启轻动效',exact:true}).click();await active(true);await openPicker();await active(false);await computedMotion('paused');await finishPicker();await active(true);
+   await page.getByRole('button',{name:'开始今日练习',exact:true}).click();await page.locator('.practice-dialog').waitFor({state:'visible'});await active(false);await computedMotion('paused');const dimensions=await layout('practice');await screenshot(`practice-${width}`);await closeModal();await page.locator('.region-map').scrollIntoViewIfNeeded();await active(true);return dimensions;
+  });
+  await step(`${width}px: system reduced motion disables effects and restores preference`,async()=>{
+   await page.emulateMedia({reducedMotion:'reduce'});await active(false);const control=page.getByRole('button',{name:'系统已减弱动态',exact:true});await eventually(()=>control.isDisabled(),'Reduced motion button remains enabled');await computedMotion('reduced');await preference('on');
+   await page.reload({waitUntil:'networkidle'});await ready();await active(false);await computedMotion('reduced');await preference('on');await page.emulateMedia({reducedMotion:'no-preference'});await active(true);await computedMotion('running');await page.getByRole('button',{name:'关闭轻动效',exact:true}).click();await active(false);await preference('off');
+  });
+ }
+ await step('no unhandled errors, failed local requests or external traffic',async()=>{assert.deepEqual(report.pageErrors,[]);assert.deepEqual(report.mockErrors||[],[]);assert.deepEqual(report.consoleErrors,[]);assert.deepEqual(report.httpErrors,[]);assert.deepEqual(report.blockedExternal,[]);if(MODE==='web'){assert.ok(mockCalls.some(row=>row.method==='GET'));for(const id of PALETTES)assert.ok(mockCalls.some(row=>row.method==='POST'&&row.type==='theme'&&row.theme===id),'No synthetic-owner theme POST for '+id);}return{pageErrors:0,httpErrors:0,blockedExternal:0,consoleErrors:0,mockCalls:mockCalls.length};});
+ report.status='passed';
+})().catch(async error=>{report.status='failed';report.error=String(error.stack||error);if(page&&!page.isClosed()){try{await screenshot('failure');report.lastUrl=page.url();report.lastBody=(await page.locator('body').innerText()).slice(0,15000);}catch{}}process.exitCode=1;}).finally(async()=>{try{await cleanup();}catch(error){report.status='failed';report.cleanupError=String(error.stack||error);process.exitCode=1;}report.finishedAt=new Date().toISOString();report.outputDirectory=OUT;report.mockCalls=mockCalls;report.paletteSamples=paletteSamples;if(ownsOutput)await fs.writeFile(path.join(OUT,'result.json'),JSON.stringify(report,null,2),{flag:'wx'});console.log(JSON.stringify({mode:MODE,status:report.status,passed:report.steps.filter(step=>step.status==='passed').length,failed:report.steps.filter(step=>step.status==='failed').length,output:OUT,error:report.error?.split('\n').slice(0,3).join('\n')}));if(report.cleanupError)setTimeout(()=>process.exit(1),100).unref();});

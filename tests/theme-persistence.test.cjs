@@ -184,3 +184,40 @@ test('profile API persists the four theme IDs, rejects arbitrary themes and does
     }
   } finally {sqlite.close();}
 });
+
+// Append to tests/theme-persistence.test.cjs; reuses load(), model and fromRepo.
+test('theme-only API atomically preserves existing settings, isolates users and rejects extra fields',async()=>{
+ const orm=fromRepo('drizzle-orm');const {drizzle}=fromRepo('drizzle-orm/sqlite-proxy');
+ const schema=load('db/schema.ts',{'drizzle-orm/sqlite-core':fromRepo('drizzle-orm/sqlite-core')});
+ const statements=load('db/mutable-study.ts',{'drizzle-orm':orm,'./schema':schema,'../lib/study-model':model});
+ const sqlite=new DatabaseSync(':memory:');let owner='alice';
+ try{
+  for(const file of fs.readdirSync(path.join(root,'drizzle')).filter(x=>x.endsWith('.sql')).sort())sqlite.exec(fs.readFileSync(path.join(root,'drizzle',file),'utf8'));
+  const db=drizzle(async(query,params,method)=>{const stmt=sqlite.prepare(query);if(method==='run'){stmt.run(...params);return {rows:[]};}const rows=stmt.all(...params).map(row=>Object.values(row));return {rows:method==='get'?rows[0]:rows};});
+  const api=load('app/api/study/route.ts',{
+   'drizzle-orm':orm,zod:fromRepo('zod'),'@/db':{getDb:()=>db},'@/db/schema':schema,'@/db/mutable-study':statements,'@/lib/study-model':model,
+   '@/lib/server-auth':{userId:async()=>owner,safeMutation:r=>r.headers.get('origin')==='https://test.local',privateJson:(body,status=200)=>Response.json(body,{status})},
+   '@/content/questions.json':{default:JSON.parse(fs.readFileSync(path.join(root,'content/questions.json'),'utf8'))},'@/content/resources-v2':load('content/resources-v2.ts'),
+   '@/content/exams/catalogue.json':{default:JSON.parse(fs.readFileSync(path.join(root,'content/exams/catalogue.json'),'utf8'))}
+  });
+  const cloud={...plain(model.DEFAULT_PROFILE),name:'Cloud learner',dailyMinutes:45,lrGoal:800,unknownFutureField:{keep:true}};
+  const bob=JSON.stringify({...cloud,name:'Bob',theme:'paper'});
+  sqlite.prepare('INSERT INTO profiles(user_id,body,updated_at) VALUES(?,?,?)').run('alice',JSON.stringify(cloud),stamp);
+  sqlite.prepare('INSERT INTO profiles(user_id,body,updated_at) VALUES(?,?,?)').run('bob',bob,stamp);
+  const post=(data,headerOwner=owner,type='theme')=>api.POST(new Request('https://test.local/api/study',{method:'POST',headers:{origin:'https://test.local','Content-Type':'application/json','X-Lantern-Owner':headerOwner},body:JSON.stringify({type,data})}));
+  for(const theme of ['hollow','paper','silk','crystal']){
+   assert.equal((await post({theme})).status,200);
+   assert.deepEqual(JSON.parse(sqlite.prepare('SELECT body FROM profiles WHERE user_id=?').get('alice').body),{...cloud,theme});
+   assert.equal(sqlite.prepare('SELECT body FROM profiles WHERE user_id=?').get('bob').body,bob);
+  }
+  const before=sqlite.prepare('SELECT body FROM profiles WHERE user_id=?').get('alice').body;
+  for(const bad of [{theme:'invented'},{theme:'hollow',name:'overwrite'},{theme:'hollow',lrGoal:990},{}])assert.equal((await post(bad)).status,400);
+  assert.equal((await post({theme:'silk'},'bob')).status,409);
+  assert.equal(sqlite.prepare('SELECT body FROM profiles WHERE user_id=?').get('alice').body,before);
+  owner='new-owner';assert.equal((await post({theme:'crystal'})).status,200);
+  assert.deepEqual(JSON.parse(sqlite.prepare('SELECT body FROM profiles WHERE user_id=?').get(owner).body),{...plain(model.DEFAULT_PROFILE),theme:'crystal'});
+  const legacy={...plain(model.DEFAULT_PROFILE),name:'Legacy full profile',theme:'paper'};
+  assert.equal((await post(legacy,owner,'profile')).status,200);
+  assert.deepEqual(JSON.parse(sqlite.prepare('SELECT body FROM profiles WHERE user_id=?').get(owner).body),legacy);
+ }finally{sqlite.close();}
+});

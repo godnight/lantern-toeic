@@ -1,4 +1,4 @@
-import {eq, and} from 'drizzle-orm';
+import {eq, and, sql} from 'drizzle-orm';
 import {z} from 'zod';
 import {getDb} from '@/db';
 import {profiles,attempts,checkins,recordings,questionMarks,resourceTasks} from '@/db/schema';
@@ -19,6 +19,12 @@ export async function POST(request:Request){const uid=await userId();if(!uid)ret
  if(Number(request.headers.get('content-length')||0)>200000)return privateJson({error:'请求过大'},413);
  const body=z.object({type:z.string(),data:z.unknown()}).parse(await request.json());const db=getDb();
  if(body.type==='profile'){const parsed=profile.parse(body.data);await db.insert(profiles).values({userId:uid,body:JSON.stringify(parsed),updatedAt:new Date().toISOString()}).onConflictDoUpdate({target:profiles.userId,set:{body:JSON.stringify(parsed),updatedAt:new Date().toISOString()}});return privateJson({ok:true});}
+ if(body.type==='theme'){
+  const parsed=z.object({theme:z.enum(['hollow','silk','paper','crystal'])}).strict().parse(body.data);const updatedAt=new Date().toISOString();
+  // Atomic field update preserves every existing setting, including concurrent
+  // changes. The default profile is used only for a genuinely new account.
+  await db.insert(profiles).values({userId:uid,body:JSON.stringify({...DEFAULT_PROFILE,theme:parsed.theme}),updatedAt}).onConflictDoUpdate({target:profiles.userId,set:{body:sql`json_set(${profiles.body}, '$.theme', ${parsed.theme})`,updatedAt}});return privateJson({ok:true});
+ }
  if(body.type==='attempt'){
   const a=attempt.parse(body.data);const q=questions.find(q=>q.id===a.qid);if(!q||a.choice>=q.options.length)return privateJson({error:'题目或选项无效'},400);
   const prev=await db.select({id:attempts.id}).from(attempts).where(and(eq(attempts.userId,uid),eq(attempts.qid,a.qid))).limit(1);
