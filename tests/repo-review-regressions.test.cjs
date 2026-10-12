@@ -97,7 +97,7 @@ function dailyApp(data, {fullTree = false} = {}) {
     '@/lib/study-model': h.model, '@/lib/study-backup': h.backup,
     '@/lib/native-host': {registerNativeBack: () => () => {}},
     './learn/exam-collection': {}, './learn/resource-library': {}, './learn/practice': {},
-    './learn/speaking': {}, './learn/theme-library': {}, './learn/vocabulary-library': {}, './learn/mock-exam': {default:'MockExam'}
+    './learn/speaking': {}, './learn/theme-atmosphere': {}, './learn/theme-library': {}, './learn/vocabulary-library': {}, './learn/mock-exam': {default:'MockExam'}
   };
   for (const file of ['content/questions.json', 'content/speaking.json', 'art/map-scenes.json', 'art/themes.json']) {
     imports['@/' + file] = {default: JSON.parse(fs.readFileSync(root + '/' + file, 'utf8'))};
@@ -220,7 +220,7 @@ test('storage quota failure keeps resource checkin open without a false success 
     '@/content/questions.json': {default: JSON.parse(fs.readFileSync(root + '/content/questions.json'))},
     '@/content/speaking.json': {default: JSON.parse(fs.readFileSync(root + '/content/speaking.json'))},
     './learn/exam-collection':{},'./learn/resource-library': {default: 'ResourceLibrary'}, './learn/practice': {default: 'Practice'}, './learn/speaking': {default: 'SpeakingRoom'},
-    './learn/theme-library': {default:()=>null}, './learn/vocabulary-library': {}, './learn/mock-exam': {default:'MockExam'},
+    './learn/theme-atmosphere': {default:()=>null}, './learn/theme-library': {default:()=>null}, './learn/vocabulary-library': {}, './learn/mock-exam': {default:'MockExam'},
     '@/art/map-scenes.json': {default: JSON.parse(fs.readFileSync(root+'/art/map-scenes.json','utf8'))},
     '@/art/themes.json': {default:JSON.parse(fs.readFileSync(root+'/art/themes.json','utf8'))},
   };
@@ -263,7 +263,7 @@ test('mobile access guidance distinguishes synchronized PWA and local native mod
       '@/content/questions.json': {default: JSON.parse(fs.readFileSync(root + '/content/questions.json'))},
       '@/content/speaking.json': {default: JSON.parse(fs.readFileSync(root + '/content/speaking.json'))},
       './learn/exam-collection': {}, './learn/resource-library': {default: 'ResourceLibrary'}, './learn/practice': {default: 'Practice'}, './learn/speaking': {default: 'SpeakingRoom'},
-      './learn/theme-library': {default: () => null}, './learn/vocabulary-library': {}, './learn/mock-exam': {default:'MockExam'},
+      './learn/theme-atmosphere': {default:()=>null}, './learn/theme-library': {default: () => null}, './learn/vocabulary-library': {}, './learn/mock-exam': {default:'MockExam'},
       '@/art/map-scenes.json': {default: JSON.parse(fs.readFileSync(root+'/art/map-scenes.json','utf8'))},
     '@/art/themes.json': {default: JSON.parse(fs.readFileSync(root + '/art/themes.json', 'utf8'))},
     };
@@ -319,3 +319,39 @@ test('native full exam opens in an isolated view with stable local scope and ret
   assert.equal(nodes(render(), n => n.type === 'MockExam').length, 0);
   assert.ok(nodes(render(), n => n.type === 'button' && textOf(n).includes('完整听读模考')).length);
 });
+
+// Append to tests/repo-review-regressions.test.cjs, reusing its existing
+// environment(), tick(), and real useStudy hook loader. This is not standalone.
+// Uses synthetic data only and does not require a browser or cloud endpoint.
+for (const theme of ['hollow', 'silk', 'paper', 'crystal']) {
+  test(`theme ${theme} survives the independent profile key, a theme switch and cold reload without losing records`, async () => {
+    const h = environment();
+    const original = structuredClone(h.model.EMPTY_DATA);
+    original.profile = {...original.profile, name: 'Synthetic theme QA', theme: 'hollow'};
+    original.attempts = [
+      {id: randomUUID(), qid: 'p1-01', choice: 1, correct: false, createdAt: '2026-01-01T10:00:00.000Z', seconds: 12, mode: 'first'},
+      {id: randomUUID(), qid: 'p1-01', choice: 0, correct: true, createdAt: '2026-01-02T10:00:00.000Z', seconds: 8, mode: 'review'},
+    ];
+    original.checkins = [{id: randomUUID(), date: '2026-01-01', minutes: 5, load: '轻', note: 'keep resource note', createdAt: '2026-01-01T10:00:00.000Z'}];
+    original.recordings = [{id: randomUUID(), promptId: 'speaking-1', title: 'Synthetic recording', createdAt: '2026-01-01T10:00:00.000Z', duration: 7, mime: 'audio/webm', uploaded: true}];
+    const key = 'lantern-v1-alice';
+    h.storage.set(key, JSON.stringify({data: original}));
+    h.storage.set(key + ':profile', JSON.stringify({...original.profile, theme}));
+    h.setRenderer(() => h.useStudy('alice'));
+    h.render(); await tick();
+    let api = h.render();
+    assert.equal(api.data.profile.theme, theme, 'standalone profile wins over stale snapshot');
+    const selected = theme === 'crystal' ? 'paper' : 'crystal';
+    assert.equal(api.saveProfile({...api.data.profile, theme: selected}), true);
+    await tick();
+    const reloaded = environment();
+    for (const [key, value] of h.storage) reloaded.storage.set(key, value);
+    reloaded.setRenderer(() => reloaded.useStudy('alice'));
+    reloaded.render(); await tick();
+    const result = reloaded.render().data;
+    assert.equal(result.profile.theme, selected);
+    for (const key of ['attempts', 'checkins', 'recordings', 'questionMarks', 'resourceTasks']) {
+      assert.equal(JSON.stringify(result[key]), JSON.stringify(original[key]), key + ' must remain byte-equivalent');
+    }
+  });
+}

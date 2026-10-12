@@ -1,4 +1,4 @@
-export type Theme = 'hollow' | 'silk' | 'paper';
+export type Theme = 'hollow' | 'silk' | 'paper' | 'crystal';
 // randomUUID is restricted to secure contexts in some browsers; getRandomValues
 // still provides cryptographic randomness in local HTTP development previews.
 export function createId():string {

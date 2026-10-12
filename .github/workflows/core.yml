@@ -44,12 +44,15 @@ jobs:
         env:
           LANTERN_BROWSER_QA_DIR: ${{ runner.temp }}/lantern-browser-qa
           LANTERN_DICTIONARY_QA_DIR: ${{ runner.temp }}/lantern-dictionary-browser-qa
+          LANTERN_THEME_QA_DIR: ${{ runner.temp }}/lantern-theme-browser-qa
           LANTERN_PAGE_PACK_QA_DIR: ${{ runner.temp }}/lantern-page-pack-qa
         run: |
           npm --prefix mobile run build
           node node_modules/playwright/cli.js install --with-deps chromium
           npm run test:browser
           npm run test:dictionary:browser
+          npm run test:themes:browser
+          LANTERN_THEME_QA_DIR="$RUNNER_TEMP/lantern-theme-web-browser-qa" npm run test:themes:web:browser
       - name: Retain synthetic browser QA evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -60,6 +63,10 @@ jobs:
             ${{ runner.temp }}/lantern-browser-qa/*.png
             ${{ runner.temp }}/lantern-dictionary-browser-qa/result.json
             ${{ runner.temp }}/lantern-dictionary-browser-qa/*.png
+            ${{ runner.temp }}/lantern-theme-browser-qa/result.json
+            ${{ runner.temp }}/lantern-theme-browser-qa/*.png
+            ${{ runner.temp }}/lantern-theme-web-browser-qa/result.json
+            ${{ runner.temp }}/lantern-theme-web-browser-qa/*.png
           if-no-files-found: ignore
           retention-days: 14
       - name: Apply migrations to an empty local SQLite database
