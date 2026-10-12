@@ -7,12 +7,13 @@ import {isNativeForeground,subscribeNativeState} from '@/lib/native-host';
 const preferenceKey='lantern-scene-motion-v1';
 export default function ThemeAtmosphere({kind,paused}:{kind:string;paused:boolean}){
  const host=useRef<HTMLDivElement>(null);
- const [enabled,setEnabled]=useState(false);
+ const [enabled,setEnabled]=useState(true);
  const [visible,setVisible]=useState(true);
  const [background,setBackground]=useState(false);
  const [reduced,setReduced]=useState(true);
  useEffect(()=>{
-  try{setEnabled(localStorage.getItem(preferenceKey)==='on');}catch{/* Session-only preference is sufficient. */}
+  // New devices default to motion; only an explicit off choice disables it.
+  try{setEnabled(localStorage.getItem(preferenceKey)!=='off');}catch{/* Keep the default on and allow a session-only choice. */}
   const media=window.matchMedia('(prefers-reduced-motion: reduce)');
   const motion=()=>setReduced(media.matches);
   const visibility=()=>setBackground(document.hidden||!isNativeForeground());
@@ -29,5 +30,6 @@ export default function ThemeAtmosphere({kind,paused}:{kind:string;paused:boolea
  return <><div ref={host} className="theme-atmosphere" data-kind={kind} data-active={active} aria-hidden="true">
   {Array.from({length:9},(_,i)=><span className="ambient-particle" key={i} style={{'--particle-x':`${8+i*10}%`,'--particle-y':`${15+(i*19)%65}%`,'--particle-duration':`${8+i%4*2}s`,'--particle-delay':`${-i*1.7}s`} as React.CSSProperties}/>)}
   <span className="ambient-water"/>
+  <span className="ambient-glow"/>
  </div><button className="scene-motion-toggle" type="button" aria-pressed={enabled} onClick={toggle} disabled={reduced} aria-label={reduced?'系统已减弱动态':enabled?'关闭轻动效':'开启轻动效'}><Wind size={14}/>{reduced?'系统已减弱动态':enabled?'轻动效已开启':'开启轻动效'}</button></>;
 }

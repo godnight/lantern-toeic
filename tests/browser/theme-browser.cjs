@@ -9,7 +9,7 @@ const net = require('node:net');
 const { spawn } = require('node:child_process');
 const { pathToFileURL } = require('node:url');
 const {createRequire} = require('node:module');
-const repoCandidates = [process.env.LANTERN_THEME_QA_REPO, path.resolve(__dirname, '../..'), path.resolve(__dirname, '../site')].filter(Boolean);
+const repoCandidates = [process.env.LANTERN_THEME_QA_REPO, path.resolve(__dirname, '../..'), path.resolve(__dirname, '../site'), path.resolve(__dirname, '../../theme-redesign-20261012/site')].filter(Boolean);
 const REPO = repoCandidates.find(candidate => require('node:fs').existsSync(path.join(candidate, 'app/study-app.tsx')));
 if (!REPO) throw new Error('Set LANTERN_THEME_QA_REPO to the repository containing app/study-app.tsx');
 const repoRequire = createRequire(path.join(REPO, 'package.json'));
@@ -157,7 +157,7 @@ let paletteSamples=[];
 const SCENES=[
  {id:'today',label:'今日旅程',slug:'blue-lake',image:'/images/themes-v3/blue-lake-wide.webp',mobile:'/images/themes-v3/blue-lake-mobile.webp',thumbnail:'/images/themes-v3/blue-lake-thumb.webp',motion:'water'},
  {id:'train',label:'训练之境',slug:'crystal-peak',image:'/images/themes-v3/crystal-peak-wide.webp',mobile:'/images/themes-v3/crystal-peak-mobile.webp',thumbnail:'/images/themes-v3/crystal-peak-thumb.webp',motion:'crystal'},
- {id:'review',label:'温故知新',slug:'city-of-tears',image:'/images/maps/city-of-tears.webp',mobile:'/images/maps/city-of-tears-mobile.webp',thumbnail:'/images/maps/city-of-tears-thumb.webp',motion:'none'},
+ {id:'review',label:'温故知新',slug:'city-of-tears',image:'/images/maps/city-of-tears.webp',mobile:'/images/maps/city-of-tears-mobile.webp',thumbnail:'/images/maps/city-of-tears-thumb.webp',motion:'rain'},
  {id:'progress',label:'成长足迹',slug:'snowy-ridge',image:'/images/themes-v3/snowy-ridge-wide.webp',mobile:'/images/themes-v3/snowy-ridge-mobile.webp',thumbnail:'/images/themes-v3/snowy-ridge-thumb.webp',motion:'snow'},
  {id:'resources',label:'学习书库',slug:'white-flowers',image:'/images/themes-v3/white-flowers-wide.webp',mobile:'/images/themes-v3/white-flowers-mobile.webp',thumbnail:'/images/themes-v3/white-flowers-thumb.webp',motion:'petals'}
 ];
@@ -208,12 +208,59 @@ async function hero(scene,width){
  await eventually(()=>image.evaluate((img,wanted)=>img.complete&&img.naturalWidth>0&&new URL(img.currentSrc).pathname===wanted,expected),'Wrong/undecoded '+scene.id+' hero at '+width);
  const info=await imageInfo(image);assert.ok(info.width>=600&&info.height>=330,'Unexpected low-resolution hero');
  if(scene.motion==='none')assert.equal(await page.locator('.scene-motion-toggle').count(),0,'Static review scene must not offer unrelated motion');
- else assert.equal(await page.locator('.theme-atmosphere').getAttribute('data-kind'),scene.motion,'Motion must follow navigation scene, not global palette');
+ else {assert.equal(await page.locator('.theme-atmosphere').getAttribute('data-kind'),scene.motion,'Motion must follow navigation scene, not global palette');await motionControlClear();}
  return info;
+}
+async function motionControlClear(){
+ const result=await page.locator('.region-map').evaluate(scene=>{
+  const control=scene.querySelector('.scene-motion-toggle').getBoundingClientRect().toJSON();
+  const text=[...scene.querySelectorAll('.region-copy h1,.region-copy p,.region-topline')].filter(node=>getComputedStyle(node).visibility!=='hidden').flatMap(node=>{const range=document.createRange();range.selectNodeContents(node);return [...range.getClientRects()].map(rect=>({text:node.textContent,rect:rect.toJSON()}));});
+  return{control,overlaps:text.filter(({rect})=>Math.min(rect.right,control.right)-Math.max(rect.left,control.left)>1&&Math.min(rect.bottom,control.bottom)-Math.max(rect.top,control.top)>1)};
+ });
+ assert.deepEqual(result.overlaps,[],'Motion control covers a scene title, description or top-line label: '+JSON.stringify(result));
+ return result;
+}
+async function pickerControlsVisible(){
+ const dialog=page.getByRole('dialog',{name:'选择主题',exact:true});
+ const controls=[['title',dialog.locator('[data-slot=dialog-title]')],['close',dialog.locator('[data-slot=dialog-close]')],['done',dialog.getByRole('button',{name:'完成',exact:true})]];
+ const viewport=page.viewportSize(),bounds=await dialog.boundingBox(),results=[];
+ for(const [name,locator]of controls){const box=await locator.boundingBox();assert.ok(await locator.isVisible()&&box,'Picker '+name+' is not visible');assert.ok(box.x>=-1&&box.y>=-1&&box.x+box.width<=viewport.width+1&&box.y+box.height<=viewport.height+1,'Picker '+name+' left the viewport after selecting a card');assert.ok(bounds&&box.x>=bounds.x-1&&box.y>=bounds.y-1&&box.x+box.width<=bounds.x+bounds.width+1&&box.y+box.height<=bounds.y+bounds.height+1,'Picker '+name+' lies outside its dialog');const unobscured=await locator.evaluate(el=>{const rect=el.getBoundingClientRect(),top=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);return top===el||el.contains(top);});assert.ok(unobscured,'Picker '+name+' is covered by another element after selection');results.push({name,...box});}
+ return results;
 }
 async function layout(stage){const dimensions=await page.evaluate(()=>({width:innerWidth,clientWidth:document.documentElement.clientWidth,documentWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,overflowing:[...document.querySelectorAll('main,section,article,button,[role=dialog]')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&(r.left < -1||r.right > innerWidth+1);}).slice(0,12).map(el=>({tag:el.tagName,cls:String(el.className),right:el.getBoundingClientRect().right}))}));assert.ok(dimensions.documentWidth<=dimensions.clientWidth+1,stage+' document overflow '+JSON.stringify(dimensions));assert.ok(dimensions.bodyWidth<=dimensions.clientWidth+1,stage+' body overflow '+JSON.stringify(dimensions));if(await page.getByRole('dialog').count()){const box=await page.getByRole('dialog').boundingBox();assert.ok(box&&box.x>=-1&&box.x+box.width<=dimensions.width+1,'Dialog exceeds viewport');}return dimensions;}
 async function preference(value){assert.equal(await page.evaluate(key=>localStorage.getItem(key),MOTION_KEY),value);}
-async function computedMotion(expected){const styles=await page.locator('.ambient-particle').evaluateAll(nodes=>nodes.map(node=>({state:getComputedStyle(node).animationPlayState,name:getComputedStyle(node).animationName,opacity:getComputedStyle(node).opacity})));assert.equal(styles.length,9);if(expected==='reduced')assert.ok(styles.every(style=>style.name==='none'&&Number(style.opacity)===0),'Reduced motion still animates');else assert.ok(styles.every(style=>style.state===expected),'Unexpected particle state '+JSON.stringify(styles));return styles;}
+async function computedMotion(expected){
+ const styles=await page.locator('.theme-atmosphere').evaluate(layer=>[...layer.querySelectorAll('.ambient-particle,.ambient-glow,.ambient-water')].filter(node=>!node.classList.contains('ambient-water')||layer.dataset.kind==='water').map(node=>({className:node.className,state:getComputedStyle(node).animationPlayState,name:getComputedStyle(node).animationName,opacity:getComputedStyle(node).opacity})));
+ assert.equal(styles.filter(style=>style.className==='ambient-particle').length,9);
+ assert.equal(styles.filter(style=>style.className==='ambient-glow').length,1);
+ if(expected==='reduced')assert.ok(styles.every(style=>style.name==='none'&&Number(style.opacity)===0),'Reduced motion still animates a particle, glow or water layer');
+ else assert.ok(styles.every(style=>style.name!=='none'&&style.state===expected),'Unexpected atmosphere animation state '+JSON.stringify(styles));
+ return styles;
+}
+async function animationProgress(expected){
+ // Inspect real browser CSS animations, not only data-active or a CSS declaration.
+ // Sample after two frames to let running/paused state changes reach the timeline.
+ const samples=await page.locator('.theme-atmosphere').evaluate(async layer=>{
+  const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));await frame();await frame();
+  const nodes=[layer.querySelector('.ambient-particle'),layer.querySelector('.ambient-glow'),...(layer.dataset.kind==='water'?[layer.querySelector('.ambient-water')]:[])];
+  const take=node=>{const style=getComputedStyle(node);return{className:node.className,transform:style.transform,opacity:style.opacity,animations:node.getAnimations().map(animation=>({name:animation.animationName,state:animation.playState,time:animation.currentTime}))};};
+  const before=nodes.map(take);await new Promise(resolve=>setTimeout(resolve,250));await frame();
+  return nodes.map((node,index)=>({before:before[index],after:take(node)}));
+ });
+ for(const {before,after} of samples){
+  assert.ok(before.animations.length>0,after.className+' has no real CSS animation');
+  assert.equal(after.animations.length,before.animations.length);
+  for(let index=0;index<after.animations.length;index++){
+   const start=before.animations[index],end=after.animations[index];
+   assert.equal(end.name,start.name);assert.equal(end.state,expected);
+   assert.equal(typeof start.time,'number');assert.equal(typeof end.time,'number');
+   if(expected==='running')assert.ok(end.time-start.time>=100,after.className+' animation timeline did not advance');
+   else assert.ok(Math.abs(end.time-start.time)<=2,after.className+' animation timeline moved while paused');
+  }
+  if(expected==='running')assert.ok(after.transform!==before.transform||after.opacity!==before.opacity,after.className+' timeline advanced without a rendered visual change');
+ }
+ return samples;
+}
 async function choosePalette(theme,method){
  await openPicker();const dialog=page.getByRole('dialog',{name:'选择主题',exact:true}),radio=dialog.getByRole('radio',{name:labelOf(theme),exact:true}),card=dialog.locator('.theme-option').filter({has:page.getByRole('radio',{name:labelOf(theme),exact:true})});
  if(method==='image')await card.locator('.theme-image').click();
@@ -227,13 +274,13 @@ async function choosePalette(theme,method){
  }
  await eventually(()=>radio.isChecked(),method+' did not select '+theme.id);await rootTheme(theme.id);
  assert.equal(await dialog.isVisible(),true,'Picker must stay open while comparing palettes');
- await layout('palette-'+method);return{dialog,radio};
+ await layout('palette-'+method);await pickerControlsVisible();return{dialog,radio};
 }
 (async()=>{
  await allocateOutput();assert.deepEqual(catalogue.themes.map(theme=>theme.id),PALETTES,'Expected four palette IDs in radio order');
  await startPreview();browser=await launchBrowser();
  for(const width of WIDTHS){
-  await step(`${width}px: isolated fresh ${MODE} entry, default palette and blue lake`,async()=>{await freshPage(width);await rootTheme('hollow');await active(false);return await hero(SCENES[0],width);});
+  await step(`${width}px: fresh ${MODE} entry defaults on with real CSS animation progress`,async()=>{await freshPage(width);await rootTheme('hollow');await active(true);await preference(null);assert.equal(await page.locator('.scene-motion-toggle').getAttribute('aria-pressed'),'true');await computedMotion('running');return{image:await hero(SCENES[0],width),animation:await animationProgress('running')};});
   await step(`${width}px: three distinct task images and original sidebar artwork`,async()=>{
    const tasks=page.locator('.task-scene');assert.equal(await tasks.count(),3);const taskImages=[];
    for(let index=0;index<3;index++){const task=tasks.nth(index);await task.scrollIntoViewIfNeeded();const info=await imageInfo(task);assert.equal(info.path,TASK_IMAGES[index]);taskImages.push(info);}
@@ -242,7 +289,7 @@ async function choosePalette(theme,method){
   });
   for(const scene of SCENES)await step(`${width}px: ${scene.id} keeps its own scene, motion and layout`,async()=>{
    await navigate(scene,width);const image=await hero(scene,width);const dimensions=await layout(scene.id);
-   if(scene.motion!=='none'){await page.getByRole('button',{name:'开启轻动效',exact:true}).click();await active(true);await computedMotion('running');await page.getByRole('button',{name:'关闭轻动效',exact:true}).click();await active(false);}
+   if(scene.motion!=='none'){if(await page.locator('.scene-motion-toggle').getAttribute('aria-pressed')!=='true')await page.getByRole('button',{name:'开启轻动效',exact:true}).click();await active(true);await computedMotion('running');await animationProgress('running');await page.getByRole('button',{name:'关闭轻动效',exact:true}).click();await active(false);await computedMotion('paused');}
    await screenshot(`${scene.id}-${width}`);return{image,motion:scene.motion,dimensions};
   });
   const interactions=[['paper','image'],['silk','title'],['crystal','radio'],['hollow','keyboard']];
@@ -255,10 +302,10 @@ async function choosePalette(theme,method){
    return{interaction:method,currentScene:scene.id,theme:id,colors,dimensions,unchangedSceneAfterPaletteAndReload:true};
   });
   await step(`${width}px: all four palettes have distinct rendered background and foreground`,async()=>{const samples=paletteSamples.filter(row=>row.width===width);assert.equal(new Set(samples.map(row=>row.background)).size,4,'Four palette choices collapse to fewer workspace background colors');assert.equal(new Set(samples.map(row=>row.foreground)).size,4,'Four palette choices collapse to fewer text colors');return samples;});
-  await step(`${width}px: motion on and off persist across reload`,async()=>{
+  await step(`${width}px: explicit on and off survive reload; off freezes all animation timelines`,async()=>{
    await navigate(SCENES[0],width);await page.getByRole('button',{name:'开启轻动效',exact:true}).click();await active(true);await preference('on');
    await page.reload({waitUntil:'networkidle'});await ready();await active(true);await preference('on');
-   await page.getByRole('button',{name:'关闭轻动效',exact:true}).click();await active(false);await preference('off');await page.reload({waitUntil:'networkidle'});await ready();await active(false);await preference('off');
+   await page.getByRole('button',{name:'关闭轻动效',exact:true}).click();await active(false);await preference('off');await page.reload({waitUntil:'networkidle'});await ready();await active(false);await preference('off');await computedMotion('paused');return await animationProgress('paused');
   });
   await step(`${width}px: theme and practice dialogs pause motion and closing resumes`,async()=>{
    await page.getByRole('button',{name:'开启轻动效',exact:true}).click();await active(true);await openPicker();await active(false);await computedMotion('paused');await finishPicker();await active(true);
