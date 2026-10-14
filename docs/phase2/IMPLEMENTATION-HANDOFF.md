@@ -1,3 +1,13 @@
+# 第二阶段当前交接 · P2-20261014-r3
+
+`P2-20261014-r3-f5ab766451ef`，`0.3.4/20012`；实际输入1,363项，SHA `f5ab766451eff9cd0923870f2aa5f63d664a1f83f9cfc45b4610ceb8b663e671`。r2详情返回仍阻断，本版待独立复测；未push或部署。完整路径／commit／字节／SHA见外层 `DELIVERY-P2-r3.json`；实际磁盘字节源码ZIP逐项与冻结清单一致。
+
+见 [统一返回修复](R3-LOOKUP-RETURN-RESPONSE.md)。开发复验使用 `PHASE2_EXPECT_BUILD_ID=P2-20261014-r3-f5ab766451ef` 和 `node tests/browser/phase2-lookup-return.cjs`（清除 `PHASE2_LOOKUP_QUICK`）；源检查使用 `freeze-workflow-build.py --check --freeze-id P2-20261014-r3`。只在新隔离Context／自有loopback服务执行，开发NativeBack映射不代替实际ArkWeb。原生IME第一次返回只收键盘、第二次关闭Lookup仍由独立同HAP验证。
+
+以下保留r2／r1交接历史，不将旧通过外推至新候选。
+
+---
+
 # 第二阶段当前交接 · P2-20261014-r2
 
 `P2-20261014-r2-e208cb589d98`，版本 `0.3.4 / 20011`；源输入1,363项，SHA-256 `e208cb589d98a1ad050982ad50fa4387fa64ad21be4f7739abed6924841f0c93`。r1独立QA不放行，r2等待同源Web与HAP独立复测；未push、安装设备或部署。完整当前产物清单在工作区外层 `DELIVERY-P2-r2.json`；其 `source.commit` 是本次精确源码，外层 `source-freezes/P2-20261014-r2/runtime-inputs.json` 绑定实际构建输入。

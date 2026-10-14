@@ -25,7 +25,7 @@ type Mode='learn'|'dictionary';
 type Filter='all'|'starred'|'due';
 type Snapshot={query:string;searchQuery:string;mode:Mode;category:string;filter:Filter;limit:number;scroll:number;selectedId:string|null;focusId:string|null};
 type VocabularyView={token:string;snapshot:Snapshot}&({view:'detail';selectedId:string}|{view:'session';words:string[];sessionId:string;index:number;revealed:boolean;answered:string[];gradeError:'again'|'remembered'|null});
-type Props={owner:string|null;onQuestion:(id:string)=>void;initialMode?:Mode;initialFilter?:Filter;initialQuery?:string;lookupOnly?:boolean;backLabel?:string;onBack?:()=>void;onFocusChange?:(focused:boolean)=>void;overlayBlocked?:boolean;onExampleLookup?:ExampleLookup;renderPlanAction?:(word:Word)=>ReactNode};
+type Props={owner:string|null;onQuestion:(id:string)=>void;initialMode?:Mode;initialFilter?:Filter;initialQuery?:string;lookupOnly?:boolean;navigationBoundary?:'library'|'lookup';backLabel?:string;onBack?:()=>void;onFocusChange?:(focused:boolean)=>void;overlayBlocked?:boolean;onExampleLookup?:ExampleLookup;renderPlanAction?:(word:Word)=>ReactNode};
 
 function DictionarySources({word}:{word:string}){
  const variants=(dictionaryMetadata.headwordCaseVariants as Record<string,string[]>)[searchText(word)]||[word];
@@ -40,7 +40,10 @@ export function VocabularyReviewSummary({owner,onOpen}:{owner:string|null;onOpen
  return <section className="vocab-review-summary panel" aria-label="生词与到期词卡"><div><span className="vocab-source-label">词卡复习</span><h2>{!store.ready?'正在读取词卡记录':store.error?'词卡记录暂未读入':due?`${due} 个到期词卡`:'今天没有到期词卡'}</h2>{!store.error&&store.ready&&<p>{starred} 个生词 · <span>{store.sync}</span></p>}</div>{store.error?<div className="vocab-alert" role="alert"><p>{store.error}</p><button className="text-button" onClick={store.retry}>重新读取词卡记录</button></div>:<button className="button secondary" disabled={!store.ready} onClick={onOpen}>查看词卡范围<ArrowRight size={16}/></button>}</section>;
 }
 
-export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',initialFilter='all',initialQuery='',lookupOnly=false,backLabel='返回来源页',onBack,onFocusChange,overlayBlocked=false,onExampleLookup,renderPlanAction}:Props){
+export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',initialFilter='all',initialQuery='',lookupOnly=false,navigationBoundary='library',backLabel='返回来源页',onBack,onFocusChange,overlayBlocked=false,onExampleLookup,renderPlanAction}:Props){
+ // An embedded Lookup is one parent-owned history lease, including its detail.
+ // Only the explicit "返回结果" action navigates inside that boundary.
+ const parentOwnsLookup=navigationBoundary==='lookup'&&!!onBack;
  const store=useVocabulary(owner);
  const instanceId=useId(),rootElement=useRef<HTMLElement>(null);
  const domId=(name:string)=>'vocab-'+instanceId+'-'+name;
@@ -105,7 +108,7 @@ export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',
  const practiceOwnsHistory=()=>!!window.history?.state?.lanternPracticeView&&!window.history?.state?.lanternPracticeLookup;
  const saveContext=(selectedId:string|null,focusId=selectedId?domId('word-result-'+selectedId):null)=>{snapshot.current={query,searchQuery,mode,category,filter,limit,scroll:readScroll(),selectedId,focusId};};
  const pushInnerHistory=(view:VocabularyView['view'],selectedId=detailId,words=session)=>{
-  if(!window.history?.pushState||!snapshot.current||activeView.current.overlayBlocked||practiceOwnsHistory())return;
+  if(parentOwnsLookup||!window.history?.pushState||!snapshot.current||activeView.current.overlayBlocked||practiceOwnsHistory())return;
   if(!historyToken.current)historyToken.current=vocabularyId();
   const common={token:historyToken.current,snapshot:snapshot.current};
   const marker:VocabularyView|undefined=view==='detail'&&selectedId?{...common,view,selectedId}:view==='session'&&words?{...common,view,words,sessionId:sessionId.current,index,revealed,answered:[...answered.current],gradeError}:undefined;
@@ -116,12 +119,12 @@ export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',
  };
  const ensureCompactDetail=()=>{
   if(!detailId||!singleColumn||activeView.current.overlayBlocked||practiceOwnsHistory())return;
-  pushInnerHistory('detail',detailId);compactHistoryPending.current=false;
+  if(!parentOwnsLookup)pushInnerHistory('detail',detailId);compactHistoryPending.current=false;
   if(focusedDetail.current!==detailId){writeScroll(0);focusWithin(domId('word-detail'));focusedDetail.current=detailId;}
  };
  ensureCompactRef.current=ensureCompactDetail;
  const restoreContext=(saved:Snapshot)=>{setQuery(saved.query);setSearchQuery(saved.searchQuery);setMode(saved.mode);setCategory(saved.category);setFilter(saved.filter);setLimit(saved.limit);snapshot.current=saved;};
- const restoreList=(pop=true)=>{
+ const restoreList=(pop=!parentOwnsLookup)=>{
   const saved=snapshot.current;
   if(saved){restoreContext(saved);restorePending.current=saved;}
   setDetailId(null);setSession(null);setGradeError(null);
@@ -133,15 +136,16 @@ export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',
  // entry first, then call the parent only after that Back has been acknowledged.
  const returnToOrigin=()=>{
   if(!onBack||overlayBlocked)return;
+  if(parentOwnsLookup){restorePending.current=null;onBack();return;}
   if(consumeOwnedPop.current||window.history?.state?.lanternVocabularyView?.token===historyToken.current){pendingReturn.current={callback:onBack,owner};if(!consumeOwnedPop.current)restoreList();restorePending.current=null;}
   else onBack();
  };
- backHandler.current=()=>{if(overlayBlocked)return false;if(session||detailId){restoreList();return true;}if(onBack){returnToOrigin();return true;}return false;};
+ backHandler.current=()=>{if(overlayBlocked)return false;if(parentOwnsLookup){returnToOrigin();return true;}if(session||detailId){restoreList();return true;}if(onBack){returnToOrigin();return true;}return false;};
  useEffect(()=>registerNativeBack(()=>backHandler.current(),30),[owner]);
  useEffect(()=>{
   if(!window.addEventListener)return;
   const pop=(event:PopStateEvent)=>{
-   if(activeView.current.overlayBlocked)return;
+   if(parentOwnsLookup||activeView.current.overlayBlocked)return;
    if(consumeOwnedPop.current){consumeOwnedPop.current=false;event.stopImmediatePropagation?.();const request=pendingReturn.current;pendingReturn.current=null;if(request)frame(()=>{if(mounted.current&&ownerRef.current===request.owner)request.callback();});return;}
    const marker=event.state?.lanternVocabularyView as VocabularyView|undefined;
    if(marker?.token===historyToken.current&&marker.snapshot){
@@ -156,21 +160,21 @@ export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',
    if(innerHistory.current){event.stopImmediatePropagation?.();restoreList(false);}
   };
   window.addEventListener('popstate',pop,true);return()=>window.removeEventListener('popstate',pop,true);
- },[owner,overlayBlocked]);
+ },[owner,overlayBlocked,parentOwnsLookup]);
  useEffect(()=>{
   let cancelled=false;
   if(!detailId||!singleColumn){focusedDetail.current=null;compactHistoryPending.current=false;}
   if(detailId&&singleColumn){
-   if(!innerHistory.current)compactHistoryPending.current=true;
+   if(!parentOwnsLookup&&!innerHistory.current)compactHistoryPending.current=true;
    if(!overlayBlocked)frame(()=>{if(!cancelled)ensureCompactRef.current();});
   }
   if(!detailId&&!session&&restorePending.current&&!overlayBlocked){const saved=restorePending.current;restorePending.current=null;frame(()=>{if(!cancelled&&!activeView.current.overlayBlocked){writeScroll(saved.scroll);if(!saved.focusId||!focusWithin(saved.focusId))focusWithin(domId('heading'));}});}
   return()=>{cancelled=true;};
- },[detailId,singleColumn,session,limit,overlayBlocked]);
+ },[detailId,singleColumn,session,limit,overlayBlocked,parentOwnsLookup]);
  useEffect(()=>{if(session&&!overlayBlocked&&window.history?.state?.lanternVocabularyView?.token===historyToken.current)pushInnerHistory('session');},[session,index,revealed,gradeError,overlayBlocked]);
  useEffect(()=>{
   if(!window.addEventListener)return;
-  const key=(event:KeyboardEvent)=>{if(!overlayBlocked&&event.key==='Escape'&&!event.isComposing&&!composing.current&&(session||detailId||onBack)){event.preventDefault();event.stopImmediatePropagation();if(session||detailId)restoreList();else returnToOrigin();}};
+  const key=(event:KeyboardEvent)=>{if(!overlayBlocked&&event.key==='Escape'&&!event.isComposing&&!composing.current&&(session||detailId||onBack)){event.preventDefault();event.stopImmediatePropagation();backHandler.current();}};
   window.addEventListener('keydown',key,true);return()=>window.removeEventListener('keydown',key,true);
  },[session,detailId,singleColumn,overlayBlocked,onBack]);
 
