@@ -10,5 +10,3 @@
 .practice-config{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-block:1rem}
 .practice-lookup-dialog .vocab-redesign{min-height:0}
 @media(max-width:440px){.practice-config{grid-template-columns:1fr}.practice-continuation .button{flex:1 1 40%}}
-
-.workspace-mobile-nav{grid-template-columns:repeat(6,minmax(0,1fr))}

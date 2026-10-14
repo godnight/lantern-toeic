@@ -1,3 +1,13 @@
+# 第二阶段当前交接 · P2-20261014-r2
+
+`P2-20261014-r2-e208cb589d98`，版本 `0.3.4 / 20011`；源输入1,363项，SHA-256 `e208cb589d98a1ad050982ad50fa4387fa64ad21be4f7739abed6924841f0c93`。r1独立QA不放行，r2等待同源Web与HAP独立复测；未push、安装设备或部署。完整当前产物清单在工作区外层 `DELIVERY-P2-r2.json`；其 `source.commit` 是本次精确源码，外层 `source-freezes/P2-20261014-r2/runtime-inputs.json` 绑定实际构建输入。
+
+见 [修复回应与设计差异](R2-REPAIR-RESPONSE.md)、[原生升级／IME／音频准备](../testing/PHASE2-NATIVE-RETEST-PREP.md)。复核命令将下方freeze ID替换为 `P2-20261014-r2`，开发浏览器设置 `PHASE2_EXPECT_BUILD_ID=P2-20261014-r2-e208cb589d98`，执行 `node tests/browser/phase2-responsive.cjs`。旧r1历史输入对应其源ZIP，不用当前r2工作树重算r1。
+
+以下保留原r1交付内容及其当时开发结果，不能作为r2独立验收。
+
+---
+
 # 第二阶段实现交接 · P2-20261014-r1
 
 状态：开发实现及本地验证完成，交独立 QA；没有 push、合入、部署、签名或设备安装。

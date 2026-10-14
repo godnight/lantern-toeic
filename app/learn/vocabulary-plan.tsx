@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useRef,useState} from 'react';
-import {ArrowRight,BookOpen,CalendarDays,Check,CheckCircle2,Download,Plus,RefreshCw,Settings2,Upload} from 'lucide-react';
+import {ArrowRight,BookOpen,CalendarDays,Check,CheckCircle2,ChevronLeft,ChevronRight,Download,Plus,RefreshCw,Settings2,Upload} from 'lucide-react';
 import type {Theme} from '@/lib/study-model';
 import type {Word} from '@/lib/vocabulary-model';
 import {CATEGORIES} from '@/lib/vocabulary-model';
@@ -46,6 +46,30 @@ export function evaluatePlanDraft(draft:VocabularyPlanDraft,projection:Vocabular
     detail=`剩余 ${remaining} 个 · 每周 ${draft.dailyNew*draft.weekdays.length} 个新词。到期复习另计，漏学不自动补债。`;
   }
   return {learned,capacity,remaining,valid:goalValid&&dailyValid&&(daysValid||remaining===0),title,detail,finish};
+}
+
+/** Calendar arithmetic uses the workflow's local date, never the browser's zone. */
+export function planCalendarWeek(projection:VocabularyProjection,weekOffset=0){
+  const today=projection.daily.window.localDate,anchor=new Date(today+'T12:00:00.000Z');
+  const monday=new Date(anchor);monday.setUTCDate(monday.getUTCDate()+1-(monday.getUTCDay()||7)+weekOffset*7);
+  const days=Array.from({length:7},(_,index)=>{const date=new Date(monday);date.setUTCDate(date.getUTCDate()+index);const localDate=date.toISOString().slice(0,10),weekday=date.getUTCDay()||7;return {localDate,weekday,isToday:localDate===today,isLearningDay:!!projection.plan?.weekdays.includes(weekday),estimatedNew:localDate<today?null:0 as number|null};});
+  if(projection.plan){
+    const estimate=evaluatePlanDraft(projection.plan,projection),end=days[6].localDate,date=new Date(anchor);
+    let remaining=estimate.remaining;
+    for(let offset=0;estimate.valid&&remaining>0&&offset<366000;offset++){
+      const localDate=date.toISOString().slice(0,10);if(localDate>end)break;
+      const count=projection.plan.weekdays.includes(date.getUTCDay()||7)?Math.min(remaining,Math.max(0,projection.plan.dailyNew-(offset===0?projection.daily.newDone:0))):0;
+      const day=days.find(day=>day.localDate===localDate);if(day)day.estimatedNew=count;
+      remaining-=count;date.setUTCDate(date.getUTCDate()+1);
+    }
+  }
+  return days;
+}
+
+const calendarDate=(value:string)=>`${Number(value.slice(5,7))}月${Number(value.slice(8,10))}日`;
+
+function VocabularyPriorityArt({theme}:{theme?:Theme}){
+  return <div className="phase2-vocabulary-priority-art" aria-hidden="true">{theme==='hollow'?<img src="/phase2-theme/knight-icon-256.png" width="180" height="180" alt=""/>:<svg viewBox="0 0 170 200" focusable="false"><ellipse cx="95" cy="179" rx="58" ry="9" fill="#d3ab89" opacity=".3"/><path d="M73 56c-27-38-58-9-30 9 17 10 27 4 30-9" fill="#8a986a"/><path d="M77 64c18-45 48-27 37-6-7 14-25 15-37 6" fill="#c0cb96"/><path d="m79 64 7 58" stroke="#6e7852" strokeWidth="3" fill="none"/><path d="M64 100h40l-6 38H70Z" fill="#d39872"/><rect x="27" y="137" width="103" height="20" rx="5" fill="#788c72"/><rect x="37" y="132" width="88" height="9" rx="4" fill="#f9f3e2"/><rect x="31" y="159" width="112" height="18" rx="4" fill="#efe4cf"/><path d="M46 160v16m84-16v16" stroke="#cbb68e"/><circle cx="130" cy="74" r="27" fill="#edd1a4"/><path d="M118 75h24m-12-12v24" stroke="#c4a77b" strokeWidth="2"/></svg>}</div>;
 }
 
 export function candidatePresentation(status:CandidateStatus){
@@ -105,7 +129,7 @@ export function CandidateAction({workflow,word,disabled=false}:{workflow:Workflo
   </div>;
 }
 
-export function TodayVocabularyTask({workflow,onOpen,disabled=false}:{workflow:Workflow;onOpen:()=>void;disabled?:boolean}){
+export function TodayVocabularyTask({workflow,onOpen,disabled=false,priority=false,theme}:{workflow:Workflow;onOpen:()=>void;disabled?:boolean;priority?:boolean;theme?:Theme}){
   const [busy,setBusy]=useState(false),[message,setMessage]=useState('');
   const pending=useRef(false),scope=useRef(workflow.scopeKey);scope.current=workflow.scopeKey;
   useEffect(()=>{setMessage('');setBusy(false);pending.current=false;},[workflow.scopeKey]);
@@ -118,7 +142,8 @@ export function TodayVocabularyTask({workflow,onOpen,disabled=false}:{workflow:W
     catch(error){if(scope.current===key)setMessage(error instanceof Error?error.message:'词组尚未准备好，请重试。');}
     finally{if(scope.current===key){pending.current=false;setBusy(false);}}
   };
-  return <section className="phase2-today-vocabulary panel" aria-label="今日单词任务">
+  return <section className={`phase2-today-vocabulary panel${priority?' workspace-vocabulary-priority workspace-priority':''}`} aria-label="今日单词任务">
+    {priority&&<VocabularyPriorityArt theme={theme}/>}
     <div className="phase2-vocab-heading"><span className="phase2-vocab-eyebrow"><BookOpen size={16}/>单词计划</span><button type="button" className="text-button" disabled={disabled} onClick={onOpen}>查看计划<ArrowRight size={16}/></button></div>
     <WorkflowNotice workflow={workflow}/>
     {workflow.ready&&!workflow.error&&projection&&<>
@@ -200,10 +225,16 @@ export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=fa
   const projection=workflow.projection,plan=projection?.plan;
   const [editing,setEditing]=useState(false),[draft,setDraft]=useState<VocabularyPlanDraft>({bookId:'scene',goal:WORKFLOW_BOOKS[0].capacity,dailyNew:15,weekdays:[1,2,3,4,5]});
   const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[completedHidden,setCompletedHidden]=useState('');
+  const [planView,setPlanView]=useState<'week'|'day'>('week'),[weekOffset,setWeekOffset]=useState(0),[selectedDate,setSelectedDate]=useState<string|null>(null);
   const importInput=useRef<HTMLInputElement>(null),pending=useRef(false),scope=useRef(workflow.scopeKey),latest=useRef(workflow);scope.current=workflow.scopeKey;latest.current=workflow;
   useEffect(()=>{setEditing(false);setMessage('');setBusy(false);pending.current=false;setCompletedHidden('');},[workflow.scopeKey]);
+  useEffect(()=>{setWeekOffset(0);setSelectedDate(null);},[workflow.scopeKey,projection?.daily.window.localDate]);
   const blocked=overlayBlocked||!workflow.ready||!!workflow.error||busy;
   const estimate=projection?evaluatePlanDraft(draft,projection):null;
+  const savedEstimate=projection&&plan?evaluatePlanDraft(plan,projection):null;
+  const calendar=projection&&plan?planCalendarWeek(projection,weekOffset):[];
+  const selected=calendar.find(day=>day.localDate===(selectedDate||projection?.daily.window.localDate))||calendar[0];
+  const changeWeek=(offset:number)=>{const next=weekOffset+offset;setWeekOffset(next);if(projection)setSelectedDate(planCalendarWeek(projection,next)[0].localDate);};
   const edit=()=>{if(blocked)return;setMessage('');setDraft(plan?{bookId:plan.bookId,goal:plan.goal,dailyNew:plan.dailyNew,weekdays:[...plan.weekdays]}:{bookId:'scene',goal:WORKFLOW_BOOKS[0].capacity,dailyNew:15,weekdays:[1,2,3,4,5]});setEditing(true);};
   const run=async(action:()=>Promise<VocabularyWorkflowResult>,success:string,after?:()=>void)=>{
     if(blocked||pending.current)return;const key=workflow.scopeKey;pending.current=true;setBusy(true);setMessage('');
@@ -248,7 +279,16 @@ export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=fa
         </form>
       </section>}
       {!plan?<section className="phase2-plan-cover panel"><BookOpen size={30}/><h2>词书、总目标、每周节奏，都由你决定。</h2><p>预填每天 15 个新词、周一至周五。保存后才开始安排；不会生成示例学习进度。</p><button type="button" className="button primary" disabled={blocked} onClick={edit}>建立我的计划<ArrowRight size={17}/></button></section>:<>
-        <section className="phase2-plan-cover panel"><div className="phase2-vocab-heading"><span className="phase2-vocab-eyebrow"><BookOpen size={16}/>{WORKFLOW_BOOKS.find(book=>book.id===plan.bookId)?.name}</span><span className="phase2-local-badge">本机计划 · 未同步</span></div><h2>{projection.counts.remaining===0?'总目标已覆盖，温习让它更牢固。':'不赶路，把每个新词学扎实。'}</h2><div className="phase2-plan-stats"><span><b>{projection.counts.learned}</b>真实已学</span><span><b>{plan.goal}</b>总覆盖目标</span><span><b>{projection.counts.remaining}</b>还需认识</span></div><progress aria-label="总目标覆盖进度" value={Math.min(projection.counts.learned,plan.goal)} max={Math.max(1,plan.goal)}/><p><CalendarDays size={15}/>每周 {plan.weekdays.length} 天 · 每天 {plan.dailyNew} 个新词 · {plan.weekdays.length*plan.dailyNew} 个／周</p><p className="phase2-vocab-note">累计已学来自真实词卡记录；旧记录不猜算成今天的新学或复习。</p></section>
+        <section className="phase2-plan-cover panel"><div className="phase2-vocab-heading"><span className="phase2-vocab-eyebrow"><BookOpen size={16}/>{WORKFLOW_BOOKS.find(book=>book.id===plan.bookId)?.name}</span><span className="phase2-local-badge">本机计划 · 未同步</span></div><h2>{projection.counts.remaining===0?'总目标已覆盖，温习让它更牢固。':'不赶路，把每个新词学扎实。'}</h2><div className="phase2-plan-stats"><span><b>{projection.counts.learned}</b>真实已学</span><span><b>{plan.goal}</b>总覆盖目标</span><span><b>{projection.counts.remaining}</b>还需认识</span></div><progress aria-label="总目标覆盖进度" value={Math.min(projection.counts.learned,plan.goal)} max={Math.max(1,plan.goal)}/><p><CalendarDays size={15}/>每周 {plan.weekdays.length} 天 · 每天 {plan.dailyNew} 个新词 · {plan.weekdays.length*plan.dailyNew} 个／周</p>{savedEstimate&&<div className="phase2-plan-estimate phase2-saved-estimate"><b>{savedEstimate.title}</b><p>{savedEstimate.detail}</p></div>}<p className="phase2-vocab-note">累计已学来自真实词卡记录；旧记录不猜算成今天的新学或复习。</p></section>
+        {selected&&<section className="phase2-plan-calendar panel" aria-label="单词计划日历">
+          <div className="phase2-vocab-heading"><h2>这周，慢慢积累</h2><div className="phase2-plan-view" role="group" aria-label="计划视图">{(['week','day'] as const).map(view=><button key={view} type="button" aria-pressed={planView===view} disabled={overlayBlocked} onClick={()=>setPlanView(view)}>{view==='week'?'周':'日'}</button>)}</div></div>
+          <div className="phase2-calendar-range"><button type="button" className="text-button" aria-label="上一周" disabled={overlayBlocked} onClick={()=>changeWeek(-1)}><ChevronLeft size={18}/></button><b>{calendarDate(calendar[0].localDate)} — {calendarDate(calendar[6].localDate)}</b><button type="button" className="text-button" aria-label="下一周" disabled={overlayBlocked} onClick={()=>changeWeek(1)}><ChevronRight size={18}/></button></div>
+          <div className="phase2-calendar-days">{calendar.map(day=><button key={day.localDate} type="button" className={day.isLearningDay?'':'is-rest'} disabled={overlayBlocked} aria-pressed={selected.localDate===day.localDate} aria-current={day.isToday?'date':undefined} aria-label={`${day.localDate}，周${DAY_NAMES[day.weekday%7]}，${day.isLearningDay?'学习日':'休息日'}${day.isToday?'，今天':''}`} onClick={()=>setSelectedDate(day.localDate)}><span>周{DAY_NAMES[day.weekday%7]}</span><b>{Number(day.localDate.slice(8,10))}</b><small>{day.isToday?'今日':day.isLearningDay?'·':'休'}</small></button>)}</div>
+          <p className="phase2-calendar-zone">{projection.daily.window.timezone} · {calendar[0].localDate} 至 {calendar[6].localDate}</p>
+          {planView==='week'&&<p className="phase2-calendar-summary">本周预计待新学 <b>{calendar.reduce((sum,day)=>sum+(day.estimatedNew??0),0)}</b> 个 · 复习另计</p>}
+          <div className="phase2-calendar-detail" aria-live="polite"><h3>{selected.isToday?'今天':calendarDate(selected.localDate)}的安排</h3>{selected.isToday?<><div className="phase2-calendar-counts"><span><b>{projection.daily.newDone}</b>已新学</span><span><b>{projection.daily.reviewDone}</b>已复习</span><span><b>{projection.daily.newRemaining}</b>待新学</span></div><p>到期／主动复习另有 {projection.daily.reviewRemaining} 词待练，已复习不计入新词覆盖。</p></>:selected.localDate<projection.daily.window.localDate?<p>此视图未读取该日历史记录；已新学、已复习均未记录，不从当前计划反推。</p>:<><div className="phase2-calendar-counts"><span><b>{selected.estimatedNew}</b>预计新词</span><span><b>待排</b>到期复习</span><span><b>—</b>完成未发生</span></div><p>{selected.isLearningDay?'按保存计划估计新词配额；实际任务在当天安排。':'这是休息日，不安排新词；当天到期复习仍可进行。'}</p></>}</div>
+          {(weekOffset!==0||!selected.isToday)&&<button type="button" className="text-button" disabled={overlayBlocked} onClick={()=>{setWeekOffset(0);setSelectedDate(null);}}>回到今天<CalendarDays size={15}/></button>}
+        </section>}
         <TodayVocabularyTask workflow={workflow} disabled={blocked} onOpen={()=>setCompletedHidden('')}/>
         <div className="phase2-vocab-secondary-actions"><button type="button" className="button secondary" disabled={blocked||projection.daily.reviewRemaining===0} onClick={()=>void run(()=>workflow.startGroup('review'),'复习词组已准备好。',()=>setCompletedHidden(''))}>复习 · {projection.daily.reviewRemaining} 词</button><button type="button" className="text-button" disabled={blocked} onClick={()=>void run(()=>workflow.startGroup('extra'),'加练词组已准备好。',()=>setCompletedHidden(''))}>主动加练<Plus size={16}/></button>{onOpenSearch&&<button type="button" className="text-button" disabled={blocked} onClick={onOpenSearch}>去查词添加候选<ArrowRight size={16}/></button>}</div>
       </>}

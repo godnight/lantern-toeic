@@ -41,6 +41,26 @@ test('invalid total goal takes priority over selected days; covered equality nee
  const normal=evaluate(plan,projection);assert.equal(normal.finish,'2026-10-14');h.unmount();
 });
 
+test('saved calendar follows its local-date window across a year boundary and never guesses past completion',()=>{
+ const h=harness('TodayVocabularyTask',{workflow:controller(),onOpen(){}}),projection=controller().projection;
+ projection.daily.window={...day,localDate:'2026-12-31',timezone:'Pacific/Kiritimati'};
+ projection.plan={...plan,dailyNew:1,weekdays:[1,2,3,4,5,6,7]};projection.daily.reviewDone=9;
+ const week=h.exports.planCalendarWeek(projection);
+ assert.deepEqual(Array.from(week,row=>row.localDate),['2026-12-28','2026-12-29','2026-12-30','2026-12-31','2027-01-01','2027-01-02','2027-01-03']);
+ assert.deepEqual(Array.from(week,row=>row.estimatedNew),[null,null,null,1,1,0,0]);
+ assert.equal(week[3].isToday,true);assert.equal(week[6].weekday,7);assert.equal(projection.daily.reviewDone,9);h.unmount();
+});
+
+test('Sunday calendar and future estimates deduct only actual new learning, including when no days remain',()=>{
+ const h=harness('TodayVocabularyTask',{workflow:controller(),onOpen(){}}),projection=controller().projection;
+ projection.daily.window={...day,localDate:'2026-11-01',timezone:'America/New_York'};
+ projection.plan={...plan,dailyNew:2,weekdays:[7]};projection.learnedWordIds=['quiet'];projection.daily.newDone=1;projection.daily.reviewDone=6;
+ const week=h.exports.planCalendarWeek(projection),next=h.exports.planCalendarWeek(projection,1);
+ assert.equal(week[0].localDate,'2026-10-26');assert.equal(week[6].localDate,'2026-11-01');assert.equal(week[6].estimatedNew,1);
+ assert.equal(next.reduce((sum,row)=>sum+row.estimatedNew,0),0);
+ projection.plan={...projection.plan,goal:1,weekdays:[]};assert.equal(h.exports.planCalendarWeek(projection)[6].estimatedNew,0);h.unmount();
+});
+
 test('unreadable workflow shows recovery without invented zero tasks or a start command',()=>{
  let starts=0;const workflow=controller({ready:false,error:'IndexedDB 已阻止读取',projection:null,startGroup:async()=>{starts++;return {status:'applied'};}});
  const h=harness('TodayVocabularyTask',{workflow,onOpen(){}});assert.match(text(h.tree),/IndexedDB 已阻止读取/);assert.doesNotMatch(text(h.tree),/待学新词|今日已完成/);assert.equal(h.button('开始今日词组'),undefined);assert.equal(starts,0);h.unmount();

@@ -12,6 +12,19 @@ body[data-ui-theme="hollow"], .ui-theme-preview[data-ui-theme="hollow"] {
   --ui-radius-control: 11px;
 }
 .phase2-brand-mark { display: block; object-fit: contain; flex-shrink: 0; border-radius: 24%; }
+.workspace-mobile-brand { display: none; }
+.workspace-theme-entry { display: inline-flex; gap: 5px; width: auto; padding: 0 6px; }
+.workspace-theme-entry span { font-size: 12px; }
+@media (max-width:1023px) {
+  .workspace-mobile-brand { display: inline-flex; align-items: center; gap: 8px; min-width: 0; min-height: 44px; flex-shrink: 0; color: var(--ui-text); }
+  .workspace-mobile-brand b { font-size: 18px; letter-spacing: .04em; }
+  .workspace-location { min-width: 0; margin-right: auto; overflow-wrap: anywhere; }
+}
+@media (max-width:350px) {
+  .workspace-topbar { gap: 8px; }
+  .workspace-location { display: none; }
+  .workspace-mobile-brand { margin-right: auto; }
+}
 
 /* All reading surfaces stay opaque. The rain scene is bounded at 300 CSS px. */
 body[data-ui-theme="hollow"] .lantern-workspace { position: relative; background: transparent; }

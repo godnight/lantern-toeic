@@ -33,6 +33,38 @@
 .phase2-weekday-picker input:disabled+span { opacity: .55; cursor: not-allowed; }
 .phase2-plan-estimate { background: var(--ui-surface-muted); border-radius: 14px; padding: 16px; margin-top: 22px; font-size: 14px; line-height: 1.7; }
 .phase2-plan-estimate p { margin: 6px 0 0; color: var(--ui-text-secondary); }
+.phase2-saved-estimate { margin-top: 16px; }
+.phase2-plan-calendar h2 { margin: 0; font-size: 20px; }
+.phase2-plan-view { display: flex; gap: 3px; padding: 3px; border: 1px solid var(--ui-divider); background: var(--ui-surface-muted); border-radius: 12px; }
+.phase2-plan-view button { min-width: 42px; min-height: 38px; padding: 6px 12px; border: 0; border-radius: 9px; color: var(--ui-text-secondary); background: transparent; font: inherit; font-size: 13px; }
+.phase2-plan-view button[aria-pressed="true"] { color: var(--ui-text); background: var(--ui-surface); box-shadow: 0 1px 4px #00000010; }
+.phase2-calendar-range { display: grid; grid-template-columns: 38px minmax(0,1fr) 38px; align-items: center; gap: 8px; margin: 20px 0 14px; }
+.phase2-calendar-range>b { min-width: 0; text-align: center; font-size: 14px; font-weight: 600; }
+.phase2-calendar-range .text-button { min-width: 0; min-height: 38px; justify-content: center; padding: 6px; }
+.phase2-calendar-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 6px; }
+.phase2-calendar-days button { display: grid; justify-items: center; gap: 7px; min-width: 0; padding: 11px 2px; border: 1px solid var(--ui-divider); border-radius: 12px; background: var(--ui-surface); color: var(--ui-text); font: inherit; }
+.phase2-calendar-days button>span,.phase2-calendar-days button>small { font-size: 11px; white-space: nowrap; line-height: 1.4; }
+.phase2-calendar-days button>b { font-size: 21px; line-height: 1.2; font-weight: 600; font-variant-numeric: tabular-nums; }
+.phase2-calendar-days button>small { color: var(--ui-text-secondary); min-height: 15px; }
+.phase2-calendar-days button.is-rest { background: var(--ui-surface-muted); }
+.phase2-calendar-days button[aria-pressed="true"] { background: var(--ui-selection); border-color: var(--ui-primary); box-shadow: inset 0 0 0 1px var(--ui-primary); }
+.phase2-calendar-days button[aria-current="date"]>small { color: var(--ui-text); font-weight: 650; }
+.phase2-calendar-zone { color: var(--ui-text-secondary); font-size: 11px; overflow-wrap: anywhere; line-height: 1.7; margin: 11px 0 0; }
+.phase2-calendar-summary { font-size: 13px; margin: 16px 0; color: var(--ui-text-secondary); }
+.phase2-calendar-summary b { color: var(--ui-text); font-variant-numeric: tabular-nums; }
+.phase2-calendar-detail { min-width: 0; background: var(--ui-surface-muted); padding: 17px; margin: 16px 0; border-radius: 14px; }
+.phase2-calendar-detail h3 { margin: 0 0 15px; font-size: 16px; }
+.phase2-calendar-detail p { font-size: 12px; color: var(--ui-text-secondary); line-height: 1.8; margin: 10px 0 0; }
+.phase2-calendar-counts { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.phase2-calendar-counts>span { display: grid; gap: 5px; min-width: 0; color: var(--ui-text-secondary); font-size: 11px; }
+.phase2-calendar-counts b { color: var(--ui-text); font-size: 24px; line-height: 1.3; font-weight: 600; }
+.phase2-today-vocabulary.workspace-vocabulary-priority { position: relative; min-width: 0; margin-bottom: 0; }
+.phase2-today-vocabulary.workspace-vocabulary-priority>.phase2-vocabulary-priority-art { position: absolute; top: 65px; right: 24px; width: 146px; height: 146px; z-index: 0; pointer-events: none; }
+.phase2-vocabulary-priority-art :is(svg,img) { width: 100%; height: 100%; object-fit: contain; }
+.workspace-vocabulary-priority h2 { padding-right: 154px; min-height: 128px; }
+.workspace-vocabulary-priority .phase2-today-counts { margin-top: 18px; }
+body[data-ui-theme="day"] .workspace-vocabulary-priority { background: var(--ui-peach,#f4d9bf); border-color: #efccab; }
+@media(max-width:480px){.phase2-calendar-days { gap: 4px; }.phase2-calendar-detail { padding: 13px; }.phase2-calendar-counts b { font-size: 22px; }.phase2-today-vocabulary.workspace-vocabulary-priority>.phase2-vocabulary-priority-art { top: 76px; right: 15px; width: 100px; height: 116px; }.workspace-vocabulary-priority h2 { padding-right: 102px; min-height: 112px; }.phase2-plan-calendar h2 { font-size: 18px; }.phase2-plan-calendar .phase2-vocab-heading { gap: 8px; }.phase2-plan-view button { padding: 5px 10px; min-width: 36px; }}
 .phase2-vocab-note,.phase2-rating-policy { color: var(--ui-text-secondary); font-size: 12px; line-height: 1.8; margin: 16px 0; }
 .phase2-vocab-alert { border: 1px solid var(--ui-warning); background: var(--ui-warning-soft); color: var(--ui-text); border-radius: 12px; padding: 16px; margin: 14px 0; line-height: 1.7; }
 .phase2-vocab-alert p { margin: 6px 0; color: var(--ui-text-secondary); }
