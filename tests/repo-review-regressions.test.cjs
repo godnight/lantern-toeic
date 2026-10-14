@@ -24,16 +24,16 @@ function load(file, imports, globals = {}) {
 function environment({reverse = false} = {}) {
   const storage = new Map(), messages = {success: [], error: []}, listeners = new Map();
   let slots = [], cursor = 0, effects = [], online = false, failWrites = false;
-  let remote, latest, renderer;
+  let remote, latest, renderer, workspaceKey;
   const same = (a, b) => a && b && a.length === b.length && a.every((v, i) => Object.is(v, b[i]));
   const react = {
-    useState(initial) {const i = cursor++; if (!(i in slots)) slots[i] = typeof initial === 'function' ? initial() : initial; return [slots[i], value => slots[i] = typeof value === 'function' ? value(slots[i]) : value];},
+    useState(initial) {const i = cursor++; if (!(i in slots)) slots[i] = typeof initial === 'function' ? initial() : initial; const stateSlots=slots; return [slots[i], value => stateSlots[i] = typeof value === 'function' ? value(stateSlots[i]) : value];},
     useRef(initial) {const i = cursor++; if (!(i in slots)) slots[i] = {current: initial}; return slots[i];},
     useCallback(fn, deps) {const i = cursor++; if (!slots[i] || !same(slots[i].deps, deps)) slots[i] = {value: fn, deps}; return slots[i].value;},
     useEffect(fn, deps) {const i = cursor++; if (!slots[i] || !same(slots[i].deps, deps)) {const old = slots[i]; slots[i] = {deps}; effects.push(() => {old?.cleanup?.(); slots[i].cleanup = fn();});}}
   };
   const model = load('lib/study-model.ts', {});
-  const backup = load('lib/study-backup.ts', {'./study-model':model,zod:require('zod')});
+  const backup = load('lib/study-backup.ts', {'./study-model':model,zod:require(root + '/node_modules/zod')});
   remote = structuredClone(model.EMPTY_DATA);
   const localStorage = {
     get length() {return storage.size;},
@@ -42,10 +42,10 @@ function environment({reverse = false} = {}) {
     setItem: (key, value) => {if (failWrites) {const error = Error('Storage full'); error.name = 'QuotaExceededError'; throw error;} storage.set(key, String(value));},
     removeItem: key => storage.delete(key)
   };
-  const toast = Object.assign(() => {}, {success: text => messages.success.push(text), error: text => messages.error.push(text)});
+  const toast = Object.assign(() => {}, {success: text => messages.success.push(text), error: text => messages.error.push(text), message: text => messages.error.push(text)});
   const browser = {
-    document: {documentElement: {dataset: {},style:{setProperty(){}}}, hidden: false},
-    window: {location:{search:''}, addEventListener: (name, fn) => listeners.set(name, fn), removeEventListener: name => listeners.delete(name), scrollTo() {}},
+    document: {documentElement: {dataset: {},style:{setProperty(){}}}, body:{dataset:{},style:{}}, hidden: false},
+    window: {location:{search:''}, history:{state:null,pushState(state){this.state=state;}}, addEventListener: (name, fn) => listeners.set(name, fn), removeEventListener: name => listeners.delete(name), scrollTo() {}},
     navigator: {get onLine() {return online;}},
     localStorage, setInterval: () => 1, clearInterval() {}, setTimeout, clearTimeout,
     fetch: async (url, init) => {
@@ -65,6 +65,7 @@ function environment({reverse = false} = {}) {
     get latest() {return latest;},
     useStudy(owner) {latest = study.useStudy(owner); return latest;},
     setRenderer(fn) {renderer = fn;},
+    replaceWorkspace(key) {if(workspaceKey===key)return;slots.forEach(slot=>slot?.cleanup?.());slots=[];cursor=0;effects=[];workspaceKey=key;},
     setOnline(value) {online = value;},
     setFailWrites(value) {failWrites = value;}
   };
@@ -86,72 +87,234 @@ function textOf(node) {
   return Array.isArray(node) ? node.map(textOf).join('') : textOf(node.props?.children);
 }
 
-function dailyApp(data, {fullTree = false} = {}) {
-  const h = environment();
-  const jsx = (type, props) => ({type, props});
+// Expand the shipped pure layout/theme components so navigation is exercised
+// through its real buttons. Business children remain explicit, props-preserving
+// placeholders; the real recording-history component gets independent hook slots.
+function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
+  const pureComponents = new Set();
+  let workspaceComponent;
+  const jsx = (type, props, key) => {if(keyedWorkspace&&type===workspaceComponent)h.replaceWorkspace(key);return pureComponents.has(type) ? type(props) : ({type, props, key});};
   const stubs = new Proxy({}, {get: (_, name) => String(name)});
+  const runtime = {jsx, jsxs: jsx, Fragment: 'fragment'};
+  const themeModel = load('lib/ui-theme.ts', {}, h.browser);
+  const themeUi = load('app/learn/ui-theme.tsx', {
+    'react/jsx-runtime':runtime, 'lucide-react':stubs, '@/lib/ui-theme':themeModel
+  }, h.browser);
+  for (const component of Object.values(themeUi)) if (typeof component === 'function') pureComponents.add(component);
+  const workspace = load('app/learn/workspace-shell.tsx', {
+    'react/jsx-runtime':runtime, 'lucide-react':stubs, './ui-theme':themeUi
+  }, h.browser);
+  for (const component of Object.values(workspace)) if (typeof component === 'function') pureComponents.add(component);
+  const speaking = load('app/learn/speaking.tsx', {
+    react:h.react, 'react/jsx-runtime':runtime, 'lucide-react':stubs,
+    '@/components/ui/dialog':stubs, '@/components/ui/checkbox':stubs, './practice':stubs,
+    '@/lib/study-model':h.model,
+    '@/lib/native-host':{registerNativeBack:()=>()=>{},isNativeForeground:()=>true,subscribeNativeState:()=>()=>{}},
+    sonner:{toast:h.toast}
+  }, h.browser);
   const imports = {
-    react: h.react, 'react/jsx-runtime': {jsx, jsxs: jsx, Fragment: 'fragment'},
-    'lucide-react': stubs, sonner: {toast: h.toast},
-    '@/lib/use-study': {useStudy: () => ({data, ready: true, sync: 'local', issues: []})},
-    '@/lib/study-model': h.model, '@/lib/study-backup': h.backup,
-    '@/lib/native-host': {registerNativeBack: () => () => {}},
-    './learn/exam-collection': {}, './learn/resource-library': {}, './learn/practice': {},
-    './learn/speaking': {}, './learn/theme-atmosphere': {}, './learn/theme-library': {}, './learn/vocabulary-library': {}, './learn/mock-exam': {default:'MockExam'}
+    react:h.react, 'react/jsx-runtime':runtime, 'lucide-react':stubs, sonner:{toast:h.toast},
+    '@/lib/use-study':{useStudy: data ? () => ({data,ready:true,recordsReadable:true,sync:'local',issues:[],...api}) : owner => h.useStudy(owner)},
+    '@/lib/study-model':h.model, '@/lib/study-backup':h.backup, '@/lib/speaking-recovery':load('lib/speaking-recovery.ts',{}),
+    '@/lib/native-host':{registerNativeBack:()=>()=>{}},
+    '@/lib/ui-theme':themeModel, './learn/workspace-shell':workspace, './learn/ui-theme':themeUi,
+    './learn/exam-collection':{default:'ExamCollection'}, './learn/resource-library':{default:'ResourceLibrary'},
+    './learn/practice':{default:'Practice'},
+    './learn/speaking':{default:'SpeakingRoom',SpeakingTaskCatalog:speaking.SpeakingTaskCatalog,SpeakingRecordingHistory:speaking.SpeakingRecordingHistory},
+    './learn/vocabulary-library':{default:'VocabularyLibrary',VocabularyEntry:'VocabularyEntry',VocabularyReviewSummary:'VocabularyReviewSummary'},
+    './learn/mock-exam':{default:'MockExam'}
   };
-  for (const file of ['content/questions.json', 'content/speaking.json', 'art/map-scenes.json', 'art/themes.json']) {
-    imports['@/' + file] = {default: JSON.parse(fs.readFileSync(root + '/' + file, 'utf8'))};
+  for (const file of ['content/questions.json','content/speaking.json']) {
+    imports['@/'+file]={default:JSON.parse(fs.readFileSync(root+'/'+file,'utf8'))};
   }
-  for (const name of ['sidebar', 'dialog', 'tabs', 'select', 'radio-group', 'progress', 'sonner']) imports['@/components/ui/' + name] = stubs;
-  const App = load('app/study-app.tsx', imports, h.browser).default;
-  h.setRenderer(() => App({owner: null, nativeMode: true}));
-  return () => {const tree = h.render(); return fullTree ? tree : nodes(tree, n => n.type === 'button' && n.props.className?.startsWith('task-row'));};
+  for (const name of ['dialog','tabs','select','radio-group','progress','sonner']) imports['@/components/ui/'+name]=stubs;
+  const app = load('app/study-app.tsx',imports,h.browser);
+  h.recovery=imports['@/lib/speaking-recovery'];
+  workspaceComponent=app.StudyWorkspace;
+  pureComponents.add(app.StudyWorkspace);
+  return app.default;
+}
+function dailyApp(data) {
+  const h=environment(), App=createStudyApp(h,{data});
+  h.setRenderer(()=>App({owner:null,nativeMode:true}));
+  return ()=>h.render();
+}
+
+// Reconcile the actual shipped workspace key with separate hook slots. Browser
+// and React effects are controlled; study persistence still uses the real hook.
+function ownerWorkspace() {
+  const h=environment(), App=createStudyApp(h,{keyedWorkspace:true});
+  let owner='alice', nativeMode=false;
+  for(const account of ['alice','bob']) {const data=structuredClone(h.model.EMPTY_DATA);data.profile.name=account.toUpperCase();data.profile.onboarded=true;h.storage.set('lantern-v1-'+account,JSON.stringify({data}));}
+  h.setRenderer(()=>App({owner,nativeMode}));
+  const render=()=>{h.render();return h.render();};
+  const button=(label)=>nodes(render(),n=>n.type==='button'&&textOf(n)===label)[0];
+  const dialog=(title)=>nodes(render(),n=>n.type==='Dialog'&&textOf(n).includes(title))[0];
+  return {h,render,button,dialog,switchTo(next,nextNative=false){owner=next;nativeMode=nextNative;return render();}};
+}
+
+test('C10: owner and mode boundary removes preference drafts while same owner keeps edits',()=>{
+  const app=ownerWorkspace();app.render();app.button('调整学习偏好').props.onClick();
+  let dialog=app.dialog('设定你的下一程');assert.equal(dialog.props.open,true);
+  nodes(dialog,n=>n.type==='input'&&n.props.maxLength===40)[0].props.onChange({target:{value:'ALICE PRIVATE DRAFT'}});
+  assert.equal(nodes(app.dialog('设定你的下一程'),n=>n.type==='input'&&n.props.maxLength===40)[0].props.value,'ALICE PRIVATE DRAFT');
+  app.switchTo('bob');assert.equal(app.dialog('设定你的下一程').props.open,false);
+  app.button('调整学习偏好').props.onClick();dialog=app.dialog('设定你的下一程');
+  assert.equal(nodes(dialog,n=>n.type==='input'&&n.props.maxLength===40)[0].props.value,'BOB');
+  app.switchTo('bob',true);assert.equal(app.dialog('设定你的下一程').props.open,false,'Changing native/web mode also disposes the draft');
+  assert.doesNotMatch(JSON.stringify([...app.h.storage]),/ALICE PRIVATE DRAFT/,'Unsaved draft never enters either account snapshot');
+});
+
+test('C10: resource checkin fields and departed completion callbacks cannot enter the next owner workspace',()=>{
+  const app=ownerWorkspace();app.render();navigateApp(app.render,'resources');
+  const resource=nodes(app.render(),n=>n.type==='ResourceLibrary')[0];
+  resource.props.onRecord({id:'qa-alice-resource',title:'ALICE PRIVATE MATERIAL',minutes:12});
+  let dialog=app.dialog('留下一点今天的收获');assert.equal(dialog.props.open,true);
+  nodes(dialog,n=>n.type==='textarea')[0].props.onChange({target:{value:'ALICE PRIVATE NOTE'}});
+  assert.equal(nodes(app.dialog('留下一点今天的收获'),n=>n.type==='textarea')[0].props.value,'ALICE PRIVATE NOTE');
+  app.switchTo('bob');assert.equal(app.dialog('留下一点今天的收获').props.open,false);
+  resource.props.onRecord({id:'qa-alice-delayed',title:'DEPARTED MATERIAL',minutes:20});
+  dialog=app.dialog('留下一点今天的收获');assert.equal(dialog.props.open,false);
+  assert.equal(nodes(dialog,n=>n.type==='textarea')[0].props.value,'');assert.doesNotMatch(textOf(dialog),/ALICE PRIVATE|DEPARTED MATERIAL/);
+  assert.equal(JSON.parse(app.h.storage.get('lantern-v1-bob')).data.checkins.length,0);
+});
+
+test('C10: practice and speaking sessions are removed at owner change, retaining original callback owner',()=>{
+  const app=ownerWorkspace();app.render();app.button('开始今日练习').props.onClick();
+  const practice=nodes(app.render(),n=>n.type==='Practice')[0];assert.ok(practice);
+  app.switchTo('bob');assert.equal(nodes(app.render(),n=>n.type==='Practice').length,0);
+  practice.props.onFinish(8);assert.equal(app.dialog('留下一点今天的收获').props.open,false);
+  const attempt={id:'qa-departed-practice',qid:practice.props.queue[0].id,choice:0,correct:false,createdAt:new Date().toISOString(),seconds:5,mode:'first'};
+  practice.props.onAttempt(attempt);
+  assert.equal(JSON.parse(app.h.storage.get('lantern-v1-bob')).data.attempts.length,0,'A departed callback cannot write the replacement account');
+  assert.ok(JSON.parse(app.h.storage.get('lantern-v1-alice')).data.attempts.some(a=>a.id===attempt.id),'A captured callback remains scoped to its original account');
+  app.switchTo('alice');const oral=nodes(app.render(),n=>n.type==='button'&&textOf(n).includes('朗读 ·'))[0];oral.props.onClick();
+  const speaking=nodes(app.render(),n=>n.type==='SpeakingRoom')[0];assert.ok(speaking);
+  app.switchTo(null,true);assert.equal(nodes(app.render(),n=>n.type==='SpeakingRoom').length,0);
+  speaking.props.onFinish(9);assert.equal(app.dialog('留下一点今天的收获').props.open,false,'A departed speaking completion cannot open a new owner checkin');
+  assert.equal(nodes(app.render(),n=>n.type==='Practice').length,0);
+});
+
+test('I01: workspace recovery stays with the original owner and a processing clip cannot start a replacement session',()=>{
+  const app=ownerWorkspace();app.render();const prompts=JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8'));
+  const scope=JSON.stringify([false,'alice']),clip={prompt:prompts[0],meta:{id:'qa-owner-retained',promptId:prompts[0].id,title:prompts[0].title,createdAt:'2026-10-13T08:00:00Z',duration:8,mime:'audio/webm',note:''},blob:new Blob(['private Alice clip'])};
+  app.h.recovery.retainSpeakingRecovery(scope,{...clip,processing:true});
+  assert.equal(app.button('恢复未保存录音').props.disabled,true);
+  nodes(app.render(),n=>n.type==='button'&&textOf(n).includes('朗读 ·'))[0].props.onClick();assert.equal(nodes(app.render(),n=>n.type==='SpeakingRoom').length,0);
+  app.h.recovery.retainSpeakingRecovery(scope,clip);app.switchTo('bob');assert.equal(app.button('恢复未保存录音'),undefined);assert.doesNotMatch(textOf(app.render()),/有一段口语录音尚未保存/);
+  app.switchTo('alice');app.button('恢复未保存录音').props.onClick();const room=nodes(app.render(),n=>n.type==='SpeakingRoom')[0];assert.ok(room);assert.equal(room.props.recovery.blob,clip.blob);assert.equal(room.props.recovery.meta.id,clip.meta.id);
+  room.props.onRelease(clip.meta.id);room.props.onClose();assert.equal(app.h.recovery.getSpeakingRecovery(scope),undefined);assert.equal(app.button('恢复未保存录音'),undefined);
+});
+
+test('I09: nested lookup preserves the same practice queue and restores its lookup trigger focus',()=>{
+  const h=environment(),data=structuredClone(h.model.EMPTY_DATA);let focusCount=0,backCount=0;
+  class Element{constructor(){this.isConnected=true;}focus(){focusCount++;}}
+  h.browser.HTMLElement=Element;h.browser.document.activeElement=new Element();h.browser.requestAnimationFrame=fn=>fn();
+  h.browser.window.history.back=()=>{backCount++;h.browser.window.history.state={lanternPracticeView:'qa-parent-practice'};};
+  const App=createStudyApp(h,{data});h.setRenderer(()=>App({owner:'alice',nativeMode:false}));const render=()=>h.render();
+  nodes(render(),n=>n.type==='button'&&textOf(n)==='开始今日练习')[0].props.onClick();const before=nodes(render(),n=>n.type==='Practice')[0];
+  before.props.onLookup('reservation');let practice=nodes(render(),n=>n.type==='Practice')[0],dictionary=nodes(render(),n=>n.type==='VocabularyLibrary')[0];
+  assert.equal(practice.props.queue,before.props.queue);assert.equal(practice.props.lookupActive,true);assert.equal(dictionary.props.initialQuery,'reservation');assert.equal(dictionary.props.initialMode,'dictionary');
+  dictionary.props.onBack();practice=nodes(render(),n=>n.type==='Practice')[0];assert.equal(practice.props.queue,before.props.queue);assert.equal(practice.props.lookupActive,false);assert.equal(backCount,1);assert.equal(focusCount,1);
+});
+function navigateApp(render, id) {
+  const nav=nodes(render(),n=>n.type==='nav'&&n.props['aria-label']==='桌面主导航')[0];
+  const labels={train:'练习',resources:'资料'};
+  const button=nodes(nav,n=>n.type==='button'&&textOf(n)===labels[id])[0];
+  assert.ok(button,'Find the real WorkspaceShell navigation button for '+id);
+  button.props.onClick();
+}
+function dailySnapshot(render) {
+  let tree=render();
+  const priority=nodes(tree,n=>n.type==='section'&&n.props.className==='workspace-priority panel')[0];
+  assert.ok(priority,'The listening recommendation has an actual visible entry');
+  const listening={title:textOf(nodes(priority,n=>n.type==='h2')[0]),done:textOf(priority).includes('今日听力已练习')};
+  const start=nodes(priority,n=>n.type==='button'&&textOf(n)==='开始今日练习')[0];
+  assert.ok(start,'Find the shipped daily listening/reading action');
+  start.props.onClick();
+  let practice=nodes(render(),n=>n.type==='Practice')[0];
+  assert.ok(practice); listening.parts=Array.from(new Set(practice.props.queue.map(q=>q.part)));
+  practice.props.onClose(); tree=render();
+  const rows=nodes(tree,n=>n.type==='button'&&n.props.className==='workspace-task-row');
+  assert.equal(rows.length,3,'Reading, vocabulary and speaking follow-up tasks remain available');
+  const reading={title:textOf(nodes(rows[0],n=>n.type==='b')[0]),done:textOf(rows[0]).includes('今日已练习')};
+  rows[0].props.onClick(); practice=nodes(render(),n=>n.type==='Practice')[0];
+  assert.ok(practice); reading.parts=Array.from(new Set(practice.props.queue.map(q=>q.part)));
+  practice.props.onClose(); tree=render();
+  const oral=nodes(tree,n=>n.type==='button'&&n.props.className==='workspace-task-row')[2];
+  const speaking={title:textOf(nodes(oral,n=>n.type==='b')[0]),done:textOf(oral).includes('今日已练习')};
+  oral.props.onClick(); const room=nodes(render(),n=>n.type==='SpeakingRoom')[0];
+  assert.ok(room); speaking.promptId=room.props.prompt.id; room.props.onClose();
+  return [listening,reading,speaking];
 }
 
 test('recording dates follow the configured timezone across UTC day boundaries', () => {
-  const model = load('lib/study-model.ts', {}), data = structuredClone(model.EMPTY_DATA);
-  const createdAt = '2026-10-10T16:30:00.000Z';
-  data.recordings.push({id: randomUUID(), promptId: 's1', title: 'Timezone recording', createdAt, duration: 24, mime: 'audio/mp4'});
-  const render = dailyApp(data, {fullTree: true});
-  nodes(render(), n => n.type === 'SidebarMenuButton' && textOf(n).includes('训练之境'))[0].props.onClick();
-  for (const [timezone, expected] of [['Asia/Shanghai', '2026-10-11'], ['America/Los_Angeles', '2026-10-10'], ['UTC', '2026-10-10']]) {
-    data.profile.timezone = timezone;
-    const list = nodes(render(), n => typeof n.type === 'function' && n.type.name === 'RecordingList')[0];
-    const row = nodes(list.type(list.props), n => n.type === 'button')[0];
-    assert.match(textOf(row), new RegExp(expected + ' · 24 秒 · 本机录音'), timezone);
-    assert.equal(data.recordings[0].createdAt, createdAt, 'Formatting must preserve the original recording timestamp');
+  const model=load('lib/study-model.ts',{}), data=structuredClone(model.EMPTY_DATA);
+  const createdAt='2026-10-10T16:30:00.000Z';
+  data.recordings.push({id:randomUUID(),promptId:'s1',title:'Timezone recording',createdAt,duration:24,mime:'audio/mp4'});
+  const render=dailyApp(data); navigateApp(render,'train');
+  // A separate hook environment preserves the component boundary, as React does.
+  const history=environment(), jsx=(type,props)=>({type,props}), stubs=new Proxy({},{get:(_,name)=>String(name)});
+  const actualHistory=load('app/learn/speaking.tsx',{
+    react:history.react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stubs,
+    '@/components/ui/dialog':stubs,'@/components/ui/checkbox':stubs,'./practice':stubs,
+    '@/lib/study-model':history.model,'@/lib/native-host':{registerNativeBack:()=>()=>{},isNativeForeground:()=>true,subscribeNativeState:()=>()=>{}},sonner:{toast:history.toast}
+  },history.browser).SpeakingRecordingHistory;
+  for(const [timezone,expected] of [['Asia/Shanghai','10月11日 00:30'],['America/Los_Angeles','10月10日 09:30'],['UTC','10月10日 16:30']]){
+    data.profile.timezone=timezone;
+    const list=nodes(render(),n=>typeof n.type==='function'&&n.type.name==='SpeakingRecordingHistory')[0];
+    assert.ok(list,'StudyApp passes its actual recordings and timezone into history');
+    history.setRenderer(()=>actualHistory(list.props));
+    const row=nodes(history.render(),n=>n.type==='article'&&n.props.className==='speaking-recording-item')[0];
+    assert.ok(textOf(row).includes(expected+' · 24 秒 · 本机录音'),timezone);
+    assert.equal(data.recordings[0].createdAt,createdAt,'Formatting preserves the original recording timestamp');
   }
 });
 
-for (const part of [1, 5]) test(`daily Part ${part} task keeps its title after an answer and remount`, () => {
-  const model = load('lib/study-model.ts', {}), data = structuredClone(model.EMPTY_DATA);
-  const render = dailyApp(data), index = part === 1 ? 0 : 1;
-  const original = textOf(render()[index]);
-  data.attempts.push({id: randomUUID(), qid: `p${part}-01`, choice: 0, correct: true, createdAt: new Date().toISOString(), seconds: 12, mode: 'first'});
-  const after = render()[index];
-  assert.equal(textOf(after), original, 'Completing a task must not replace it with a newly recommended task');
-  assert.match(after.props.className, /task-done/);
-  assert.equal(textOf(dailyApp(data)()[index]), original, 'Restarting on the same day preserves the task');
+test('I04: media failure after URL acquisition has inline retry and retains the original recording',async()=>{
+  const h=environment(),data=structuredClone(h.model.EMPTY_DATA),requests=[];
+  const recording={id:'qa-cloud-media-error',promptId:'s1',title:'Existing cloud recording',createdAt:'2026-10-13T08:00:00Z',duration:24,mime:'audio/webm',uploaded:true};data.recordings=[recording];
+  const App=createStudyApp(h,{data,api:{recordingUrl:async r=>{requests.push(r);return '/api/recordings/'+r.id;}}});h.setRenderer(()=>App({owner:'alice',nativeMode:false}));const render=()=>h.render();
+  navigateApp(render,'train');nodes(render(),n=>n.type==='Tabs')[0].props.onValueChange('speaking');
+  await nodes(render(),n=>typeof n.type==='function'&&n.type.name==='SpeakingRecordingHistory')[0].props.onPlay(recording);
+  const firstAudio=nodes(render(),n=>n.type==='audio'&&n.props.className==='recording-player')[0];firstAudio.props.onError();
+  assert.match(textOf(render()),/音频加载或解码失败/);assert.equal(data.recordings[0],recording);assert.equal(data.recordings.length,1);
+  nodes(render(),n=>n.type==='button'&&textOf(n)==='重新读取音频')[0].props.onClick();await tick();
+  const retryAudio=nodes(render(),n=>n.type==='audio'&&n.props.className==='recording-player')[0];assert.equal(requests.length,2);assert.equal(requests[1],recording);assert.equal(retryAudio.props.src,firstAudio.props.src);assert.notEqual(retryAudio.key,firstAudio.key,'The unchanged cloud URL must mount a fresh audio element');assert.doesNotMatch(textOf(render()),/音频加载或解码失败/);
 });
 
-test('daily speaking task stays on the saved prompt rather than marking the next prompt done', () => {
-  const model = load('lib/study-model.ts', {}), data = structuredClone(model.EMPTY_DATA);
-  const prompts = JSON.parse(fs.readFileSync(root + '/content/speaking.json', 'utf8'));
-  const render = dailyApp(data), original = textOf(render()[2]);
-  data.recordings.push({id: randomUUID(), promptId: prompts[0].id, title: prompts[0].title, createdAt: new Date().toISOString(), duration: 10, mime: 'audio/mp4'});
-  assert.equal(textOf(render()[2]), original);
-  assert.match(render()[2].props.className, /task-done/);
+for(const part of [1,5]) test(`daily Part ${part} task keeps its title after an answer and remount`,()=>{
+  const model=load('lib/study-model.ts',{}),data=structuredClone(model.EMPTY_DATA),render=dailyApp(data),index=part===1?0:1;
+  const original=dailySnapshot(render)[index];
+  assert.ok(original.parts.includes(part),'The shipped action actually opens the recommended Part');
+  assert.equal(original.done,false);
+  data.attempts.push({id:randomUUID(),qid:`p${part}-01`,choice:0,correct:true,createdAt:new Date().toISOString(),seconds:12,mode:'first'});
+  const after=dailySnapshot(render)[index];
+  assert.equal(after.title,original.title,'Completing a task must not replace its visible title');
+  assert.deepEqual(after.parts,original.parts,'Same-day answers must not recommend a different Part');
+  assert.equal(after.done,true,'The actual UI marks this recommended task completed');
+  const restarted=dailySnapshot(dailyApp(data))[index];
+  assert.equal(restarted.title,original.title,'Restarting on the same day preserves the task');
+  assert.deepEqual(restarted.parts,original.parts); assert.equal(restarted.done,true);
 });
 
-test('practicing other Parts and prompts does not complete the recommended daily tasks', () => {
-  const model = load('lib/study-model.ts', {}), data = structuredClone(model.EMPTY_DATA);
-  const prompts = JSON.parse(fs.readFileSync(root + '/content/speaking.json', 'utf8'));
-  const render = dailyApp(data), before = render().map(textOf);
-  for (const part of [2, 6]) data.attempts.push({id: randomUUID(), qid: `p${part}-01`, choice: 0, correct: true, createdAt: new Date().toISOString(), seconds: 12, mode: 'first'});
-  data.recordings.push({id: randomUUID(), promptId: prompts[1].id, title: prompts[1].title, createdAt: new Date().toISOString(), duration: 10, mime: 'audio/mp4'});
-  const after = render();
-  assert.deepEqual(after.map(textOf), before);
-  for (const task of after) assert.doesNotMatch(task.props.className, /task-done/);
+test('daily speaking task stays on the saved prompt rather than marking the next prompt done',()=>{
+  const model=load('lib/study-model.ts',{}),data=structuredClone(model.EMPTY_DATA);
+  const prompts=JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8')),render=dailyApp(data),original=dailySnapshot(render)[2];
+  assert.equal(original.promptId,prompts[0].id); assert.equal(original.done,false);
+  data.recordings.push({id:randomUUID(),promptId:prompts[0].id,title:prompts[0].title,createdAt:new Date().toISOString(),duration:10,mime:'audio/mp4'});
+  const after=dailySnapshot(render)[2];
+  assert.equal(after.title,original.title);assert.equal(after.promptId,original.promptId);assert.equal(after.done,true);
+  assert.deepEqual(dailySnapshot(dailyApp(data))[2],after,'Same-day remount retains prompt and completed state');
+});
+
+test('practicing other Parts and prompts does not complete the recommended daily tasks',()=>{
+  const model=load('lib/study-model.ts',{}),data=structuredClone(model.EMPTY_DATA);
+  const prompts=JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8')),render=dailyApp(data),before=dailySnapshot(render);
+  for(const part of [2,6])data.attempts.push({id:randomUUID(),qid:`p${part}-01`,choice:0,correct:true,createdAt:new Date().toISOString(),seconds:12,mode:'first'});
+  data.recordings.push({id:randomUUID(),promptId:prompts[1].id,title:prompts[1].title,createdAt:new Date().toISOString(),duration:10,mime:'audio/mp4'});
+  const after=dailySnapshot(render);assert.deepEqual(after,before);
+  for(const task of after)assert.equal(task.done,false,'Unrelated tasks never receive the visible completion marker');
 });
 
 test('daily recommendations advance at the configured local midnight and retain weak Parts', () => {
@@ -210,28 +373,11 @@ test('offline profile changes preserve newest settings independently of Storage.
 
 test('storage quota failure keeps resource checkin open without a false success message', async () => {
   const h = environment();
-  const jsx = (type, props) => ({type, props});
-  const stubs = new Proxy({}, {get: (_, name) => String(name)});
-  const imports = {
-    react: h.react, 'react/jsx-runtime': {jsx, jsxs: jsx, Fragment: 'fragment'},
-    'lucide-react': stubs, sonner: {toast: h.toast},
-    '@/lib/use-study': {useStudy: owner => h.useStudy(owner)}, '@/lib/study-model': h.model, '@/lib/study-backup': h.backup,
-    '@/lib/native-host': {registerNativeBack: () => () => {}},
-    '@/content/questions.json': {default: JSON.parse(fs.readFileSync(root + '/content/questions.json'))},
-    '@/content/speaking.json': {default: JSON.parse(fs.readFileSync(root + '/content/speaking.json'))},
-    './learn/exam-collection':{},'./learn/resource-library': {default: 'ResourceLibrary'}, './learn/practice': {default: 'Practice'}, './learn/speaking': {default: 'SpeakingRoom'},
-    './learn/theme-atmosphere': {default:()=>null}, './learn/theme-library': {default:()=>null}, './learn/vocabulary-library': {}, './learn/mock-exam': {default:'MockExam'},
-    '@/art/map-scenes.json': {default: JSON.parse(fs.readFileSync(root+'/art/map-scenes.json','utf8'))},
-    '@/art/themes.json': {default:JSON.parse(fs.readFileSync(root+'/art/themes.json','utf8'))},
-  };
-  for (const name of ['sidebar', 'dialog', 'tabs', 'select', 'radio-group', 'progress', 'sonner']) imports['@/components/ui/' + name] = stubs;
-  const StudyApp = load('app/study-app.tsx', imports, h.browser).default;
+  const StudyApp = createStudyApp(h);
   h.setRenderer(() => StudyApp({owner: null, nativeMode: true}));
   h.render(); await tick();
   let tree = h.render();
-  const libraryButton = nodes(tree, n => n.type === 'button' && textOf(n).includes('学习书库'))[0];
-  assert.ok(libraryButton, 'Find the actual mobile navigation control');
-  libraryButton.props.onClick(); tree = h.render();
+  navigateApp(()=>h.render(),'resources'); tree=h.render();
   const library = nodes(tree, n => n.type === 'ResourceLibrary')[0];
   library.props.onRecord({id: 'review-resource', title: 'Review resource', minutes: 5});
   tree = h.render();
@@ -252,30 +398,16 @@ test('storage quota failure keeps resource checkin open without a false success 
 });
 
 test('mobile access guidance distinguishes synchronized PWA and local native modes', async () => {
-  const createApp = h => {
-    const jsx = (type, props) => ({type, props});
-    const stubs = new Proxy({}, {get: (_, name) => String(name)});
-    const imports = {
-      react: h.react, 'react/jsx-runtime': {jsx, jsxs: jsx, Fragment: 'fragment'},
-      'lucide-react': stubs, sonner: {toast: h.toast},
-      '@/lib/use-study': {useStudy: owner => h.useStudy(owner)}, '@/lib/study-model': h.model, '@/lib/study-backup': h.backup,
-      '@/lib/native-host': {registerNativeBack: () => () => {}},
-      '@/content/questions.json': {default: JSON.parse(fs.readFileSync(root + '/content/questions.json'))},
-      '@/content/speaking.json': {default: JSON.parse(fs.readFileSync(root + '/content/speaking.json'))},
-      './learn/exam-collection': {}, './learn/resource-library': {default: 'ResourceLibrary'}, './learn/practice': {default: 'Practice'}, './learn/speaking': {default: 'SpeakingRoom'},
-      './learn/theme-atmosphere': {default:()=>null}, './learn/theme-library': {default: () => null}, './learn/vocabulary-library': {}, './learn/mock-exam': {default:'MockExam'},
-      '@/art/map-scenes.json': {default: JSON.parse(fs.readFileSync(root+'/art/map-scenes.json','utf8'))},
-    '@/art/themes.json': {default: JSON.parse(fs.readFileSync(root + '/art/themes.json', 'utf8'))},
-    };
-    for (const name of ['sidebar', 'dialog', 'tabs', 'select', 'radio-group', 'progress', 'sonner']) imports['@/components/ui/' + name] = stubs;
-    return load('app/study-app.tsx', imports, h.browser).default;
-  };
+  const createApp = h => createStudyApp(h);
   const openInstall = (h, StudyApp, owner, nativeMode) => {
     h.setRenderer(() => StudyApp({owner, nativeMode}));
     h.render();
     let tree = h.render();
-    const button = nodes(tree, n => n.type === 'button' && n.props?.['aria-label'] === '安装手机应用')[0];
-    assert.ok(button, 'Find the mobile access control');
+    const settingsButton=nodes(tree,n=>n.type==='button'&&n.props['aria-label']==='外观与偏好')[0];
+    assert.ok(settingsButton,'Open the shipped preferences page'); settingsButton.props.onClick();tree=h.render();
+    const deviceRow=nodes(tree,n=>n.type==='div'&&n.props.className==='workspace-settings-row'&&textOf(n).includes('设备安装与离线范围'))[0];
+    const button=nodes(deviceRow,n=>n.type==='button')[0];
+    assert.ok(button,'Find the actual device-installation control');
     button.props.onClick();
     tree = h.render();
     return nodes(tree, n => n.type === 'Dialog' && n.props.open && textOf(n).includes(nativeMode ? '原生预览' : '鸿蒙桌面'))[0];
@@ -310,7 +442,7 @@ test('active native maintenance is Harmony-only and phone auth remains fail-clos
 test('native full exam opens in an isolated view with stable local scope and returns to training', () => {
   const model = load('lib/study-model.ts', {}), data = structuredClone(model.EMPTY_DATA);
   const render = dailyApp(data, {fullTree:true});
-  nodes(render(), n => n.type === 'SidebarMenuButton' && textOf(n).includes('训练之境'))[0].props.onClick();
+  navigateApp(render,'train');
   nodes(render(), n => n.type === 'button' && textOf(n).includes('完整听读模考'))[0].props.onClick();
   const tree = render(), exam = nodes(tree, n => n.type === 'MockExam')[0];
   assert.equal(exam.props.ownerId, 'harmony-local-device');

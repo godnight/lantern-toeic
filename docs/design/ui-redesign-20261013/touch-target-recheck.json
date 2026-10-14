@@ -1,0 +1,37 @@
+[
+  {
+    "overflow": false,
+    "page": "home",
+    "smallButtons": [],
+    "state": "default",
+    "width": 320
+  },
+  {
+    "overflow": false,
+    "page": "search",
+    "smallButtons": [],
+    "state": "results",
+    "width": 320
+  },
+  {
+    "overflow": false,
+    "page": "search",
+    "smallButtons": [],
+    "state": "results",
+    "width": 840
+  },
+  {
+    "overflow": false,
+    "page": "search",
+    "smallButtons": [],
+    "state": "results",
+    "width": 1440
+  },
+  {
+    "overflow": false,
+    "page": "search",
+    "smallButtons": [],
+    "state": "long",
+    "width": 1440
+  }
+]

@@ -1,0 +1,15 @@
+usage: aa dump <options>
+options list:
+  -h, --help                   list available commands
+  -a, --all                    dump all abilities
+  -l, --mission-list           dump mission list
+  -i, --ability                dump abilityRecordId
+  -e, --extension              dump elementName (FA: serviceAbilityRecords,Stage: ExtensionRecords)
+  -p, --pending                dump pendingWantRecordId
+  -r, --process                dump process
+  -d, --data                   dump the data abilities
+  -u, --userId                 userId
+  -c, --client                 client
+  -c, -u are auxiliary parameters and cannot be used alone
+  The original -s parameter is invalid
+  The original -m parameter is invalid

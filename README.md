@@ -1,5 +1,18 @@
 # LANTERN · 微光托业
 
+> **用户视觉验收未通过；合入与部署暂停。** 用户最新反馈：“我看了下你这版本的设计，完全没有空洞骑士的元素了。先别合入了”。当前本地源码、HAP、截图与评审均保留。此前独立评审通过仅适用于其限定技术审查范围，不能等同用户视觉认可。中性日间/夜间主题继续不带 IP；空洞骑士和丝之歌主题需要重新讨论明确角色、场景和世界观辨识度。本次只同步暂停与验收状态，不启动重新实现、渲染或新一轮评审。
+
+
+## 本地界面重设计验收（2026-10-13）
+
+按 v1.1 审定方案完成共享 React 界面集成，覆盖首页、导航、查词结果与详情、练习、复习、进度、资料库和模考。四主题为默认日间、默认夜间、空洞骑士和丝之歌；默认日/夜不使用游戏素材，原主题 ID、学习记录、账号边界和主要功能保留。
+
+当前是 `feat/ui-redesign-v11` / HEAD `12317b26b85a71888760b0cc18242d00a843ac74` 上的本地未提交候选。最终源码 474/474 学习测试、34/34 构建契约测试、类型检查与 Web/mobile 构建通过。最新 unsigned HAP 已核对 1,071 资源与 1,229 构建输入，并仅升级到自有隔离模拟器 `LanternUIQA4d5098e7`；启动、冷启动和 bundle 身份验证通过。
+
+[同一独立最后复验](docs/design/ui-redesign-20261013/reviews/IMPLEMENTATION-INDEPENDENT-FINAL-RECHECK.md)确认 I04/I08 关闭且 I01/P1 保护未回退，限定源码与受控回归范围无遗留实现缺陷。原生 UI 自动化接口缺失，真实麦克风/系统 Back/后台、正常文件选择器、IME、200%/读屏及 Pura X Max 实机尚未验收。原生日志仍有两项路径被掩码的子资源 404，不能报告全部资源加载成功。
+
+详见[验收与证据边界](docs/testing/ui-redesign-20261013/ACCEPTANCE.md)、[真实界面截图](docs/testing/ui-redesign-20261013/SCREENSHOT-INDEX.md)和[实现修订](docs/design/ui-redesign-20261013/reviews/IMPLEMENTATION-RESPONSE-I01-I11.md)。未推送、合并、发布、上传、安装手机或修改真实学习数据；下面旧版本叙述保留为发布历史。
+
 把每天的一小步，变成可复习、可积累、可分享的学习资源。
 
 [个人GitHub仓库](https://github.com/godnight/lantern-toeic) · [网页试用](https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site)（当前仅所有者可访问）

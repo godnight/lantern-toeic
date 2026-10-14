@@ -1,0 +1,42 @@
+鉁?new release stays draft until all seven attachments are verified (2.9095ms)
+鉁?upload interruption leaves a draft and rerun resumes matching attachments (1.0458ms)
+鉁?rerun replaces corrupted attachment only while release is a draft (0.8859ms)
+鉁?published identical release is read-only, including fallback digest downloads (0.6241ms)
+鉁?published same source but different bytes cannot be overwritten (0.9105ms)
+鉁?existing lightweight or annotated version tags are immutable (0.398ms)
+鉁?final remote digest mismatch leaves an unpublished draft (0.4789ms)
+鉁?changed local bytes are rejected before contacting GitHub (0.4753ms)
+鉁?unknown attachment prevents draft publication (0.4869ms)
+鉁?human publication between reads stops replacement (0.4852ms)
+鉁?asset redirects never receive the GitHub authentication header (11.3859ms)
+鉁?prepared file reader rejects artifact tampering and validates build identity (19.2946ms)
+鉁?renders the production learning shell and install metadata (95.4397ms)
+鉁?emits the catalog's animation and scrolling utilities (16.3558ms)
+鉁?forwards progress semantics to the primitive (756.2556ms)
+鉁?emits chart themes for the starter's media dark mode (396.4107ms)
+鉁?renders sidebar skeletons deterministically (1426.5513ms)
+鉁?new native code exceeds both stable/prerelease despite release ordering and version labels (3.5738ms)
+鉁?new release rejects reused/older versionCode 20005 before any write (0.899ms)
+鉁?new release rejects reused/older versionCode 20006 before any write (0.3852ms)
+鉁?unpublished high-code drafts do not reserve a code (0.6128ms)
+鉁?first native release allows existing source-only releases (0.4915ms)
+鉁?historical missing native evidence is blocked: build-info.json (0.3575ms)
+鉁?historical missing native evidence is blocked: lantern-v0.3.0-harmony-unsigned.hap (0.284ms)
+鉁?duplicate build-info metadata is rejected (0.3142ms)
+鉁?historical build-info digest tampering is rejected (0.5473ms)
+鉁?historical versionCode must equal tagged source config, not just a valid JSON integer (0.4428ms)
+鉁?historical native artifact is bound to build-info digest (0.3703ms)
+鉁?identical published tag remains read-only even after a newer release (0.3008ms)
+鉁?same published tag with changed code is never overwritten (0.2444ms)
+鉁?native release published during upload stops final publication and leaves draft (1.0722ms)
+鉁?history on a second page cannot be silently omitted (0.8787ms)
+鉁?no digest API fallback still checks HAP bytes and source identity (0.5487ms)
+鉁?non-integer candidate code fails before network (0.201ms)
+鈩?tests 34
+鈩?suites 0
+鈩?pass 34
+鈩?fail 0
+鈩?cancelled 0
+鈩?skipped 0
+鈩?todo 0
+鈩?duration_ms 2909.73

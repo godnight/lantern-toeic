@@ -1,0 +1,40 @@
+
+async function focusCard(view,number){const button=view.find(node=>node.type==='button'&&node.props['aria-label']?.startsWith(`第 ${number} 题，`));assert.ok(button);assert.notEqual(button.props.disabled,true);button.props.onClick();await view.drain();}
+const focusPlain=value=>JSON.parse(JSON.stringify(value)); // Compare JSON data, not VM realm prototypes.
+
+test('actual owner: answer-card navigation focuses the saved question after paint; ordinary next keeps material position',async()=>{
+  const {control,view}=await openedOwner(),before=structuredClone(control.row.attempt);
+  await focusCard(view,176);assert.equal(control.row.attempt.activeQuestion,176);assert.equal(view.focuses.length,0);assert.equal(view.pendingFrames,1);
+  assert.equal(control.row.attempt.id,before.id);assert.equal(control.row.attempt.readingDeadline,before.readingDeadline);assert.equal(control.row.attempt.listeningDeadline,before.listeningDeadline);assert.deepEqual(focusPlain(control.row.attempt.answers),before.answers);
+  view.paint();assert.equal(view.scrolls.length,1);assert.equal(view.focuses.length,1);assert.equal(view.focuses[0].number,176);assert.equal(view.focuses[0].options.preventScroll,true);assert.equal(view.scrolls[0].options.behavior,'auto');
+  await view.click('下一题');assert.equal(control.row.attempt.activeQuestion,177);assert.equal(view.pendingFrames,0);view.paint();assert.equal(view.scrolls.length,1);assert.equal(view.focuses.length,1);
+  assert.equal(control.row.attempt.readingDeadline,before.readingDeadline);assert.deepEqual(focusPlain(control.row.attempt.answers),before.answers);
+  assert.equal(control.calls.filter(call=>call[0]==='answer'||call[0]==='submit').length,0);view.unmount();
+});
+
+test('actual owner: a failed card selection never schedules focus or changes the saved question and original deadlines',async()=>{
+  const {control,view}=await openedOwner(),before=structuredClone(control.row.attempt),gate=deferred();control.setSelectGate(gate);
+  await focusCard(view,147);assert.equal(view.pendingFrames,0);assert.equal(control.row.attempt.activeQuestion,101);gate.reject(Error('synthetic selection write failed'));await view.drain();view.paint();
+  assert.deepEqual(focusPlain(control.row.attempt),before);assert.equal(view.focuses.length,0);assert.equal(view.scrolls.length,0);assert.equal(view.queries.length,0);assert.match(view.text,/synthetic selection write failed/);
+  control.setSelectGate(null);await focusCard(view,147);assert.equal(control.row.attempt.activeQuestion,147);view.paint();assert.equal(view.focuses.length,1);assert.equal(view.focuses[0].number,147);
+  assert.equal(control.row.attempt.readingDeadline,before.readingDeadline);assert.deepEqual(focusPlain(control.row.attempt.answers),before.answers);view.unmount();
+});
+
+test('actual owner: stale card frames cannot focus a different attempt with the same question number or a disposed owner',async()=>{
+  const control=controlledRepository();
+  function submitted(id,ordinal){const base=model.createAttempt(control.exam,{id,ownerId:control.repo.ownerId,fingerprint,ordinal,now:start});
+    const attempt=model.submitAttempt(model.advanceAttempt(base,start+model.LISTENING_MS),start+model.LISTENING_MS+1000);return{attempt,result:model.gradeAttempt(control.exam,attempt)};}
+  const oldRow=submitted('old-focus-record',1),nextRow=submitted('next-focus-record',2),oldSnapshot=structuredClone(oldRow),nextSnapshot=structuredClone(nextRow);
+  control.repo.listAttempts=async()=>[oldRow,nextRow];control.repo.resumeAttempt=async id=>id===oldRow.attempt.id?oldRow:nextRow;
+  const view=ownerHarness(control);await view.drain();
+  const history=view.find(node=>node.type==='button'&&Array.isArray(node.props.children)&&node.props.children[0]==='考试记录');assert.ok(history);history.props.onClick();await view.drain();
+  function renderedText(node){if(node==null||typeof node==='boolean')return '';if(typeof node!=='object')return String(node);return Array.isArray(node)?node.map(renderedText).join(''):renderedText(node.props?.children);}
+  async function openHistory(identity){const row=view.all(node=>node.props?.className==='panel mock-history-item').find(node=>renderedText(node).includes(identity));assert.ok(row,identity);
+    const button=React.Children.toArray(row.props.children).find(node=>node.type==='button');assert.ok(button);button.props.onClick();await view.drain();}
+  await openHistory('首次');await focusCard(view,147);assert.equal(view.pendingFrames,1);await view.click('回到题包与记录');
+  await openHistory('复测第 1 次');await focusCard(view,147);assert.equal(view.pendingFrames,2);view.paint();
+  assert.equal(view.queries.length,1,'The stale same-number frame must fail identity guard before querying the replacement view');
+  assert.equal(view.focuses.length,1);assert.equal(view.focuses[0].attemptId,nextRow.attempt.id);assert.equal(view.focuses[0].number,147);
+  await focusCard(view,176);assert.equal(view.pendingFrames,1);view.unmount();view.paint();assert.equal(view.queries.length,1);assert.equal(view.focuses.length,1);assert.equal(view.lateWrites,0);
+  assert.deepEqual(focusPlain(oldRow),oldSnapshot);assert.deepEqual(focusPlain(nextRow),nextSnapshot);assert.equal(control.calls.filter(call=>call[0]==='select'||call[0]==='answer'||call[0]==='submit').length,0);
+});

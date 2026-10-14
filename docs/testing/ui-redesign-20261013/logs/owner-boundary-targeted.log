@@ -1,0 +1,29 @@
+鉁?C10: owner and mode boundary removes preference drafts while same owner keeps edits (184.4169ms)
+鉁?C10: resource checkin fields and departed completion callbacks cannot enter the next owner workspace (72.236ms)
+鉁?C10: practice and speaking sessions are removed at owner change, retaining original callback owner (76.3007ms)
+鉁?recording dates follow the configured timezone across UTC day boundaries (88.1563ms)
+鉁?daily Part 1 task keeps its title after an answer and remount (127.4943ms)
+鉁?daily Part 5 task keeps its title after an answer and remount (114.4216ms)
+鉁?daily speaking task stays on the saved prompt rather than marking the next prompt done (120.7333ms)
+鉁?practicing other Parts and prompts does not complete the recommended daily tasks (61.9876ms)
+鉁?daily recommendations advance at the configured local midnight and retain weak Parts (6.6097ms)
+鉁?theme originals preview in the app and native Back closes the image before leaving the library (19.2032ms)
+鉁?offline profile changes preserve newest settings independently of Storage.key order (24.3379ms)
+鉁?storage quota failure keeps resource checkin open without a false success message (51.8425ms)
+鉁?mobile access guidance distinguishes synchronized PWA and local native modes (96.3292ms)
+鉁?active native maintenance is Harmony-only and phone auth remains fail-closed (0.5165ms)
+鉁?native full exam opens in an isolated view with stable local scope and returns to training (55.8279ms)
+鉁?theme hollow survives the independent profile key, a theme switch and cold reload without losing records (32.3396ms)
+鉁?theme silk survives the independent profile key, a theme switch and cold reload without losing records (36.6836ms)
+鉁?theme paper survives the independent profile key, a theme switch and cold reload without losing records (30.4412ms)
+鉁?theme crystal survives the independent profile key, a theme switch and cold reload without losing records (32.5192ms)
+鉁?C09: real owner-switch pre-effect snapshot cannot project prior nickname, review badge or document theme (173.6367ms)
+鉁?C09: loading shell with stale data uses neutral identity and hides review badge before effects (35.218ms)
+鈩?tests 21
+鈩?suites 0
+鈩?pass 21
+鈩?fail 0
+鈩?cancelled 0
+鈩?skipped 0
+鈩?todo 0
+鈩?duration_ms 1416.7772

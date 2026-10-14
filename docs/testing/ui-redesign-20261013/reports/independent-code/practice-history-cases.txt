@@ -1,0 +1,113 @@
+
+// History adapter deliberately queues navigation after cleanup timers, matching
+// history.back() asynchronous traversal; widgets/ReactDOM are still simulated.
+function browserHarness(initial={lanternWorkspaceView:'search',lanternVocabularyView:{token:'fixture-detail',view:'detail'}}) {
+  let stateIndex=1,timerId=0,pushCalls=0,backCalls=0;const entries=[{lanternWorkspaceView:'resources'},structuredClone(initial)];
+  const listeners=[],timers=new Map(),navigation=[],dispatched=[];
+  const document={getElementById:()=>({focus(){}}),createElement:()=>({click(){}})};
+  const window={scrollY:380,speechSynthesis:{cancel(){}},matchMedia:()=>({matches:true,addEventListener(){},removeEventListener(){}}),
+    scrollTo(x,y){this.scrollY=typeof x==='object'?x.top:y;},
+    addEventListener(type,fn,capture=false){listeners.push({type,fn,capture:!!capture});},
+    removeEventListener(type,fn){const index=listeners.findIndex(item=>item.type===type&&item.fn===fn);if(index>=0)listeners.splice(index,1);},
+    history:{get state(){return entries[stateIndex];},pushState(state){pushCalls++;entries.splice(stateIndex+1);entries.push(structuredClone(state));stateIndex++;},
+      replaceState(state){entries[stateIndex]=structuredClone(state);},back(){backCalls++;navigation.push(()=>{if(!stateIndex)return;stateIndex--;dispatch('popstate',{state:structuredClone(entries[stateIndex])});});}}
+  };
+  function dispatch(type,values={}) {let stopped=false;const event={...values,stopImmediatePropagation(){stopped=true;},preventDefault(){}};
+    for(const item of [...listeners].filter(item=>item.type===type).sort((a,b)=>Number(b.capture)-Number(a.capture))){item.fn(event);if(stopped)break;}dispatched.push({type,state:event.state,stopped});event.wasStopped=stopped;return event;}
+  const b={window,document,dispatch,setTimeout(fn){const id=++timerId;timers.set(id,fn);return id;},clearTimeout:id=>timers.delete(id),
+    flushTimers(){const batch=[...timers.values()];timers.clear();batch.forEach(fn=>fn());},
+    flushHistory(){let count=0;while(navigation.length){assert.ok(++count<30,'History traversal did not settle');navigation.shift()();}},
+    flush(){this.flushTimers();this.flushHistory();},get pushCalls(){return pushCalls;},get backCalls(){return backCalls;},get depth(){return entries.length;},get index(){return stateIndex;},get popListeners(){return listeners.filter(item=>item.type==='popstate').length;},dispatched};
+  return b;
+}
+
+test('StrictMode replay retains one Practice entry and never opens an exit confirmation on mount',()=>{
+  const browser=browserHarness(),h=harness({browser});const token=browser.window.history.state.lanternPracticeView;
+  assert.ok(token);h.strictReplay();browser.flush();h.render();
+  assert.equal(browser.pushCalls,1);assert.equal(browser.backCalls,0);assert.equal(browser.popListeners,1);
+  assert.equal(browser.window.history.state.lanternPracticeView,token);
+  assert.equal(nodes(h.tree,n=>n.type==='DialogTitle'&&textOf(n)==='先结束这组练习？').length,0);
+  assert.equal(h.closed,0);assert.equal(h.calls.length,0);h.unmount();browser.flush();
+  assert.equal(browser.backCalls,1);assert.equal(browser.window.history.state.lanternPracticeView,undefined);assert.equal(browser.window.history.state.lanternVocabularyView.token,'fixture-detail');
+});
+
+test('StrictMode replay followed by immediate final unmount releases the owned history entry exactly once',()=>{
+  const browser=browserHarness(),h=harness({browser});h.strictReplay();h.unmount();
+  assert.equal(browser.backCalls,0,'Traversal waits until cleanup can distinguish replay from final unmount');browser.flush();
+  assert.equal(browser.backCalls,1,'Multiple delayed replay/final cleanups must not issue two asynchronous traversals');
+  assert.equal(browser.window.history.state.lanternWorkspaceView,'search');
+  assert.equal(browser.window.history.state.lanternVocabularyView.token,'fixture-detail');assert.equal(browser.popListeners,0);
+  assert.equal(h.closed,0);assert.equal(h.calls.length,0);assert.equal(h.finishes.length,0);
+});
+
+test('Browser Back closes picture then exit confirmation while retaining the same failed choice and history token',()=>{
+  const browser=browserHarness(),h=harness({browser,outcomes:[false]});h.choose(1);h.click('确认答案');h.click('放大本题配图');
+  const token=browser.window.history.state.lanternPracticeView;let bubblePops=0;
+  browser.window.addEventListener('popstate',()=>bubblePops++);
+  browser.window.history.back();browser.flushHistory();h.render();
+  assert.equal(nodes(h.tree,n=>n.props?.className==='practice-image-dialog').length,0);
+  assert.equal(nodes(h.tree,n=>n.type==='DialogTitle'&&textOf(n)==='先结束这组练习？').length,0);
+  assert.equal(browser.window.history.state.lanternPracticeView,token);assert.equal(bubblePops,0);
+  browser.window.history.back();browser.flushHistory();h.render();assert.match(textOf(h.tree),/先结束这组练习/);assert.equal(h.closed,0);
+  browser.window.history.back();browser.flushHistory();h.render();
+  assert.equal(nodes(h.tree,n=>n.type==='DialogTitle'&&textOf(n)==='先结束这组练习？').length,0);
+  assert.equal(h.one(n=>n.type==='RadioGroup').props.value,'1');assert.equal(h.one(n=>n.type==='Progress').props.value,0);
+  assert.equal(h.saved.length,0);assert.equal(h.calls.length,1);assert.equal(h.finishes.length,0);assert.equal(bubblePops,0);
+  h.unmount();browser.flush();assert.equal(browser.window.history.state.lanternVocabularyView.token,'fixture-detail');assert.equal(browser.popListeners,1);
+});
+
+test('final Practice cleanup cannot traverse a replacement destination that no longer owns its token',()=>{
+  const browser=browserHarness(),h=harness({browser});h.unmount();
+  browser.window.history.replaceState({lanternWorkspaceView:'settings'});browser.flush();
+  assert.equal(browser.backCalls,0);assert.equal(browser.window.history.state.lanternWorkspaceView,'settings');assert.equal(browser.popListeners,0);
+});
+
+// Execute actual VocabularyLibrary with its own hook slots and the shared queued
+// history surface. No lookup/mark/grade/storage/network writes are permitted here.
+function vocabularyHistoryHarness(browser) {
+  let slots=[],cursor=0,effects=[],tree,blocked=false,backHandler,questionId;
+  const same=(a,b)=>a&&b&&a.length===b.length&&a.every((value,i)=>Object.is(value,b[i]));
+  const hooks={useState(initial){const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return[slots[i],next=>slots[i]=typeof next==='function'?next(slots[i]):next];},
+    useRef(initial){const i=cursor++;if(!(i in slots))slots[i]={current:initial};return slots[i];},
+    useMemo(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps))slots[i]={value:fn(),deps};return slots[i].value;},
+    useDeferredValue:value=>value,
+    useEffect(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps)){const old=slots[i];slots[i]={deps};effects.push(()=>{old?.cleanup?.();slots[i].cleanup=fn();});}}};
+  const study=load('lib/study-model.ts',{}),vocab=load('lib/vocabulary-model.ts',{'./study-model':study}),dict=load('lib/dictionary-model.ts',{'./vocabulary-model':vocab});
+  const jsx=(type,props)=>({type,props}),stubs=new Proxy({},{get:(_,name)=>String(name)});
+  const imports={react:hooks,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stubs,sonner:{toast:{success(){},error(){}}},
+    '@/lib/native-host':{registerNativeBack:fn=>{backHandler=fn;return()=>{backHandler=null;};}},'@/lib/vocabulary-model':vocab,'@/lib/dictionary-model':dict,
+    '@/lib/lesson-audio':{bundledLessonAudio:()=>null},'./practice':{SpeechPlayer:'SpeechPlayer'},
+    '@/lib/load-dictionary':{loadDictionary(){throw Error('Scene fixture must not fetch dictionary');}},
+    '@/lib/use-vocabulary':{useVocabulary:()=>({events:[],ready:true,error:'',sync:'fixture-only',mark(){throw Error('No mark writes');},review(){throw Error('No review writes');}})}};
+  for(const name of ['vocabulary','vocabulary-expansion','questions','dictionary-metadata'])imports['@/content/'+name+'.json']={default:JSON.parse(fs.readFileSync(path.join(root,'content',name+'.json'),'utf8'))};
+  const component=load('app/learn/vocabulary-library.tsx',imports,{window:browser.window,document:browser.document,requestAnimationFrame:fn=>fn(),setInterval:()=>1,clearInterval(){},setTimeout:browser.setTimeout,clearTimeout:browser.clearTimeout}).default;
+  function render(){for(let i=0;i<2;i++){cursor=0;tree=component({owner:null,initialMode:'learn',overlayBlocked:blocked,onQuestion:id=>{questionId=id;}});const batch=effects;effects=[];batch.forEach(fn=>fn());}return tree;}
+  render();
+  return {render,get tree(){return tree;},get questionId(){return questionId;},back:()=>backHandler(),block(value){blocked=value;render();},
+    search(value){nodes(tree,n=>n.type==='input'&&n.props.type==='search')[0].props.onChange({target:{value}});render();},
+    open(word){const button=nodes(tree,n=>n.props?.className==='word-open'&&textOf(n).startsWith(word))[0];assert.ok(button);button.props.onClick();render();},
+    question(){const button=nodes(tree,n=>n.type==='button'&&textOf(n).startsWith('Part '))[0];assert.ok(button);button.props.onClick();},
+    unmount(){slots.forEach(slot=>slot?.cleanup?.());}};
+}
+
+test('actual word detail survives Practice StrictMode, guarded Browser/Native/Escape and final return before list restoration',()=>{
+  const browser=browserHarness({lanternWorkspaceView:'search'}),words=vocabularyHistoryHarness(browser);
+  words.search('timetable');words.open('timetable');const detailToken=browser.window.history.state.lanternVocabularyView.token;
+  assert.match(textOf(words.tree),/返回结果/);words.question();assert.ok(words.questionId);
+  const all=JSON.parse(fs.readFileSync(path.join(root,'content/questions.json'),'utf8')),model=load('lib/study-model.ts',{});
+  words.block(true);const practice=harness({browser,queue:model.expandQuestionGroups(all,new Set([words.questionId])),outcomes:[false]});
+  practice.strictReplay();browser.flush();practice.render();
+  assert.equal(nodes(practice.tree,n=>n.type==='DialogTitle'&&textOf(n)==='先结束这组练习？').length,0);
+  assert.equal(words.back(),false,'Higher-priority word handler must defer to foreground Practice');practice.nativeBack();practice.click('继续练习');
+  const escape=browser.dispatch('keydown',{key:'Escape'});assert.equal(escape.wasStopped,false,'Word capture must not consume Escape while Practice owns the overlay');
+  practice.dismissMain();practice.click('继续练习');
+  browser.window.history.back();browser.flushHistory();practice.render();words.render();assert.match(textOf(practice.tree),/先结束这组练习/);
+  assert.equal(nodes(words.tree,n=>n.props?.id==='vocabulary-word-detail').length,1);assert.equal(practice.closed,0);
+  practice.click('结束并返回');assert.equal(practice.closed,1);practice.unmount();words.block(false);browser.flush();words.render();
+  assert.equal(browser.window.history.state.lanternPracticeView,undefined);assert.equal(browser.window.history.state.lanternVocabularyView.token,detailToken);
+  assert.equal(nodes(words.tree,n=>n.props?.id==='vocabulary-word-detail').length,1);assert.equal(nodes(words.tree,n=>n.type==='input'&&n.props.type==='search').length,0);
+  assert.equal(practice.calls.length,0);assert.equal(practice.finishes.length,0);
+  assert.equal(words.back(),true);browser.flushHistory();words.render();
+  assert.equal(nodes(words.tree,n=>n.props?.id==='vocabulary-word-detail').length,0);
+  assert.equal(nodes(words.tree,n=>n.type==='input'&&n.props.type==='search')[0].props.value,'timetable');words.unmount();
+});

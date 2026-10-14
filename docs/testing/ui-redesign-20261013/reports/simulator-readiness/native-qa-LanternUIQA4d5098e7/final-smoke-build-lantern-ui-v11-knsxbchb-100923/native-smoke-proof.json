@@ -1,0 +1,439 @@
+{
+  "status": "passed-with-open-observations",
+  "startedAt": "2026-10-13T10:09:23.631870+00:00",
+  "instance": "LanternUIQA4d5098e7",
+  "target": "127.0.0.1:15551",
+  "evidence": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923",
+  "hap": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\lantern-ui-v11-unsigned-local-only.hap",
+  "hapSha256": "d10202ec9ffc908e15199d8917cc270214d36b351161d90403a786faa604f573",
+  "hapBytes": 44292998,
+  "candidateFinalSource": true,
+  "commands": [
+    {
+      "name": "owned-instance-inventory",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\tools\\emulator\\Emulator.exe",
+        "-list",
+        "-details",
+        "-instancePath",
+        "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-native-qa-jbv3rhze\\instances",
+        "-imageRoot",
+        "C:\\Users\\Administrator\\AppData\\Local\\Huawei\\Sdk"
+      ],
+      "startedAt": "2026-10-13T10:09:23.631870+00:00",
+      "endedAt": "2026-10-13T10:09:23.752198+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "boot-completed",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "param",
+        "get",
+        "bootevent.boot.completed"
+      ],
+      "startedAt": "2026-10-13T10:09:23.752198+00:00",
+      "endedAt": "2026-10-13T10:09:23.816100+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "system-api",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "param",
+        "get",
+        "const.ohos.apiversion"
+      ],
+      "startedAt": "2026-10-13T10:09:23.816100+00:00",
+      "endedAt": "2026-10-13T10:09:23.889946+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "system-version",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "param",
+        "get",
+        "const.product.software.version"
+      ],
+      "startedAt": "2026-10-13T10:09:23.889946+00:00",
+      "endedAt": "2026-10-13T10:09:23.951261+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "bundle-before-upgrade",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "bm",
+        "dump",
+        "-n",
+        "com.lantern.toeic"
+      ],
+      "startedAt": "2026-10-13T10:09:23.951261+00:00",
+      "endedAt": "2026-10-13T10:09:24.029053+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "install-final-preserve-data",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "install",
+        "-r",
+        "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\lantern-ui-v11-unsigned-local-only.hap"
+      ],
+      "startedAt": "2026-10-13T10:09:24.057560+00:00",
+      "endedAt": "2026-10-13T10:09:24.967324+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "bundle-after-upgrade",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "bm",
+        "dump",
+        "-n",
+        "com.lantern.toeic"
+      ],
+      "startedAt": "2026-10-13T10:09:24.968323+00:00",
+      "endedAt": "2026-10-13T10:09:25.112668+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "aa-start-final",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "aa",
+        "start",
+        "-a",
+        "EntryAbility",
+        "-b",
+        "com.lantern.toeic",
+        "-m",
+        "entry"
+      ],
+      "startedAt": "2026-10-13T10:09:25.113668+00:00",
+      "endedAt": "2026-10-13T10:09:25.234185+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "app-pid-initial",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "pidof",
+        "com.lantern.toeic"
+      ],
+      "startedAt": "2026-10-13T10:09:28.235983+00:00",
+      "endedAt": "2026-10-13T10:09:28.308977+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "aa-initial-ability-state",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "aa",
+        "dump",
+        "-a"
+      ],
+      "startedAt": "2026-10-13T10:09:28.308977+00:00",
+      "endedAt": "2026-10-13T10:09:28.405648+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "aa-initial-process-state",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "aa",
+        "dump",
+        "-r"
+      ],
+      "startedAt": "2026-10-13T10:09:28.406648+00:00",
+      "endedAt": "2026-10-13T10:09:28.501283+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "app-hilog-final-initial",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "hilog",
+        "-x",
+        "-P",
+        "7949"
+      ],
+      "startedAt": "2026-10-13T10:09:28.502283+00:00",
+      "endedAt": "2026-10-13T10:09:28.576416+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "aa-stop-owned-app",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "aa",
+        "force-stop",
+        "com.lantern.toeic"
+      ],
+      "startedAt": "2026-10-13T10:09:28.588414+00:00",
+      "endedAt": "2026-10-13T10:09:28.716199+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "app-pid-after-stop",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "pidof",
+        "com.lantern.toeic"
+      ],
+      "startedAt": "2026-10-13T10:09:28.717204+00:00",
+      "endedAt": "2026-10-13T10:09:28.778753+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "aa-cold-start-final",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "aa",
+        "start",
+        "-a",
+        "EntryAbility",
+        "-b",
+        "com.lantern.toeic",
+        "-m",
+        "entry"
+      ],
+      "startedAt": "2026-10-13T10:09:28.779283+00:00",
+      "endedAt": "2026-10-13T10:09:28.870051+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "app-pid-cold",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "pidof",
+        "com.lantern.toeic"
+      ],
+      "startedAt": "2026-10-13T10:09:31.871935+00:00",
+      "endedAt": "2026-10-13T10:09:31.931423+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "aa-cold-ability-state",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "aa",
+        "dump",
+        "-a"
+      ],
+      "startedAt": "2026-10-13T10:09:31.932423+00:00",
+      "endedAt": "2026-10-13T10:09:32.023815+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "aa-cold-process-state",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "aa",
+        "dump",
+        "-r"
+      ],
+      "startedAt": "2026-10-13T10:09:32.024334+00:00",
+      "endedAt": "2026-10-13T10:09:32.114353+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "app-hilog-final-cold",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "hilog",
+        "-x",
+        "-P",
+        "8038"
+      ],
+      "startedAt": "2026-10-13T10:09:32.115354+00:00",
+      "endedAt": "2026-10-13T10:09:32.193841+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "app-pid-cold-final",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "pidof",
+        "com.lantern.toeic"
+      ],
+      "startedAt": "2026-10-13T10:09:34.205890+00:00",
+      "endedAt": "2026-10-13T10:09:34.274908+00:00",
+      "exitCode": 0
+    }
+  ],
+  "UIInteracted": false,
+  "learningDataRead": false,
+  "oldInstancesOperated": false,
+  "securitySettingsChanged": false,
+  "signatureReadOrGenerated": false,
+  "approvalRequested": false,
+  "installPolicy": "Official install -r replace; no uninstall, clear, reset, or permission-grant flag.",
+  "systemVersion": "emulator 7.0.0.106(SP1DEVC00E999R4P11)",
+  "beforeIdentity": {
+    "bundleName": "com.lantern.toeic",
+    "versionName": "0.3.3",
+    "versionCode": 20009,
+    "applicationName": "com.lantern.toeic",
+    "appVersionName": "0.3.3",
+    "appVersionCode": 20009,
+    "apiCompatibleVersion": 50000012,
+    "apiTargetVersion": 50000012,
+    "provisionType": "debug",
+    "distributionType": "none",
+    "debug": true
+  },
+  "upgradeSuccessful": true,
+  "identity": {
+    "bundleName": "com.lantern.toeic",
+    "versionName": "0.3.3",
+    "versionCode": 20009,
+    "applicationName": "com.lantern.toeic",
+    "appVersionName": "0.3.3",
+    "appVersionCode": 20009,
+    "apiCompatibleVersion": 50000012,
+    "apiTargetVersion": 50000012,
+    "provisionType": "debug",
+    "distributionType": "none",
+    "debug": true
+  },
+  "startSuccessful": true,
+  "initialPid": "7949",
+  "initialAbilityStateFile": "aa-initial-ability-state.stdout.log",
+  "initialLogs": {
+    "appPid": "7949",
+    "lineCount": 1667,
+    "logSha256": "d5398d01a6fecf1307e84e23698b06e0cdb1b5dd8ee8a77bbf4bcc3a6d04c5b1",
+    "missingResourceResponses": [
+      {
+        "line": 1438,
+        "text": "10-13 18:09:25.093  7949  8104 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=970702 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26"
+      },
+      {
+        "line": 1441,
+        "text": "10-13 18:09:25.094  7949  8104 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=970703 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26"
+      }
+    ],
+    "explicitJavascriptOrCrashMarkers": [],
+    "pageEndMarkers": [
+      {
+        "line": 1378,
+        "text": "10-13 18:09:25.026  7949  7949 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1900] [WebNavigation] OnPageEnd httpStatusCode:200 url:ht**s://lan***"
+      }
+    ],
+    "successfulResourceResponses": [
+      {
+        "line": 963,
+        "text": "10-13 18:09:24.710  7949  8104 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=-2 status_code=200 status_text=OK mime_type=text/html charset=utf-8 content_length=424"
+      },
+      {
+        "line": 1289,
+        "text": "10-13 18:09:24.923  7949  8104 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=970696 status_code=200 status_text=OK mime_type=application/javascript charset=utf-8 content_length=1332784"
+      },
+      {
+        "line": 1291,
+        "text": "10-13 18:09:24.923  7949  8104 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=970697 status_code=200 status_text=OK mime_type=text/css charset=utf-8 content_length=371845"
+      }
+    ],
+    "paintMarkers": []
+  },
+  "coldStopSuccessful": true,
+  "coldStartSuccessful": true,
+  "coldPid": "8038",
+  "coldLogs": {
+    "appPid": "8038",
+    "lineCount": 1681,
+    "logSha256": "2db9605562402850a9e81e87ba72bf825c8813238322f11f22e30cad950c46a0",
+    "missingResourceResponses": [
+      {
+        "line": 1456,
+        "text": "10-13 18:09:28.348  8038  8275 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=43742 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26"
+      },
+      {
+        "line": 1476,
+        "text": "10-13 18:09:28.350  8038  8275 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=43744 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26"
+      }
+    ],
+    "explicitJavascriptOrCrashMarkers": [],
+    "pageEndMarkers": [
+      {
+        "line": 1404,
+        "text": "10-13 18:09:28.294  8038  8038 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1900] [WebNavigation] OnPageEnd httpStatusCode:200 url:ht**s://lan***"
+      }
+    ],
+    "successfulResourceResponses": [
+      {
+        "line": 1036,
+        "text": "10-13 18:09:28.083  8038  8275 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=-2 status_code=200 status_text=OK mime_type=text/html charset=utf-8 content_length=424"
+      },
+      {
+        "line": 1336,
+        "text": "10-13 18:09:28.235  8038  8275 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=43737 status_code=200 status_text=OK mime_type=application/javascript charset=utf-8 content_length=1332784"
+      },
+      {
+        "line": 1341,
+        "text": "10-13 18:09:28.236  8038  8275 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=43738 status_code=200 status_text=OK mime_type=text/css charset=utf-8 content_length=371845"
+      }
+    ],
+    "paintMarkers": []
+  },
+  "checkedAt": "2026-10-13T10:09:34.275908+00:00",
+  "limits": "Official SDK build/resource proof and owned-emulator install/AA lifecycle smoke only. No native UI interaction, real microphone/audio playback, storage data comparison, or cloud acceptance. Masked subresource URLs prevent attribution of observed 404s."
+}

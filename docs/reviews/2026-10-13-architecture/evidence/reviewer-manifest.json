@@ -1,0 +1,23 @@
+{
+  "reviewers": [
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\architecture-review-20261013\\reviewers\\architecture.md",
+      "archived": "reviewers/architecture.md",
+      "sha256": "527d157ac71920dc303a9006808f8895f491b0ac13cb937c9ff253b30ab60996",
+      "unchangedCopy": true
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\architecture-review-20261013\\reviewers\\data-security.md",
+      "archived": "reviewers/data-security.md",
+      "sha256": "30b17b92078aa86a2d34e30de69231034c726631b24c3f8d8ed2248d50804c4d",
+      "unchangedCopy": true
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\architecture-review-20261013\\reviewers\\testing-maintainability.md",
+      "archived": "reviewers/testing-maintainability.md",
+      "sha256": "f019020c1e2b81f2c7a9d5a066c4cd59b84170e758117897029f41b02d9a6b32",
+      "unchangedCopy": true
+    }
+  ],
+  "probeCopyNote": "Only default repo-root location adjusted for archive directory; source logic and synthetic assertions retained."
+}

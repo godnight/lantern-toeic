@@ -1,0 +1,30 @@
+{
+  "checked_utc": "2026-10-13T10:47:47.574648+00:00",
+  "status": "user-visual-acceptance-not-approved-merge-and-deploy-paused",
+  "screenshots": 69,
+  "screenshot_sha_ok": true,
+  "copied_evidence_sha_ok": true,
+  "missing_primary_doc_links": [],
+  "classification": {
+    "sample": 49,
+    "excluded": 16,
+    "historical-limited": 2,
+    "fixture-seam-only": 2,
+    "unclassified": 0
+  },
+  "preserved_history53": 53,
+  "new_independent_batch10": 10,
+  "current_practice_lookup_return_sha256": "4a54166ea46731906c688f966f3281bb4b6eec2deb0f1c0733b823d12fad8ac5",
+  "deliverable_sha256": {
+    "ACCEPTANCE.md": "eeb554fd75b38fe750faf3a4ca70e7164638723700b5d26e3adc0144eea99278",
+    "SCREENSHOT-INDEX.md": "9ba9979f6be2daeea872a938880339a7874f4759905399e7d53bf02d10081909",
+    "evidence-index.json": "5695c32b23cb3ff3f404a9d1c5588b1b44e548e20c9b22148053ecb7f6b76cd1"
+  },
+  "copied_evidence_count": 216,
+  "independent_review_sha256": "304f2ae7981a5e3d47c7758830c2dff122fa4cddc48ac6b3e38b0f1b775227ed",
+  "readonly_404_report_sha256": "75f8a5789847ba7d75ed9f12f3031c491305b964342bd1b7680a40fb12e6ecad",
+  "preview_reloaded_and_http200": true,
+  "status_amended_utc": "2026-10-13T16:44:28.902128+00:00",
+  "user_visual_hold_record_sha256": "4e510a07bb71feb6fce415b3cade2fa5a69b46dba72588d6e400e30e37634e21",
+  "pending_word_plan_record_sha256": "e1e9526f3b1e4632d5e515b0364b8ff69d46a3e2ca7df4cc98a7a46d582e9940"
+}

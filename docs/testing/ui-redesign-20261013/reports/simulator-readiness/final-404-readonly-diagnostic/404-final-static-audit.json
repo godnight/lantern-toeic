@@ -1,0 +1,131 @@
+{
+  "checkedAt": "2026-10-13T10:33:17.005629+00:00",
+  "candidateSha256": "d10202ec9ffc908e15199d8917cc270214d36b351161d90403a786faa604f573",
+  "candidateFinalSource": true,
+  "webFiles": 1071,
+  "textAssetScan": [
+    {
+      "path": "assets/index-Cd6QOvGF.css",
+      "bytes": 371845,
+      "sha256": "70e42a8849a2f9b74ec11c7cc80478ee60919c4d1274a8c489bac072155aa858"
+    },
+    {
+      "path": "assets/index-DRUJ_l4J.js",
+      "bytes": 1332784,
+      "sha256": "db46001fb59efe762b009c5daab883d556b4ad1f107f17f86ffc553e5a226330"
+    },
+    {
+      "path": "favicon.svg",
+      "bytes": 342,
+      "sha256": "f5184e601c652705e9ec72f884b39b84dd2c880bb6045e6b92facb50cfeab840"
+    },
+    {
+      "path": "file.svg",
+      "bytes": 393,
+      "sha256": "81a9ce5ca9bc60870c1d72c0fd5b98b2bc5c8c02b0e04fefeab9efcc11277228"
+    },
+    {
+      "path": "globe.svg",
+      "bytes": 1037,
+      "sha256": "13187c071b4d369df3a7a179f69a927165bf624e1a524ee6c93b7d3be75d6fc8"
+    },
+    {
+      "path": "index.html",
+      "bytes": 424,
+      "sha256": "427223b2c89609e007d2955b248615a424b88a35f0d5e2f9083e41adefa80c7c"
+    },
+    {
+      "path": "window.svg",
+      "bytes": 387,
+      "sha256": "d3cd4bf0c1123258fcc266409856e28c93d4fc1cf8476702225e17842900ca63"
+    }
+  ],
+  "explicitReferences": [
+    {
+      "source": "assets/index-Cd6QOvGF.css",
+      "kind": "css-url",
+      "reference": "../images/hollow-v2-wide.webp",
+      "resolvedAssetPath": "images/hollow-v2-wide.webp",
+      "class": "local-static-ref",
+      "present": true,
+      "hasQueryOrFragment": false
+    },
+    {
+      "source": "assets/index-Cd6QOvGF.css",
+      "kind": "css-url",
+      "reference": "../images/silk-v2-wide.webp",
+      "resolvedAssetPath": "images/silk-v2-wide.webp",
+      "class": "local-static-ref",
+      "present": true,
+      "hasQueryOrFragment": false
+    },
+    {
+      "source": "assets/index-Cd6QOvGF.css",
+      "kind": "css-url",
+      "reference": "../images/hollow-v2-portrait.webp",
+      "resolvedAssetPath": "images/hollow-v2-portrait.webp",
+      "class": "local-static-ref",
+      "present": true,
+      "hasQueryOrFragment": false
+    },
+    {
+      "source": "assets/index-Cd6QOvGF.css",
+      "kind": "css-url",
+      "reference": "../images/silk-v2-portrait.webp",
+      "resolvedAssetPath": "images/silk-v2-portrait.webp",
+      "class": "local-static-ref",
+      "present": true,
+      "hasQueryOrFragment": false
+    },
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "kind": "js-static-literal",
+      "reference": "/sw.js",
+      "resolvedAssetPath": "sw.js",
+      "class": "local-static-ref",
+      "present": false,
+      "hasQueryOrFragment": false
+    },
+    {
+      "source": "index.html",
+      "kind": "markup-script-src",
+      "reference": "./assets/index-DRUJ_l4J.js",
+      "resolvedAssetPath": "assets/index-DRUJ_l4J.js",
+      "class": "local-static-ref",
+      "present": true,
+      "hasQueryOrFragment": false
+    },
+    {
+      "source": "index.html",
+      "kind": "markup-link-href",
+      "reference": "./assets/index-Cd6QOvGF.css",
+      "resolvedAssetPath": "assets/index-Cd6QOvGF.css",
+      "class": "local-static-ref",
+      "present": true,
+      "hasQueryOrFragment": false
+    }
+  ],
+  "missingExplicitStaticReferences": [
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "kind": "js-static-literal",
+      "reference": "/sw.js",
+      "resolvedAssetPath": "sw.js",
+      "class": "local-static-ref",
+      "present": false,
+      "hasQueryOrFragment": false
+    }
+  ],
+  "compiledApiLiteralsNotAssetRefs": {
+    "assets/index-DRUJ_l4J.js": [
+      "/api/exam-library",
+      "/api/recordings",
+      "/api/study",
+      "/api/vocabulary"
+    ]
+  },
+  "indexHtml": "<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, viewport-fit=cover\"><meta name=\"theme-color\" content=\"#0c1119\"><title>微光托业</title>  <script type=\"module\" crossorigin src=\"./assets/index-DRUJ_l4J.js\"></script>\n  <link rel=\"stylesheet\" crossorigin href=\"./assets/index-Cd6QOvGF.css\">\n</head><body><div id=\"root\"></div></body></html>\r\n",
+  "indexHasManifestLink": false,
+  "indexHasFaviconLink": false,
+  "limits": "Static literals only; dynamically constructed URLs and ArkWeb implicit requests cannot be mapped to masked request IDs. Not all reference literals are executed on startup."
+}

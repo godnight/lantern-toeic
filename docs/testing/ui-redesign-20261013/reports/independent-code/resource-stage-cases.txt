@@ -1,0 +1,61 @@
+
+// React setters are stable; preserve that property across parent/child commits.
+const rootSetters=new Map();
+hooks.useState=value=>{const i=cursor++;if(!(i in slots))slots[i]=typeof value==='function'?value():value;
+ if(!rootSetters.has(i))rootSetters.set(i,next=>{slots[i]=typeof next==='function'?next(slots[i]):next;});return[slots[i],rootSetters.get(i)];};
+let resourceSlots=[],resourceSetters=new Map(),resourceCursor=0,resourceEffects=[],resourceTree,resourceBack;
+const resourceHooks={
+ useState(initial){const i=resourceCursor++;if(!(i in resourceSlots))resourceSlots[i]=typeof initial==='function'?initial():initial;
+  if(!resourceSetters.has(i))resourceSetters.set(i,next=>{resourceSlots[i]=typeof next==='function'?next(resourceSlots[i]):next;});return[resourceSlots[i],resourceSetters.get(i)];},
+ useRef(initial){const i=resourceCursor++;if(!(i in resourceSlots))resourceSlots[i]={current:initial};return resourceSlots[i];},
+ useMemo(fn,deps){const i=resourceCursor++;if(!resourceSlots[i]||!same(resourceSlots[i].deps,deps))resourceSlots[i]={deps,value:fn()};return resourceSlots[i].value;},
+ useEffect(fn,deps){const i=resourceCursor++,old=resourceSlots[i];if(!old||!same(old.deps,deps))resourceEffects.push(()=>{old?.cleanup?.();resourceSlots[i]={deps,cleanup:fn()};});}
+};
+const catalog=load('content/resources-v2.ts');
+const Resource=load('app/learn/resource-library.tsx',{react:resourceHooks,'react/jsx-runtime':{jsx,jsxs:jsx},'lucide-react':proxy,
+ '@/content/resources-v2':catalog,'@/lib/native-host':{registerNativeBack:fn=>{resourceBack=fn;return()=>{if(resourceBack===fn)resourceBack=null;};}}},
+ {window,requestAnimationFrame:fn=>{frame.push(fn);return fn;},cancelAnimationFrame:fn=>{frame=frame.filter(item=>item!==fn);},setTimeout:fn=>frame.push(fn)}).default;
+function stage(){return nodes(tree).find(node=>node.type==='section'&&node.props.className?.startsWith('workspace-resource-stage'));}
+function resourceNode(){return nodes(tree).find(node=>node.type==='resource-library');}
+const elementCache=new Map(),clamps=[];
+window.scrollTo=(x,y)=>{const wanted=typeof x==='object'?x.top:y,max=stage()?.props.className.includes('resource-detail-active')?1000:8000;
+ window.scrollY=Math.min(wanted,max);clamps.push({wanted,max,actual:window.scrollY});};
+function renderResource(){resourceCursor=0;resourceEffects=[];resourceTree=Resource(resourceNode().props);
+ for(const node of nodes(resourceTree).filter(node=>node.props?.ref)){
+  const id=node.props['data-resource-id']||node.props.id;if(!elementCache.has(id))elementCache.set(id,new Element({identity:id}));
+  const element=elementCache.get(id);if(typeof node.props.ref==='function')node.props.ref(element);else node.props.ref.current=element;
+ }
+ resourceEffects.forEach(fn=>fn());return resourceTree;
+}
+function resourceControl(predicate){const button=nodes(resourceTree).find(node=>node.type==='button'&&predicate(node));assert.ok(button,'Resource control missing');return button;}
+function childClick(predicate){resourceControl(predicate).props.onClick();renderResource();}
+render();shell().props.onNavigate('resources');render();renderResource();
+childClick(node=>node.props['data-resource-category']==='listening');render();renderResource();
+window.scrollY=5342;childClick(node=>node.props['data-resource-id']==='bc-new-team-member');render();renderResource();
+assert.ok(stage().props.className.includes('resource-detail-active'));
+assert.equal(nodes(tree).filter(node=>node.type==='WorkspaceHeading').length,0);
+assert.equal(nodes(resourceTree).filter(node=>node.props?.id==='resource-detail-title').length,1);
+const sourceResourceProps=resourceNode().props;window.scrollY=120;
+shell().props.onSearch();render();renderResource();
+assert.equal(stage().props.hidden,true);assert.equal(resourceNode().props.checkinOpen,true);assert.equal(resourceBack(),false);
+assert.equal(nodes(resourceTree).filter(node=>node.props?.id==='resource-detail-title').length,1);
+const searchScope={hidden:stage().props.hidden,nativeYielded:true,detailStillMounted:true};
+nodes(tree).find(node=>node.type==='VocabularyLibrary').props.onBack();settle();renderResource();
+assert.equal(stage().props.hidden,false);assert.equal(resourceNode().props.checkinOpen,false);assert.equal(window.scrollY,120);
+assert.equal(nodes(resourceTree).filter(node=>node.props?.id==='resource-detail-title').length,1);
+// Child passive effects run before the state they request is committed in the parent.
+assert.equal(resourceBack(),true);renderResource();render();renderResource();
+assert.equal(stage().props.className.includes('resource-detail-active'),false);
+assert.equal(resourceControl(node=>node.props['data-resource-category']==='listening').props['aria-pressed'],true);
+assert.equal(window.scrollY,5342,'List restoration must wait for Root to reveal its long prelude before scrolling');
+assert.equal(focused?.identity,'bc-new-team-member');
+assert.equal(data.checkins.length,0);assert.equal(sourceResourceProps.checkins,data.checkins);
+const listReturn={scroll:window.scrollY,focus:focused.identity,filter:'listening'};
+// A route change before the queued restoration must cancel stale scrolling.
+window.scrollY=5342;childClick(node=>node.props['data-resource-id']==='bc-new-team-member');render();renderResource();
+assert.equal(resourceBack(),true);renderResource();assert.ok(frame.length>0);
+shell().props.onNavigate('progress');resourceSlots.forEach(slot=>slot?.cleanup?.());window.scrollY=77;render();
+assert.equal(shell().props.nav,'progress');assert.equal(stage(),undefined);assert.equal(window.scrollY,77);
+const pendingRestorationCancelled=true;
+console.log(JSON.stringify({timestamp:new Date().toISOString(),observedFiles,result:'passed',searchScope,listReturn,pendingRestorationCancelled,clamps,
+ limits:'Actual Root+Resource TSX; Hook/refs/history/rAF and 1000/8000px layout clamp are controlled. Does not measure actual DOM/CSS/Chrome or device. No learning record writes.'},null,2));

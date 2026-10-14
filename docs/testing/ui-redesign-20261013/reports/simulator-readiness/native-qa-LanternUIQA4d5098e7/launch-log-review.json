@@ -1,0 +1,43 @@
+{
+  "appLogLines": 1107,
+  "positiveLoadMatches": [
+    "10-13 17:18:47.054  7678  7678 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:1752] NWebImpl::kLoadUrlReportIntervalMs: 0",
+    "10-13 17:18:47.676  7678  7678 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:1830] [WebNavigation] LoadUrl url:ht**s://lan***",
+    "10-13 17:18:47.908  7678  7793 I A04500/chromium: [../../components/viz/service/display/display.cc:473] Display::Resize, current size: 0x0, new size: 1256x2526",
+    "10-13 17:18:47.909  7678  7793 I A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/display/arkweb_display_utils.cc:334] Display::Resize newSize = 1256x2526",
+    "10-13 17:18:48.222  7678  7678 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1900] [WebNavigation] OnPageEnd httpStatusCode:200 url:ht**s://lan***"
+  ],
+  "javascriptOrLoadErrorMatches": [],
+  "otherErrorLevelMatches": [
+    "10-13 17:18:47.085  7678  7678 E A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:2573] NWebDelegate::InitializeCef, is_initialized:0",
+    "10-13 17:18:47.096  7678  7678 E A04500/chromium: [../../base/i18n/icu_util.cc:193] /data/storage/el1/bundle/nweb/entry/resources/rawfile/icudtl.dat not exists.",
+    "10-13 17:18:47.098  7678  7678 E A04500/chromium: [date_time_format_adapter_impl.cpp:130] stop listen fail. Please RegTimezoneEvent first.",
+    "10-13 17:18:47.108  7678  7678 E A04500/chromium: [../../third_party/crashpad/crashpad/util/file/filesystem_posix.cc:63] mkdir : No such file or directory (2)",
+    "10-13 17:18:47.170  7678  7678 E A04500/chromium: [net_connect_adapter_impl.cpp:71] dlopen failed",
+    "10-13 17:18:47.171  7678  7678 E A04500/chromium: [net_connect_adapter_impl.cpp:394] register NetConnCallback failed, ret = 201.",
+    "10-13 17:18:47.171  7678  7678 E A04500/chromium: [../../arkweb/chromium_ext/net/base/network_change_notifier_passive_for_include.cc:321] register ohos net connect callback failed.",
+    "10-13 17:18:47.172  7678  7678 E A04500/chromium: [net_connect_adapter_impl.cpp:186] get all nets failed, ret = 201.",
+    "10-13 17:18:47.200  7678  7678 E A04500/chromium: [../../content/browser/child_process_security_policy_impl.cc:2626] Invalid isolated origin: ",
+    "10-13 17:18:47.200  7678  7678 E A04500/chromium: [../../content/browser/child_process_security_policy_impl.cc:2626] Invalid isolated origin: ",
+    "10-13 17:18:47.369  7678  7678 E A04500/chromium: [../../extensions/common/url_pattern_set.cc:305] Invalid url pattern: arkweb://resources/*",
+    "10-13 17:18:47.390  7678  7678 E A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/useragent/ua_push_config.cc:181] [UAPushLog]user_pref_value for PrefService: user_agent.push_config is not a dictionary or is not exit",
+    "10-13 17:18:47.390  7678  7678 E A04500/chromium: [../../ohos_nweb_ex/overrides/cef/libcef/browser/alloy/alloy_browser_engine_global_config.cc:192] No value for PrefService: nweb_ex.browser_engine_global_config_info",
+    "10-13 17:18:47.390  7678  7678 E A04500/chromium: [../../ohos_nweb_ex/overrides/cef/libcef/browser/alloy/alloy_browser_engine_global_config.cc:105] Can not upate browser engine global config for version is zero",
+    "10-13 17:18:47.403  7678  7678 E A04500/chromium: [../../ohos_nweb_ex/overrides/cef/libcef/browser/alloy/alloy_browser_engine_global_config.cc:192] No value for PrefService: nweb_ex.browser_engine_global_config_info",
+    "10-13 17:18:47.459  7678  7678 E A04500/chromium: [nweb_impl.cc:1560] CreateNWeb NWebId: 1 successfully",
+    "10-13 17:18:47.641  7678  7678 E A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_application.cc:250] There is no web inited callback to run.",
+    "10-13 17:18:47.655  7678  7678 E A04500/chromium: [../../arkweb/chromium_ext/content/browser/media/session/media_session_ohos.cc:194] MediaSessionImagesChangedmedia avsession av_metadata_ or avsession_adapter_ or metadata is null return",
+    "10-13 17:18:47.729  7678  7772 E A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/nweb_safe_browsing_detection_handler.cc:149] failed to open sa client lib file libsafe_browsing_client.z.so",
+    "10-13 17:18:47.731  7678  7678 E A04500/chromium: [../../ohos_nweb_ex/core/arkweb/nweb_extension_tabs_delegate_impl.cc:396] NWebExtensionTabDelegateImpl callback_ on_get_tab_v2 is nullptr",
+    "10-13 17:18:47.735  7678  7678 E A04500/chromium: [net_connect_adapter_impl.cpp:430] get default net failed, ret = 201.",
+    "10-13 17:18:47.959  7678  7771 E A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/nweb_safe_browsing_detection_handler.cc:149] failed to open sa client lib file libsafe_browsing_client.z.so",
+    "10-13 17:18:47.959  7678  7771 E A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/cloud_control_config/nweb_safe_browsing_cloud_control_config.cc:154] [cloud control] g_getConfigFilePathByTypeFunc is nullptr",
+    "10-13 17:18:47.959  7678  7771 E A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/cloud_control_config/nweb_safe_browsing_cloud_control_config.cc:154] [cloud control] g_getConfigFilePathByTypeFunc is nullptr",
+    "10-13 17:18:47.959  7678  7771 E A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/cloud_control_config/nweb_safe_browsing_cloud_control_config.cc:154] [cloud control] g_getConfigFilePathByTypeFunc is nullptr",
+    "10-13 17:18:47.959  7678  7771 E A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/cloud_control_config/nweb_safe_browsing_cloud_control_config.cc:377] [cloud control] CheckCloudControlConfigUpdate:checkCloudControlConfigUpdateFunc is nullptr.",
+    "10-13 17:18:48.005  7678  7841 E A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:125] OnVSync data is nullptr",
+    "10-13 17:18:48.083  7678  7678 E A04500/chromium: [../../arkweb/chromium_ext/chrome/browser/extensions/api/declarative_content/declarative_content_is_bookmarked_condition_delegate.cc:161] RequestIsBookmarked failed to search url in bookmarks",
+    "10-13 17:18:51.714  7678  7795 E A04500/chromium: [../../net/dns/address_info.cc:235] get address info failed, out_os_error is: -3 host: ***",
+    "10-13 17:19:47.229  7678  7678 E A04500/chromium: [../../ohos_nweb/src/sysevent/event_reporter.cc:621] release version!"
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "startedAt": "2026-10-13T10:38:28.141282+00:00",
+  "target": "127.0.0.1:15551",
+  "instance": "LanternUIQA4d5098e7",
+  "commands": [
+    {
+      "name": "404-readonly-current-pid",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "pidof",
+        "com.lantern.toeic"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "404-readonly-current-hilog",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "hilog",
+        "-x",
+        "-P",
+        "8038"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "readOnly": true,
+  "coldStartsPerformed": false,
+  "installed": false,
+  "settingsChanged": false,
+  "learningDataRead": false,
+  "otherInstancesOperated": false,
+  "status": "captured",
+  "checkedAt": "2026-10-13T10:38:28.268488+00:00",
+  "pid": "8038",
+  "lineCount": 0,
+  "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "targetRequestIdHits": [],
+  "rawfileWarnings": [],
+  "missingResourceResponses": []
+}

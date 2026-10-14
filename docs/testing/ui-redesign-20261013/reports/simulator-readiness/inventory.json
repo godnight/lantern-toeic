@@ -1,0 +1,24 @@
+{
+  "checkedDate": "2026-10-13",
+  "scope": "read-only; no build, emulator start/stop, installation, reset, phone, signing or study-data mutation",
+  "repo": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site",
+  "branch": "feat/ui-redesign-v11",
+  "head": "12317b26b85a71888760b0cc18242d00a843ac74",
+  "studio": {"path":"D:\\zzl\\harmony-toolchain\\studio-26.0.0.821","version":"26.0.0.821","buildNumber":"261.23567.138.36.2600821","node":"24.14.1","jdk":"25.0.2"},
+  "cli": {"wrapper":"D:\\zzl\\harmony-toolchain\\deveco.ps1","version":"1.3.0-stable"},
+  "sdk": {"path":"D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default","version":"26.0.0.105","api":26,"releaseType":"Release"},
+  "image": {"physicalPath":"D:\\zzl\\harmony-toolchain\\user-data\\Sdk\\system-image\\HarmonyOS-7.0.0\\phone_all_x86","preserveImageRootString":"C:\\Users\\Administrator\\AppData\\Local\\Huawei\\Sdk","version":"7.0.0.106","guestVersion":"HarmonyOS 7.0.0.106(SP1)","api":26,"deviceTypeVerified":"phone","cliImageInventoryMismatch":true,"freshCreateVerified":false},
+  "emulators": [
+    {"name":"LanternOffline7","status":"stopped","discovery":"CLI emulator list --format json"},
+    {"name":"LanternContent7","status":"stopped","discovery":"official engine with content instancePath"},
+    {"name":"LanternBooks7","status":"stopped","discovery":"official engine with books instancePath"}
+  ],
+  "activeDevices": 0,
+  "emulatorProcessObserved": false,
+  "hdcServiceObserved": true,
+  "currentAppIdentityFromSource": {"bundleName":"com.lantern.toeic","versionName":"0.3.3","versionCode":20009,"installedVersionFreshlyVerified":false},
+  "newRedesignNativeBuildVerified": false,
+  "newRedesignNativeUITested": false,
+  "productionFilesModifiedByReviewer": false,
+  "privateSigningMaterialRead": false
+}

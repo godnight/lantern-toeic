@@ -1,0 +1,44 @@
+鉁?new release stays draft until all seven attachments are verified (3.24ms)
+鉁?upload interruption leaves a draft and rerun resumes matching attachments (1.2634ms)
+鉁?rerun replaces corrupted attachment only while release is a draft (1.0576ms)
+鉁?published identical release is read-only, including fallback digest downloads (0.6562ms)
+鉁?published same source but different bytes cannot be overwritten (1.66ms)
+鉁?existing lightweight or annotated version tags are immutable (0.4579ms)
+鉁?final remote digest mismatch leaves an unpublished draft (0.4275ms)
+鉁?changed local bytes are rejected before contacting GitHub (0.4547ms)
+鉁?unknown attachment prevents draft publication (0.5145ms)
+鉁?human publication between reads stops replacement (0.4252ms)
+鉁?asset redirects never receive the GitHub authentication header (12.4365ms)
+鉁?prepared file reader rejects artifact tampering and validates build identity (20.6765ms)
+鉁?renders the production learning shell and install metadata (95.5228ms)
+鉁?emits the catalog's animation and scrolling utilities (21.5142ms)
+17:03:23 [vite] (client) page reload mobile/dist/index.html
+17:03:23 [vite] (client) page reload mobile/dist/index.html
+鉁?forwards progress semantics to the primitive (884.8193ms)
+鉁?emits chart themes for the starter's media dark mode (466.7122ms)
+鉁?renders sidebar skeletons deterministically (1290.7742ms)
+鉁?new native code exceeds both stable/prerelease despite release ordering and version labels (3.5744ms)
+鉁?new release rejects reused/older versionCode 20005 before any write (0.8535ms)
+鉁?new release rejects reused/older versionCode 20006 before any write (0.391ms)
+鉁?unpublished high-code drafts do not reserve a code (0.6062ms)
+鉁?first native release allows existing source-only releases (0.4977ms)
+鉁?historical missing native evidence is blocked: build-info.json (0.3463ms)
+鉁?historical missing native evidence is blocked: lantern-v0.3.0-harmony-unsigned.hap (0.2805ms)
+鉁?duplicate build-info metadata is rejected (0.319ms)
+鉁?historical build-info digest tampering is rejected (0.5405ms)
+鉁?historical versionCode must equal tagged source config, not just a valid JSON integer (0.4561ms)
+鉁?historical native artifact is bound to build-info digest (0.3715ms)
+鉁?identical published tag remains read-only even after a newer release (0.3105ms)
+鉁?same published tag with changed code is never overwritten (0.2672ms)
+鉁?native release published during upload stops final publication and leaves draft (1.0566ms)
+鉁?history on a second page cannot be silently omitted (0.8478ms)
+鉁?no digest API fallback still checks HAP bytes and source identity (0.5369ms)
+鉁?non-integer candidate code fails before network (0.1911ms)
+鈩?tests 34
+鈩?suites 0
+鈩?pass 34
+鈩?fail 0
+鈩?cancelled 0
+鈩?skipped 0
+鈩?todo 0
+鈩?duration_ms 2983.1681

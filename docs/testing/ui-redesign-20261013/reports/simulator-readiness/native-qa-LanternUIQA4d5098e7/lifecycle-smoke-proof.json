@@ -1,0 +1,26 @@
+{
+  "status": "passed-with-open-observations",
+  "checkedAt": "2026-10-13T09:30:28.893348+00:00",
+  "instance": "LanternUIQA4d5098e7",
+  "target": "127.0.0.1:15551",
+  "candidateFinalSource": false,
+  "bootAndUnsignedInstall": "passed; see boot-install-identity-proof.json",
+  "initialPid": "7678",
+  "coldPid": "8051",
+  "coldPidStillPresent": "8051",
+  "initialStartSuccessful": true,
+  "coldStopSuccessful": true,
+  "coldStartSuccessful": true,
+  "coldForeground": true,
+  "coldPageEnd200": true,
+  "coldMissingResourceResponses": [
+    "10-13 17:24:25.456  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=697195 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26",
+    "10-13 17:24:25.461  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=697197 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26"
+  ],
+  "coldJavascriptExceptionMarkers": [],
+  "UIInteracted": false,
+  "learningDataRead": false,
+  "securityChanges": false,
+  "signatureOrApprovalRequired": false,
+  "limits": "Masked subresource URLs; two 26-byte 404s per launch require investigation. Lifecycle smoke is not final candidate or UI acceptance."
+}

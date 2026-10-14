@@ -1,0 +1,7 @@
+error: failed to force stop process.
+Error Code:10104002  Error Message:Failed to retrieve specified package information.
+Error cause: The application corresponding to the specified package name is not installed.
+  Try the following:
+  > Check if the bundleName is correct
+  > Check whether the application corresponding to the specified bundleName is installed
+

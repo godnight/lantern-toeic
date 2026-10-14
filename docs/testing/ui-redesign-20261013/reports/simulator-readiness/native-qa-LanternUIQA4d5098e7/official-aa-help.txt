@@ -1,0 +1,14 @@
+usage: aa <command> <options>
+These are common aa commands list:
+  help                        list available commands
+  start                       start ability with options
+  stop-service                stop service with options
+  dump                        dump the ability info
+  force-stop <bundle-name>    force stop the process with bundle name
+  attach                      attach application to enter debug mode
+  detach                      detach application to exit debug mode
+  send-memory-level           send memory level to application by pid 
+  pre-start                   prestart ability with options 
+  test                        start the test framework with options
+  appdebug                    set / cancel / get waiting debug status
+  process                     debug and tune

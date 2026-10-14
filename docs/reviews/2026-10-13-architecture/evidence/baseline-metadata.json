@@ -1,0 +1,83 @@
+{
+  "reviewDate": "2026-10-13",
+  "local": {
+    "root": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site",
+    "branch": "main",
+    "head": "12317b26b85a71888760b0cc18242d00a843ac74",
+    "tree": "8653fe5f8ff54651d038105ba67d1ba39bab9cc8",
+    "initialStatus": "clean",
+    "trackedFilesProtected": 1461
+  },
+  "olderCheckout": {
+    "root": "D:\\zzl\\托业学习\\lantern-site",
+    "branch": "feat/dictionary-expansion",
+    "head": "70b0d6bdb08a717aa1ca2c123c5721ed705d9f69",
+    "initialStatus": "clean"
+  },
+  "pullRequests": [
+    {
+      "number": 42,
+      "url": "https://github.com/godnight/lantern-toeic/pull/42",
+      "state": "open",
+      "merged": false,
+      "base": "main",
+      "head": "feat/dictionary-expansion",
+      "headSha": "c64f8c61f72631419a8ae657cdcfcb1d5d29da89"
+    },
+    {
+      "number": 43,
+      "url": "https://github.com/godnight/lantern-toeic/pull/43",
+      "state": "open",
+      "merged": false,
+      "base": "feat/dictionary-expansion",
+      "head": "feat/private-exam-library",
+      "headSha": "06649028947ebd9011a08c1050181d30a6bd8d77"
+    },
+    {
+      "number": 45,
+      "url": "https://github.com/godnight/lantern-toeic/pull/45",
+      "state": "open",
+      "merged": false,
+      "base": "feat/private-exam-library",
+      "head": "feat/companion-themes",
+      "headSha": "af779e5960b5edef134b40efa8255f1afbf5884f"
+    }
+  ],
+  "site": {
+    "projectId": "appgprj_6a9e270c912c8191b5983b0f4cb42089",
+    "savedVersions": [
+      {
+        "versionNumber": 18,
+        "sourceSha": "12317b26b85a71888760b0cc18242d00a843ac74",
+        "deploymentId": "appgdep_6acc6007d1008191b3878153afe07f86"
+      },
+      {
+        "versionNumber": 17,
+        "sourceSha": "a437414737c2c0c99a2891a55dd2ce48ab9cae75",
+        "deploymentId": "appgdep_6acc3004035c8191b6f67e1672dac8aa"
+      },
+      {
+        "versionNumber": 16,
+        "sourceSha": "79762304dfe792509c8e7afad549d8d0bb12d25f",
+        "deploymentId": "appgdep_6acbc70c96bc81919e5687af952f1192"
+      }
+    ],
+    "deployment": {
+      "id": "appgdep_6acc6007d1008191b3878153afe07f86",
+      "status": "succeeded",
+      "url": "https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site",
+      "versionId": "appgprj_6a9e270c912c8191b5983b0f4cb42089~appgver_b7af3a7ab3f081919108b6c7e061d655"
+    },
+    "access": {
+      "mode": "custom",
+      "allowedUsers": 1,
+      "allowedGroups": 0
+    },
+    "readOnly": true
+  },
+  "notes": [
+    "Remote GitHub tree identity was not independently fetched; PR #45 description reports match to local tree.",
+    "No production data or account identities are stored here.",
+    "Task-list status snapshot is documented in archive README; it is not a promise that tasks never change."
+  ]
+}

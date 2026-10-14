@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-10-13T10:46:37.906525+00:00",
+  "scope": "One bounded final-candidate 404 read-only diagnostic packet. No HAP/SDK binaries/old 09:03 plan.",
+  "candidateSha256": "d10202ec9ffc908e15199d8917cc270214d36b351161d90403a786faa604f573",
+  "primaryReport": "404_FINAL_READONLY_DIAGNOSTIC.md",
+  "files": [
+    {
+      "path": "404-evidence-index.json",
+      "bytes": 21069,
+      "sha256": "f833cb821f2622f68e1fa19990032df8836261714aa070091fd2b23792416df8"
+    },
+    {
+      "path": "404-final-js-ast-audit.json",
+      "bytes": 3862,
+      "sha256": "65a1d5c456795acea022f6afcf98ee72d5da4c21642f8b6f0618fbedf1126672"
+    },
+    {
+      "path": "404-final-routes-and-templates.json",
+      "bytes": 7470,
+      "sha256": "8023c1a91a258b6ed55a6ff368b741fa9b381a682bfe8bd52f69c3c4df49e11c"
+    },
+    {
+      "path": "404-final-static-audit.json",
+      "bytes": 4561,
+      "sha256": "f653fac0816327d61778e2f38daa8711f567a0b4d6a34a3a373c0b0eac6f6507"
+    },
+    {
+      "path": "404-log-correlation.md",
+      "bytes": 5628,
+      "sha256": "306819b62727f18480701fd9b6d4a2651fdbe1f88bb94c3d47d0415dd07d422e"
+    },
+    {
+      "path": "404-readonly-capture.json",
+      "bytes": 1269,
+      "sha256": "e9380f33075105b04ba2e40d11f21cdc380ccc8b2b3d469cef2c06d72f5bc6c0"
+    },
+    {
+      "path": "404-readonly-current-hilog.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "404-readonly-current-hilog.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "404-readonly-current-pid.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "404-readonly-current-pid.stdout.log",
+      "bytes": 6,
+      "sha256": "4d106dc121b097715848421dd18169eed1fabe7df38de5bf9f419bde63875714"
+    },
+    {
+      "path": "404_FINAL_READONLY_DIAGNOSTIC.md",
+      "bytes": 7389,
+      "sha256": "75f8a5789847ba7d75ed9f12f3031c491305b964342bd1b7680a40fb12e6ecad"
+    },
+    {
+      "path": "app-hilog-final-cold.stdout.log",
+      "bytes": 278847,
+      "sha256": "2db9605562402850a9e81e87ba72bf825c8813238322f11f22e30cad950c46a0"
+    },
+    {
+      "path": "app-hilog-final-initial.stdout.log",
+      "bytes": 281192,
+      "sha256": "d5398d01a6fecf1307e84e23698b06e0cdb1b5dd8ee8a77bbf4bcc3a6d04c5b1"
+    },
+    {
+      "path": "audit-routes-and-templates.py",
+      "bytes": 5627,
+      "sha256": "95bb568914a58237db7c1a6d90d404be6b779269108e8690c1439dfb22504677"
+    },
+    {
+      "path": "MANUAL_QA_VISUAL_MEDIA_CHECK.md",
+      "bytes": 1860,
+      "sha256": "a3c391ee30df31f4595d5991fef29c01bb978ce061a266c86fea8e25c9444414"
+    },
+    {
+      "path": "official-emulator-help-excerpt.txt",
+      "bytes": 3723,
+      "sha256": "c6330be484efdaa46ff40eae12b11a00ba222eddfab92806a0259f4f015a91c9"
+    },
+    {
+      "path": "official-help-provenance.json",
+      "bytes": 274,
+      "sha256": "6f44e5e43a9fe91c8170d921141a6cdc2c3615d012157e95718a30996a307de1"
+    }
+  ],
+  "markdownRelativeLinkCheck": [
+    {
+      "source": "404_FINAL_READONLY_DIAGNOSTIC.md",
+      "target": "app-hilog-final-initial.stdout.log",
+      "exists": true
+    },
+    {
+      "source": "404_FINAL_READONLY_DIAGNOSTIC.md",
+      "target": "app-hilog-final-cold.stdout.log",
+      "exists": true
+    },
+    {
+      "source": "404_FINAL_READONLY_DIAGNOSTIC.md",
+      "target": "404-log-correlation.md",
+      "exists": true
+    },
+    {
+      "source": "404_FINAL_READONLY_DIAGNOSTIC.md",
+      "target": "404-evidence-index.json",
+      "exists": true
+    },
+    {
+      "source": "404_FINAL_READONLY_DIAGNOSTIC.md",
+      "target": "404-final-routes-and-templates.json",
+      "exists": true
+    },
+    {
+      "source": "404_FINAL_READONLY_DIAGNOSTIC.md",
+      "target": "404-final-static-audit.json",
+      "exists": true
+    },
+    {
+      "source": "404_FINAL_READONLY_DIAGNOSTIC.md",
+      "target": "404-final-js-ast-audit.json",
+      "exists": true
+    },
+    {
+      "source": "404_FINAL_READONLY_DIAGNOSTIC.md",
+      "target": "404-final-routes-and-templates.json",
+      "exists": true
+    },
+    {
+      "source": "404_FINAL_READONLY_DIAGNOSTIC.md",
+      "target": "404-readonly-capture.json",
+      "exists": true
+    },
+    {
+      "source": "404_FINAL_READONLY_DIAGNOSTIC.md",
+      "target": "MANUAL_QA_VISUAL_MEDIA_CHECK.md",
+      "exists": true
+    },
+    {
+      "source": "404_FINAL_READONLY_DIAGNOSTIC.md",
+      "target": "FILE_INDEX.json",
+      "exists": true
+    },
+    {
+      "source": "MANUAL_QA_VISUAL_MEDIA_CHECK.md",
+      "target": "official-emulator-help-excerpt.txt",
+      "exists": true
+    }
+  ],
+  "brokenLinks": []
+}

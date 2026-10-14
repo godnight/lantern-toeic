@@ -1,0 +1,20 @@
+{
+  "nativeAudioTemplate": "/audio/offline/ + manifest.clip.file",
+  "nativeAudioClips": 1015,
+  "missingAudioTemplateAssets": [],
+  "originalQuestionImageTemplate": "Archived Practice src={q.image} and SpeakingRoom src={prompt.image}; values are complete root-relative paths",
+  "originalImageAssets": [
+    {
+      "reference": "/images/office-practice.webp",
+      "asset": "images/office-practice.webp",
+      "present": true
+    }
+  ],
+  "dictionaryTemplate": "/dictionaries/ + metadata.file",
+  "dictionaryFile": "dictionaries/zh-en-63cf606ec4d0.json",
+  "dictionaryAssetPresent": true,
+  "serviceWorkerLiteral": "/sw.js",
+  "nativeGuard": "archived StudyApp: !nativeMode serviceWorker.register; mobile/main provides nativeMode=true",
+  "limitations": "Covers published template data; not arbitrary imported exam Blob assets or actual masked request-ID attribution",
+  "correction": "Earlier concatenation assumption was incorrect; archived JSX direct src and JSON verified, initial analysis preserved separately"
+}

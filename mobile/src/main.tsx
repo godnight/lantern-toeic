@@ -2,6 +2,7 @@ import React from 'react';
 import {createRoot} from 'react-dom/client';
 import StudyApp from '../../app/study-app';
 import '../../app/globals.css';
+import '../../app/redesign.css';
 import {installHarmonyHost} from '../../lib/native-host';
 import {installBundledLessonAudio} from '../../lib/lesson-audio';
 import audio from '../offline-audio/manifest.json';

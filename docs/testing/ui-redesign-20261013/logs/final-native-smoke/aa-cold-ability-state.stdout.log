@@ -1,0 +1,165 @@
+User ID #100
+  current mission lists:{
+    Mission ID #29  mission name #[#com.lantern.toeic:entry:EntryAbility]  lockedState #0  mission affinity #[]
+      AbilityRecord ID #47
+        app name [com.lantern.toeic]
+        main name [EntryAbility]
+        bundle name [com.lantern.toeic]
+        ability type [PAGE]
+        state #FOREGROUND  start time [3485764]
+        app state #FOREGROUND
+        ready #1  window attached #0  launcher #0
+        callee connections: 
+        isKeepAlive: false
+ }
+  ExtensionRecords:
+    uri [/com.huawei.hms.adsservice/ads_service/AdsCommonService]
+      AbilityRecord ID #6   state #ACTIVE   start time [24895]
+      main name [AdsCommonService]
+      bundle name [com.huawei.hms.adsservice]
+      ability type [SERVICE]
+      app state #BEGIN
+        isKeepAlive: true
+      Connections: 0
+    uri [/com.huawei.hmsapp.appgallery/service/MarketStaticSubscriberExtAbility]
+      AbilityRecord ID #43   state #ACTIVE   start time [3481850]
+      main name [MarketStaticSubscriberExtAbility]
+      bundle name [com.huawei.hmsapp.appgallery]
+      ability type [SERVICE]
+      app state #BEGIN
+        isKeepAlive: false
+      Connections: 1
+       > com.huawei.hmsapp.appgallery/MarketStaticSubscriberExtAbility   connectionState #CONNECTED
+    uri [/com.huawei.hmsapp.intelligent/service/ResidentServiceAbility]
+      AbilityRecord ID #7   state #ACTIVE   start time [24898]
+      main name [ResidentServiceAbility]
+      bundle name [com.huawei.hmsapp.intelligent]
+      ability type [SERVICE]
+      app state #BEGIN
+        isKeepAlive: true
+      Connections: 0
+    uri [/com.ohos.contactsdataability/contactsdata/ContactsDataAbility]
+      AbilityRecord ID #17   state #ACTIVE   start time [31139]
+      main name [ContactsDataAbility]
+      bundle name [com.ohos.contactsdataability]
+      ability type [SERVICE]
+      app state #BEGIN
+        isKeepAlive: false
+      Connections: 1
+       > com.ohos.contactsdataability/ContactsDataAbility   connectionState #CONNECTED
+    uri [/com.ohos.contactsdataability/contactsdata/com.ohos.contactsdataability.ServiceAbility]
+      AbilityRecord ID #11   state #ACTIVE   start time [27829]
+      main name [com.ohos.contactsdataability.ServiceAbility]
+      bundle name [com.ohos.contactsdataability]
+      ability type [SERVICE]
+      app state #BEGIN
+        isKeepAlive: false
+      Connections: 0
+    uri [/com.ohos.medialibrary.medialibrarydata/entry/DataShareExtAbility]
+      AbilityRecord ID #5   state #ACTIVE   start time [22041]
+      main name [DataShareExtAbility]
+      bundle name [com.ohos.medialibrary.medialibrarydata]
+      ability type [SERVICE]
+      app state #BEGIN
+        isKeepAlive: false
+      Connections: 1
+       > com.ohos.medialibrary.medialibrarydata/DataShareExtAbility   connectionState #CONNECTED
+    uri [/com.ohos.sceneboard/engineservice/EngineServiceAbility1]
+      AbilityRecord ID #19   state #FOREGROUND   start time [33676]
+      main name [EngineServiceAbility]
+      bundle name [com.ohos.sceneboard]
+      ability type [UIEXTENSION]
+      app state #FOREGROUND
+        isKeepAlive: true
+      Connections: 0
+      root host bundle name [com.ohos.sceneboard]
+      root host module name [phone_sceneboard]
+      root host ability name [com.ohos.sceneboard.MainAbility]
+      pid: 2613
+    uri [/com.ohos.sceneboard/phone_sceneboard/ImmersiveServiceExtAbility]
+      AbilityRecord ID #18   state #ACTIVE   start time [32583]
+      main name [ImmersiveServiceExtAbility]
+      bundle name [com.ohos.sceneboard]
+      ability type [SERVICE]
+      app state #FOREGROUND
+        isKeepAlive: true
+      Connections: 1
+       > com.ohos.sceneboard/ImmersiveServiceExtAbility   connectionState #CONNECTED
+    uri [/com.ohos.sceneboard/phone_sceneboard/com.ohos.sceneboard.MainAbility]
+      AbilityRecord ID #4   state #ACTIVE   start time [22023]
+      main name [com.ohos.sceneboard.MainAbility]
+      bundle name [com.ohos.sceneboard]
+      ability type [SERVICE]
+      app state #FOREGROUND
+        isKeepAlive: true
+      Connections: 0
+    uri [/com.ohos.sceneboard/themeservice_core/ThemeServiceAbility]
+      AbilityRecord ID #10   state #ACTIVE   start time [27366]
+      main name [ThemeServiceAbility]
+      bundle name [com.ohos.sceneboard]
+      ability type [SERVICE]
+      app state #FOREGROUND
+        isKeepAlive: true
+      Connections: 0
+    PendingWantRecords:
+        PendWantRecord ID #1  type #4
+        bundle name []
+        result who []
+        request code #0  flags #134217728
+        resolved type []
+        Wants:
+          uri [///]
+          resolved types []
+  AppRunningRecords:
+    AppRunningRecord ID #0
+      process name [com.huawei.emulatormultiscreen]
+      pid #1352  uid #20002
+      state #READY
+    AppRunningRecord ID #1
+      process name [com.huawei.hmsapp.samplemanagement]
+      pid #1360  uid #20001
+      state #READY
+    AppRunningRecord ID #2
+      process name [com.huawei.hmos.location]
+      pid #1384  uid #20005
+      state #READY
+    AppRunningRecord ID #3
+      process name [com.huawei.hms.pushservice]
+      pid #1709  uid #20004
+      state #READY
+    AppRunningRecord ID #4
+      process name [com.ohos.sceneboard]
+      pid #1862  uid #20020013
+      state #FOREGROUND
+      uiextension provider #0
+        pid #2613
+    AppRunningRecord ID #5
+      process name [com.huawei.hms.adsservice]
+      pid #1907  uid #20020017
+      state #READY
+    AppRunningRecord ID #6
+      process name [com.huawei.hmsapp.intelligent]
+      pid #1917  uid #20020014
+      state #READY
+    AppRunningRecord ID #7
+      process name [com.ohos.medialibrary.medialibrarydata]
+      pid #1926  uid #20020032
+      state #READY
+    AppRunningRecord ID #8
+      process name [com.ohos.contactsdataability]
+      pid #2126  uid #20020038
+      state #READY
+    AppRunningRecord ID #9
+      process name [com.ohos.sceneboard:EngineServiceAbility:1]
+      pid #2613  uid #20020013
+      state #FOREGROUND
+      root caller #0
+        pid #1862
+    AppRunningRecord ID #10
+      process name [AppGalleryService]
+      pid #11461  uid #20020010
+      state #READY
+    AppRunningRecord ID #11
+      process name [com.lantern.toeic]
+      pid #8038  uid #20020063
+      state #FOREGROUND

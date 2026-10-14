@@ -1,0 +1,21 @@
+{
+  "startedAtUtc": "2026-10-13T09:11:20.6463476Z",
+  "name": "LanternUIQA4d5098e7",
+  "program": "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\tools\\emulator\\Emulator.exe",
+  "arguments": [
+    "-start",
+    "LanternUIQA4d5098e7",
+    "-instancePath",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-native-qa-jbv3rhze\\instances",
+    "-imageRoot",
+    "C:\\Users\\Administrator\\AppData\\Local\\Huawei\\Sdk",
+    "-bootMode",
+    "coldboot",
+    "-hdcPort",
+    "15551",
+    "-noWindow"
+  ],
+  "processId": 57192,
+  "hasExited": false,
+  "approvalRequested": false
+}

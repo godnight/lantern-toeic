@@ -55,8 +55,8 @@ function assertRecords(actual, expected) {
   for (const key of recordKeys) assert.deepEqual(plain(actual[key]), expected[key], key + ' must not change');
 }
 
-test('the default and data schema remain compatible with existing installations', () => {
-  assert.equal(model.DEFAULT_PROFILE.theme, 'hollow');
+test('new profiles default to day while existing theme IDs and schema stay compatible', () => {
+  assert.equal(model.DEFAULT_PROFILE.theme, 'paper');
   assert.equal(model.DATA_SCHEMA_VERSION, 2);
 });
 

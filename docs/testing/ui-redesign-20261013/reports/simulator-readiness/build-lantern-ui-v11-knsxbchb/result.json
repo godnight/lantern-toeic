@@ -1,0 +1,158 @@
+{
+  "status": "passed",
+  "startedAt": "2026-10-13T10:04:48.011270+00:00",
+  "repo": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site",
+  "stage": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-v11-knsxbchb",
+  "evidence": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb",
+  "devicesOperated": false,
+  "signingRead": false,
+  "productionOutputsWritten": false,
+  "head": "12317b26b85a71888760b0cc18242d00a843ac74",
+  "branch": "feat/ui-redesign-v11",
+  "harmonyWorktreeStatus": "",
+  "sourceManifestSha256": "5d0527bcf3a110e7d4791b8205f632c842460c0ce2c105d1487416c1a6e2e3d6",
+  "sourceFileCount": 1229,
+  "frozenAt": "2026-10-13T10:04:49.713808+00:00",
+  "stageOnlyEdits": [
+    "mobile/vite.config.ts: cacheDir under staging; native config loader avoids node_modules config temp",
+    "harmony/build-profile.json5: remove compileSdkVersion only"
+  ],
+  "currentStep": "hap-verify",
+  "commands": [
+    {
+      "step": "audio-check",
+      "exitCode": 0,
+      "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-v11-knsxbchb",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "mobile/scripts/sync-audio.mjs",
+        "--check"
+      ]
+    },
+    {
+      "step": "mobile-build",
+      "exitCode": 0,
+      "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-v11-knsxbchb",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-v11-knsxbchb\\node_modules\\vite\\bin\\vite.js",
+        "build",
+        "--config",
+        "mobile/vite.config.ts",
+        "--configLoader",
+        "native"
+      ]
+    },
+    {
+      "step": "audio-sync",
+      "exitCode": 0,
+      "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-v11-knsxbchb",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "mobile/scripts/sync-audio.mjs"
+      ]
+    },
+    {
+      "step": "web-sync",
+      "exitCode": 0,
+      "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-v11-knsxbchb",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "harmony/scripts/sync-web.mjs"
+      ]
+    },
+    {
+      "step": "web-check",
+      "exitCode": 0,
+      "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-v11-knsxbchb",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "harmony/scripts/sync-web.mjs",
+        "--check"
+      ]
+    },
+    {
+      "step": "sdk-build",
+      "exitCode": 0,
+      "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-v11-knsxbchb\\harmony",
+      "argv": [
+        "C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\powershell\\pwsh.exe",
+        "-NoLogo",
+        "-NoProfile",
+        "-NonInteractive",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "D:\\zzl\\harmony-toolchain\\deveco.ps1",
+        "build",
+        "--product",
+        "default",
+        "--modules",
+        "entry",
+        "--build-mode",
+        "debug"
+      ]
+    },
+    {
+      "step": "owned-daemon-status",
+      "exitCode": 0,
+      "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-v11-knsxbchb\\harmony",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\tools\\node\\node.exe",
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\tools\\hvigor\\bin\\hvigorw.js",
+        "--status-daemon"
+      ]
+    },
+    {
+      "step": "owned-daemon-stop",
+      "exitCode": 0,
+      "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-v11-knsxbchb\\harmony",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\tools\\node\\node.exe",
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\tools\\hvigor\\bin\\hvigorw.js",
+        "--stop-daemon"
+      ]
+    },
+    {
+      "step": "hap-verify",
+      "exitCode": 0,
+      "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-v11-knsxbchb",
+      "argv": [
+        "C:\\Program Files\\Python311\\python.exe",
+        "-S",
+        "-B",
+        "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-v11-knsxbchb\\harmony\\scripts\\verify-hap.py",
+        "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-v11-knsxbchb\\harmony\\entry\\build\\default\\outputs\\default\\entry-default-unsigned.hap",
+        "--web",
+        "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-v11-knsxbchb\\harmony\\entry\\src\\main\\resources\\rawfile\\web",
+        "--report",
+        "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\hap-integrity.json"
+      ]
+    }
+  ],
+  "cacheIsolation": {
+    "environment": "HVIGOR_USER_HOME",
+    "path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-v11-knsxbchb\\hvigor-user-home",
+    "seed": "existing local pnpm 10.28.2 package; no signing/cache credentials"
+  },
+  "finishedAt": "2026-10-13T10:05:14.426238+00:00",
+  "artifact": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\lantern-ui-v11-unsigned-local-only.hap",
+  "artifactBytes": 44292998,
+  "artifactSha256": "d10202ec9ffc908e15199d8917cc270214d36b351161d90403a786faa604f573",
+  "webManifestSha256": "1f98b5d366ffddecbd78fe7c0a0cdfd0cb187bb1b149d1f35cac8588ae7d1d3c",
+  "app": {
+    "bundleName": "com.lantern.toeic",
+    "versionName": "0.3.3",
+    "versionCode": 20009,
+    "buildMode": "debug",
+    "compileSdkType": "HarmonyOS",
+    "compileSdkVersion": "26.0.0.105",
+    "minAPIVersion": 50000012,
+    "targetAPIVersion": 50000012
+  },
+  "sourceChangedAfterFreeze": [],
+  "snapshotStillMatchesCurrent": true,
+  "signed": false,
+  "installed": false,
+  "deviceTested": false
+}

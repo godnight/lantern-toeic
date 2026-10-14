@@ -1,0 +1,4 @@
+usage: aa start <options>
+options list:
+  -h, --help                                                   list available commands
+  [-d <device-id>] [-a <ability-name> -b <bundle-name>] [-m <module-name>] [-p <perf-cmd>] [-D] [-E] [-S] [-N]  [-C] [-R] [-c] [-s <window-mode only for FA mode> ] [--ps <key> <string-value>]   [--pi <key> <integer-value>]   [--pb <key> <boolean-value>]   [--psn <key>]   [-A <action-name>]   [-U <URI>]   [-e <entity>]   [-t <mime-type>]   [-W]   [--wl <window-left>]   [--wt <window-top>]   [--wh <window-height>]   [--ww <window-width>]   [-u <user-id>]   start ability with an element name

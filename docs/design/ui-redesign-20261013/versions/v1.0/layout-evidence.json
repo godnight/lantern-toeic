@@ -1,0 +1,341 @@
+[
+  {
+    "mainWidth": 320,
+    "page": "home",
+    "scrollWidth": 320,
+    "smallButtons": [
+      {
+        "h": 40,
+        "name": "今天只学 5 分钟",
+        "w": 243
+      }
+    ],
+    "state": "default",
+    "visibleNav": [
+      "主导航",
+      "手机主导航"
+    ],
+    "width": 320
+  },
+  {
+    "mainWidth": 320,
+    "page": "search",
+    "scrollWidth": 320,
+    "smallButtons": [
+      {
+        "h": 44,
+        "name": "×",
+        "w": 31
+      }
+    ],
+    "state": "results",
+    "visibleNav": [
+      "主导航"
+    ],
+    "width": 320
+  },
+  {
+    "mainWidth": 320,
+    "page": "search",
+    "scrollWidth": 320,
+    "smallButtons": [],
+    "state": "long",
+    "visibleNav": [
+      "主导航"
+    ],
+    "width": 320
+  },
+  {
+    "mainWidth": 320,
+    "page": "session",
+    "scrollWidth": 320,
+    "smallButtons": [],
+    "state": "save-error",
+    "visibleNav": [
+      "主导航"
+    ],
+    "width": 320
+  },
+  {
+    "mainWidth": 320,
+    "page": "practice",
+    "scrollWidth": 320,
+    "smallButtons": [],
+    "state": "default",
+    "visibleNav": [
+      "主导航",
+      "手机主导航"
+    ],
+    "width": 320
+  },
+  {
+    "mainWidth": 320,
+    "page": "review",
+    "scrollWidth": 320,
+    "smallButtons": [],
+    "state": "due-zero",
+    "visibleNav": [
+      "主导航",
+      "手机主导航"
+    ],
+    "width": 320
+  },
+  {
+    "mainWidth": 320,
+    "page": "progress",
+    "scrollWidth": 320,
+    "smallButtons": [],
+    "state": "empty",
+    "visibleNav": [
+      "主导航",
+      "手机主导航"
+    ],
+    "width": 320
+  },
+  {
+    "mainWidth": 320,
+    "page": "library",
+    "scrollWidth": 320,
+    "smallButtons": [],
+    "state": "local",
+    "visibleNav": [
+      "主导航",
+      "手机主导航"
+    ],
+    "width": 320
+  },
+  {
+    "mainWidth": 320,
+    "page": "settings",
+    "scrollWidth": 320,
+    "smallButtons": [],
+    "state": "default",
+    "visibleNav": [
+      "主导航",
+      "手机主导航"
+    ],
+    "width": 320
+  },
+  {
+    "mainWidth": 840,
+    "page": "home",
+    "scrollWidth": 840,
+    "smallButtons": [],
+    "state": "default",
+    "visibleNav": [
+      "主导航",
+      "手机主导航"
+    ],
+    "width": 840
+  },
+  {
+    "mainWidth": 840,
+    "page": "search",
+    "scrollWidth": 840,
+    "smallButtons": [
+      {
+        "h": 44,
+        "name": "×",
+        "w": 39
+      }
+    ],
+    "state": "results",
+    "visibleNav": [
+      "主导航"
+    ],
+    "width": 840
+  },
+  {
+    "mainWidth": 840,
+    "page": "search",
+    "scrollWidth": 840,
+    "smallButtons": [],
+    "state": "long",
+    "visibleNav": [
+      "主导航"
+    ],
+    "width": 840
+  },
+  {
+    "mainWidth": 840,
+    "page": "session",
+    "scrollWidth": 840,
+    "smallButtons": [],
+    "state": "save-error",
+    "visibleNav": [
+      "主导航"
+    ],
+    "width": 840
+  },
+  {
+    "mainWidth": 840,
+    "page": "practice",
+    "scrollWidth": 840,
+    "smallButtons": [],
+    "state": "default",
+    "visibleNav": [
+      "主导航",
+      "手机主导航"
+    ],
+    "width": 840
+  },
+  {
+    "mainWidth": 840,
+    "page": "review",
+    "scrollWidth": 840,
+    "smallButtons": [],
+    "state": "due-zero",
+    "visibleNav": [
+      "主导航",
+      "手机主导航"
+    ],
+    "width": 840
+  },
+  {
+    "mainWidth": 840,
+    "page": "progress",
+    "scrollWidth": 840,
+    "smallButtons": [],
+    "state": "empty",
+    "visibleNav": [
+      "主导航",
+      "手机主导航"
+    ],
+    "width": 840
+  },
+  {
+    "mainWidth": 840,
+    "page": "library",
+    "scrollWidth": 840,
+    "smallButtons": [],
+    "state": "local",
+    "visibleNav": [
+      "主导航",
+      "手机主导航"
+    ],
+    "width": 840
+  },
+  {
+    "mainWidth": 840,
+    "page": "settings",
+    "scrollWidth": 840,
+    "smallButtons": [],
+    "state": "default",
+    "visibleNav": [
+      "主导航",
+      "手机主导航"
+    ],
+    "width": 840
+  },
+  {
+    "mainWidth": 1200,
+    "page": "home",
+    "scrollWidth": 1440,
+    "smallButtons": [],
+    "state": "default",
+    "visibleNav": [
+      "主导航"
+    ],
+    "width": 1440
+  },
+  {
+    "mainWidth": 1200,
+    "page": "search",
+    "scrollWidth": 1440,
+    "smallButtons": [
+      {
+        "h": 44,
+        "name": "×",
+        "w": 41
+      }
+    ],
+    "state": "results",
+    "visibleNav": [
+      "主导航"
+    ],
+    "width": 1440
+  },
+  {
+    "mainWidth": 1200,
+    "page": "search",
+    "scrollWidth": 1440,
+    "smallButtons": [
+      {
+        "h": 44,
+        "name": "×",
+        "w": 41
+      }
+    ],
+    "state": "long",
+    "visibleNav": [
+      "主导航"
+    ],
+    "width": 1440
+  },
+  {
+    "mainWidth": 1200,
+    "page": "session",
+    "scrollWidth": 1440,
+    "smallButtons": [],
+    "state": "save-error",
+    "visibleNav": [
+      "主导航"
+    ],
+    "width": 1440
+  },
+  {
+    "mainWidth": 1200,
+    "page": "practice",
+    "scrollWidth": 1440,
+    "smallButtons": [],
+    "state": "default",
+    "visibleNav": [
+      "主导航"
+    ],
+    "width": 1440
+  },
+  {
+    "mainWidth": 1200,
+    "page": "review",
+    "scrollWidth": 1440,
+    "smallButtons": [],
+    "state": "due-zero",
+    "visibleNav": [
+      "主导航"
+    ],
+    "width": 1440
+  },
+  {
+    "mainWidth": 1200,
+    "page": "progress",
+    "scrollWidth": 1440,
+    "smallButtons": [],
+    "state": "empty",
+    "visibleNav": [
+      "主导航"
+    ],
+    "width": 1440
+  },
+  {
+    "mainWidth": 1200,
+    "page": "library",
+    "scrollWidth": 1440,
+    "smallButtons": [],
+    "state": "local",
+    "visibleNav": [
+      "主导航"
+    ],
+    "width": 1440
+  },
+  {
+    "mainWidth": 1200,
+    "page": "settings",
+    "scrollWidth": 1440,
+    "smallButtons": [],
+    "state": "default",
+    "visibleNav": [
+      "主导航"
+    ],
+    "width": 1440
+  }
+]

@@ -1,5 +1,20 @@
 # Codex 开发交接
 
+> **用户视觉验收未通过；合入与部署暂停。** 用户最新反馈：“我看了下你这版本的设计，完全没有空洞骑士的元素了。先别合入了”。当前本地源码、HAP、截图与评审均保留。此前独立评审通过仅适用于其限定技术审查范围，不能等同用户视觉认可。中性日间/夜间主题继续不带 IP；空洞骑士和丝之歌主题需要重新讨论明确角色、场景和世界观辨识度。本次只同步暂停与验收状态，不启动重新实现、渲染或新一轮评审。
+
+
+## 界面重设计交接（2026-10-13）
+
+继续使用 `vocab-work/theme-redesign-20261012/site` / `feat/ui-redesign-v11`。HEAD `12317b26b85a71888760b0cc18242d00a843ac74` 加本地未提交改动；不要 reset、假定 main 包含本线，或重跑旧归档脚本覆盖当前状态。架构独立目录 `docs/reviews/2026-10-13-architecture/` 未改动。
+
+先读[验收](testing/ui-redesign-20261013/ACCEPTANCE.md)、[截图索引](testing/ui-redesign-20261013/SCREENSHOT-INDEX.md)、[最终源码清单](testing/ui-redesign-20261013/IMPLEMENTATION-MANIFEST.json)和[独立实现评审修订回应](design/ui-redesign-20261013/reviews/IMPLEMENTATION-RESPONSE-I01-I11.md)。最终 474/474 + 34/34、tsc、Web/mobile build 通过；[同一独立最后复验](design/ui-redesign-20261013/reviews/IMPLEMENTATION-INDEPENDENT-FINAL-RECHECK.md)确认 I04/I08 关闭、I01/P1 未回退。历史失败报告和日志保留，不能当作当前总结果，也不能删除。
+
+最终 unsigned HAP 位于 `vocab-work/ui-redesign-implementation-20261013/simulator-readiness/build-lantern-ui-v11-knsxbchb/lantern-ui-v11-unsigned-local-only.hap`，44,292,998B，SHA-256 `d10202ec9ffc908e15199d8917cc270214d36b351161d90403a786faa604f573`。SDK 26.0.0.105，com.lantern.toeic 0.3.3/20009，min/target API12，1,071 资源、1,229 输入一致。
+
+自有 QA `LanternUIQA4d5098e7` 已启动，HDC 127.0.0.1:15551；最终包只在此处 preserve-data 升级并验证启动/冷启动。不得写为“模拟器未启动”或“尚未安装候选”。原生 UI 接口缺失，最小人工路径见 simulator 报告中的 `manual-visible-window.md`；官方 CLI 没有动态 show，若要打开可见窗口须协调后仅重启此自有实例，保留同 instancePath/imageRoot/port，不动其他实例或安全设置。保留两项 URL 被掩码子资源 404，未构建诊断包。
+
+尚缺正常文件选择器、真实 mic/OS IME、原生 Back/后台、200%/读屏及 Pura X Max 实机。可见合成 fixture 和 DOM/受控测试分别记录，不能替代上述验收。用户已授权继续本线，无须重复泛化批准；当前仍禁止推送、合并、发布、上传、安装手机与真实数据整改。
+
 ## 栏目场景与配色修正（2026-10-12）
 
 用户反馈上一轮把各导航、任务缩略图都替换成同一张主题图。现恢复原 atlas 导航、任务卡、学习摘要和布局，仅替换四个栏目场景：今日蓝湖、训练水晶山峰、复习保留泪城、成长雪山、书库白花。四种界面配色独立选择，有明确当前状态；切配色不改栏目图片，轻动效跟随当前场景。

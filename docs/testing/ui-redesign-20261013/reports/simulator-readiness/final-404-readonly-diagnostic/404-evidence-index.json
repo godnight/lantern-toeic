@@ -1,0 +1,398 @@
+{
+  "archivedSupportingFiles": [
+    {
+      "start": "10-13 17:11:27.417",
+      "usableForFinalCorrelation": false,
+      "targetRequestIdMatches": 0,
+      "end": "10-13 17:20:49.233",
+      "lineCount": 6273,
+      "sourceArchiveReference": "../system-hilog-valid-02.txt",
+      "includedInFinalPacket": false
+    },
+    {
+      "targetRequestIdMatches": 0,
+      "usableForFinalCorrelation": false,
+      "sourceArchiveReference": "../start.stdout.log",
+      "includedInFinalPacket": false
+    },
+    {
+      "targetRequestIdMatches": 0,
+      "usableForFinalCorrelation": false,
+      "sourceArchiveReference": "../start.stderr.log",
+      "includedInFinalPacket": false
+    }
+  ],
+  "schemaVersion": 1,
+  "limits": [
+    "All four target IDs occur only in HeadersComplete and ContinueWithResponseHeaders.",
+    "Nearby rawfile warnings do not contain request IDs, URLs, or paths; pairing is unproven.",
+    "Application-PID captures do not include independent renderer-process logs.",
+    "Earlier system archive spans 17:11:27.417 to 17:20:49.233 and cannot correlate final events at 18:09.",
+    "No contemporaneous system-wide or renderer log is archived in this final-smoke directory.",
+    "Mask removal, source changes, new capture, UI and repackaging were not performed."
+  ],
+  "attributionStatus": "unresolved",
+  "provenTargetUrls": [],
+  "purpose": "One bounded read-only correlation of remaining 404 responses; no new capture or device commands.",
+  "sources": [
+    {
+      "targetRequestIds": [
+        "970702",
+        "970703"
+      ],
+      "sha256": "d5398d01a6fecf1307e84e23698b06e0cdb1b5dd8ee8a77bbf4bcc3a6d04c5b1",
+      "firstTimestamp": "10-13 18:09:24.220",
+      "lastTimestamp": "10-13 18:09:27.273",
+      "lineCount": 1667,
+      "maskedUrlExamples": [
+        {
+          "line": 894,
+          "text": "10-13 18:09:24.700  7949  7949 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:1830] [WebNavigation] LoadUrl url:ht**s://lan***",
+          "association": "Main-navigation or engine icon message; not linked to target request IDs."
+        },
+        {
+          "line": 1378,
+          "text": "10-13 18:09:25.026  7949  7949 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1900] [WebNavigation] OnPageEnd httpStatusCode:200 url:ht**s://lan***",
+          "association": "Main-navigation or engine icon message; not linked to target request IDs."
+        },
+        {
+          "line": 1385,
+          "text": "10-13 18:09:25.026  7949  7949 W A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/arkweb_icon_helper_ext.cc:148] No icon sizes available for URL: ***",
+          "association": "Main-navigation or engine icon message; not linked to target request IDs."
+        }
+      ],
+      "nativePathExamples": [
+        {
+          "line": 176,
+          "text": "10-13 18:09:24.401  7949  7949 W C03900/Ace: [(100000:100000:scope)] GetAsset failed: resources/styles/default.json",
+          "association": "Native wrapper asset/router path; no target request ID or HTTP association."
+        },
+        {
+          "line": 204,
+          "text": "10-13 18:09:24.419  7949  7949 W C03900/Ace: [(100000:100000:scope)] GetAsset failed: manifest.json",
+          "association": "Native wrapper asset/router path; no target request ID or HTTP association."
+        },
+        {
+          "line": 245,
+          "text": "10-13 18:09:24.434  7949  7949 I C03925/AceRouter: [(100000:100000:scope)] Page router manager is creating page[1]: url: pages/Index path: pages/Index.js, recoverable: yes, namedRouter: no",
+          "association": "Native wrapper asset/router path; no target request ID or HTTP association."
+        }
+      ],
+      "cacheAndRoutingExamples": [
+        {
+          "line": 897,
+          "text": "10-13 18:09:24.701  7949  8117 D A04500/chromium: [../../arkweb/chromium_ext/services/network/prp_preload/src/page_res_parallel_preload_mgr_impl.cc:90] PRPPreload.PRParallelPreloadMgrImpl::StartPage, is_inited = 0, current page num = 0, web_handle_valid = 0, use_no_cache = 0",
+          "association": "Page-level metadata only; not linked to target request IDs."
+        },
+        {
+          "line": 930,
+          "text": "10-13 18:09:24.705  7949  7949 I A04500/chromium: [../../cef/ohos_cef_ext/libcef/browser/useragent/arkweb_useragent_utils.cc:178] [WebNavigation] MatchUserAgentForStartNav matchType:4 override:0 userGesture:0 mainFrame:1 fromBFCache:0 isReload:0 url:ht**s://lan***",
+          "association": "Page-level metadata only; not linked to target request IDs."
+        },
+        {
+          "line": 1364,
+          "text": "10-13 18:09:25.019  7949  7949 I A04500/chromium: [../../content/browser/web_contents/web_contents_impl.cc:8452] [RenderPipeline] DOMContentLoaded: routing_id=1",
+          "association": "Page-level metadata only; not linked to target request IDs."
+        }
+      ],
+      "targetIdRecords": [
+        {
+          "requestId": "970702",
+          "line": 1438,
+          "text": "10-13 18:09:25.093  7949  8104 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=970702 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26",
+          "initiator": null,
+          "assetPath": null,
+          "url": null,
+          "requestRoutingId": null,
+          "cacheHit": null
+        },
+        {
+          "requestId": "970703",
+          "line": 1441,
+          "text": "10-13 18:09:25.094  7949  8104 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=970703 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26",
+          "initiator": null,
+          "assetPath": null,
+          "url": null,
+          "requestRoutingId": null,
+          "cacheHit": null
+        },
+        {
+          "requestId": "970702",
+          "line": 1442,
+          "text": "10-13 18:09:25.094  7949  8104 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:548] intercept StreamReaderURLLoader::ContinueWithResponseHeaders request_id_=970702, request_.is_sync_mode=0",
+          "initiator": null,
+          "assetPath": null,
+          "url": null,
+          "requestRoutingId": null,
+          "cacheHit": null
+        },
+        {
+          "requestId": "970703",
+          "line": 1445,
+          "text": "10-13 18:09:25.094  7949  8104 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:548] intercept StreamReaderURLLoader::ContinueWithResponseHeaders request_id_=970703, request_.is_sync_mode=0",
+          "initiator": null,
+          "assetPath": null,
+          "url": null,
+          "requestRoutingId": null,
+          "cacheHit": null
+        }
+      ],
+      "file": "app-hilog-final-initial.stdout.log",
+      "rawfileWarningEvidence": [
+        {
+          "line": 1434,
+          "text": "10-13 18:09:25.093  7949  8054 W C01e00/ResourceManagerJs: GetRawFileContent failed, name is empty.",
+          "association": "Temporal proximity only; no unique join key.",
+          "requestId": null
+        },
+        {
+          "line": 1435,
+          "text": "10-13 18:09:25.093  7949  8054 W C01e00/ResourceManagerJs: GetRawFileContent failed, name is empty.",
+          "association": "Temporal proximity only; no unique join key.",
+          "requestId": null
+        }
+      ],
+      "observedProcessIds": [
+        "7949"
+      ],
+      "unmaskedHttpUrlMatches": [],
+      "phase": "initial",
+      "contextEvidence": [
+        {
+          "line": 1434,
+          "text": "10-13 18:09:25.093  7949  8054 W C01e00/ResourceManagerJs: GetRawFileContent failed, name is empty."
+        },
+        {
+          "line": 1435,
+          "text": "10-13 18:09:25.093  7949  8054 W C01e00/ResourceManagerJs: GetRawFileContent failed, name is empty."
+        },
+        {
+          "line": 1436,
+          "text": "10-13 18:09:25.093  7949  8105 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:81] intercept NWebResourceHandler::Open"
+        },
+        {
+          "line": 1437,
+          "text": "10-13 18:09:25.093  7949  8104 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:326] intercept NWEB_STRING_TYPE response_length=26"
+        },
+        {
+          "line": 1438,
+          "text": "10-13 18:09:25.093  7949  8104 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=970702 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26"
+        },
+        {
+          "line": 1439,
+          "text": "10-13 18:09:25.094  7949  8105 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:81] intercept NWebResourceHandler::Open"
+        },
+        {
+          "line": 1440,
+          "text": "10-13 18:09:25.094  7949  8104 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:326] intercept NWEB_STRING_TYPE response_length=26"
+        },
+        {
+          "line": 1441,
+          "text": "10-13 18:09:25.094  7949  8104 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=970703 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26"
+        },
+        {
+          "line": 1442,
+          "text": "10-13 18:09:25.094  7949  8104 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:548] intercept StreamReaderURLLoader::ContinueWithResponseHeaders request_id_=970702, request_.is_sync_mode=0"
+        },
+        {
+          "line": 1443,
+          "text": "10-13 18:09:25.094  7949  8105 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0"
+        },
+        {
+          "line": 1444,
+          "text": "10-13 18:09:25.094  7949  8105 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0"
+        },
+        {
+          "line": 1445,
+          "text": "10-13 18:09:25.094  7949  8104 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:548] intercept StreamReaderURLLoader::ContinueWithResponseHeaders request_id_=970703, request_.is_sync_mode=0"
+        },
+        {
+          "line": 1446,
+          "text": "10-13 18:09:25.094  7949  8105 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0"
+        },
+        {
+          "line": 1447,
+          "text": "10-13 18:09:25.094  7949  8105 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0"
+        }
+      ]
+    },
+    {
+      "targetRequestIds": [
+        "43742",
+        "43744"
+      ],
+      "sha256": "2db9605562402850a9e81e87ba72bf825c8813238322f11f22e30cad950c46a0",
+      "firstTimestamp": "10-13 18:09:27.767",
+      "lastTimestamp": "10-13 18:09:30.504",
+      "lineCount": 1681,
+      "maskedUrlExamples": [
+        {
+          "line": 958,
+          "text": "10-13 18:09:28.056  8038  8038 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:1830] [WebNavigation] LoadUrl url:ht**s://lan***",
+          "association": "Main-navigation or engine icon message; not linked to target request IDs."
+        },
+        {
+          "line": 1404,
+          "text": "10-13 18:09:28.294  8038  8038 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1900] [WebNavigation] OnPageEnd httpStatusCode:200 url:ht**s://lan***",
+          "association": "Main-navigation or engine icon message; not linked to target request IDs."
+        },
+        {
+          "line": 1411,
+          "text": "10-13 18:09:28.294  8038  8038 W A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/arkweb_icon_helper_ext.cc:148] No icon sizes available for URL: ***",
+          "association": "Main-navigation or engine icon message; not linked to target request IDs."
+        }
+      ],
+      "nativePathExamples": [
+        {
+          "line": 251,
+          "text": "10-13 18:09:27.869  8038  8038 W C03900/Ace: [(100000:100000:scope)] GetAsset failed: resources/styles/default.json",
+          "association": "Native wrapper asset/router path; no target request ID or HTTP association."
+        },
+        {
+          "line": 279,
+          "text": "10-13 18:09:27.880  8038  8038 W C03900/Ace: [(100000:100000:scope)] GetAsset failed: manifest.json",
+          "association": "Native wrapper asset/router path; no target request ID or HTTP association."
+        },
+        {
+          "line": 318,
+          "text": "10-13 18:09:27.884  8038  8038 I C03925/AceRouter: [(100000:100000:scope)] Page router manager is creating page[1]: url: pages/Index path: pages/Index.js, recoverable: yes, namedRouter: no",
+          "association": "Native wrapper asset/router path; no target request ID or HTTP association."
+        }
+      ],
+      "cacheAndRoutingExamples": [
+        {
+          "line": 968,
+          "text": "10-13 18:09:28.063  8038  8288 D A04500/chromium: [../../arkweb/chromium_ext/services/network/prp_preload/src/page_res_parallel_preload_mgr_impl.cc:90] PRPPreload.PRParallelPreloadMgrImpl::StartPage, is_inited = 0, current page num = 0, web_handle_valid = 0, use_no_cache = 0",
+          "association": "Page-level metadata only; not linked to target request IDs."
+        },
+        {
+          "line": 997,
+          "text": "10-13 18:09:28.077  8038  8038 I A04500/chromium: [../../cef/ohos_cef_ext/libcef/browser/useragent/arkweb_useragent_utils.cc:178] [WebNavigation] MatchUserAgentForStartNav matchType:4 override:0 userGesture:0 mainFrame:1 fromBFCache:0 isReload:0 url:ht**s://lan***",
+          "association": "Page-level metadata only; not linked to target request IDs."
+        },
+        {
+          "line": 1396,
+          "text": "10-13 18:09:28.293  8038  8038 I A04500/chromium: [../../content/browser/web_contents/web_contents_impl.cc:8452] [RenderPipeline] DOMContentLoaded: routing_id=1",
+          "association": "Page-level metadata only; not linked to target request IDs."
+        }
+      ],
+      "targetIdRecords": [
+        {
+          "requestId": "43742",
+          "line": 1456,
+          "text": "10-13 18:09:28.348  8038  8275 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=43742 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26",
+          "initiator": null,
+          "assetPath": null,
+          "url": null,
+          "requestRoutingId": null,
+          "cacheHit": null
+        },
+        {
+          "requestId": "43742",
+          "line": 1457,
+          "text": "10-13 18:09:28.348  8038  8275 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:548] intercept StreamReaderURLLoader::ContinueWithResponseHeaders request_id_=43742, request_.is_sync_mode=0",
+          "initiator": null,
+          "assetPath": null,
+          "url": null,
+          "requestRoutingId": null,
+          "cacheHit": null
+        },
+        {
+          "requestId": "43744",
+          "line": 1476,
+          "text": "10-13 18:09:28.350  8038  8275 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=43744 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26",
+          "initiator": null,
+          "assetPath": null,
+          "url": null,
+          "requestRoutingId": null,
+          "cacheHit": null
+        },
+        {
+          "requestId": "43744",
+          "line": 1477,
+          "text": "10-13 18:09:28.350  8038  8275 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:548] intercept StreamReaderURLLoader::ContinueWithResponseHeaders request_id_=43744, request_.is_sync_mode=0",
+          "initiator": null,
+          "assetPath": null,
+          "url": null,
+          "requestRoutingId": null,
+          "cacheHit": null
+        }
+      ],
+      "file": "app-hilog-final-cold.stdout.log",
+      "rawfileWarningEvidence": [
+        {
+          "line": 1453,
+          "text": "10-13 18:09:28.347  8038  8325 W C01e00/ResourceManagerJs: GetRawFileContent failed, name is empty.",
+          "association": "Temporal proximity only; no unique join key.",
+          "requestId": null
+        },
+        {
+          "line": 1463,
+          "text": "10-13 18:09:28.349  8038  8250 W C01e00/ResourceManagerJs: GetRawFileContent failed, name is empty.",
+          "association": "Temporal proximity only; no unique join key.",
+          "requestId": null
+        }
+      ],
+      "observedProcessIds": [
+        "8038"
+      ],
+      "unmaskedHttpUrlMatches": [],
+      "phase": "cold",
+      "contextEvidence": [
+        {
+          "line": 1453,
+          "text": "10-13 18:09:28.347  8038  8325 W C01e00/ResourceManagerJs: GetRawFileContent failed, name is empty."
+        },
+        {
+          "line": 1454,
+          "text": "10-13 18:09:28.348  8038  8274 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:81] intercept NWebResourceHandler::Open"
+        },
+        {
+          "line": 1455,
+          "text": "10-13 18:09:28.348  8038  8275 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:326] intercept NWEB_STRING_TYPE response_length=26"
+        },
+        {
+          "line": 1456,
+          "text": "10-13 18:09:28.348  8038  8275 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=43742 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26"
+        },
+        {
+          "line": 1457,
+          "text": "10-13 18:09:28.348  8038  8275 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:548] intercept StreamReaderURLLoader::ContinueWithResponseHeaders request_id_=43742, request_.is_sync_mode=0"
+        },
+        {
+          "line": 1458,
+          "text": "10-13 18:09:28.348  8038  8274 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0"
+        },
+        {
+          "line": 1459,
+          "text": "10-13 18:09:28.348  8038  8274 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0"
+        },
+        {
+          "line": 1463,
+          "text": "10-13 18:09:28.349  8038  8250 W C01e00/ResourceManagerJs: GetRawFileContent failed, name is empty."
+        },
+        {
+          "line": 1464,
+          "text": "10-13 18:09:28.349  8038  8274 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:81] intercept NWebResourceHandler::Open"
+        },
+        {
+          "line": 1475,
+          "text": "10-13 18:09:28.350  8038  8275 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:326] intercept NWEB_STRING_TYPE response_length=26"
+        },
+        {
+          "line": 1476,
+          "text": "10-13 18:09:28.350  8038  8275 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=43744 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26"
+        },
+        {
+          "line": 1477,
+          "text": "10-13 18:09:28.350  8038  8275 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:548] intercept StreamReaderURLLoader::ContinueWithResponseHeaders request_id_=43744, request_.is_sync_mode=0"
+        },
+        {
+          "line": 1478,
+          "text": "10-13 18:09:28.350  8038  8274 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0"
+        }
+      ]
+    }
+  ],
+  "archiveReferencePolicy": "Historical supporting references below identify the original archive, are not included in this final packet and do not cover the final 18:09 events."
+}

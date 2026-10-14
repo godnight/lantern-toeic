@@ -1,0 +1,3 @@
+127.0.0.1:15551		TCP	Connected	localhost	hdc
+6HT0226416000145		USB	Offline	localhost	hdc
+COM1		UART	Ready	unknown...	hdc

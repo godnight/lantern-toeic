@@ -1,0 +1,49 @@
+  AppRunningRecords:
+    AppRunningRecord ID #0
+      process name [com.huawei.emulatormultiscreen]
+      pid #1352  uid #20002
+      state #READY
+    AppRunningRecord ID #1
+      process name [com.huawei.hmsapp.samplemanagement]
+      pid #1360  uid #20001
+      state #READY
+    AppRunningRecord ID #2
+      process name [com.huawei.hmos.location]
+      pid #1384  uid #20005
+      state #READY
+    AppRunningRecord ID #3
+      process name [com.huawei.hms.pushservice]
+      pid #1709  uid #20004
+      state #READY
+    AppRunningRecord ID #4
+      process name [com.ohos.sceneboard]
+      pid #1862  uid #20020013
+      state #FOREGROUND
+      uiextension provider #0
+        pid #2613
+    AppRunningRecord ID #5
+      process name [com.huawei.hms.adsservice]
+      pid #1907  uid #20020017
+      state #READY
+    AppRunningRecord ID #6
+      process name [com.huawei.hmsapp.intelligent]
+      pid #1917  uid #20020014
+      state #READY
+    AppRunningRecord ID #7
+      process name [com.ohos.medialibrary.medialibrarydata]
+      pid #1926  uid #20020032
+      state #READY
+    AppRunningRecord ID #8
+      process name [com.ohos.contactsdataability]
+      pid #2126  uid #20020038
+      state #READY
+    AppRunningRecord ID #9
+      process name [com.ohos.sceneboard:EngineServiceAbility:1]
+      pid #2613  uid #20020013
+      state #FOREGROUND
+      root caller #0
+        pid #1862
+    AppRunningRecord ID #10
+      process name [com.lantern.toeic]
+      pid #7678  uid #20020063
+      state #FOREGROUND

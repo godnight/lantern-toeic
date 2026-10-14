@@ -1,0 +1,11 @@
+> hvigor [33mWARN: process - 找不到别名。
+[39m
+> hvigor [33mWARN: 对路径“C:\Users\ADMINI~1\AppData\Local\Temp\lantern-ui-v11-beyeqowt\harmony”的访问被拒绝。
+所在位置 行:1 字符: 1
++ Get-CimInstance -ClassName Win32_Process -Filter 'ProcessId LIKE 7871 ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (:) [], UnauthorizedAccessException
+    + FullyQualifiedErrorId : System.UnauthorizedAccessException
+ 
+[39m
+> hvigor [33mWARN: process pid 78712 is not a hvigor daemon. The process will not be killed and the info will be clear. [39m

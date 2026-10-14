@@ -1,0 +1,1326 @@
+{
+  "copied_utc": "2026-10-13T10:19:05.821409+00:00",
+  "files": [
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\root\\full-study-test-final-recheck.log",
+      "file": "logs/full-study-test-final-recheck.log",
+      "bytes": 51204,
+      "sha256": "32f23ede5e71c8a4d7dcce08dba66534d7b594bcbee449134972be72e546481c"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\root\\mjs-tests-final-recheck.log",
+      "file": "logs/mjs-tests-final-recheck.log",
+      "bytes": 2778,
+      "sha256": "e8e74062ed3be1c937f0a28c3a6c500dc439598a82d507e3439e6a23e9de5e04"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\root\\typecheck-final-recheck.log",
+      "file": "logs/typecheck-final-recheck.log",
+      "bytes": 53,
+      "sha256": "c1b1d3689aaeb7f1264a562d1422da6d8f000c29832ab51eef2cff28941299ac"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\root\\web-build-final-recheck.log",
+      "file": "logs/web-build-final-recheck.log",
+      "bytes": 1636,
+      "sha256": "b197fdc5ed0397a2017d507acc83f23876f84e60ee14db5e7562e4fe9667dc30"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\root\\mobile-build-final-recheck.log",
+      "file": "logs/mobile-build-final-recheck.log",
+      "bytes": 760,
+      "sha256": "79247d16280bf07302418ea4fa30506bdf2e3068d62794dd02a6ef7314ae8789"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\root\\final-two-P2-tests-fixed.log",
+      "file": "logs/final-two-P2-tests-fixed.log",
+      "bytes": 6796,
+      "sha256": "6e05b182ce4318dcc4ac67da0b656af45a4b7cd737d01c0a9878f0a5482c0da3"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\testing\\ui-redesign-20261013\\resource-links-network-failed.json",
+      "file": "resource-links-network-failed.json",
+      "bytes": 4573,
+      "sha256": "10c9e7ba293e15cf577f186330c60be8d8d8b5003867dd696c79cb6844bb2602"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\READINESS.md",
+      "file": "reports/simulator-readiness/READINESS.md",
+      "bytes": 8658,
+      "sha256": "a99669764d9ab1d159f99708aa723ffe132cbb0219899e69d8d56ae48ab10823"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\DEBUGGER_SCOPE.md",
+      "file": "reports/simulator-readiness/DEBUGGER_SCOPE.md",
+      "bytes": 1717,
+      "sha256": "ef85b2a2d11b12921bf76b220d28bbba6110493e051c42674e93e562b94479ab"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\SOURCE_SCOPE.md",
+      "file": "reports/simulator-readiness/SOURCE_SCOPE.md",
+      "bytes": 2207,
+      "sha256": "fcc50587b0d16f00814b39ccc66fe1d02b0f04dadda560e51117ad6fef965fa3"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\BUILD_RESULT.md",
+      "file": "reports/simulator-readiness/BUILD_RESULT.md",
+      "bytes": 7830,
+      "sha256": "cb22e0847c39d47cb228df62bc5cd8d98fd5dcca11bbce0ba02e52d27237cedf"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\inventory.json",
+      "file": "reports/simulator-readiness/inventory.json",
+      "bytes": 1807,
+      "sha256": "ec6b1fa76c4d0e819f227cf1e599e7e6511557e4c0e1e651d0348c509e88c23f"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\SIMULATOR_CLI_QA.md",
+      "file": "reports/simulator-readiness/SIMULATOR_CLI_QA.md",
+      "bytes": 6152,
+      "sha256": "9c3970d5c3952c5c6f90f7624fd763162daeb11b764e8cf46ff413c0c5da919e"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\FINAL_NATIVE_RESULT.md",
+      "file": "reports/simulator-readiness/FINAL_NATIVE_RESULT.md",
+      "bytes": 7890,
+      "sha256": "952bc18b3f4552d14bc78fd7bbf634635c387c3f79ec1a5ed3bab6b064bfb902"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\404_DIAGNOSTIC_PLAN.md",
+      "file": "reports/simulator-readiness/404_DIAGNOSTIC_PLAN.md",
+      "bytes": 5340,
+      "sha256": "21f160af21327a82c735f39bea1d76389f672562094c62487277a0a1474e95b4"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\latest-native-qa.json",
+      "file": "reports/simulator-readiness/latest-native-qa.json",
+      "bytes": 623,
+      "sha256": "93d036405c5a53383d7ae92e9d05923f846733196ba7d71f832d895fc7853f17"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\latest-final-native-smoke.json",
+      "file": "reports/simulator-readiness/latest-final-native-smoke.json",
+      "bytes": 338,
+      "sha256": "b8f257fe44dfd387a6094e643a1aa1a7e4ffe6666ff5e4339ada505902df1ed0"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\result.json",
+      "file": "reports/simulator-readiness/build-lantern-ui-v11-knsxbchb/result.json",
+      "bytes": 5979,
+      "sha256": "c789df853e63073f5736109c97abad9770b2feb7e5e72d57b5a0e8e2faebdd92"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\final-freeze-proof.json",
+      "file": "reports/simulator-readiness/build-lantern-ui-v11-knsxbchb/final-freeze-proof.json",
+      "bytes": 2273,
+      "sha256": "08826bb87ec12f03fd42f7f7dc1828b692a96a41418aaf3358a80336cdced725"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\hap-integrity.json",
+      "file": "reports/simulator-readiness/build-lantern-ui-v11-knsxbchb/hap-integrity.json",
+      "bytes": 728,
+      "sha256": "a53171ade4406561a0c1913e95667f3c84fd6b79b7cea283e13b1c7d56af8ca3"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\source-manifest.json",
+      "file": "reports/simulator-readiness/build-lantern-ui-v11-knsxbchb/source-manifest.json",
+      "bytes": 224174,
+      "sha256": "5d0527bcf3a110e7d4791b8205f632c842460c0ce2c105d1487416c1a6e2e3d6"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\web-bundle-manifest.json",
+      "file": "reports/simulator-readiness/build-lantern-ui-v11-knsxbchb/web-bundle-manifest.json",
+      "bytes": 186031,
+      "sha256": "1f98b5d366ffddecbd78fe7c0a0cdfd0cb187bb1b149d1f35cac8588ae7d1d3c"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\audio-check.stderr.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/audio-check.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\audio-check.stdout.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/audio-check.stdout.log",
+      "bytes": 81,
+      "sha256": "e8b404782254056a20ebeae0e70177a05d76614a39997923165a4b616af2532c"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\audio-sync.stderr.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/audio-sync.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\audio-sync.stdout.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/audio-sync.stdout.log",
+      "bytes": 81,
+      "sha256": "e8b404782254056a20ebeae0e70177a05d76614a39997923165a4b616af2532c"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\hap-verify.stderr.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/hap-verify.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\hap-verify.stdout.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/hap-verify.stdout.log",
+      "bytes": 728,
+      "sha256": "a53171ade4406561a0c1913e95667f3c84fd6b79b7cea283e13b1c7d56af8ca3"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\mobile-build.stderr.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/mobile-build.stderr.log",
+      "bytes": 360,
+      "sha256": "351b524197fb492920789369e7f1a271420c757633fbb553b280a181ac4c31a4"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\mobile-build.stdout.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/mobile-build.stdout.log",
+      "bytes": 385,
+      "sha256": "8ca640d8a4dcc264d7710316dbf337557e29551d7bf0fcccc030d523b80e8a38"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\owned-daemon-status.stderr.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/owned-daemon-status.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\owned-daemon-status.stdout.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/owned-daemon-status.stdout.log",
+      "bytes": 155,
+      "sha256": "1a97f41a75c9f242ea6f2fc33b31ebb3a69c5686b1a37d89039f708c1d39623d"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\owned-daemon-stop.stderr.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/owned-daemon-stop.stderr.log",
+      "bytes": 650,
+      "sha256": "a28a0a283df742acc94f66d645c5f92f4d23b5309a4502ef958fde48441eccff"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\owned-daemon-stop.stdout.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/owned-daemon-stop.stdout.log",
+      "bytes": 46,
+      "sha256": "a4d2f4a00c4724ad0e526ebf150837227976a8961acaa4ffec7f68d3ebe1ee5c"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\sdk-build.stderr.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/sdk-build.stderr.log",
+      "bytes": 128,
+      "sha256": "c0121d20920f1f990eb04d900f3142b15df779fb4f4a21d679c6601ee4dfb8fb"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\sdk-build.stdout.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/sdk-build.stdout.log",
+      "bytes": 3091,
+      "sha256": "8b07b535eef04d5afa9f95856f1ff441d89da68fa85a8c6ecf344b792e4fdbf7"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\web-check.stderr.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/web-check.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\web-check.stdout.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/web-check.stdout.log",
+      "bytes": 84,
+      "sha256": "01d0e9d4ee376a1097151fe173890f219d260096025ccba79667f5c4495b64c3"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\web-sync.stderr.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/web-sync.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\web-sync.stdout.log",
+      "file": "logs/harmony-build-lantern-ui-v11-knsxbchb/web-sync.stdout.log",
+      "bytes": 84,
+      "sha256": "01d0e9d4ee376a1097151fe173890f219d260096025ccba79667f5c4495b64c3"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\native-smoke-proof.json",
+      "file": "reports/simulator-readiness/final-native-smoke/native-smoke-proof.json",
+      "bytes": 16061,
+      "sha256": "eec6aa7b8794b0c7566b9e88d5ed9bff52c9fcc8e5e7f02199388ed56ea34e0c"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-cold-ability-state.stderr.log",
+      "file": "logs/final-native-smoke/aa-cold-ability-state.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-cold-ability-state.stdout.log",
+      "file": "logs/final-native-smoke/aa-cold-ability-state.stdout.log",
+      "bytes": 6416,
+      "sha256": "70fc8b69802c76064bda98c44bf6751922a4ffe0a3439d6cd68f1d6f24d42372"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-cold-process-state.stderr.log",
+      "file": "logs/final-native-smoke/aa-cold-process-state.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-cold-process-state.stdout.log",
+      "file": "logs/final-native-smoke/aa-cold-process-state.stdout.log",
+      "bytes": 1684,
+      "sha256": "e4d8069dda1f83366cb31413bc04fae50417a30a38321e56e6ac1af367d7d59e"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-cold-start-final.stderr.log",
+      "file": "logs/final-native-smoke/aa-cold-start-final.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-cold-start-final.stdout.log",
+      "file": "logs/final-native-smoke/aa-cold-start-final.stdout.log",
+      "bytes": 29,
+      "sha256": "bc4bd248d1572c3f2e55d8f5b81ea541e62c0d6c7ac7a903b220e672e2f0c83a"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-initial-ability-state.stderr.log",
+      "file": "logs/final-native-smoke/aa-initial-ability-state.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-initial-ability-state.stdout.log",
+      "file": "logs/final-native-smoke/aa-initial-ability-state.stdout.log",
+      "bytes": 6416,
+      "sha256": "b0a119760e23a2dcb7435617d261e18de2e806a82543624a62ed7bfab2630f35"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-initial-process-state.stderr.log",
+      "file": "logs/final-native-smoke/aa-initial-process-state.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-initial-process-state.stdout.log",
+      "file": "logs/final-native-smoke/aa-initial-process-state.stdout.log",
+      "bytes": 1684,
+      "sha256": "ad4e7b930ff15b989cf96e1513f6bace6a2e5042a47dbd10df1b13c68d1866db"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-start-final.stderr.log",
+      "file": "logs/final-native-smoke/aa-start-final.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-start-final.stdout.log",
+      "file": "logs/final-native-smoke/aa-start-final.stdout.log",
+      "bytes": 29,
+      "sha256": "bc4bd248d1572c3f2e55d8f5b81ea541e62c0d6c7ac7a903b220e672e2f0c83a"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-stop-owned-app.stderr.log",
+      "file": "logs/final-native-smoke/aa-stop-owned-app.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-stop-owned-app.stdout.log",
+      "file": "logs/final-native-smoke/aa-stop-owned-app.stdout.log",
+      "bytes": 34,
+      "sha256": "23e243ce16c2f768226c6e814ce03a087137029f9b7a0b7efea4701af481f4d3"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-hilog-final-cold.stderr.log",
+      "file": "logs/final-native-smoke/app-hilog-final-cold.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-hilog-final-cold.stdout.log",
+      "file": "logs/final-native-smoke/app-hilog-final-cold.stdout.log",
+      "bytes": 278847,
+      "sha256": "2db9605562402850a9e81e87ba72bf825c8813238322f11f22e30cad950c46a0"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-hilog-final-initial.stderr.log",
+      "file": "logs/final-native-smoke/app-hilog-final-initial.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-hilog-final-initial.stdout.log",
+      "file": "logs/final-native-smoke/app-hilog-final-initial.stdout.log",
+      "bytes": 281192,
+      "sha256": "d5398d01a6fecf1307e84e23698b06e0cdb1b5dd8ee8a77bbf4bcc3a6d04c5b1"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-after-stop.stderr.log",
+      "file": "logs/final-native-smoke/app-pid-after-stop.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-after-stop.stdout.log",
+      "file": "logs/final-native-smoke/app-pid-after-stop.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-cold-final.stderr.log",
+      "file": "logs/final-native-smoke/app-pid-cold-final.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-cold-final.stdout.log",
+      "file": "logs/final-native-smoke/app-pid-cold-final.stdout.log",
+      "bytes": 6,
+      "sha256": "4d106dc121b097715848421dd18169eed1fabe7df38de5bf9f419bde63875714"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-cold.stderr.log",
+      "file": "logs/final-native-smoke/app-pid-cold.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-cold.stdout.log",
+      "file": "logs/final-native-smoke/app-pid-cold.stdout.log",
+      "bytes": 6,
+      "sha256": "4d106dc121b097715848421dd18169eed1fabe7df38de5bf9f419bde63875714"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-initial.stderr.log",
+      "file": "logs/final-native-smoke/app-pid-initial.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-initial.stdout.log",
+      "file": "logs/final-native-smoke/app-pid-initial.stdout.log",
+      "bytes": 6,
+      "sha256": "35be39afdde52931768fe25063c952182119ce7f78e5e438d076ca38bf36549f"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\boot-completed.stderr.log",
+      "file": "logs/final-native-smoke/boot-completed.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\boot-completed.stdout.log",
+      "file": "logs/final-native-smoke/boot-completed.stdout.log",
+      "bytes": 7,
+      "sha256": "6156681a3af3bc77dfd9efe7465d0e06604d5e7b881e7325eb9109fa123325db"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\bundle-after-upgrade.stderr.log",
+      "file": "logs/final-native-smoke/bundle-after-upgrade.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\bundle-after-upgrade.stdout.log",
+      "file": "logs/final-native-smoke/bundle-after-upgrade.stdout.log",
+      "bytes": 16859,
+      "sha256": "9511d83d23b1a44971c111a8ff4c69c735bd178ef9f7f9e42a9882903c4834ca"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\bundle-before-upgrade.stderr.log",
+      "file": "logs/final-native-smoke/bundle-before-upgrade.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\bundle-before-upgrade.stdout.log",
+      "file": "logs/final-native-smoke/bundle-before-upgrade.stdout.log",
+      "bytes": 16859,
+      "sha256": "18a9ba8aa9866b9ad3462876b7d5a7bb3bc3ff2d6add129e46b795ee16a0445e"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\install-final-preserve-data.stderr.log",
+      "file": "logs/final-native-smoke/install-final-preserve-data.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\install-final-preserve-data.stdout.log",
+      "file": "logs/final-native-smoke/install-final-preserve-data.stdout.log",
+      "bytes": 229,
+      "sha256": "3d0b3d79792e58d7d0f296bdfe1c66ae3195e619580229de155afda520f5f60f"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\owned-instance-inventory.stderr.log",
+      "file": "logs/final-native-smoke/owned-instance-inventory.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\owned-instance-inventory.stdout.log",
+      "file": "logs/final-native-smoke/owned-instance-inventory.stdout.log",
+      "bytes": 1686,
+      "sha256": "ff5bf7d405bcecb4d1b99e2635ef583334a65593a460bbbc756e32f2f601be8c"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\system-api.stderr.log",
+      "file": "logs/final-native-smoke/system-api.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\system-api.stdout.log",
+      "file": "logs/final-native-smoke/system-api.stdout.log",
+      "bytes": 5,
+      "sha256": "cbbae958165cfa3d9b01d4818ef9c08d2922d7876c9d071f14a721807332fcc0"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\system-version.stderr.log",
+      "file": "logs/final-native-smoke/system-version.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\system-version.stdout.log",
+      "file": "logs/final-native-smoke/system-version.stdout.log",
+      "bytes": 41,
+      "sha256": "e728c0dded850edf0a400fe01b88a564af08b0280e06192fc0dce7b69e7af6da"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\aa-ability-state-01.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/aa-ability-state-01.txt",
+      "bytes": 6718,
+      "sha256": "9498ad907fdf26e69ef449d4d1ecda65b45db064de61806e3a141c774d996722"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\aa-ability-state-02.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/aa-ability-state-02.txt",
+      "bytes": 5837,
+      "sha256": "65081deb2639ec27973570d064dddda07c8a9761e70981e3e512845cb83a3846"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\aa-cold-ability-state.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/aa-cold-ability-state.txt",
+      "bytes": 5837,
+      "sha256": "a5c8bd91de86d26e7c8f7307f2ea05c161a404acb77f5d9e7ac9e426c22f123e"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\aa-cold-process-state.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/aa-cold-process-state.txt",
+      "bytes": 1562,
+      "sha256": "5fd1e7d87dbdaa2f136f51a35c2b5e406e28f27703c736bf2e193995cd681511"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\aa-cold-start-candidate.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/aa-cold-start-candidate.log",
+      "bytes": 29,
+      "sha256": "bc4bd248d1572c3f2e55d8f5b81ea541e62c0d6c7ac7a903b220e672e2f0c83a"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\aa-force-stop-owned-app.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/aa-force-stop-owned-app.log",
+      "bytes": 34,
+      "sha256": "23e243ce16c2f768226c6e814ce03a087137029f9b7a0b7efea4701af481f4d3"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\aa-process-state-01.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/aa-process-state-01.txt",
+      "bytes": 1716,
+      "sha256": "1f3d8c54c3af3cc612f03a3c21dece58601bbc695ca2304628d83c968d0e8916"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\aa-process-state-02.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/aa-process-state-02.txt",
+      "bytes": 1562,
+      "sha256": "e6a86847e0450ea2fa0869ea334b4dd95d35b23c53fdba27bff66dd0ae337718"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\aa-start-candidate.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/aa-start-candidate.log",
+      "bytes": 29,
+      "sha256": "bc4bd248d1572c3f2e55d8f5b81ea541e62c0d6c7ac7a903b220e672e2f0c83a"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\after-start-inventory.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/after-start-inventory.json",
+      "bytes": 1686,
+      "sha256": "ff5bf7d405bcecb4d1b99e2635ef583334a65593a460bbbc756e32f2f601be8c"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\app-hilog-01.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/app-hilog-01.txt",
+      "bytes": 58,
+      "sha256": "c76121c220c4afb0ea9fa8af357c090f7701f8c6923a44856ad5f63f131761f6"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\app-hilog-cold-valid.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/app-hilog-cold-valid.txt",
+      "bytes": 194912,
+      "sha256": "af56afaab8b5be64cf645dae3526105351f3dd8b6234663547782ae4846ac5ef"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\app-hilog-valid-02.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/app-hilog-valid-02.txt",
+      "bytes": 212777,
+      "sha256": "d02a421505b146ad6b9dc3372244a2737be45f3baed74470a326d83e213f1dfc"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\app-pid-01.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/app-pid-01.txt",
+      "bytes": 6,
+      "sha256": "3107b07026af35b353c6ea4bf8d72701b8d897fb6db5b3fc04e859b05b929793"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\app-pid-02.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/app-pid-02.txt",
+      "bytes": 6,
+      "sha256": "3107b07026af35b353c6ea4bf8d72701b8d897fb6db5b3fc04e859b05b929793"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\app-pid-after-force-stop.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/app-pid-after-force-stop.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\app-pid-cold-01.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/app-pid-cold-01.txt",
+      "bytes": 6,
+      "sha256": "875562d349a36c300d1e4ddd29ea9e25f2803ea33decd22278cfca4adb42437a"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\app-pid-cold-02.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/app-pid-cold-02.txt",
+      "bytes": 6,
+      "sha256": "875562d349a36c300d1e4ddd29ea9e25f2803ea33decd22278cfca4adb42437a"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\boot-completed.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/boot-completed.txt",
+      "bytes": 7,
+      "sha256": "6156681a3af3bc77dfd9efe7465d0e06604d5e7b881e7325eb9109fa123325db"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\boot-install-identity-proof.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/boot-install-identity-proof.json",
+      "bytes": 1050,
+      "sha256": "bb5e08e64dc11d44bf56d46f3b1c2dd7737b074400c8b88174b7c78e76b9e113"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\boot-inventory-01.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/boot-inventory-01.json",
+      "bytes": 1686,
+      "sha256": "ff5bf7d405bcecb4d1b99e2635ef583334a65593a460bbbc756e32f2f601be8c"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\bundle-after-install.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/bundle-after-install.json",
+      "bytes": 16860,
+      "sha256": "3ea530155b4ee86d23764958dd22da8ac9abba09bbdc71070fdb92ca58e31d6b"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\bundle-before-install.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/bundle-before-install.txt",
+      "bytes": 67,
+      "sha256": "eb38add3caf062fd8dfe5a887ec518de761fd8843396d40690624a6f4326f698"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\cold-start-receipt.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/cold-start-receipt.json",
+      "bytes": 273,
+      "sha256": "f9d0158729c2258b357fb13cb9e50d489571488d147e839ca82f69e660ef5b5d"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\create.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/create.log",
+      "bytes": 72,
+      "sha256": "4ea15655878346b4ab923544ba4b6c5a24ab5fad4d31944fb6afc372f3ab6d6d"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb\\boot-completed.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb/boot-completed.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb\\boot-completed.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb/boot-completed.stdout.log",
+      "bytes": 7,
+      "sha256": "6156681a3af3bc77dfd9efe7465d0e06604d5e7b881e7325eb9109fa123325db"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb\\bundle-before-upgrade.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb/bundle-before-upgrade.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb\\bundle-before-upgrade.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb/bundle-before-upgrade.stdout.log",
+      "bytes": 16859,
+      "sha256": "18a9ba8aa9866b9ad3462876b7d5a7bb3bc3ff2d6add129e46b795ee16a0445e"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb\\native-smoke-proof.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb/native-smoke-proof.json",
+      "bytes": 3461,
+      "sha256": "af444a9325f866f76b8d4e5499cb3ea5883455057d8b44b58a6a3e5148b517e8"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb\\owned-instance-inventory.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb/owned-instance-inventory.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb\\owned-instance-inventory.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb/owned-instance-inventory.stdout.log",
+      "bytes": 1686,
+      "sha256": "ff5bf7d405bcecb4d1b99e2635ef583334a65593a460bbbc756e32f2f601be8c"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb\\system-api.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb/system-api.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb\\system-api.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb/system-api.stdout.log",
+      "bytes": 5,
+      "sha256": "cbbae958165cfa3d9b01d4818ef9c08d2922d7876c9d071f14a721807332fcc0"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb\\system-version.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb/system-version.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb\\system-version.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb/system-version.stdout.log",
+      "bytes": 41,
+      "sha256": "e728c0dded850edf0a400fe01b88a564af08b0280e06192fc0dce7b69e7af6da"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-cold-ability-state.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/aa-cold-ability-state.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-cold-ability-state.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/aa-cold-ability-state.stdout.log",
+      "bytes": 6416,
+      "sha256": "70fc8b69802c76064bda98c44bf6751922a4ffe0a3439d6cd68f1d6f24d42372"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-cold-process-state.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/aa-cold-process-state.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-cold-process-state.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/aa-cold-process-state.stdout.log",
+      "bytes": 1684,
+      "sha256": "e4d8069dda1f83366cb31413bc04fae50417a30a38321e56e6ac1af367d7d59e"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-cold-start-final.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/aa-cold-start-final.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-cold-start-final.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/aa-cold-start-final.stdout.log",
+      "bytes": 29,
+      "sha256": "bc4bd248d1572c3f2e55d8f5b81ea541e62c0d6c7ac7a903b220e672e2f0c83a"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-initial-ability-state.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/aa-initial-ability-state.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-initial-ability-state.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/aa-initial-ability-state.stdout.log",
+      "bytes": 6416,
+      "sha256": "b0a119760e23a2dcb7435617d261e18de2e806a82543624a62ed7bfab2630f35"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-initial-process-state.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/aa-initial-process-state.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-initial-process-state.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/aa-initial-process-state.stdout.log",
+      "bytes": 1684,
+      "sha256": "ad4e7b930ff15b989cf96e1513f6bace6a2e5042a47dbd10df1b13c68d1866db"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-start-final.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/aa-start-final.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-start-final.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/aa-start-final.stdout.log",
+      "bytes": 29,
+      "sha256": "bc4bd248d1572c3f2e55d8f5b81ea541e62c0d6c7ac7a903b220e672e2f0c83a"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-stop-owned-app.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/aa-stop-owned-app.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\aa-stop-owned-app.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/aa-stop-owned-app.stdout.log",
+      "bytes": 34,
+      "sha256": "23e243ce16c2f768226c6e814ce03a087137029f9b7a0b7efea4701af481f4d3"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-hilog-final-cold.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/app-hilog-final-cold.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-hilog-final-cold.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/app-hilog-final-cold.stdout.log",
+      "bytes": 278847,
+      "sha256": "2db9605562402850a9e81e87ba72bf825c8813238322f11f22e30cad950c46a0"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-hilog-final-initial.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/app-hilog-final-initial.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-hilog-final-initial.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/app-hilog-final-initial.stdout.log",
+      "bytes": 281192,
+      "sha256": "d5398d01a6fecf1307e84e23698b06e0cdb1b5dd8ee8a77bbf4bcc3a6d04c5b1"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-after-stop.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/app-pid-after-stop.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-after-stop.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/app-pid-after-stop.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-cold-final.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/app-pid-cold-final.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-cold-final.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/app-pid-cold-final.stdout.log",
+      "bytes": 6,
+      "sha256": "4d106dc121b097715848421dd18169eed1fabe7df38de5bf9f419bde63875714"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-cold.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/app-pid-cold.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-cold.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/app-pid-cold.stdout.log",
+      "bytes": 6,
+      "sha256": "4d106dc121b097715848421dd18169eed1fabe7df38de5bf9f419bde63875714"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-initial.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/app-pid-initial.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\app-pid-initial.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/app-pid-initial.stdout.log",
+      "bytes": 6,
+      "sha256": "35be39afdde52931768fe25063c952182119ce7f78e5e438d076ca38bf36549f"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\boot-completed.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/boot-completed.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\boot-completed.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/boot-completed.stdout.log",
+      "bytes": 7,
+      "sha256": "6156681a3af3bc77dfd9efe7465d0e06604d5e7b881e7325eb9109fa123325db"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\bundle-after-upgrade.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/bundle-after-upgrade.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\bundle-after-upgrade.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/bundle-after-upgrade.stdout.log",
+      "bytes": 16859,
+      "sha256": "9511d83d23b1a44971c111a8ff4c69c735bd178ef9f7f9e42a9882903c4834ca"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\bundle-before-upgrade.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/bundle-before-upgrade.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\bundle-before-upgrade.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/bundle-before-upgrade.stdout.log",
+      "bytes": 16859,
+      "sha256": "18a9ba8aa9866b9ad3462876b7d5a7bb3bc3ff2d6add129e46b795ee16a0445e"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\install-final-preserve-data.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/install-final-preserve-data.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\install-final-preserve-data.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/install-final-preserve-data.stdout.log",
+      "bytes": 229,
+      "sha256": "3d0b3d79792e58d7d0f296bdfe1c66ae3195e619580229de155afda520f5f60f"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\native-log-review.md",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/native-log-review.md",
+      "bytes": 6993,
+      "sha256": "c1613176ea31499dc32847b38a99d0c58d419f9a448585e642c434341cda57ba"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\native-smoke-proof.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/native-smoke-proof.json",
+      "bytes": 16061,
+      "sha256": "eec6aa7b8794b0c7566b9e88d5ed9bff52c9fcc8e5e7f02199388ed56ea34e0c"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\owned-instance-inventory.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/owned-instance-inventory.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\owned-instance-inventory.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/owned-instance-inventory.stdout.log",
+      "bytes": 1686,
+      "sha256": "ff5bf7d405bcecb4d1b99e2635ef583334a65593a460bbbc756e32f2f601be8c"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\system-api.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/system-api.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\system-api.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/system-api.stdout.log",
+      "bytes": 5,
+      "sha256": "cbbae958165cfa3d9b01d4818ef9c08d2922d7876c9d071f14a721807332fcc0"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\system-version.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/system-version.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb-100923\\system-version.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/final-smoke-build-lantern-ui-v11-knsxbchb-100923/system-version.stdout.log",
+      "bytes": 41,
+      "sha256": "e728c0dded850edf0a400fe01b88a564af08b0280e06192fc0dce7b69e7af6da"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\hdc-targets-01.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/hdc-targets-01.txt",
+      "bytes": 78,
+      "sha256": "0b2e4f51c943f0e0917f453fdb088ce59a78965ffa480fa362e9d9fd10479c12"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\hdc-targets-02.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/hdc-targets-02.txt",
+      "bytes": 124,
+      "sha256": "6659af4e9a8d920a443e37c230fbec2c31dca01a7daaa39c5324e0059fff1f4a"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\hdc-tconn-15551.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/hdc-tconn-15551.txt",
+      "bytes": 47,
+      "sha256": "49a742b3ab45c09bb2702579f0421ecdbcb391c4b061181d5399588450ca6c4d"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\install-historical-candidate.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/install-historical-candidate.log",
+      "bytes": 229,
+      "sha256": "2d76c2c57b22d06f3424bfd6c5975cda49e54486aca4fbad50758e41df692b64"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\install-receipt.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/install-receipt.json",
+      "bytes": 650,
+      "sha256": "af7fd705fb80bff78fbd19e40ee3c28996ec050da38c93948246f12a05a3dc7c"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\launch-log-review.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/launch-log-review.json",
+      "bytes": 6508,
+      "sha256": "0e96892d5bcef52b6a25cf3936c43c4d8532e6052c7cfe3100e13388d3889f10"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\launch-receipt.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/launch-receipt.json",
+      "bytes": 281,
+      "sha256": "46b95ff3277c0b881dc90406f49ef95e8e522de3dc8f32155b524d248b14e359"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\lifecycle-smoke-proof.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/lifecycle-smoke-proof.json",
+      "bytes": 1441,
+      "sha256": "81d8b6351ece95e04772b28165f118c971934cff16ec942073ca830d887b1dff"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\manual-visible-window.md",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/manual-visible-window.md",
+      "bytes": 3711,
+      "sha256": "36375487896b4713357c406e07e6eae16dd51b139bb93bc6f9f1b406a78fd610"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\native-log-review.md",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/native-log-review.md",
+      "bytes": 8324,
+      "sha256": "48c53bb6ed72cc8afd7ba39345911c7dcd83444ea97e54cad8d590def2783f7a"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\new-instance-after-create.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/new-instance-after-create.json",
+      "bytes": 1687,
+      "sha256": "bb45ab80719b025d514dde549338e68fca8ac08c4e2332a33fdc6f16567c8cfe"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\new-instance-before.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/new-instance-before.txt",
+      "bytes": 9,
+      "sha256": "c769b18b5babef2903583320036d1e507ee1e80e1386b29d098721999cd20bcf"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\official-aa-dump-help.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/official-aa-dump-help.txt",
+      "bytes": 728,
+      "sha256": "83db60d01877b7ede64338d0433ec9036eaa9e8c0e3639f4a5991e2b91583506"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\official-aa-force-stop-help.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/official-aa-force-stop-help.txt",
+      "bytes": 370,
+      "sha256": "cb280bc4b488394062204ba95b052c88552821c4d19a6035472773d8410f45f4"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\official-aa-help.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/official-aa-help.txt",
+      "bytes": 820,
+      "sha256": "4a1dd67129b41e6aab80cc6ab9a3f1f6c690a1ba69e771daedbf62712dc9ee4b"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\official-aa-start-help.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/official-aa-start-help.txt",
+      "bytes": 625,
+      "sha256": "1c3b63c9cad86e30fb90b9a637f39cd43d7b8d3a15a1111a303719189b77c4a8"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\official-bm-dump-help.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/official-bm-dump-help.txt",
+      "bytes": 602,
+      "sha256": "ff7a6f1a7d2abac879911055e12769249fc47a2dfbc6e1475a8f9e6e50eeccd4"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\official-emulator-help.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/official-emulator-help.txt",
+      "bytes": 14379,
+      "sha256": "6bc912d975fcbcdc8ba33f222cdde7fdbe588d788f340740eb9b79595b8fb48e"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\official-hilog-help.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/official-hilog-help.txt",
+      "bytes": 7540,
+      "sha256": "94414d4c73688f80603f14145045f7088108cb2f2542c279a5752029ada406e3"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\plan.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/plan.json",
+      "bytes": 623,
+      "sha256": "93d036405c5a53383d7ae92e9d05923f846733196ba7d71f832d895fc7853f17"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\start-receipt.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/start-receipt.json",
+      "bytes": 606,
+      "sha256": "5fb94241d736fa3e9d2d7e9270e1c039c3c8fc91159fd49b00bf4f73484be6d8"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\start.stderr.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/start.stderr.log",
+      "bytes": 159,
+      "sha256": "0cbf50cc020083c59a03ed7a718a4687fd3eadd658fcbc008e9fa9c10e54bf9e"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\start.stdout.log",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/start.stdout.log",
+      "bytes": 56,
+      "sha256": "e908ab38b501d0c1ddb1f2a21b101f96f13c3ce13e79a407aa7d25a5f91fcc55"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\static-404-audit.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/static-404-audit.json",
+      "bytes": 4562,
+      "sha256": "2426c95f2c5aba059c59a7abcf3934330bc9951f2926c4e4c37151d1590fa3db"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\static-template-audit-before-correction.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/static-template-audit-before-correction.json",
+      "bytes": 825,
+      "sha256": "7150c5867c952bf1c18b3e2dd422f597320d82851468d640f665bd3ef1a9f708"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\static-template-audit.json",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/static-template-audit.json",
+      "bytes": 1042,
+      "sha256": "795d26c51cc5fea578a1d06975a115cbf8694696b5b3590518448d9b1d105bbd"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\system-api.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/system-api.txt",
+      "bytes": 5,
+      "sha256": "cbbae958165cfa3d9b01d4818ef9c08d2922d7876c9d071f14a721807332fcc0"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\system-fullname.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/system-fullname.txt",
+      "bytes": 24,
+      "sha256": "202456f0ee41c0bfbb7eb58ab327f8e8e0f05ce67fff498457ebba0d59c243a5"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\system-hilog-bounded-01.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/system-hilog-bounded-01.txt",
+      "bytes": 58,
+      "sha256": "c76121c220c4afb0ea9fa8af357c090f7701f8c6923a44856ad5f63f131761f6"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\system-hilog-valid-02.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/system-hilog-valid-02.txt",
+      "bytes": 851522,
+      "sha256": "05408d48ef2823e08120f40b264eb5dcde7ee8eaf84ef1ac2f2b6b720cb653c5"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\system-version.txt",
+      "file": "reports/simulator-readiness/native-qa-LanternUIQA4d5098e7/system-version.txt",
+      "bytes": 41,
+      "sha256": "e728c0dded850edf0a400fe01b88a564af08b0280e06192fc0dce7b69e7af6da"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\design\\ui-redesign-20261013\\reviews\\IMPLEMENTATION-INDEPENDENT-REVIEW.md",
+      "file": "reports/same-reviewer-implementation/IMPLEMENTATION-INDEPENDENT-REVIEW.md",
+      "bytes": 18639,
+      "sha256": "4d17f8287e3d3e9295494b739e5b306e02e16ebbae57f51385e35c97afe56d7a"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\design\\ui-redesign-20261013\\reviews\\IMPLEMENTATION-INDEPENDENT-REVIEW.md",
+      "file": "reports/IMPLEMENTATION-INDEPENDENT-REVIEW.md",
+      "bytes": 18639,
+      "sha256": "4d17f8287e3d3e9295494b739e5b306e02e16ebbae57f51385e35c97afe56d7a"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\design\\ui-redesign-20261013\\reviews\\IMPLEMENTATION-RESPONSE-I01-I11.md",
+      "file": "reports/same-reviewer-implementation/IMPLEMENTATION-RESPONSE-I01-I11.md",
+      "bytes": 9857,
+      "sha256": "96283795828f46662661e33e25694c825d4ea0184beec7ec9e6e5deb36c9871d"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\design\\ui-redesign-20261013\\reviews\\IMPLEMENTATION-RESPONSE-I01-I11.md",
+      "file": "reports/IMPLEMENTATION-RESPONSE-I01-I11.md",
+      "bytes": 9948,
+      "sha256": "e93fbb19f326939c23d6cf477f6c1fe50776428ba97988e71f81fdf22f0883bc",
+      "previousSha256": "96283795828f46662661e33e25694c825d4ea0184beec7ec9e6e5deb36c9871d",
+      "amendedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\design\\ui-redesign-20261013\\reviews\\IMPLEMENTATION-INDEPENDENT-FINAL-RECHECK.md",
+      "file": "reports/IMPLEMENTATION-INDEPENDENT-FINAL-RECHECK.md",
+      "bytes": 10064,
+      "sha256": "304f2ae7981a5e3d47c7758830c2dff122fa4cddc48ac6b3e38b0f1b775227ed",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\testing\\ui-redesign-20261013\\reports\\preview\\browser-observation.json",
+      "file": "reports/preview/browser-observation.json",
+      "bytes": 177,
+      "sha256": "03c785d08a3aebdfdb4e19199b7ce326a2d6a8302854eaaa68eb0104d05eead9",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\testing\\ui-redesign-20261013\\reports\\preview\\http-observation.json",
+      "file": "reports/preview/http-observation.json",
+      "bytes": 274,
+      "sha256": "517b35817c2197173785849ad71db6ba584080a9263a710f92954c26301bbf51",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\testing\\ui-redesign-20261013\\reports\\preview\\preview-verified-20261013.jpg",
+      "file": "reports/preview/preview-verified-20261013.jpg",
+      "bytes": 88164,
+      "sha256": "f1ee56424314ae53d381414a46123d459318424b1c15ff770938db6c0208c041",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\404-evidence-index.json",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/404-evidence-index.json",
+      "bytes": 21069,
+      "sha256": "f833cb821f2622f68e1fa19990032df8836261714aa070091fd2b23792416df8",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\404-final-js-ast-audit.json",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/404-final-js-ast-audit.json",
+      "bytes": 3862,
+      "sha256": "65a1d5c456795acea022f6afcf98ee72d5da4c21642f8b6f0618fbedf1126672",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\404-final-routes-and-templates.json",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/404-final-routes-and-templates.json",
+      "bytes": 7470,
+      "sha256": "8023c1a91a258b6ed55a6ff368b741fa9b381a682bfe8bd52f69c3c4df49e11c",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\404-final-static-audit.json",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/404-final-static-audit.json",
+      "bytes": 4561,
+      "sha256": "f653fac0816327d61778e2f38daa8711f567a0b4d6a34a3a373c0b0eac6f6507",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\404-log-correlation.md",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/404-log-correlation.md",
+      "bytes": 5628,
+      "sha256": "306819b62727f18480701fd9b6d4a2651fdbe1f88bb94c3d47d0415dd07d422e",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\404-readonly-capture.json",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/404-readonly-capture.json",
+      "bytes": 1269,
+      "sha256": "e9380f33075105b04ba2e40d11f21cdc380ccc8b2b3d469cef2c06d72f5bc6c0",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\404-readonly-current-hilog.stderr.log",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/404-readonly-current-hilog.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\404-readonly-current-hilog.stdout.log",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/404-readonly-current-hilog.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\404-readonly-current-pid.stderr.log",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/404-readonly-current-pid.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\404-readonly-current-pid.stdout.log",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/404-readonly-current-pid.stdout.log",
+      "bytes": 6,
+      "sha256": "4d106dc121b097715848421dd18169eed1fabe7df38de5bf9f419bde63875714",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\404_FINAL_READONLY_DIAGNOSTIC.md",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/404_FINAL_READONLY_DIAGNOSTIC.md",
+      "bytes": 7389,
+      "sha256": "75f8a5789847ba7d75ed9f12f3031c491305b964342bd1b7680a40fb12e6ecad",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\app-hilog-final-cold.stdout.log",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/app-hilog-final-cold.stdout.log",
+      "bytes": 278847,
+      "sha256": "2db9605562402850a9e81e87ba72bf825c8813238322f11f22e30cad950c46a0",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\app-hilog-final-initial.stdout.log",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/app-hilog-final-initial.stdout.log",
+      "bytes": 281192,
+      "sha256": "d5398d01a6fecf1307e84e23698b06e0cdb1b5dd8ee8a77bbf4bcc3a6d04c5b1",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\audit-routes-and-templates.py",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/audit-routes-and-templates.py",
+      "bytes": 5627,
+      "sha256": "95bb568914a58237db7c1a6d90d404be6b779269108e8690c1439dfb22504677",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\FILE_INDEX.json",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/FILE_INDEX.json",
+      "bytes": 4983,
+      "sha256": "5cc35097e662f5290a0ed4b37672225c03025f54698914437fbf744f91f04f19",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\MANUAL_QA_VISUAL_MEDIA_CHECK.md",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/MANUAL_QA_VISUAL_MEDIA_CHECK.md",
+      "bytes": 1860,
+      "sha256": "a3c391ee30df31f4595d5991fef29c01bb978ce061a266c86fea8e25c9444414",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\official-emulator-help-excerpt.txt",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/official-emulator-help-excerpt.txt",
+      "bytes": 3723,
+      "sha256": "c6330be484efdaa46ff40eae12b11a00ba222eddfab92806a0259f4f015a91c9",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\final-404-readonly-diagnostic\\official-help-provenance.json",
+      "file": "reports/simulator-readiness/final-404-readonly-diagnostic/official-help-provenance.json",
+      "bytes": 274,
+      "sha256": "6f44e5e43a9fe91c8170d921141a6cdc2c3615d012157e95718a30996a307de1",
+      "addedUtc": "2026-10-13T10:47:47.574648+00:00"
+    }
+  ],
+  "amended_utc": "2026-10-13T10:47:47.574648+00:00"
+}

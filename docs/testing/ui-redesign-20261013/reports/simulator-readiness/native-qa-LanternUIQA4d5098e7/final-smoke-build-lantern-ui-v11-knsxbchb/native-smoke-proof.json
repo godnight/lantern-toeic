@@ -1,0 +1,99 @@
+{
+  "status": "failed",
+  "startedAt": "2026-10-13T10:08:44.957691+00:00",
+  "instance": "LanternUIQA4d5098e7",
+  "target": "127.0.0.1:15551",
+  "evidence": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7\\final-smoke-build-lantern-ui-v11-knsxbchb",
+  "hap": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\lantern-ui-v11-unsigned-local-only.hap",
+  "hapSha256": "d10202ec9ffc908e15199d8917cc270214d36b351161d90403a786faa604f573",
+  "hapBytes": 44292998,
+  "candidateFinalSource": true,
+  "commands": [
+    {
+      "name": "owned-instance-inventory",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\tools\\emulator\\Emulator.exe",
+        "-list",
+        "-details",
+        "-instancePath",
+        "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-native-qa-jbv3rhze\\instances",
+        "-imageRoot",
+        "C:\\Users\\Administrator\\AppData\\Local\\Huawei\\Sdk"
+      ],
+      "startedAt": "2026-10-13T10:08:44.958690+00:00",
+      "endedAt": "2026-10-13T10:08:45.077910+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "boot-completed",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "param",
+        "get",
+        "bootevent.boot.completed"
+      ],
+      "startedAt": "2026-10-13T10:08:45.077910+00:00",
+      "endedAt": "2026-10-13T10:08:45.140419+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "system-api",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "param",
+        "get",
+        "const.ohos.apiversion"
+      ],
+      "startedAt": "2026-10-13T10:08:45.140419+00:00",
+      "endedAt": "2026-10-13T10:08:45.199186+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "system-version",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "param",
+        "get",
+        "const.product.software.version"
+      ],
+      "startedAt": "2026-10-13T10:08:45.200186+00:00",
+      "endedAt": "2026-10-13T10:08:45.261180+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "bundle-before-upgrade",
+      "argv": [
+        "D:\\zzl\\harmony-toolchain\\studio-26.0.0.821\\sdk\\default\\openharmony\\toolchains\\hdc.exe",
+        "-t",
+        "127.0.0.1:15551",
+        "shell",
+        "bm",
+        "dump",
+        "-n",
+        "com.lantern.toeic"
+      ],
+      "startedAt": "2026-10-13T10:08:45.262180+00:00",
+      "endedAt": "2026-10-13T10:08:45.339257+00:00",
+      "exitCode": 0
+    }
+  ],
+  "UIInteracted": false,
+  "learningDataRead": false,
+  "oldInstancesOperated": false,
+  "securitySettingsChanged": false,
+  "signatureReadOrGenerated": false,
+  "approvalRequested": false,
+  "installPolicy": "Official install -r replace; no uninstall, clear, reset, or permission-grant flag.",
+  "systemVersion": "emulator 7.0.0.106(SP1DEVC00E999R4P11)",
+  "failedAt": "2026-10-13T10:08:45.340257+00:00",
+  "error": "'distributionType'"
+}

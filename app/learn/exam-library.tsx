@@ -37,17 +37,17 @@ export default function ExamLibrary({ownerId, onImport, disabled}: {ownerId:stri
     await list(signal); setNotice(`已保存 ${completed} 份个人题包，可在其他设备登录后下载。`);
   }
   return <section className="panel mock-library" aria-label="个人题包库">
-    <div className="mock-library-heading"><div><p className="eyebrow">YOUR EXAM LIBRARY</p><h3>个人题包库</h3></div><span className="mock-library-tag">按需下载 · 离线作答</span></div>
+    <div className="mock-library-heading"><div><p className="eyebrow">私人云库</p><h3>私人云题包</h3></div><span className="mock-library-tag">仅当前账号 · 按需下载</span></div>
     {native ? <><p>在手机浏览器登录网页版，下载个人题包，再回到这里选择“导入题包 JSON”。导入后断网也能考试。</p>
-      <a className="button secondary" href={EXAM_LIBRARY_URL}>在浏览器打开个人题包库</a><p className="mock-muted">目前通过浏览器登录下载；不直接读取百度网盘，App 内尚未接入云端账号认证。</p></> : <>
+      <a className="button secondary" href={EXAM_LIBRARY_URL}>在浏览器打开个人题包库</a><p className="mock-muted">App 内使用本机记录；云题包通过系统浏览器登录下载，再导入 App。</p></> : <>
       <p>题包存入当前账号的私人空间，换设备后可以取回。考试记录仍保存在作答设备，备份请使用“导出完整备份”。</p>
       <div className="mock-actions"><button className="button secondary" disabled={busy||disabled} onClick={()=>void run(list)}>{loaded?'刷新个人题包库':'加载个人题包库'}</button>
         <button className="button secondary" disabled={busy||disabled} onClick={()=>input.current?.click()}>上传整理好的题包</button></div>
       <input hidden ref={input} type="file" multiple accept="application/json,.json" aria-label="上传个人题包 JSON" onChange={event=>{const files=Array.from(event.target.files||[]);event.target.value='';if(files.length)void run(signal=>upload(files,signal));}}/>
       <p className="mock-muted">最多 32 份 / 2 GiB；每份不超过 96 MiB。本机最多保存 192 MiB。上传的是完整题包 JSON，原始 PDF / MP3 需先整理。</p>
-      {error&&<p role="alert" className="mock-alert">{error}；原文件和本机记录仍保留。可刷新目录核对已完成的上传。</p>}
+      {error&&<div role="alert" className="mock-alert"><strong>这次操作未完成</strong><p>{error}；原文件和本机记录仍保留。刷新目录可核对已完成的上传。</p><button className="button secondary" disabled={busy||disabled} onClick={()=>void run(list)}>重试加载目录</button></div>}
       <p role="status" aria-live="polite">{busy?notice||'正在读取个人题包库…':notice}</p>
-      {loaded&&!items.length&&<p className="mock-muted">个人题包库还是空的。上传一次，以后可在其他设备下载。</p>}
+      {loaded&&!items.length&&<div className="mock-cloud-empty" role="status"><h4>私人云库还是空的</h4><p>上传完整题包 JSON 后，可在其他设备登录下载。考试答案和成绩仍保存在作答设备。</p></div>}
       <div className="mock-library-list">{items.map(item=><article key={item.id} className="mock-library-item">
         <h4>{item.title}</h4><p className="mock-muted">{getExamProfile(item.format).label} · {(item.bytes/1024/1024).toFixed(1)} MiB · 版本 {item.version}</p>
         {item.state==='ready'?<div className="mock-actions"><button className="button primary" disabled={busy||disabled} onClick={()=>void run(async signal=>{

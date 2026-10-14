@@ -190,5 +190,5 @@ export function useStudy(owner:string|null){
   localStorage.setItem(key+':recording:'+r.id,JSON.stringify(r));persist({...latest,recordings:uniqueById([...latest.recordings,r])});setSync('pending');void syncNow();
  };
  const recordingUrl=async(r:Recording)=>{const blob=await getAudio(key+':'+r.id);if(blob)return URL.createObjectURL(blob);if(owner&&r.uploaded)return '/api/recordings?id='+encodeURIComponent(r.id);throw Error('找不到这段本机录音，也没有已确认的云端副本');};
- return {data,ready,sync,issues,syncNow,retryIssue,saveProfile,saveTheme,addAttempt,addCheckin,saveQuestionMark,saveResourceTask,restoreBackup,addRecording,recordingUrl};
+ return {data,ready,recordsReadable:ready&&activeKey.current===key&&!readOnly.current,sync,issues,syncNow,retryIssue,saveProfile,saveTheme,addAttempt,addCheckin,saveQuestionMark,saveResourceTask,restoreBackup,addRecording,recordingUrl};
 }

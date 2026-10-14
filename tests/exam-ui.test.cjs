@@ -27,7 +27,7 @@ const model = load(path.join(engineRoot, 'lib/exam-model.ts'), {});
 const ui = load(path.join(root, 'lib/exam-ui.ts'), {'@/lib/exam-model': model});
 const dialog = new Proxy({}, {get: (_, name) => name});
 const component = load(path.join(root, 'app/learn/mock-exam.tsx'), {
-  react: React, 'react/jsx-runtime': runtime, '@/components/ui/dialog': dialog,
+  react: React, 'react/jsx-runtime': runtime, 'lucide-react': dialog, '@/components/ui/dialog': dialog,
   '@/lib/native-host': {}, '@/lib/exam-model': model, '@/lib/exam-storage': {},
   '@/lib/exam-ui': ui, './mock-exam.css': {}, './exam-library': {},
 });
@@ -256,7 +256,7 @@ function audioHarness(initial = {}) {
   };
   const document = {hidden:false, addEventListener:(n,f)=>listeners.set(n,f),removeEventListener:n=>listeners.delete(n)};
   const mod=load(path.join(root,'app/learn/mock-exam.tsx'), {
-    react:hooks,'react/jsx-runtime':runtime,'@/components/ui/dialog':dialog,
+    react:hooks,'react/jsx-runtime':runtime,'lucide-react':dialog,'@/components/ui/dialog':dialog,
     '@/lib/native-host':{isNativeForeground:()=>true,subscribeNativeState:()=>()=>{}},
     '@/lib/exam-model':model,'@/lib/exam-storage':{},'@/lib/exam-ui':ui,'./mock-exam.css':{},'./exam-library':{},
   },{document});

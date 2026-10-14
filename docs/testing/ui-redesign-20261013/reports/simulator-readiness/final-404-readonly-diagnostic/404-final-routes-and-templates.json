@@ -1,0 +1,210 @@
+{
+  "checkedAt": "2026-10-13T10:41:37.207445+00:00",
+  "candidateSha256": "d10202ec9ffc908e15199d8917cc270214d36b351161d90403a786faa604f573",
+  "nativeIndexHeadComparison": {
+    "source": "harmony/entry/src/main/ets/pages/Index.ets",
+    "stageSha256": "02fb309591821fb24289e336b9ec65dfcdf5c963c63da097d56ee80642e821dc",
+    "headSha256": "c9112a8f59d27f6f0d87a2164c08ae950cf2c0c3cfcdec0492fd78702ff256a0",
+    "currentSha256": "02fb309591821fb24289e336b9ec65dfcdf5c963c63da097d56ee80642e821dc",
+    "stageMatchesHeadRawBytes": false,
+    "stageMatchesHeadAfterCrLfNormalization": true,
+    "stageMatchesCurrent": true,
+    "gitDiffNameOnly": "",
+    "getRawFileContentCallCount": 1,
+    "configured404Body": "Bundled resource not found",
+    "configured404BodyUtf8Bytes": 26,
+    "evidence": [
+      {
+        "source": "harmony/entry/src/main/ets/pages/Index.ets",
+        "line": 14,
+        "text": "function localPath(value: string): string | null {"
+      },
+      {
+        "source": "harmony/entry/src/main/ets/pages/Index.ets",
+        "line": 28,
+        "text": "return decoded === '' || decoded === '/' ? 'web/index.html' : 'web' + decoded;"
+      },
+      {
+        "source": "harmony/entry/src/main/ets/pages/Index.ets",
+        "line": 218,
+        "text": "response.setResponseMimeType('text/plain');"
+      },
+      {
+        "source": "harmony/entry/src/main/ets/pages/Index.ets",
+        "line": 226,
+        "text": "const data: Uint8Array = await this.context().resourceManager.getRawFileContent(path);"
+      },
+      {
+        "source": "harmony/entry/src/main/ets/pages/Index.ets",
+        "line": 240,
+        "text": "response.setResponseData('Bundled resource not found');"
+      },
+      {
+        "source": "harmony/entry/src/main/ets/pages/Index.ets",
+        "line": 241,
+        "text": "response.setResponseMimeType('text/plain');"
+      },
+      {
+        "source": "harmony/entry/src/main/ets/pages/Index.ets",
+        "line": 243,
+        "text": "response.setResponseCode(404);"
+      },
+      {
+        "source": "harmony/entry/src/main/ets/pages/Index.ets",
+        "line": 264,
+        "text": "this.readAsset(response, path);"
+      },
+      {
+        "source": "harmony/entry/src/main/ets/pages/Index.ets",
+        "line": 478,
+        "text": ".onInterceptRequest((event) => this.intercept(event.request)!)"
+      }
+    ]
+  },
+  "bundledAudioTemplate": {
+    "source": "mobile/offline-audio/manifest.json",
+    "sourceSha256": "59572f462a9652776b7e78790b24b092937e23212d2232d05ebe3c7499ec86b7",
+    "clips": 1015,
+    "missingAssets": []
+  },
+  "dictionaryAssets": [
+    "dictionaries/NOTICE.txt",
+    "dictionaries/zh-en-63cf606ec4d0.json"
+  ],
+  "sourceJsonImageAudioReferences": [
+    {
+      "source": "content/questions.json",
+      "jsonPointer": "/0/image",
+      "reference": "/images/office-practice.webp",
+      "present": true
+    },
+    {
+      "source": "content/questions.json",
+      "jsonPointer": "/1/image",
+      "reference": "/images/office-practice.webp",
+      "present": true
+    },
+    {
+      "source": "content/speaking.json",
+      "jsonPointer": "/1/image",
+      "reference": "/images/office-practice.webp",
+      "present": true
+    }
+  ],
+  "missingSourceJsonReferences": [],
+  "sourceGuardAndTemplateExcerpts": [
+    {
+      "source": "mobile/src/main.tsx",
+      "startLine": 1,
+      "endLine": 11,
+      "sourceSha256": "498ff7a2cb619604725e68ae551abcb5403f3cf4966d3b92527dcef5f2617f13",
+      "lines": [
+        {
+          "line": 1,
+          "text": "import React from 'react';"
+        },
+        {
+          "line": 2,
+          "text": "import {createRoot} from 'react-dom/client';"
+        },
+        {
+          "line": 3,
+          "text": "import StudyApp from '../../app/study-app';"
+        },
+        {
+          "line": 4,
+          "text": "import '../../app/globals.css';"
+        },
+        {
+          "line": 5,
+          "text": "import '../../app/redesign.css';"
+        },
+        {
+          "line": 6,
+          "text": "import {installHarmonyHost} from '../../lib/native-host';"
+        },
+        {
+          "line": 7,
+          "text": "import {installBundledLessonAudio} from '../../lib/lesson-audio';"
+        },
+        {
+          "line": 8,
+          "text": "import audio from '../offline-audio/manifest.json';"
+        },
+        {
+          "line": 9,
+          "text": "installBundledLessonAudio(audio.clips);"
+        },
+        {
+          "line": 10,
+          "text": "installHarmonyHost();"
+        },
+        {
+          "line": 11,
+          "text": "createRoot(document.getElementById('root')!).render(<React.StrictMode><StudyApp owner={null} nativeMode/></React.StrictMode>);"
+        }
+      ]
+    },
+    {
+      "source": "app/study-app.tsx",
+      "startLine": 74,
+      "endLine": 75,
+      "sourceSha256": "cdcf87ed21b67f21bef81ce11583a1b3063fd34111af8815f194d45614c7ce3b",
+      "lines": [
+        {
+          "line": 74,
+          "text": " useEffect(()=>applyDocumentTheme(profile.theme),[profile.theme]);"
+        },
+        {
+          "line": 75,
+          "text": " useEffect(()=>{const t=setInterval(()=>setNow(new Date()),60000);if(!nativeMode&&'serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});const before=(e:Event)=>{e.preventDefault();setInstallPrompt(e);};window.addEventListener('beforeinstallprompt',before);return()=>{clearInterval(t);window.removeEventListener('beforeinstallprompt',before);};},[]);"
+        }
+      ]
+    },
+    {
+      "source": "lib/lesson-audio.ts",
+      "startLine": 8,
+      "endLine": 13,
+      "sourceSha256": "e4fd9acb9c9fd97ae972c83c198447ff1e410e5b0f74ccdb45ae805c5835ca4c",
+      "lines": [
+        {
+          "line": 8,
+          "text": "  for (const clip of clips) {"
+        },
+        {
+          "line": 9,
+          "text": "    if (!/^[a-f0-9]{20}\\.mp3$/.test(clip.file)) throw new Error('Invalid bundled audio filename');"
+        },
+        {
+          "line": 10,
+          "text": "    if (next.has(clip.text)) throw new Error('Duplicate bundled audio text');"
+        },
+        {
+          "line": 11,
+          "text": "    next.set(clip.text, '/audio/offline/' + clip.file);"
+        },
+        {
+          "line": 12,
+          "text": "  }"
+        },
+        {
+          "line": 13,
+          "text": "  bundledClips = next;"
+        }
+      ]
+    },
+    {
+      "source": "app/study-app.tsx",
+      "startLine": 91,
+      "endLine": 91,
+      "sourceSha256": "cdcf87ed21b67f21bef81ce11583a1b3063fd34111af8815f194d45614c7ce3b",
+      "lines": [
+        {
+          "line": 91,
+          "text": " const navigate=(next:string)=>{if(queue||speaking||mockOpen)return;setVocabFocus(false);setNav(next);window.scrollTo({top:0});const {lanternVocabularyView,lanternPracticeView,lanternSpeakingView,lanternPracticeLookup,...state}=window.history.state||{};window.history.pushState({...state,lanternWorkspaceView:next},'');};"
+        }
+      ]
+    }
+  ],
+  "limits": "Static paths and the native worker condition do not reveal executed masked request URLs. Identical native source to HEAD is not proof the baseline was bug-free. No user storage, imported file, runtime business data, signing material, or device files were read."
+}

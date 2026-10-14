@@ -1,0 +1,143 @@
+{
+  "note": "HTTP reachability only; no question text downloaded. Does not verify playback, identity of content or reuse permission.",
+  "results": [
+    {
+      "url": "https://exam.toeic.co.kr/book/index.php",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:58.845Z"
+    },
+    {
+      "url": "https://exam.toeic.co.kr/content/common/realQuestion.php",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:58.841Z"
+    },
+    {
+      "url": "https://exam.toeic.co.kr/content/common/realQuestion.php?examCate=TOS",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:58.842Z"
+    },
+    {
+      "url": "https://www.ets.org/content/dam/ets-org/pdfs/toeic/toeic-listening-reading-sample-test.pdf",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:58.256Z"
+    },
+    {
+      "url": "https://www.ets.org/content/dam/ets-org/pdfs/toeic/toeic-listening-reading-test-examinee-handbook.pdf",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:58.257Z"
+    },
+    {
+      "url": "https://www.ets.org/content/dam/ets-org/pdfs/toeic/toeic-speaking-writing-examinee-handbook.pdf",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:58.258Z"
+    },
+    {
+      "url": "https://www.ets.org/content/dam/ets-org/pdfs/toeic/toeic-speaking-writing-sample-tests.pdf",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:58.255Z"
+    },
+    {
+      "url": "https://www.ets.org/toeic/test-takers/prepare.html",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:58.254Z"
+    },
+    {
+      "url": "https://www.iibc-global.org/toeic/support/prep/download_audios/pc.html",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:58.845Z"
+    },
+    {
+      "url": "https://www.iibc-global.org/toeic/support/prep/lr_ud_12/pr.html",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:58.844Z"
+    },
+    {
+      "url": "https://www.iibc-global.org/toeic/support/prep/sw_guide_02.html",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:58.844Z"
+    },
+    {
+      "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample01.html",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:57.902Z"
+    },
+    {
+      "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample02.html",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:57.903Z"
+    },
+    {
+      "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample03.html",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:57.904Z"
+    },
+    {
+      "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample04.html",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:57.906Z"
+    },
+    {
+      "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample05.html",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:57.907Z"
+    },
+    {
+      "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample06.html",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:57.907Z"
+    },
+    {
+      "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample07_01.html",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:57.909Z"
+    },
+    {
+      "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample07_02.html",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:57.910Z"
+    },
+    {
+      "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample07_03.html",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:57.910Z"
+    },
+    {
+      "url": "https://www.iibc-global.org/toeic/test/lr/about/format/sample07_04.html",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:57.912Z"
+    },
+    {
+      "url": "https://www.iibc-global.org/toeic/test/speaking/about/format/sampletest.html",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:57.912Z"
+    },
+    {
+      "url": "https://www.test-toeic.cn/down.aspx",
+      "ok": false,
+      "error": "TypeError",
+      "checkedAt": "2026-10-13T07:25:58.873Z"
+    }
+  ]
+}

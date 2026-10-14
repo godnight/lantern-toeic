@@ -1,0 +1,161 @@
+{
+  "copied_utc": "2026-10-13T10:19:05.583432+00:00",
+  "files": [
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\EXAM-FEEDBACK-TEST-RESULTS.md",
+      "file": "reports/independent-code/EXAM-FEEDBACK-TEST-RESULTS.md",
+      "sha256": "485da1ad11b16f4f667f70b903f138f27404ea4f202a829ec8b465546dc3955c",
+      "bytes": 1770
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\exam-focus-cases.txt",
+      "file": "reports/independent-code/exam-focus-cases.txt",
+      "sha256": "cd65d1b2d9c3b9a0fae249b4c8137ff0ddaf111049f3398bf7b1dd7727d67cca",
+      "bytes": 5325
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\EXAM-FOCUS-TEST-RESULTS.md",
+      "file": "reports/independent-code/EXAM-FOCUS-TEST-RESULTS.md",
+      "sha256": "5fa66fa913d8dcdc99af9f6d96bf5db7e1da0b4e5ed9a31cb6b94ed0d7547cf3",
+      "bytes": 3305
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\IMPLEMENTATION-CODE-REVIEW.md",
+      "file": "reports/independent-code/IMPLEMENTATION-CODE-REVIEW.md",
+      "sha256": "8490c969bc167b901fc5a3a8ed537e710cc1b3f08aecb46897112f0d07b897a0",
+      "bytes": 26836
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\OWNER-SHELL-TEST-RESULTS.md",
+      "file": "reports/independent-code/OWNER-SHELL-TEST-RESULTS.md",
+      "sha256": "51e31255368747f5a47376f7429ece3ece2ecd2f20c9634dd58cb7822ba739e4",
+      "bytes": 1903
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\practice-history-cases.txt",
+      "file": "reports/independent-code/practice-history-cases.txt",
+      "sha256": "a976b23163bbd41d20a507f9b83a14f522fa9c2e275d542afe3c65a8cfe0eb7b",
+      "bytes": 11656
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\PRACTICE-HISTORY-TEST-RESULTS.md",
+      "file": "reports/independent-code/PRACTICE-HISTORY-TEST-RESULTS.md",
+      "sha256": "d9127135232c2b72122a1755f18b7dd96a83a6705ce33f5bb6c05ff63f2e6520",
+      "bytes": 3845
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\prepare-exam-focus-tests.cjs",
+      "file": "reports/independent-code/prepare-exam-focus-tests.cjs",
+      "sha256": "d1815076e3f02adb647b5a2891017953c166c58106d703418eba63300cdd4785",
+      "bytes": 2520
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\prepare-owner-shell-test.cjs",
+      "file": "reports/independent-code/prepare-owner-shell-test.cjs",
+      "sha256": "59780053b4027c4d1f274bbf3ff48f925b82ccce78be5ea87170596045c391f3",
+      "bytes": 5213
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\prepare-practice-history-tests.cjs",
+      "file": "reports/independent-code/prepare-practice-history-tests.cjs",
+      "sha256": "115d2171c7f766ebc8be20ad1108ae7847b8454b44a8ba9b2d068c9680f40f14",
+      "bytes": 1829
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\probe-owner-shell-result.json",
+      "file": "reports/independent-code/probe-owner-shell-result.json",
+      "sha256": "d7ea3168439b0ca7e7dc5edcc310a9f1ae24aceb891a10a4fb8780bc942095e4",
+      "bytes": 1832
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\probe-owner-shell.cjs",
+      "file": "reports/independent-code/probe-owner-shell.cjs",
+      "sha256": "58e429bf9e4f47abc91f88984486ca85f3721041edab432f476672667c7b6f53",
+      "bytes": 4678
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\probe-resource-stage-result.json",
+      "file": "reports/independent-code/probe-resource-stage-result.json",
+      "sha256": "4dd4f95707aec44cc17188be899963829550d52cfb607a8d4b2c324f27872f1a",
+      "bytes": 1563
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\probe-resource-stage.cjs",
+      "file": "reports/independent-code/probe-resource-stage.cjs",
+      "sha256": "aa323b537720abeed2794a411245980fbf6d67017c6b0d4a40c5dbc1480a3a11",
+      "bytes": 632
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\probe-search-origin-result.json",
+      "file": "reports/independent-code/probe-search-origin-result.json",
+      "sha256": "b1f83458c0d314f25ab543ec7bf48f6fbe62e84f990f5480e8538b10fbcb7716",
+      "bytes": 1479
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\probe-search-origin.cjs",
+      "file": "reports/independent-code/probe-search-origin.cjs",
+      "sha256": "20ad9ee09cc506ecb54dcead1f5642492cd3e23ded614196d542aa696f0c8baf",
+      "bytes": 10444
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\resource-stage-cases.txt",
+      "file": "reports/independent-code/resource-stage-cases.txt",
+      "sha256": "10aff08332976fc7db30586cb88d51273a37a453ed957d3936a884dbfef44ad7",
+      "bytes": 5948
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\ui-redesign-exam.test.cjs",
+      "file": "reports/independent-code/ui-redesign-exam.test.cjs",
+      "sha256": "701d83be72d604a8e097a09ba5fb955a4307524ffd352d1c25076830f791dad1",
+      "bytes": 32649
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\ui-redesign-owner-shell.test.cjs",
+      "file": "reports/independent-code/ui-redesign-owner-shell.test.cjs",
+      "sha256": "451aa06f365f31968717cf97b190352467b4351c91902a18b5dc32f8b61a894b",
+      "bytes": 12621
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-code\\ui-redesign-practice.test.cjs",
+      "file": "reports/independent-code/ui-redesign-practice.test.cjs",
+      "sha256": "de631fa5fd8dcdeabe901e3d725b25592e09ec2d1c1fb893b29e266e0b12c826",
+      "bytes": 24601
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-visual\\CHECKLIST.md",
+      "file": "reports/independent-visual/CHECKLIST.md",
+      "sha256": "9bf529db7f9e70b4fe1b5b919466007f41150dfcb6427339f5770c05aa672cf2",
+      "bytes": 4513
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-visual\\I09-I11-OBSERVED-SCREENSHOTS.json",
+      "file": "reports/independent-visual/I09-I11-OBSERVED-SCREENSHOTS.json",
+      "sha256": "0b0df610bf7e9f54986ef56e6c3fe8dc9d853ad1aad97540dd11c54497aafef0",
+      "bytes": 9464
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-visual\\I09-I11-VISUAL-RECHECK.md",
+      "file": "reports/independent-visual/I09-I11-VISUAL-RECHECK.md",
+      "sha256": "b30b96733a8426cc8e37c3ac2c61da71aa4f907d0a027152d403b7dc0ae08936",
+      "bytes": 6707
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-visual\\IMPLEMENTATION-VISUAL-REVIEW.md",
+      "file": "reports/independent-visual/IMPLEMENTATION-VISUAL-REVIEW.md",
+      "sha256": "f9c7dca8cf45279560c14ecf2d3a64f6c0acb287ce3961d92b4535316ba8394e",
+      "bytes": 22984
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-visual\\INDEX-RECHECK.json",
+      "file": "reports/independent-visual/INDEX-RECHECK.json",
+      "sha256": "bf72e615a75a728a65fd6923b9f530f924f0c985c59d59c7bf8598e38a2153c0",
+      "bytes": 1775
+    },
+    {
+      "source": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-visual\\OBSERVED-SCREENSHOTS.json",
+      "file": "reports/independent-visual/OBSERVED-SCREENSHOTS.json",
+      "sha256": "9765ede7e113b2d9cce13695b3a0f9da808c11790cf17545c12e634576fed6c0",
+      "bytes": 34697
+    }
+  ]
+}

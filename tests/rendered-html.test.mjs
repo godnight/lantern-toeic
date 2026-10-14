@@ -33,8 +33,10 @@ test("renders the production learning shell and install metadata", async () => {
   assert.match(html, /<title>LANTERN · 微光托业<\/title>/);
   assert.match(html, /<html[^>]*lang="zh-CN"/);
   assert.match(html, /<link(?=[^>]*rel="manifest")(?=[^>]*href="\/manifest.webmanifest")[^>]*>/);
-  assert.match(html, /正在整理你的学习记录/);
-  assert.match(html, /成长足迹/);
+  assert.match(html, /role="status">正在读取学习记录/);
+  assert.match(html, /aria-label="桌面主导航"/);
+  assert.match(html, /aria-label="手机主导航"/);
+  assert.match(html, /id="workspace-main"/);
   // This is the production build, not the starter's obsolete preview-marker fixture.
 
 });

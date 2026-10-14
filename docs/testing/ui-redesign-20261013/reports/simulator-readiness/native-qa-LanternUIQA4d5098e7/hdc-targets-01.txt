@@ -1,0 +1,2 @@
+6HT0226416000145		USB	Offline	localhost	hdc
+COM1		UART	Ready	unknown...	hdc
