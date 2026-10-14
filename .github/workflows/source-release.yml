@@ -41,7 +41,7 @@ jobs:
           python3 -B -m unittest discover -s tests -p 'test_release_*.py'
           npm --prefix harmony run sync:web
           npm --prefix harmony run check:web
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - name: Convert an original printable-protected PDF through real Poppler
