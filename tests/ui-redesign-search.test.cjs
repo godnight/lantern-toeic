@@ -11,7 +11,7 @@ function nodes(tree,predicate){const result=[],queue=[tree];while(queue.length){
 function text(node){return node==null||typeof node==='boolean'?'':typeof node==='string'||typeof node==='number'?String(node):Array.isArray(node)?node.map(text).join(''):text(node.props?.children);}
 const entry=(word,n=1,meaning='中文释义')=>({id:'dict-'+n.toString(16).padStart(20,'0'),word,phonetics:[],senses:[{pos:'noun',meaning}],forms:[]});
 let harnessSequence=0;
-function harness({entries=[entry('schedule')],loader,initialEvents=[],compact=false,initialMode='dictionary',initialFilter='all',initialQuery='',lookupOnly=false,backLabel='返回来源页',summary=false,storageError='',storageReady=true,withOnBack=false,inDialog=false,historySupported=true}={}){
+function harness({entries=[entry('schedule')],loader,initialEvents=[],compact=false,initialMode='dictionary',initialFilter='all',initialQuery='',lookupOnly=false,backLabel='返回来源页',summary=false,storageError='',storageReady=true,withOnBack=false,inDialog=false,historySupported=true,onExampleLookup}={}){
  const fixtureId=++harnessSequence;
  let slots=[],cursor=0,pending=[],events=initialEvents,owner='account-a',tree,calls=0,markFail=false,reviewFail=false,error=storageError,ready=storageReady,opened=0,holdDeferred=false,deferredFlush=false,overlayBlocked=false,holdFrames=false,frames=[];
  const listeners={},focus=[],scroll=[],notices=[],returnStates=[],globalLookups=[],dialogScroll=[];
@@ -25,12 +25,13 @@ function harness({entries=[entry('schedule')],loader,initialEvents=[],compact=fa
  if(!historySupported)delete window.history;
  let nativeBack=()=>false;
  const document={getElementById:id=>{globalLookups.push(id);return{focus:()=>focus.push('wrong-global:'+id)};},createElement:()=>({click(){}})};
- const jsx=(type,props)=>typeof type==='function'&&type.name==='DictionarySources'?type(props):({type,props});const icons=new Proxy({},{get:(_,k)=>String(k)});
+ const jsx=(type,props)=>typeof type==='function'&&['DictionarySources','InteractiveExample'].includes(type.name)?type(props):({type,props});const icons=new Proxy({},{get:(_,k)=>String(k)});
  const imports={react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':icons,'./vocabulary-redesign.css':{},sonner:{toast:{success:s=>notices.push(s),error:s=>notices.push(s)}},'@/lib/native-host':{registerNativeBack:fn=>{nativeBack=fn;return()=>{}}},'@/lib/vocabulary-model':vocab,'@/lib/dictionary-model':dict,'@/lib/lesson-audio':{bundledLessonAudio:()=>null},'./practice':{SpeechPlayer:'SpeechPlayer'},'@/lib/load-dictionary':{loadDictionary:()=>{calls++;return loader?loader(calls):Promise.resolve({entries});}},'@/lib/use-vocabulary':{useVocabulary:()=>({events,ready,error,sync:'本机保存',mark(wordId,starred){if(markFail||error||!ready)return false;const revision=vocab.vocabularyState(events,wordId).revision+1;events=vocab.mergeVocabularyEvents(events,[{id:crypto.randomUUID(),wordId,starred,revision,type:'mark',createdAt:new Date().toISOString()}]);return true;},review(wordId,grade,id){if(reviewFail||error||!ready)return false;events=vocab.mergeVocabularyEvents(events,[{id,wordId,grade,type:'review',createdAt:new Date().toISOString()}]);return true;},restore(payload){events=vocab.mergeVocabularyEvents(events,payload.events);return true;},backup:()=>({kind:'lantern-vocabulary',schemaVersion:1,events}),retry(){}})}};
  for(const file of ['vocabulary','vocabulary-expansion','questions','dictionary-metadata'])imports['@/content/'+file+'.json']={default:JSON.parse(fs.readFileSync(path.join(root,'content',file+'.json'),'utf8'))};
+ imports['./interactive-example']=load('app/learn/interactive-example.tsx',{'react/jsx-runtime':imports['react/jsx-runtime']});
  const exports=load('app/learn/vocabulary-library.tsx',imports,{window,document,requestAnimationFrame:fn=>holdFrames?frames.push(fn):fn(),setInterval:()=>1,clearInterval(){}});
  const onBack=()=>returnStates.push(window.history.state);
- const render=()=>{cursor=0;tree=summary?exports.VocabularyReviewSummary({owner,onOpen:()=>opened++}):exports.default({owner,initialMode,initialFilter,initialQuery,lookupOnly,backLabel,overlayBlocked,onBack:withOnBack?onBack:undefined,onQuestion(){}});if(tree.props.ref)tree.props.ref.current={closest:()=>inDialog?dialogHost:null,querySelector(selector){const id=selector.slice(5,-2),node=nodes(tree,n=>n.props?.id===id)[0];assert.ok(node,'local focus target '+id);return{disabled:!!node.props.disabled,matches:selector=>selector===':disabled'&&!!node.props.disabled,getAttribute:name=>node.props[name]??null,focus:()=>{if(!node.props.disabled)focus.push(id);}};}};deferredFlush=false;const batch=pending;pending=[];batch.forEach(fn=>fn());return tree;};
+ const render=()=>{cursor=0;tree=summary?exports.VocabularyReviewSummary({owner,onOpen:()=>opened++}):exports.default({owner,initialMode,initialFilter,initialQuery,lookupOnly,backLabel,overlayBlocked,onExampleLookup,onBack:withOnBack?onBack:undefined,onQuestion(){}});if(tree.props.ref)tree.props.ref.current={closest:()=>inDialog?dialogHost:null,querySelector(selector){const id=selector.slice(5,-2),node=nodes(tree,n=>n.props?.id===id)[0];assert.ok(node,'local focus target '+id);return{disabled:!!node.props.disabled,matches:selector=>selector===':disabled'&&!!node.props.disabled,getAttribute:name=>node.props[name]??null,focus:()=>{if(!node.props.disabled)focus.push(id);}};}};deferredFlush=false;const batch=pending;pending=[];batch.forEach(fn=>fn());return tree;};
  const find=(label)=>{const b=nodes(tree,n=>n.type==='button'&&text(n).trim()===label)[0];assert.ok(b,'button '+label);return b;};
  const click=label=>{const b=find(label);assert.ok(!b.props.disabled,'enabled '+label);b.props.onClick();return render();};
  const input=()=>nodes(tree,n=>n.type==='input'&&n.props['aria-label']==='搜索单词或中文释义')[0];
@@ -122,4 +123,32 @@ test('I08: finishing the last due card restores the title when the original self
  const prior={id:'qa-prior-due-review',wordId:word.id,type:'review',grade:0,createdAt:'2026-10-01T00:00:00.000Z'};
  const h=harness({entries:[word],initialEvents:[mark,prior],initialFilter:'due',compact:true});h.change('finalduecard');await h.settle();h.click('词卡自测 · 1 词');h.click('查看释义与例句');h.click('记住了');h.render();h.window.history.back();h.render();
  assert.equal(h.events.filter(event=>event.type==='review').length,2);assert.equal(h.find('词卡自测 · 0 词').props.disabled,true);assert.equal(h.focus.at(-1),h.domId('heading'));assert.equal(nodes(h.tree,n=>n.type==='h1'&&n.props.id===h.domId('heading'))[0].props.tabIndex,-1);h.unmount();
+});
+
+test('example lookup forwards the original token and trigger while preserving the current library detail and records',()=>{
+ const word=JSON.parse(fs.readFileSync(path.join(root,'content/vocabulary.json'),'utf8')).find(word=>word.example),calls=[];
+ const h=harness({initialMode:'learn',initialQuery:word.word,compact:true,onExampleLookup:(query,trigger)=>calls.push({query,trigger})});h.openWord(word.word);h.render();
+ const example=nodes(h.tree,n=>n.props?.className==='interactive-example')[0],token=nodes(example,n=>n.type==='button')[0],trigger={id:'retained-example-trigger'};
+ const view=h.window.history.state,length=h.window.history.length,scroll=h.window.scrollY,focusCount=h.focus.length;
+ assert.equal(text(example),word.example);token.props.onClick({currentTarget:trigger});h.render();
+ assert.equal(calls.length,1);assert.equal(calls[0].query,text(token));assert.equal(calls[0].trigger,trigger);
+ assert.equal(h.window.history.state.lanternVocabularyView.snapshot.query,word.word);assert.equal(h.window.history.state,view);assert.equal(h.window.history.length,length);assert.equal(h.window.scrollY,scroll);assert.equal(h.focus.length,focusCount);
+ assert.equal(nodes(h.tree,n=>n.props?.['data-vocabulary-detail']==='true')[0].props['aria-label'],'词条详情：'+word.word);assert.equal(h.events.length,0);h.nativeBack();h.render();assert.equal(h.input().props.value,word.word);h.unmount();
+});
+
+test('example lookup leaves a revealed self-test card intact and a blocked overlay cannot issue another lookup',()=>{
+ const calls=[],h=harness({initialMode:'learn',onExampleLookup:(query,trigger)=>calls.push({query,trigger})});
+ const start=nodes(h.tree,n=>n.type==='button'&&text(n).startsWith('词卡自测'))[0];h.click(text(start));h.click('查看释义与例句');
+ const progress=text(nodes(h.tree,n=>n.props?.className==='word-session-heading')[0]),example=text(nodes(h.tree,n=>n.props?.className==='interactive-example')[0]);
+ const token=nodes(h.tree,n=>n.props?.className==='example-word')[0];assert.ok(token);token.props.onClick({currentTarget:{id:'self-test-trigger'}});h.render();
+ h.setOverlayBlocked(true);const blocked=nodes(h.tree,n=>n.props?.className==='example-word')[0];assert.equal(blocked.props.disabled,true);blocked.props.onClick({currentTarget:{id:'blocked-trigger'}});
+ assert.equal(h.nativeBack(),false);h.setOverlayBlocked(false);assert.equal(calls.length,1);assert.equal(text(nodes(h.tree,n=>n.props?.className==='word-session-heading')[0]),progress);
+ assert.equal(text(nodes(h.tree,n=>n.props?.className==='interactive-example')[0]),example);assert.ok(h.find('还没记住'));assert.ok(h.find('记住了'));assert.equal(h.events.length,0);h.unmount();
+});
+
+test('lookup-only authored examples cannot recursively dispatch another example lookup',()=>{
+ const word=JSON.parse(fs.readFileSync(path.join(root,'content/vocabulary.json'),'utf8')).find(word=>word.example),calls=[];
+ const h=harness({initialMode:'learn',initialQuery:word.word,lookupOnly:true,onExampleLookup:(query,trigger)=>calls.push({query,trigger})});h.openWord(word.word);h.render();
+ assert.equal(text(nodes(h.tree,n=>n.props?.className==='interactive-example')[0]),word.example);assert.equal(nodes(h.tree,n=>n.props?.className==='example-word').length,0);
+ assert.match(text(h.tree),/查词窗口内的例句仅展示/);assert.equal(calls.length,0);assert.equal(h.events.length,0);h.unmount();
 });

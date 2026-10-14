@@ -80,6 +80,8 @@ for(const file of ['dialog','tabs','select','radio-group','progress','sonner'])i
 for(const file of ['resource-library','exam-collection','mock-exam','practice'])imports['./learn/'+file]={default:file};
 for(const file of ['questions','speaking'])imports['@/content/'+file+'.json']={default:JSON.parse(fs.readFileSync(path.join(root,'content',file+'.json'),'utf8'))};
 imports['@/release-manifest.json']={default:JSON.parse(fs.readFileSync(path.join(root,'release-manifest.json'),'utf8'))};
+Object.assign(imports,require('./helpers/phase2-shell-fixture.cjs').workflowShellFixture(hooks,load('lib/practice-selection.ts',{'./study-model':model})));
+imports['@/public/build-identity.json']={default:JSON.parse(fs.readFileSync(path.join(root,'public/build-identity.json'),'utf8'))};
 const app=load('app/study-app.tsx',imports,{window,document,HTMLElement:Element,navigator:{},requestAnimationFrame:fn=>frame.push(fn),setInterval:()=>1,clearInterval(){}}).StudyWorkspace;
 function render(){for(let i=0;i<3;i++){cursor=0;effects=[];tree=app({owner:null,nativeMode:true});effects.forEach(fn=>fn());}const current=frame;frame=[];current.forEach(fn=>fn());return tree;}
 function nodes(node){if(!node||typeof node!=='object')return[];if(Array.isArray(node))return node.flatMap(nodes);return[node,...nodes(node.props?.children)];}

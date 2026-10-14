@@ -1,0 +1,65 @@
+{
+  "kind": "synthetic-phase2-qa-fixtures",
+  "schemaVersion": 1,
+  "synthetic": true,
+  "fixedClock": "2026-10-14T08:00:00.000Z",
+  "timezone": "Asia/Shanghai",
+  "ownerId": "synthetic-phase2-qa",
+  "noRealUserData": true,
+  "generationBackend": "fake-indexeddb; in-memory IDBFactory only",
+  "scopes": [
+    {
+      "name": "harmony-device",
+      "scope": {
+        "kind": "harmony-device",
+        "partition": "existing-device"
+      },
+      "keys": {
+        "study": "lantern-v1-device",
+        "vocabulary": "lantern-vocab-v1:device:synthetic-phase2-seed",
+        "workflowDatabase": "lantern-workflow-v1",
+        "workflowVersion": 1,
+        "scopeKey": "{\"kind\":\"harmony-device\",\"partition\":\"existing-device\"}"
+      },
+      "prefix": "harmony-device/"
+    },
+    {
+      "name": "web-local",
+      "scope": {
+        "kind": "web-local",
+        "partition": "existing-device"
+      },
+      "keys": {
+        "study": "lantern-v1-device",
+        "vocabulary": "lantern-vocab-v1:device:synthetic-phase2-seed",
+        "workflowDatabase": "lantern-workflow-v1",
+        "workflowVersion": 1,
+        "scopeKey": "{\"kind\":\"web-local\",\"partition\":\"existing-device\"}"
+      },
+      "prefix": "web-local/"
+    },
+    {
+      "name": "web-owner",
+      "scope": {
+        "kind": "web-owner",
+        "ownerId": "synthetic-phase2-qa"
+      },
+      "keys": {
+        "study": "lantern-v1-synthetic-phase2-qa",
+        "vocabulary": "lantern-vocab-v1:owner:synthetic-phase2-qa:synthetic-phase2-seed",
+        "workflowDatabase": "lantern-workflow-v1",
+        "workflowVersion": 1,
+        "scopeKey": "{\"kind\":\"web-owner\",\"ownerId\":\"synthetic-phase2-qa\"}"
+      },
+      "prefix": "web-owner/"
+    }
+  ],
+  "faults": {
+    "normalImport": false,
+    "files": [
+      "faults/bad-main-snapshot.txt",
+      "faults/future-study-schema.json",
+      "faults/future-workflow-schema.json"
+    ]
+  }
+}

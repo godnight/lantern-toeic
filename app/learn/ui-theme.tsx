@@ -6,22 +6,54 @@ import {UI_THEME_BY_PERSISTED, UI_THEME_META, UI_THEME_ORDER} from '@/lib/ui-the
 
 export type ThemeMotifProps = {theme: Theme};
 
+export type ThemeBrandMarkProps = {size?: number; className?: string};
+
+/** The user-approved icon, copied without editing. Decorative beside a text label. */
+export function ThemeBrandMark({size = 40, className = ''}: ThemeBrandMarkProps) {
+  return <img className={`phase2-brand-mark ${className}`.trim()}
+    src="/phase2-theme/knight-icon-96.png"
+    srcSet="/phase2-theme/knight-icon-48.png 48w, /phase2-theme/knight-icon-64.png 64w, /phase2-theme/knight-icon-96.png 96w, /phase2-theme/knight-icon-256.png 256w"
+    sizes={`${size}px`} width={size} height={size} alt="" aria-hidden="true" decoding="async"/>;
+}
+
+export type ThemeSceneProps = {
+  theme: Theme;
+  scene?: 'blue-lake' | 'dirtmouth';
+  caption?: string;
+  className?: string;
+};
+
+/** Complete S1-r3 scene window, never a crop or a background behind reading text.
+ * Only hollow displays game art; the other persisted themes retain their own UI.
+ * The bounded display width and width-based srcSet preserve the supplied 1/2/3x set. */
+export function ThemeScene({theme, scene = 'blue-lake', caption, className = ''}: ThemeSceneProps) {
+  if (theme !== 'hollow') return null;
+  const lake = scene === 'blue-lake';
+  const widths = lake ? [448, 896, 1280] : [560, 1120, 1672];
+  const label = caption ?? (lake ? '蓝湖 · 留一点时间，看看远处。' : '德特茅斯 · 这段旅途，可以稍歇。');
+  return <figure className={`phase2-scene-window ${className}`.trim()} data-scene={scene}>
+    <img src={`/phase2-theme/${scene}-hd-1x.webp`}
+      srcSet={widths.map((width, index) => `/phase2-theme/${scene}-hd-${index + 1}x.webp ${width}w`).join(', ')}
+      sizes="(max-width: 350px) calc(100vw - 32px), (max-width: 600px) calc(100vw - 40px), 560px"
+      width={widths[0]} height={lake ? 252 : 315}
+      alt={lake ? '奎若与小骑士坐在蓝湖边，完整洞顶、瀑布与湖面倒影构图' : '小骑士在德特茅斯长椅与暖灯下休憩的完整场景'}
+      loading="lazy" decoding="async"/>
+    <figcaption>{label}<span>既有 AI 同人场景 · 完整构图</span></figcaption>
+  </figure>;
+}
+
 /** Ordinary page ornament only. The default themes deliberately render nothing. */
 export function ThemeMotif({theme}: ThemeMotifProps) {
   if (theme === 'paper' || theme === 'crystal') return null;
+  if (theme === 'hollow') return <ThemeBrandMark size={48} className="ui-theme-motif"/>;
   return <svg className="ui-theme-motif" viewBox="0 0 48 48" width="48" height="48"
     fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"
     strokeLinejoin="round" aria-hidden="true" focusable="false">
-    {theme === 'hollow' ? <>
-      <path d="M4 43V22C4 10 12 4 24 4s20 6 20 18v21M10 43V22c0-8 5-12 14-12s14 4 14 12v21"/>
-      <path d="M17 17c4 3 10 3 14 0l-1 12c-3 4-9 4-12 0Z" fill="currentColor" stroke="none"/>
-      <ellipse cx="21" cy="24" rx="1.5" ry="2.5" fill="var(--ui-canvas)" stroke="none"/>
-      <ellipse cx="27" cy="24" rx="1.5" ry="2.5" fill="var(--ui-canvas)" stroke="none"/>
-    </> : <>
+    <>
       <path d="M10 40 34 8l6-4-2 7-25 31ZM32 12l4-5"/>
       <path d="M36 10C24 5 8 13 8 23c0 9 20 11 29 5 7-5 3-12-7-13-10-1-16 8-13 17"/>
       <path d="M18 28c0 6-3 8-6 10 7 3 16 4 24 1-5-2-8-5-9-10M20 41c3 3 7 3 10 0"/>
-    </>}
+    </>
   </svg>;
 }
 

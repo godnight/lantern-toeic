@@ -128,6 +128,8 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
     imports['@/'+file]={default:JSON.parse(fs.readFileSync(root+'/'+file,'utf8'))};
   }
   for (const name of ['dialog','tabs','select','radio-group','progress','sonner']) imports['@/components/ui/'+name]=stubs;
+  Object.assign(imports,require('./helpers/phase2-shell-fixture.cjs').workflowShellFixture(h.react,load('lib/practice-selection.ts',{'./study-model':h.model},h.browser)));
+  imports['@/public/build-identity.json']={default:JSON.parse(fs.readFileSync(root+'/public/build-identity.json','utf8'))};
   const app = load('app/study-app.tsx',imports,h.browser);
   h.recovery=imports['@/lib/speaking-recovery'];
   workspaceComponent=app.StudyWorkspace;

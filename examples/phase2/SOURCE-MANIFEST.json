@@ -1,0 +1,75 @@
+{
+  "synthetic": true,
+  "sourceFiles": [
+    {
+      "path": "content/questions.json",
+      "bytes": 141299,
+      "sha256": "4d1c1721087005e4244757f008959dcc99cd9103e85ae5e496071d4a301a3c23"
+    },
+    {
+      "path": "content/vocabulary-expansion.json",
+      "bytes": 90185,
+      "sha256": "d1238af2ec038c0987b2192d0a795f262c46e0c1a1edeb5795934b1bf23b6a73"
+    },
+    {
+      "path": "content/vocabulary.json",
+      "bytes": 81149,
+      "sha256": "659f2607bdc65985f8e7c8df8c1c14bd8de6b954897596ad5eeea0bd4a3c4eff"
+    },
+    {
+      "path": "lib/domain-command.ts",
+      "bytes": 4361,
+      "sha256": "ed004174352e82d78bf227bc4927ada3767b3960cd5d2cb8a09ab1922399a17f"
+    },
+    {
+      "path": "lib/learning-domain-repository.ts",
+      "bytes": 24511,
+      "sha256": "2107efb47cdd669137f818aae155f62beeef525545621a5cefa9aba5d4841fb9"
+    },
+    {
+      "path": "lib/practice-workflow.ts",
+      "bytes": 41563,
+      "sha256": "243fc415cb6479e6e57219119a6f9854da98ea4821bc5b76a42a57ccb4ea3728"
+    },
+    {
+      "path": "lib/study-backup.ts",
+      "bytes": 2478,
+      "sha256": "3e097d068c4510ba179999e6e9138c895aa0dd8b6a62320c1ff03d35f85ac310"
+    },
+    {
+      "path": "lib/study-model.ts",
+      "bytes": 13351,
+      "sha256": "0b966bace5f62b987c87c6500995ee15f5768839dba53bd39d8207bf197237f6"
+    },
+    {
+      "path": "lib/vocabulary-model.ts",
+      "bytes": 5337,
+      "sha256": "1a9fa1e45d3b16a86e24bc6560586a1d439fe04f5f37db97db605d2255ef626f"
+    },
+    {
+      "path": "lib/vocabulary-workflow.ts",
+      "bytes": 46704,
+      "sha256": "bb462b9ec9f4ce667e297f925be57cbd4d0762deb8f2630291f26020f655137b"
+    },
+    {
+      "path": "lib/workflow-catalog.ts",
+      "bytes": 1556,
+      "sha256": "db06b11803815ebf9a8628928c1153228882f4acb43d6eb5c2918250abadf595"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 498887,
+      "sha256": "42dc6f5e3996407b7cde4bb14595de0a87237b82e0c2931acf1c3781e02a8388"
+    },
+    {
+      "path": "package.json",
+      "bytes": 3772,
+      "sha256": "6926ac29f571ea3d40c676166cf4f4315ab1f41db6b8cee2e55ca9fa74e94dde"
+    }
+  ],
+  "runtime": {
+    "node": "24.13.1",
+    "typescript": "5.9.3",
+    "fakeIndexedDB": "6.2.5"
+  }
+}

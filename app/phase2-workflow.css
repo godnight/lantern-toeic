@@ -1,0 +1,14 @@
+.interactive-example{white-space:pre-wrap;overflow-wrap:anywhere}
+.example-word{display:inline;min-height:0;min-width:0;padding:0;margin:0;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;line-height:inherit;text-align:inherit;text-decoration:underline dotted;text-underline-offset:.2em;cursor:pointer}
+.example-word:focus-visible{outline:2px solid var(--ring);outline-offset:3px;border-radius:2px}
+.example-word:disabled{cursor:default;opacity:1;text-decoration:none}
+.example-lookup-hint{display:block;margin-top:.45rem;color:var(--muted-foreground);font-size:.8rem}
+.practice-continuation{display:flex;flex-wrap:wrap;gap:.65rem;justify-content:center;margin-block:1rem}
+.practice-continuation .button{min-height:44px}
+.workflow-resume{display:flex;gap:1rem;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:1rem}
+.workflow-resume p{margin:.3rem 0;color:var(--muted-foreground)}
+.practice-config{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-block:1rem}
+.practice-lookup-dialog .vocab-redesign{min-height:0}
+@media(max-width:440px){.practice-config{grid-template-columns:1fr}.practice-continuation .button{flex:1 1 40%}}
+
+.workspace-mobile-nav{grid-template-columns:repeat(6,minmax(0,1fr))}

@@ -1,5 +1,5 @@
 'use client';
-import {useDeferredValue,useEffect,useId,useMemo,useRef,useState} from 'react';
+import {useDeferredValue,useEffect,useId,useMemo,useRef,useState,type ReactNode} from 'react';
 import {ArrowLeft,ArrowRight,BookOpen,Check,Download,Search,Star,Upload,X} from 'lucide-react';
 import {toast} from 'sonner';
 import {registerNativeBack} from '@/lib/native-host';
@@ -13,6 +13,7 @@ import {emptyVocabularyState,findDictionary,indexDictionary,mergeWordCatalog,voc
 import {loadDictionary} from '@/lib/load-dictionary';
 import {bundledLessonAudio} from '@/lib/lesson-audio';
 import {SpeechPlayer} from './practice';
+import {InteractiveExample,type ExampleLookup} from './interactive-example';
 
 const core=wordData as Word[];
 const questionWords:Word[]=[];
@@ -24,7 +25,7 @@ type Mode='learn'|'dictionary';
 type Filter='all'|'starred'|'due';
 type Snapshot={query:string;searchQuery:string;mode:Mode;category:string;filter:Filter;limit:number;scroll:number;selectedId:string|null;focusId:string|null};
 type VocabularyView={token:string;snapshot:Snapshot}&({view:'detail';selectedId:string}|{view:'session';words:string[];sessionId:string;index:number;revealed:boolean;answered:string[];gradeError:'again'|'remembered'|null});
-type Props={owner:string|null;onQuestion:(id:string)=>void;initialMode?:Mode;initialFilter?:Filter;initialQuery?:string;lookupOnly?:boolean;backLabel?:string;onBack?:()=>void;onFocusChange?:(focused:boolean)=>void;overlayBlocked?:boolean};
+type Props={owner:string|null;onQuestion:(id:string)=>void;initialMode?:Mode;initialFilter?:Filter;initialQuery?:string;lookupOnly?:boolean;backLabel?:string;onBack?:()=>void;onFocusChange?:(focused:boolean)=>void;overlayBlocked?:boolean;onExampleLookup?:ExampleLookup;renderPlanAction?:(word:Word)=>ReactNode};
 
 function DictionarySources({word}:{word:string}){
  const variants=(dictionaryMetadata.headwordCaseVariants as Record<string,string[]>)[searchText(word)]||[word];
@@ -39,7 +40,7 @@ export function VocabularyReviewSummary({owner,onOpen}:{owner:string|null;onOpen
  return <section className="vocab-review-summary panel" aria-label="生词与到期词卡"><div><span className="vocab-source-label">词卡复习</span><h2>{!store.ready?'正在读取词卡记录':store.error?'词卡记录暂未读入':due?`${due} 个到期词卡`:'今天没有到期词卡'}</h2>{!store.error&&store.ready&&<p>{starred} 个生词 · <span>{store.sync}</span></p>}</div>{store.error?<div className="vocab-alert" role="alert"><p>{store.error}</p><button className="text-button" onClick={store.retry}>重新读取词卡记录</button></div>:<button className="button secondary" disabled={!store.ready} onClick={onOpen}>查看词卡范围<ArrowRight size={16}/></button>}</section>;
 }
 
-export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',initialFilter='all',initialQuery='',lookupOnly=false,backLabel='返回来源页',onBack,onFocusChange,overlayBlocked=false}:Props){
+export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',initialFilter='all',initialQuery='',lookupOnly=false,backLabel='返回来源页',onBack,onFocusChange,overlayBlocked=false,onExampleLookup,renderPlanAction}:Props){
  const store=useVocabulary(owner);
  const instanceId=useId(),rootElement=useRef<HTMLElement>(null);
  const domId=(name:string)=>'vocab-'+instanceId+'-'+name;
@@ -182,9 +183,9 @@ export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',
  const changeMode=(value:Mode)=>{if(lookupOnly&&value!=='dictionary')return;setMode(value);setCategory('all');setFilter('all');reset();};
  const showStarred=()=>{restoreList();setFilter('starred');setLimit(24);};
  const saveBackup=()=>{try{const url=URL.createObjectURL(new Blob([JSON.stringify(store.backup(),null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='lantern-vocabulary-records.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);}catch{toast.error('备份无法读取，请保留浏览器数据后重试。');}};
- const meaning=(w:Word)=><div className="word-definition"><p><span className="word-pos">{posLabel(w.pos)}</span>{w.meaning}</p>{w.collocation&&<p className="word-collocation" lang="en">{w.collocation}</p>}{w.example&&<blockquote lang="en">{w.example}</blockquote>}{w.translation&&<p className="muted">{w.translation}</p>}{!!w.forms?.length&&<p><span className="word-pos">词形参考</span><span lang="en">{w.forms.join(' · ')}</span></p>}{!!w.senses?.length&&<section className="word-dictionary-detail"><h3>词典释义</h3><ol>{w.senses.map((s,i)=><li key={i}><span className="word-pos">{posLabel(s.pos)}</span>{s.meaning}</li>)}</ol>{w.etymology&&<><h3>词源参考</h3><p>{w.etymology}</p></>}<DictionarySources word={w.word}/></section>}</div>;
+ const meaning=(w:Word)=><div className="word-definition"><p><span className="word-pos">{posLabel(w.pos)}</span>{w.meaning}</p>{w.collocation&&<p className="word-collocation" lang="en">{w.collocation}</p>}{w.example&&<><blockquote lang="en"><InteractiveExample text={w.example} onLookup={lookupOnly?undefined:onExampleLookup} disabled={overlayBlocked}/></blockquote>{onExampleLookup&&!lookupOnly&&<p className="example-lookup-hint">点例句中的英文词查词，不会自动加入生词本或学习计划。</p>}{lookupOnly&&<p className="example-lookup-hint">查词窗口内的例句仅展示，返回后可继续点词。</p>}</>}{w.translation&&<p className="muted">{w.translation}</p>}{!!w.forms?.length&&<p><span className="word-pos">词形参考</span><span lang="en">{w.forms.join(' · ')}</span></p>}{!!w.senses?.length&&<section className="word-dictionary-detail"><h3>词典释义</h3><ol>{w.senses.map((s,i)=><li key={i}><span className="word-pos">{posLabel(s.pos)}</span>{s.meaning}</li>)}</ol>{w.etymology&&<><h3>词源参考</h3><p>{w.etymology}</p></>}<DictionarySources word={w.word}/></section>}</div>;
  const audio=(w:Word)=>typeof window!=='undefined'&&window.__LANTERN_HARMONY__&&!bundledLessonAudio(w.word)?<p className="word-footnote">此词暂无离线发音；已有场景词可离线播放。</p>:<SpeechPlayer key={w.id} text={w.word} label="听单词发音" sourceLabel={w.source==='wiktionary'?'词典词条':'场景词汇'}/>;
- const markButton=(w:Word)=><div className="vocab-mark-actions"><button className={'button '+(wordState(w.id).starred?'secondary':'primary')} aria-pressed={wordState(w.id).starred} disabled={!store.ready||!!store.error} onClick={()=>mark(w,true)}>{wordState(w.id).starred?<Check size={17}/>:<Star size={17}/>} {wordState(w.id).starred?'已加入生词本':'加入生词本'}</button>{wordState(w.id).starred&&<><button className="text-button" disabled={!store.ready||!!store.error} onClick={()=>mark(w,false)}>移出生词本</button><button className="text-button" onClick={showStarred}>查看我的生词<ArrowRight size={16}/></button></>}</div>;
+ const markButton=(w:Word)=><div className="vocab-mark-actions"><button className={'button '+(wordState(w.id).starred?'secondary':'primary')} aria-pressed={wordState(w.id).starred} disabled={!store.ready||!!store.error||overlayBlocked} onClick={()=>mark(w,true)}>{wordState(w.id).starred?<Check size={17}/>:<Star size={17}/>} {wordState(w.id).starred?'已加入生词本':'加入生词本'}</button>{wordState(w.id).starred&&<><button className="text-button" disabled={!store.ready||!!store.error||overlayBlocked} onClick={()=>mark(w,false)}>移出生词本</button><button className="text-button" disabled={overlayBlocked} onClick={showStarred}>查看我的生词<ArrowRight size={16}/></button></>}{renderPlanAction?.(w)}</div>;
  const renderDetail=(w:Word)=><article id={domId('word-detail')} data-vocabulary-detail="true" className="vocab-detail" tabIndex={-1} aria-label={'词条详情：'+w.word}><button className="vocab-detail-back text-button" onClick={()=>restoreList()}><ArrowLeft size={17}/>返回结果</button><span className="vocab-source-label">{w.source==='wiktionary'?'通用词典 · 非托业专用词表':CATEGORIES[w.category]||'托业场景词'}</span><h2 className="vocab-word-title" lang="en">{w.word}</h2>{!!w.phonetics?.length&&<p className="word-phonetic" lang="en">{w.phonetics.join(' · ')}</p>}{audio(w)}{meaning(w)}{markButton(w)}{markError?.word.id===w.id&&<div className="vocab-alert" role="alert"><b>生词标记未保存</b><p>原标记保持。重试后再确认是否已加入。</p><button className="text-button" disabled={!store.ready||!!store.error} onClick={()=>mark(w,markError.starred)}>重试保存标记</button></div>}{!lookupOnly&&questions.some(q=>q.vocabulary?.some(v=>searchText(v.word)===searchText(w.word)))&&<section className="word-question-links"><h3>在练习里认识它</h3>{questions.filter(q=>q.vocabulary?.some(v=>searchText(v.word)===searchText(w.word))).map(q=><button key={q.id} className="text-button" onClick={()=>onQuestion(q.id)}>Part {q.part} · {q.title}<ArrowRight size={16}/></button>)}</section>}</article>;
  const initial=mode==='dictionary'&&filter==='all'&&!searchText(deferredQuery);
  const partial=mode==='dictionary'&&!!searchText(deferredQuery)&&!dictionaryReady;

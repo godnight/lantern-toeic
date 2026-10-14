@@ -44,6 +44,7 @@ export default defineConfig(async () => {
   const { cloudflare } = await import("@cloudflare/vite-plugin");
 
   return {
+    cacheDir: ".sites-runtime/vite-cache",
     server: {
       host: "0.0.0.0",
       allowedHosts: ["terminal.local"],

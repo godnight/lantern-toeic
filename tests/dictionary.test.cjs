@@ -33,6 +33,7 @@ const questions = JSON.parse(read('content/questions.json'));
 // Extract the actual component's catalog construction, rather than copying its merge algorithm.
 const catalog = load('app/learn/vocabulary-library.tsx', {
   react: {}, 'react/jsx-runtime': {}, 'lucide-react': {}, './vocabulary-redesign.css': {},
+  './interactive-example': load('app/learn/interactive-example.tsx', {'react/jsx-runtime': {}}),
   '@/components/ui/dialog': {}, '@/components/ui/select': {}, sonner: {},
   '@/lib/native-host': {}, '@/lib/use-vocabulary': {}, '@/lib/vocabulary-model': vocab,
   '@/content/vocabulary.json': core, '@/content/questions.json': questions,

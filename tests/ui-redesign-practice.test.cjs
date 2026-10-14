@@ -42,7 +42,7 @@ function textOf(node) {
   return Array.isArray(node) ? node.map(textOf).join('') : textOf(node.props?.children);
 }
 
-function harness({attempts = [], outcomes = [true], queue, browser, lookup = false} = {}) {
+function harness({attempts = [], outcomes = [true], queue, browser, lookup = false, durable} = {}) {
   let now = Date.parse('2026-10-13T09:00:00Z'), slots = [], cursor = 0, effects = [], tree;
   let closed = 0; const finishes = [], calls = [], saved = [], lookups = [], backs = new Map();
   class Clock extends Date {
@@ -70,7 +70,7 @@ function harness({attempts = [], outcomes = [true], queue, browser, lookup = fal
     {id:'review-fixture-one', part:1, title:'Original picture', prompt:'Which scene is described?', options:['A fixture answer','B fixture answer','C fixture answer','D fixture answer'], correctIndex:1, explanation:'Original explanation fixture', evidence:'Evidence fixture', skill:'图片信息', difficulty:'起步', image:'/review-fixture-picture.svg', transcript:'The woman is opening a box.'},
     {id:'review-fixture-two', part:7, title:'Original reading', prompt:'When will the work start?', options:['At eight.','At nine.','At ten.','At noon.'], correctIndex:0, explanation:'Second explanation fixture', evidence:'At eight.', skill:'阅读依据', difficulty:'起步', passage:'Original long material fixture. '.repeat(30)}
   ];
-  const props = {queue: questions, attempts, lookupActive:false, onLookup:lookup?term=>{lookups.push(term);props.lookupActive=true;}:undefined, onAttempt(a) {calls.push(structuredClone(a)); const ok = outcomes[Math.min(calls.length - 1, outcomes.length - 1)]; if (ok) saved.push(structuredClone(a)); return ok;}, onClose(){closed++;}, onFinish(minutes){finishes.push(minutes);}};
+  const props = {queue: questions, attempts, durable, lookupActive:false, onLookup:lookup?term=>{lookups.push(term);props.lookupActive=true;}:undefined, onAttempt(a) {calls.push(structuredClone(a)); const ok = outcomes[Math.min(calls.length - 1, outcomes.length - 1)]; if (ok) saved.push(structuredClone(a)); return ok;}, onClose(){closed++;}, onFinish(minutes){finishes.push(minutes);}};
   const render = () => {cursor = 0; tree = Practice(props); const pending = effects; effects = []; pending.forEach(fn => fn()); return tree;};
   const one = predicate => {const matches = nodes(tree, predicate); assert.equal(matches.length, 1, 'Expected exactly one matching control'); return matches[0];};
   const button = label => one(n => n.type === 'button' && (n.props['aria-label'] === label || textOf(n) === label));
@@ -78,7 +78,7 @@ function harness({attempts = [], outcomes = [true], queue, browser, lookup = fal
   const choose = value => {const radio = one(n => n.type === 'RadioGroup'); assert.ok(!radio.props.disabled); radio.props.onValueChange(String(value)); return render();};
   const nativeBack = () => {assert.deepEqual([...backs.keys()], [10]); assert.equal(backs.get(10)(), true); return render();};
   render();
-  return {render, one, button, click, choose, nativeBack, calls, saved, finishes, lookups, lookupActive(value){props.lookupActive=value;return render();}, nativeResult(){const handled=backs.get(10)();render();return handled;}, strictReplay(){const active=slots.filter(slot=>slot?.setup);active.forEach(slot=>{slot.cleanup?.();slot.cleanup=undefined;});active.forEach(slot=>{slot.cleanup=slot.setup();});return render();}, get tree(){return tree;}, get closed(){return closed;}, advance(ms){now += ms;}, dismissMain(){one(n => n.type === 'Dialog' && n.props.open && nodes(n, x => x.props?.className === 'practice-dialog').length).props.onOpenChange(false); return render();}, unmount(){slots.forEach(slot => slot?.cleanup?.()); assert.equal(backs.size, 0);}};
+  return {render, one, button, click, choose, nativeBack, durable(value){props.durable=value;return render();}, calls, saved, finishes, lookups, lookupActive(value){props.lookupActive=value;return render();}, nativeResult(){const handled=backs.get(10)();render();return handled;}, strictReplay(){const active=slots.filter(slot=>slot?.setup);active.forEach(slot=>{slot.cleanup?.();slot.cleanup=undefined;});active.forEach(slot=>{slot.cleanup=slot.setup();});return render();}, get tree(){return tree;}, get closed(){return closed;}, advance(ms){now += ms;}, dismissMain(){one(n => n.type === 'Dialog' && n.props.open && nodes(n, x => x.props?.className === 'practice-dialog').length).props.onOpenChange(false); return render();}, unmount(){slots.forEach(slot => slot?.cleanup?.()); assert.equal(backs.size, 0);}};
 }
 
 test('failed save retains the same answer and attempt identity; retry gates feedback and next question', () => {
@@ -255,6 +255,7 @@ function vocabularyHistoryHarness(browser) {
     '@/lib/load-dictionary':{loadDictionary(){throw Error('Scene fixture must not fetch dictionary');}},
     '@/lib/use-vocabulary':{useVocabulary:()=>({events:[],ready:true,error:'',sync:'fixture-only',mark(){throw Error('No mark writes');},review(){throw Error('No review writes');}})}};
   for(const name of ['vocabulary','vocabulary-expansion','questions','dictionary-metadata'])imports['@/content/'+name+'.json']={default:JSON.parse(fs.readFileSync(path.join(root,'content',name+'.json'),'utf8'))};
+  imports['./interactive-example']=load('app/learn/interactive-example.tsx',{'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'}});
   const component=load('app/learn/vocabulary-library.tsx',imports,{window:browser.window,document:browser.document,requestAnimationFrame:fn=>fn(),setInterval:()=>1,clearInterval(){},setTimeout:browser.setTimeout,clearTimeout:browser.clearTimeout}).default;
   function render(){for(let i=0;i<2;i++){cursor=0;tree=component({owner:null,initialMode:'learn',overlayBlocked:blocked,onQuestion:id=>{questionId=id;}});const batch=effects;effects=[];batch.forEach(fn=>fn());}return tree;}
   render();
@@ -351,4 +352,23 @@ test('I09: repeated lookup does not advance the question or create attempts/chec
   assert.equal(h.button('查词 reservation').props.disabled,true);assert.equal(h.calls.length,1);assert.equal(h.finishes.length,0);
   h.lookupActive(false);h.click('查词 reservation');assert.deepEqual(h.lookups,['reservation','reservation']);
   assert.equal(h.saved.length,1);h.unmount();
+});
+
+
+test('durable feedback stays hidden until confirmed, then a failed cursor write retains the saved answer',async()=>{
+ const submissions=[],advances=[];
+ const state={cursor:0,choice:null,submitted:false,finished:false,correct:0,busy:false,submit:async(choice,seconds)=>{submissions.push({choice,seconds});return false;},next:async()=>{advances.push(0);return false;}};
+ const h=harness({durable:state});h.choose(1);h.click('确认答案');await new Promise(resolve=>setImmediate(resolve));h.render();
+ assert.equal(submissions.length,1);assert.equal(nodes(h.tree,n=>n.props?.className==='answer-feedback').length,0);assert.equal(h.calls.length,0);
+ h.durable({...state,choice:1});assert.equal(h.one(n=>n.type==='RadioGroup').props.disabled,true);assert.equal(h.one(n=>n.type==='RadioGroup').props.value,'1');
+ h.durable({...state,choice:1,submitted:true,correct:1});assert.equal(nodes(h.tree,n=>n.props?.className==='answer-feedback').length,1);
+ h.click('下一题');await new Promise(resolve=>setImmediate(resolve));h.render();assert.equal(advances.length,1);assert.match(textOf(h.tree),/下一步尚未保存/);assert.equal(h.one(n=>n.type==='RadioGroup').props.value,'1');
+ h.unmount();
+});
+
+test('an already-visible durable session whose legacy reference becomes unverified fails closed and Native Back returns',()=>{
+ const state={cursor:0,choice:1,submitted:true,finished:false,correct:1,busy:false,submit:async()=>true,next:async()=>true};
+ const h=harness({durable:state});assert.equal(nodes(h.tree,n=>n.props?.className==='answer-feedback').length,1);
+ h.durable({...state,submitted:false,blocked:'Legacy reference missing'});assert.match(textOf(h.tree),/这组记录还需要核对/);assert.equal(nodes(h.tree,n=>n.props?.className==='answer-feedback').length,0);
+ h.nativeBack();assert.equal(h.closed,1);assert.equal(h.calls.length,0);assert.equal(h.finishes.length,0);h.unmount();
 });

@@ -1,0 +1,259 @@
+{
+  "policy": "Unmodified copies of the frozen S1-r3 high-DPR assets and approved icon. Scene downsampling only; no upscale, transcode, or new character edit.",
+  "files": [
+    {
+      "bytes": 32098,
+      "file": "blue-lake-hd-1x.webp",
+      "sha256": "1ae5f291b84807a63049a4d53e1736e3ebd40f3d3d850f9d524143f1b31e33b3"
+    },
+    {
+      "bytes": 103736,
+      "file": "blue-lake-hd-2x.webp",
+      "sha256": "f6f7e5bd1b56ff01c666b686c0b96c25e8a2ae009dce12e2cff31e428f6ce6b8"
+    },
+    {
+      "bytes": 172706,
+      "file": "blue-lake-hd-3x.webp",
+      "sha256": "723f6cd7590f86be272bb02f8e0e8b87a094b82eed81dfa558985f1fc65e3bb4"
+    },
+    {
+      "bytes": 58882,
+      "file": "crystal-peak-hd-1x.webp",
+      "sha256": "90409afea835984e9bc262f109eb5f11927e26188f784f20d6bce0b7f58b22c2"
+    },
+    {
+      "bytes": 165706,
+      "file": "crystal-peak-hd-2x.webp",
+      "sha256": "3ac7148a49ed18bfad7f6813b33bd4c9ef3cd6ad04ef5248ac8c24bf6b363f79"
+    },
+    {
+      "bytes": 278710,
+      "file": "crystal-peak-hd-3x.webp",
+      "sha256": "c74c62d007725a2aa349e1fe92183b4686a04a365abee5ded3c64ac5e9cfe6fa"
+    },
+    {
+      "bytes": 43980,
+      "file": "dirtmouth-hd-1x.webp",
+      "sha256": "f70e09ee7536171013255442368b524f1cb9f152453bc03d80d6a02082d13ffd"
+    },
+    {
+      "bytes": 125804,
+      "file": "dirtmouth-hd-2x.webp",
+      "sha256": "4720630cad3fc7dd89210fcadb1f7305b2b1ea1905b8c94d6ca500a2c4ef488e"
+    },
+    {
+      "bytes": 205676,
+      "file": "dirtmouth-hd-3x.webp",
+      "sha256": "fb6cdd64989e20826f884ecdc689e7e63be8060dd527f4d0a066dfa3fe710a7b"
+    },
+    {
+      "bytes": 92898,
+      "file": "knight-icon-256.png",
+      "sha256": "b4a4b686612841343de74a8606497b1dc157a2c812d0133d523303b0bd082ce7"
+    },
+    {
+      "bytes": 4785,
+      "file": "knight-icon-48.png",
+      "sha256": "a45282c84eed1a23e489e2b5ebd0ad7fc13299604136c845f69ba0fcc58897be"
+    },
+    {
+      "bytes": 7695,
+      "file": "knight-icon-64.png",
+      "sha256": "b34748f451b68a5c2365b6f71763bbc0502df9407ce80af0717e07d3e5ddad7c"
+    },
+    {
+      "bytes": 15783,
+      "file": "knight-icon-96.png",
+      "sha256": "1fbfd9b519f5bb209add68a6c240165fe5e7e1cec60acd3eec2cf575ae5dfc14"
+    },
+    {
+      "bytes": 460,
+      "file": "legacy-app-icon.svg",
+      "sha256": "907bb357050f29f8b9f394f0b87c9e9f7e258110d1dae5bbcaf96c0933b38884"
+    },
+    {
+      "bytes": 56724,
+      "file": "rain-city-hd-1x.webp",
+      "sha256": "53573c917ec5df670ea0708081a9bbce14908ed8cd1fa5274a879ebf351e5223"
+    },
+    {
+      "bytes": 186734,
+      "file": "rain-city-hd-2x.webp",
+      "sha256": "bd2428dfaf6c24af8f4428125e5592b84df05869456e208f072978f823010e60"
+    },
+    {
+      "bytes": 337810,
+      "file": "rain-city-hd-3x.webp",
+      "sha256": "f7467dea1d97acf2c21acbb448061eca6a2519b35d8ae907093cbb2299896667"
+    }
+  ],
+  "scenes": [
+    {
+      "originalSha256": "6a0482ce4b182e81dea8058b45e263047db7448c68671d725c4f116e7f1ce50a",
+      "originalSize": [
+        1672,
+        941
+      ],
+      "variants": [
+        {
+          "density": 1,
+          "file": "rain-city-hd-1x.webp",
+          "size": [
+            560,
+            315
+          ],
+          "bytes": 56724,
+          "sha256": "53573c917ec5df670ea0708081a9bbce14908ed8cd1fa5274a879ebf351e5223"
+        },
+        {
+          "density": 2,
+          "file": "rain-city-hd-2x.webp",
+          "size": [
+            1120,
+            630
+          ],
+          "bytes": 186734,
+          "sha256": "bd2428dfaf6c24af8f4428125e5592b84df05869456e208f072978f823010e60"
+        },
+        {
+          "density": 3,
+          "file": "rain-city-hd-3x.webp",
+          "size": [
+            1672,
+            941
+          ],
+          "bytes": 337810,
+          "sha256": "f7467dea1d97acf2c21acbb448061eca6a2519b35d8ae907093cbb2299896667"
+        }
+      ],
+      "id": "rain-city",
+      "originalFile": "M02_泪水之城·雨幕群塔.png"
+    },
+    {
+      "originalSha256": "02037d7e56e2b5ee06e3fb1946a445702340c7d906466e81ffd56868cba67de9",
+      "originalSize": [
+        1672,
+        941
+      ],
+      "variants": [
+        {
+          "density": 1,
+          "file": "dirtmouth-hd-1x.webp",
+          "size": [
+            560,
+            315
+          ],
+          "bytes": 43980,
+          "sha256": "f70e09ee7536171013255442368b524f1cb9f152453bc03d80d6a02082d13ffd"
+        },
+        {
+          "density": 2,
+          "file": "dirtmouth-hd-2x.webp",
+          "size": [
+            1120,
+            630
+          ],
+          "bytes": 125804,
+          "sha256": "4720630cad3fc7dd89210fcadb1f7305b2b1ea1905b8c94d6ca500a2c4ef488e"
+        },
+        {
+          "density": 3,
+          "file": "dirtmouth-hd-3x.webp",
+          "size": [
+            1672,
+            941
+          ],
+          "bytes": 205676,
+          "sha256": "fb6cdd64989e20826f884ecdc689e7e63be8060dd527f4d0a066dfa3fe710a7b"
+        }
+      ],
+      "id": "dirtmouth",
+      "originalFile": "K01_德特茅斯·灯下休憩.png"
+    },
+    {
+      "originalSha256": "d95b8b70f4ab96802fc658837181d7ed69790195f78a765f4eeb0015e7cf0a28",
+      "originalSize": [
+        1672,
+        941
+      ],
+      "variants": [
+        {
+          "density": 1,
+          "file": "crystal-peak-hd-1x.webp",
+          "size": [
+            560,
+            315
+          ],
+          "bytes": 58882,
+          "sha256": "90409afea835984e9bc262f109eb5f11927e26188f784f20d6bce0b7f58b22c2"
+        },
+        {
+          "density": 2,
+          "file": "crystal-peak-hd-2x.webp",
+          "size": [
+            1120,
+            630
+          ],
+          "bytes": 165706,
+          "sha256": "3ac7148a49ed18bfad7f6813b33bd4c9ef3cd6ad04ef5248ac8c24bf6b363f79"
+        },
+        {
+          "density": 3,
+          "file": "crystal-peak-hd-3x.webp",
+          "size": [
+            1672,
+            941
+          ],
+          "bytes": 278710,
+          "sha256": "c74c62d007725a2aa349e1fe92183b4686a04a365abee5ded3c64ac5e9cfe6fa"
+        }
+      ],
+      "id": "crystal-peak",
+      "originalFile": "K04_水晶山峰·矿道滑行.png"
+    },
+    {
+      "originalSha256": "ec8407e9e739d3300f5fcadd8201f7f62bc2cdb0cf2ab23e092ac0697b0b2442",
+      "originalSize": [
+        1672,
+        941
+      ],
+      "variants": [
+        {
+          "density": 1,
+          "file": "blue-lake-hd-1x.webp",
+          "size": [
+            448,
+            252
+          ],
+          "bytes": 32098,
+          "sha256": "1ae5f291b84807a63049a4d53e1736e3ebd40f3d3d850f9d524143f1b31e33b3"
+        },
+        {
+          "density": 2,
+          "file": "blue-lake-hd-2x.webp",
+          "size": [
+            896,
+            504
+          ],
+          "bytes": 103736,
+          "sha256": "f6f7e5bd1b56ff01c666b686c0b96c25e8a2ae009dce12e2cff31e428f6ce6b8"
+        },
+        {
+          "density": 3,
+          "file": "blue-lake-hd-3x.webp",
+          "size": [
+            1280,
+            720
+          ],
+          "bytes": 172706,
+          "sha256": "723f6cd7590f86be272bb02f8e0e8b87a094b82eed81dfa558985f1fc65e3bb4"
+        }
+      ],
+      "id": "blue-lake",
+      "originalFile": "STORY-HK-05_奎若与蓝湖静语.png"
+    }
+  ],
+  "usage": "User approved the current icon and two themes for local phase2 implementation. Public distribution or source redistribution rights are not implied by that approval.",
+  "revision": "S1-r3 / phase2",
+  "date": "2026-10-14"
+}
