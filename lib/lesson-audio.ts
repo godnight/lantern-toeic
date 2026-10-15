@@ -30,21 +30,22 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
   const player=++playbackSequence;
   let disposed=false,generation=0,baseline=0,hasBaseline=false,validated=false,requested:number|null=null;
   let cleanupRequest=()=>{},needsReload=false,preparing=false,preparedSource='';
-  let pendingEnded=()=>{};
+  let pendingEnded=()=>{},confirmedDuration:number|null=null;
   let diagnostic: (event:string,reason?:string,cause?:unknown)=>void=()=>{};
   const source=()=>audio.currentSrc||audio.src||'';
   let expectedSource='',expectedDeclaredSource='';
   const finitePosition=()=>Number.isFinite(audio.currentTime)?Math.max(0,audio.currentTime):null;
   const sourceMatches=()=>!!expectedSource&&(audio.src||'')===expectedDeclaredSource&&source()===expectedSource;
+  const confirmedDurationMatches=()=>confirmedDuration!==null&&Number.isFinite(confirmedDuration)&&confirmedDuration>0&&Number.isFinite(audio.duration)&&audio.duration>0&&Math.abs(audio.duration-confirmedDuration)<=.01;
   const sample=()=>{
-    if(requested!==null||!validated||audio.seeking||!sourceMatches())return baseline;
+    if(requested!==null||!validated||audio.seeking||!sourceMatches()||!confirmedDurationMatches())return baseline;
     const actual=finitePosition();if(actual!==null&&actual>=baseline-.25){baseline=Math.max(baseline,actual);hasBaseline=true;}
     return baseline;
   };
-  const stopped=()=>{generation++;cleanupRequest();cleanupRequest=()=>{};validated=false;preparing=false;if(active===playback)active=null;if(!disposed)changed(false);};
+  const stopped=()=>{generation++;cleanupRequest();cleanupRequest=()=>{};validated=false;confirmedDuration=null;preparing=false;if(active===playback)active=null;if(!disposed)changed(false);};
   const error=(reason:string,cause?:unknown)=>{if(disposed)return;diagnostic('rejected',reason,cause);stopped();audio.pause();failed();};
-  const paused=()=>{if(audio.paused&&active===playback&&!preparing){if(audio.ended&&requested!==null){pendingEnded();return;}diagnostic('pause');sample();stopped();}};
-  const ended=()=>{if(audio.ended&&active===playback){if(requested!==null){pendingEnded();return;}diagnostic('ended');sample();stopped();}};
+  const paused=()=>{if(audio.paused&&active===playback&&!preparing){if(audio.ended&&requested!==null){pendingEnded();return;}if(requested===null&&!confirmedDurationMatches()){error('confirmed-position');return;}diagnostic('pause');sample();stopped();}};
+  const ended=()=>{if(audio.ended&&active===playback){if(requested!==null){pendingEnded();return;}if(!confirmedDurationMatches()){error('confirmed-position');return;}diagnostic('ended');sample();stopped();}};
   const mediaError=()=>{if(active===playback)error('media-error',audio.error);};
   const begin=(rate:number,positionSeconds:number,restoring:boolean)=>{
     if(disposed)return;
@@ -52,10 +53,11 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
     const token=++generation;cleanupRequest();
     const target=Number.isFinite(positionSeconds)?Math.max(0,positionSeconds):0;
     if(restoring&&!hasBaseline){baseline=target;hasBaseline=true;}
-    requested=target;validated=false;expectedDeclaredSource=audio.src||'';expectedSource=expectedDeclaredSource||source();
+    requested=target;validated=false;confirmedDuration=null;expectedDeclaredSource=audio.src||'';expectedSource=expectedDeclaredSource||source();
     const reload=needsReload||preparedSource!==expectedSource||audio.readyState===0;needsReload=false;preparing=true;
     let stage='metadata',targetPosition=target,started=false,seekAssigned=false,seekComplete=false,seekEventSeen=false,playingSeen=false,startedAt=0,highestStartup:number|null=null;
-    let windowAt:number|null=null,playingAt:number|null=null,windowPosition=0,lastProgress:number|null=null,advances=0,interrupted=false;
+    let windowAt:number|null=null,lastAdvanceAt:number|null=null,playingAt:number|null=null,windowPosition=0,lastProgress:number|null=null,advances=0,interrupted=false;
+    let metadataDuration:number|null=null;
     let preparedPosition:number|null=null,preparedDuration:number|null=null,firstProgressPosition:number|null=null,firstProgressElapsed:number|null=null,diagnosticCount=0;
     const events:Record<string,number>={};
     const clock=()=>typeof performance!=='undefined'?performance.now():Date.now();
@@ -77,21 +79,23 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
       }catch{/* Diagnostics must not change media control or checkpoint behavior. */}
     };
     const fail=(reason:string,cause?:unknown)=>{if(valid())error(reason,cause);};
+    const finiteDuration=(value:number|null):value is number=>value!==null&&Number.isFinite(value)&&value>0;
+    const durationMatches=()=>finiteDuration(metadataDuration)&&finiteDuration(audio.duration)&&Math.abs(audio.duration-metadataDuration)<=.01;
     const nearTarget=()=>{const actual=finitePosition();return actual!==null&&Math.abs(actual-targetPosition)<=1;};
     const validStartPosition=()=>{
       const actual=finitePosition(),elapsed=Math.max(0,clock()-startedAt)/1000;
-      if(actual===null||actual<targetPosition-1||actual>targetPosition+1+elapsed*Math.max(0,rate)||(highestStartup!==null&&actual<highestStartup-1))return false;
+      if(!metadataSeen||audio.readyState===0||!durationMatches()||!Number.isFinite(rate)||rate<=0||actual===null||actual<targetPosition-1||actual>targetPosition+1+elapsed*rate||(highestStartup!==null&&actual<highestStartup-1))return false;
       highestStartup=highestStartup===null?actual:Math.max(highestStartup,actual);return true;
     };
-    const accept=()=>{
-      if(requested===null||!valid()||!seekComplete||!playingSeen||windowAt===null||advances<3||clock()-windowAt<750||audio.paused||audio.seeking||!sourceMatches())return;
-      const actual=finitePosition();
-      if(actual===null||lastProgress===null||actual<lastProgress-.025||actual-windowPosition<Math.max(.05,rate*.5))return;
+    // Called only by the current advancing timeupdate, never by playing, promise or stationary events.
+    const accept=(actual:number,observedAt:number)=>{
+      if(requested===null||!valid()||!seekComplete||!playingSeen||windowAt===null||lastAdvanceAt!==observedAt||advances<3||observedAt-windowAt<750||audio.paused||audio.seeking||!sourceMatches())return;
+      if(lastProgress===null||actual!==lastProgress||actual-windowPosition<Math.max(.05,rate*.5))return;
       if(!validStartPosition()){fail('startup-position');return;}
-      requested=null;baseline=actual;hasBaseline=true;validated=true;stage='playing';
+      requested=null;baseline=actual;hasBaseline=true;validated=true;confirmedDuration=metadataDuration;stage='playing';
       clearTimeout(timeout);diagnostic('confirmed');confirmed?.();
     };
-    const playing=()=>{if(!valid()||!started||requested===null)return;diagnostic('playing');playingSeen=true;if(playingAt===null)playingAt=clock();if(!validStartPosition()||!sourceMatches()){fail('playing-position');return;}accept();};
+    const playing=()=>{if(!valid()||!started||requested===null)return;diagnostic('playing');playingSeen=true;if(playingAt===null)playingAt=clock();if(!validStartPosition()||!sourceMatches()){fail('playing-position');return;}};
     const progress=()=>{
       if(!valid()||!started||audio.paused||audio.seeking)return;
       if(requested!==null){
@@ -99,17 +103,21 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
         if(firstProgressPosition===null&&finitePosition()!>(preparedPosition??Infinity)+.001){firstProgressPosition=finitePosition();firstProgressElapsed=Math.max(0,clock()-startedAt);}
         diagnostic('timeupdate');
         if(!validStartPosition()||!sourceMatches()){fail('progress-position');return;}
-        const actual=finitePosition()!;
-        if(windowAt===null){windowAt=clock();windowPosition=actual;lastProgress=actual;advances=0;}
-        else if(actual>(lastProgress??actual)+.001){lastProgress=actual;advances++;}
-        accept();return;
+        const actual=finitePosition()!,observedAt=clock();
+        if(windowAt===null){windowAt=observedAt;windowPosition=actual;lastProgress=actual;lastAdvanceAt=observedAt;advances=0;return;}
+        if(lastProgress===null||actual<=lastProgress+.001)return;
+        const gap=lastAdvanceAt===null?Infinity:observedAt-lastAdvanceAt;
+        // A burst or long gap cannot reuse old advances and fill the window with idle time.
+        if(!Number.isFinite(gap)||gap<=0||gap>500){windowAt=observedAt;windowPosition=actual;lastProgress=actual;lastAdvanceAt=observedAt;advances=0;return;}
+        lastProgress=actual;lastAdvanceAt=observedAt;advances++;
+        accept(actual,observedAt);return;
       }
-      const actual=finitePosition();if(actual===null||!sourceMatches()||actual<baseline-1){fail('confirmed-position');return;}baseline=Math.max(baseline,actual);
+      const actual=finitePosition();if(!durationMatches()||actual===null||!sourceMatches()||actual<baseline-1){fail('confirmed-position');return;}baseline=Math.max(baseline,actual);
     };
     const start=()=>{
       if(!valid()||started||!seekComplete)return;
-      if(!audio.paused||audio.seeking||!sourceMatches()||!nearTarget()){fail('not-prepared-paused');return;}
-      preparing=false;started=true;startedAt=clock();preparedPosition=finitePosition();preparedDuration=audio.duration;stage='confirming-progress';
+      if(!metadataSeen||audio.readyState===0||!durationMatches()||!Number.isFinite(rate)||rate<=0||!audio.paused||audio.seeking||!sourceMatches()||!nearTarget()){fail('not-prepared-paused');return;}
+      preparing=false;started=true;startedAt=clock();preparedPosition=finitePosition();preparedDuration=metadataDuration;stage='confirming-progress';
       if(preparePoll!==undefined){clearTimeout(preparePoll);preparePoll=undefined;}
       try{audio.playbackRate=rate;diagnostic('play');void audio.play().then(()=>{if(valid())diagnostic('play-resolved');},cause=>fail('play-rejected',cause));}catch(cause){fail('play-threw',cause);}
     };
@@ -122,16 +130,18 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
       if(!audio.paused||!nearTarget()||!sourceMatches()){fail('paused-seek-position');return;}
       seekComplete=true;diagnostic('seek-settled');start();
     };
+    const onSeeking=()=>{if(valid()&&started&&audio.seeking)fail('progress-position');};
     const onSeeked=()=>{if(!valid()||!seekAssigned||started)return;seekEventSeen=true;diagnostic('seeked');seeked();};
     const ready=()=>{
       if(!valid())return;
       if((audio.src||'')!==expectedDeclaredSource){fail('source-changed');return;}
+      if(metadataDuration!==null&&!durationMatches()){fail('startup-position');return;}
       if(seekAssigned||started)return;
-      if(!metadataSeen||audio.readyState===0||!Number.isFinite(audio.duration)||audio.duration<=0)return;
+      if(!metadataSeen||audio.readyState===0||!finiteDuration(audio.duration))return;
       if(!sourceMatches()){fail('metadata-source');return;}
       if(!audio.paused){fail('preparation-not-paused');return;}
       if(audio.seeking)return;
-      preparedSource=expectedSource;
+      preparedSource=expectedSource;metadataDuration=audio.duration;
       if(target===0){
         targetPosition=0;
         if(!audio.seeking&&Math.abs(finitePosition()??Infinity)<.025){seekComplete=true;start();return;}
@@ -147,7 +157,7 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
     };
     const metadata=()=>{if(!valid())return;metadataSeen=true;diagnostic('loadedmetadata');ready();};
     const available=(event:Event)=>{diagnostic(event.type);ready();};
-    const wait=(event:Event)=>{if(!valid()||!started)return;if(playingAt!==null)interrupted=true;diagnostic(event.type);if(requested!==null){playingSeen=false;windowAt=null;lastProgress=null;advances=0;}};
+    const wait=(event:Event)=>{if(!valid()||!started)return;if(playingAt!==null)interrupted=true;diagnostic(event.type);if(requested!==null){playingSeen=false;windowAt=null;lastAdvanceAt=null;lastProgress=null;advances=0;}};
     const aborted=()=>{if(!valid())return;diagnostic('abort');if(!preparing||metadataSeen)fail('media-aborted');};
     const emptied=()=>{if(!valid())return;diagnostic('emptied');if(started)fail('media-emptied');};
     const poll=()=>{if(!valid()||started||seekAssigned)return;ready();if(valid()&&!started&&!seekAssigned)preparePoll=setTimeout(poll,100);};
@@ -155,20 +165,26 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
     pendingEnded=()=>{
       if(!valid())return;
       const actual=finitePosition(),duration=audio.duration,elapsed=playingAt===null?0:Math.max(0,clock()-playingAt);
-      const remaining=preparedPosition===null||preparedDuration===null?Infinity:preparedDuration-preparedPosition;
-      const expectedMs=rate>0?remaining/rate*1000:Infinity;
+      const remaining=preparedPosition===null||!Number.isFinite(preparedPosition)||!finiteDuration(preparedDuration)?Infinity:preparedDuration-preparedPosition;
+      const expectedMs=Number.isFinite(rate)&&rate>0?remaining/rate*1000:Infinity;
+      const tailMs=firstProgressPosition===null||!finiteDuration(preparedDuration)||!Number.isFinite(rate)||rate<=0?Infinity:(preparedDuration-firstProgressPosition)/rate*1000;
+      const observedTailMs=firstProgressElapsed===null?0:clock()-startedAt-firstProgressElapsed;
+      const firstPlayedMs=firstProgressElapsed===null||playingAt===null?Infinity:startedAt+firstProgressElapsed-playingAt;
+      const lastAdvanceGap=lastAdvanceAt===null?Infinity:clock()-lastAdvanceAt;
       // A fully observed short remainder may end before the normal confirmation window.
       // A first-point jump, instant ended, interrupted startup or a long-track ended is not proof.
-      if(!started||!seekComplete||!playingSeen||interrupted||audio.seeking||!sourceMatches()||!Number.isFinite(duration)||duration<=0||preparedDuration===null||Math.abs(duration-preparedDuration)>.01||actual===null||preparedPosition===null||remaining<=.02||expectedMs>1500||firstProgressPosition===null||firstProgressElapsed===null||firstProgressPosition<=preparedPosition+.001||actual<=firstProgressPosition+.001||actual<duration-.05||actual>duration+.05||elapsed<expectedMs*.8||!validStartPosition()){
+      // The first advance must be timely and precede the final fifth of the remainder.
+      // A stationary first segment followed by one near-end jump cannot prove a short clip.
+      if(!started||!seekComplete||!playingSeen||interrupted||audio.seeking||!sourceMatches()||!durationMatches()||!finiteDuration(preparedDuration)||!finiteDuration(duration)||Math.abs(duration-preparedDuration)>.01||actual===null||preparedPosition===null||!Number.isFinite(remaining)||remaining<=.02||!Number.isFinite(expectedMs)||expectedMs<=0||expectedMs>1500||!Number.isFinite(elapsed)||!Number.isFinite(tailMs)||tailMs<=0||!Number.isFinite(observedTailMs)||observedTailMs<tailMs*.8||!Number.isFinite(firstPlayedMs)||firstPlayedMs<0||firstPlayedMs>Math.min(500,expectedMs*.8)||!Number.isFinite(lastAdvanceGap)||lastAdvanceGap<0||lastAdvanceGap>500||firstProgressPosition===null||firstProgressElapsed===null||firstProgressPosition<=preparedPosition+.001||firstProgressPosition>preparedPosition+remaining*.8||actual<=firstProgressPosition+.001||actual<duration-.05||actual>duration+.05||elapsed<expectedMs*.8||!validStartPosition()){
         fail('ended-before-confirmation');return;
       }
-      requested=null;baseline=actual;hasBaseline=true;validated=true;stage='playing';clearTimeout(timeout);diagnostic('confirmed-short-end');confirmed?.();diagnostic('ended');stopped();
+      requested=null;baseline=actual;hasBaseline=true;validated=true;confirmedDuration=metadataDuration;stage='playing';clearTimeout(timeout);diagnostic('confirmed-short-end');confirmed?.();if(!valid())return;diagnostic('ended');stopped();
     };
     audio.addEventListener('loadedmetadata',metadata);
     audio.addEventListener('canplay',available);audio.addEventListener('progress',available);audio.addEventListener('durationchange',available);
-    audio.addEventListener('seeked',onSeeked);audio.addEventListener('playing',playing);audio.addEventListener('timeupdate',progress);
+    audio.addEventListener('seeking',onSeeking);audio.addEventListener('seeked',onSeeked);audio.addEventListener('playing',playing);audio.addEventListener('timeupdate',progress);
     audio.addEventListener('waiting',wait);audio.addEventListener('stalled',wait);audio.addEventListener('abort',aborted);audio.addEventListener('emptied',emptied);
-    cleanupRequest=()=>{clearTimeout(timeout);if(preparePoll!==undefined)clearTimeout(preparePoll);if(seekPoll!==undefined)clearTimeout(seekPoll);audio.removeEventListener('loadedmetadata',metadata);audio.removeEventListener('canplay',available);audio.removeEventListener('progress',available);audio.removeEventListener('durationchange',available);audio.removeEventListener('seeked',onSeeked);audio.removeEventListener('playing',playing);audio.removeEventListener('timeupdate',progress);audio.removeEventListener('waiting',wait);audio.removeEventListener('stalled',wait);audio.removeEventListener('abort',aborted);audio.removeEventListener('emptied',emptied);};
+    cleanupRequest=()=>{clearTimeout(timeout);if(preparePoll!==undefined)clearTimeout(preparePoll);if(seekPoll!==undefined)clearTimeout(seekPoll);audio.removeEventListener('loadedmetadata',metadata);audio.removeEventListener('canplay',available);audio.removeEventListener('progress',available);audio.removeEventListener('durationchange',available);audio.removeEventListener('seeking',onSeeking);audio.removeEventListener('seeked',onSeeked);audio.removeEventListener('playing',playing);audio.removeEventListener('timeupdate',progress);audio.removeEventListener('waiting',wait);audio.removeEventListener('stalled',wait);audio.removeEventListener('abort',aborted);audio.removeEventListener('emptied',emptied);};
     changed(true);diagnostic('begin');if(reload){try{audio.preload='auto';diagnostic('load');audio.load();}catch(cause){fail('load-threw',cause);return;}}poll();
   };
   const playback={

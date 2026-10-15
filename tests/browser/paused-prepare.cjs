@@ -16,13 +16,15 @@ const args = process.argv.slice(2);
 const expected = args.find(a => a.startsWith('--expect-source-sha='))?.split('=')[1];
 const confirmedStable = args.includes('--runtime-stable');
 const sourcePath = path.join(ROOT, 'lib/lesson-audio.ts');
-const OUT = path.join(ROOT, 'reports/paused-prepare', new Date().toISOString().replaceAll(':', '-') + '-' + crypto.randomBytes(3).toString('hex'));
-const report = {scope:'Real Chrome HTMLAudio + current TypeScript controller, isolated fixture', status:'NOT_RUN', startedUtc:new Date().toISOString(),
+const OUT = path.join(ROOT, 'reports/sustain-guard', new Date().toISOString().replaceAll(':', '-') + '-' + crypto.randomBytes(3).toString('hex'));
+const report = {revision:'r14-development',scope:'Real Chrome HTMLAudio + current TypeScript controller, isolated fixture', status:'NOT_RUN', startedUtc:new Date().toISOString(),
   limitations:['Not ArkWeb, OS renderer, audible listening, actual Home/exit/cold lifecycle or independent QA.',
     'Fixture calls controller directly; no production state, StudyApp, repository, IndexedDB or localStorage is loaded.',
     'play/seek method wrappers only observe then delegate unchanged native APIs; no forged media events, clocks, currentTime or play promises.',
     'Early-stop negative case uses a real native pause after genuine first progression. It is not a renderer starvation simulation.',
-    'Confirmation position includes elapsed playback; <=1 second positioning threshold is measured at native play call and first genuine playing, not by subtracting target from a later confirmation.'],
+    'Confirmation position includes elapsed playback; <=1 second positioning threshold is measured at native play call and first genuine playing, not by subtracting target from a later confirmation.',
+    'Startup waiting is reported separately within the controller total 10-second bound; sustained rate starts from actual advancing timeupdates, not merely a playing event.',
+    'The older r13 ~0.7-second post-playing flat media clock and whole-startup assertion failure remain in the old tree; this test does not establish their cause or erase them.'],
   checks:[], network:[], browserResponses:[], console:[], pageErrors:[], externalRequests:[], cleanup:{browserClosed:false,serverClosed:false}};
 let server, browser, context, page, sourceBytes, mainBytes, shortBytes, fixtureCounter=0;
 const sockets = new Set(), pending = new Set();
@@ -55,13 +57,36 @@ async function request(method,rate,target) {
 }
 async function confirmedAfter(sequence) {await until(async()=>{const s=await page.evaluate(()=>window.fixture.snapshot());if(s.failed.length)throw Error('Controller failed: '+JSON.stringify(s.failed));return s.confirmed.some(c=>c.requestSequence===sequence);},'real sustained playback confirmation');return state();}
 async function naturalEndAfter(sequence) {await until(async()=>{const log=await page.evaluate(()=>window.fixture.snapshot());return log.state.ended&&log.events.some(e=>e.requestSequence===sequence&&e.type==='ended'&&e.trusted);},'actual natural ended event and completed event handlers',5000);return page.evaluate(()=>window.fixture.snapshot());}
+async function steadyAfterConfirmation(sequence,rate) {
+  const samples=await page.evaluate(async()=>{const samples=[];for(let i=0;i<13;i++){samples.push(window.fixture.state());if(i<12)await new Promise(resolve=>setTimeout(resolve,100));}return samples;});
+  const log=await page.evaluate(()=>window.fixture.snapshot());
+  const elapsed=(samples.at(-1).now-samples[0].now)/1000,advance=samples.at(-1).currentTime-samples[0].currentTime;
+  const evidenceFile='steady-fixture-'+samples[0].fixtureId+'-request-'+sequence+'.json';await fs.writeFile(path.join(OUT,evidenceFile),JSON.stringify({sequence,rate,samples,elapsed,advance},null,2)+'\n');
+  assert(elapsed>=1,'Observe at least one independent second after confirmation');
+  assert(samples.every(p=>p.requestSequence===sequence&&p.mediaId===samples[0].mediaId&&p.fixtureId===samples[0].fixtureId&&p.source===samples[0].source&&!p.paused&&!p.seeking&&!p.ended&&p.mediaErrorCode===null&&p.rate===rate&&Number.isFinite(p.currentTime)&&Number.isFinite(p.now)&&Number.isFinite(p.duration)&&p.duration>0&&Math.abs(p.duration-samples[0].duration)<=.01),'All post-confirmation samples remain finite, same-source playing at the requested rate without error');
+  const intervals=[];for(let i=1;i<samples.length;i++){
+    const milliseconds=samples[i].now-samples[i-1].now,seconds=samples[i].currentTime-samples[i-1].currentTime;
+    assert(milliseconds>0&&milliseconds<=500,'A multi-point steady observation cannot bridge a sampling gap over 500ms');
+    assert(seconds>.001,'No stationary or backward post-confirmation interval');intervals.push({milliseconds,mediaAdvanceSeconds:seconds});
+  }
+  assert(advance>rate*.7);assert(Math.abs(advance-elapsed*rate)<.25,'Keep the original post-confirmation 0.25-second rate tolerance');
+  assert.equal(log.failed.filter(e=>e.requestSequence===sequence).length,0,'No controller error after confirmation');
+  assert(!log.events.some(e=>e.requestSequence===sequence&&e.now>=samples[0].now&&e.now<=samples.at(-1).now&&['waiting','stalled','error','pause','ended'].includes(e.type)),'No interruption during independent steady observation');
+  return {elapsed,advance,ratio:advance/elapsed,absoluteRateErrorSeconds:Math.abs(advance-elapsed*rate),samples,intervals,evidence:evidenceFile};
+}
 function positioning(log, sequence, target, rate, {shortEnd=false}={}) {
   const calls=log.calls.filter(r=>r.requestSequence===sequence&&r.type==='play-call');assert.equal(calls.length,1,'Exactly one actual play, no muted priming');
   const call=calls[0];assert.equal(call.paused,true);assert.equal(call.seeking,false);assert.equal(call.muted,false);assert(Math.abs(call.currentTime-target)<=1,'Actual play starts at requested position');
   const first=log.events.find(r=>r.requestSequence===sequence&&r.type==='playing'&&r.now>=call.now);assert(first,'Keep first playing event after actual play, including zero if observed');assert.equal(first.trusted,true);assert(Math.abs(first.currentTime-target)<=1,'First genuine playing position within 1 second');
   const confirmed=log.confirmed.find(r=>r.requestSequence===sequence);assert(confirmed);const elapsed=(confirmed.now-call.now)/1000;
-  assert(confirmed.currentTime>=first.currentTime);assert(Math.abs((confirmed.currentTime-call.currentTime)-elapsed*rate)<.4,'Confirmed progress agrees with elapsed native media rate');
-  const advances=log.events.filter(r=>r.requestSequence===sequence&&r.type==='timeupdate'&&r.now>=call.now&&r.now<=confirmed.now&&!r.seeking&&!r.paused);
+  const request=log.requests.find(r=>r.requestSequence===sequence);assert(request);assert(confirmed.now-request.now<=10000,'Confirmation remains inside the total 10-second request bound');
+  assert(confirmed.currentTime>=first.currentTime);
+  for(const point of [call,first,confirmed])assert(Number.isFinite(point.currentTime)&&Number.isFinite(point.duration)&&point.duration>0,'Prepared/playing/confirmed duration and position must be finite');
+  assert(Math.abs(call.duration-first.duration)<=.01&&Math.abs(call.duration-confirmed.duration)<=.01,'Duration stays consistent across actual play and confirmation');
+  const observations=[...log.samples.map(p=>({...p,observation:'50ms-sample'})),...log.events.filter(e=>e.type==='timeupdate'&&e.trusted).map(p=>({...p,observation:'trusted-timeupdate'}))].filter(p=>p.requestSequence===sequence&&p.now>=first.now&&p.now<=confirmed.now&&!p.paused&&!p.seeking).sort((a,b)=>a.now-b.now);
+  const firstActualAdvance=observations.find(p=>p.currentTime>first.currentTime+.001);assert(firstActualAdvance,'A playing event alone cannot prove actual progression');
+  const startup={requestToPlayingMs:first.now-request.now,playCallToPlayingMs:first.now-call.now,playingToFirstObservedAdvanceMs:firstActualAdvance.now-first.now,firstActualAdvance,lastObservedStillPosition:observations.filter(p=>p.now<firstActualAdvance.now&&Math.abs(p.currentTime-first.currentTime)<=.001).at(-1)??null,requestToConfirmedMs:confirmed.now-request.now,measurementResolution:'Periodic samples are nominally 50ms; the first observed advance is not the exact physical start instant.'};
+  const advances=log.events.filter(r=>r.requestSequence===sequence&&r.type==='timeupdate'&&r.trusted&&r.now>=call.now&&r.now<=confirmed.now&&!r.seeking&&!r.paused);
   if(shortEnd){
     assert(advances.length>=1,'Short tail needs a genuine intermediate progressing sample');
     const middle=advances.filter(p=>p.currentTime>target+.001&&p.currentTime<confirmed.duration-.005);assert(middle.length>=1,'A lone final ended tick cannot prove a short tail');
@@ -70,8 +95,28 @@ function positioning(log, sequence, target, rate, {shortEnd=false}={}) {
     assert(log.events.some(e=>e.requestSequence===sequence&&['pause','ended'].includes(e.type)&&e.trusted&&e.ended&&e.now<=confirmed.now),'Confirmation must follow genuine native natural-end state, including pause-before-ended ordering');
     assert(!log.events.some(e=>e.requestSequence===sequence&&['waiting','stalled'].includes(e.type)&&e.now>=call.now&&e.now<=confirmed.now),'Short-tail exception cannot accept stalled startup');
     assert(elapsed>=((confirmed.duration-target)/rate)*.8,'Short-ended exception still requires actual elapsed duration');
-  }else{assert(advances.length>=4,'Preserve every real progression sample before confirmation');assert(confirmed.now-advances[0].now>=700,'Sustained observation, not first tick');}
-  return {playCall:call,firstPlaying:first,firstPlayingErrorSeconds:Math.abs(first.currentTime-target),confirmed,elapsedSeconds:elapsed,allPreConfirmationProgress:advances};
+  }
+  let continuousWindow=null;
+  if(!shortEnd){
+    let chain=[],previous=first.currentTime;
+    for(const point of advances){
+      const moved=point.currentTime>previous+.001;
+      if(!moved)chain=[];
+      else if(!chain.length||point.now-chain.at(-1).now>500)chain=[point];
+      else chain.push(point);
+      previous=point.currentTime;
+    }
+    assert(chain.length>=4,'Confirmation requires a current chain of actual advancing timeupdates, not old accumulated events');
+    assert(chain.every(p=>p.source===call.source&&p.mediaId===call.mediaId&&p.fixtureId===call.fixtureId&&p.rate===rate&&p.mediaErrorCode===null&&Number.isFinite(p.currentTime)&&Number.isFinite(p.now)&&Number.isFinite(p.duration)&&p.duration>0&&Math.abs(p.duration-call.duration)<=.01),'Every continuous point is genuine, same-source, finite and at the selected rate');
+    const head=chain[0],tail=chain.at(-1),windowSeconds=(confirmed.now-head.now)/1000,windowAdvance=confirmed.currentTime-head.currentTime;
+    assert(tail.now<=confirmed.now&&confirmed.now-tail.now<=500,'Confirmation remains adjacent to a new actual advance');
+    assert(windowSeconds>=.75,'Require at least 750ms continuous actual advancement, not the first tick');
+    assert(windowAdvance>=Math.max(.05,rate*.5),'Continuous window must contain actual progression');
+    assert(Math.abs(windowAdvance-windowSeconds*rate)<.4,'Keep original 0.4-second tolerance on the actually advancing window');
+    assert(!log.events.some(e=>e.requestSequence===sequence&&e.now>=head.now&&e.now<=confirmed.now&&['waiting','stalled','pause','error','ended'].includes(e.type)),'No interruption inside the continuous confirmation window');
+    continuousWindow={seconds:windowSeconds,mediaAdvanceSeconds:windowAdvance,expectedAdvanceSeconds:windowSeconds*rate,absoluteRateErrorSeconds:Math.abs(windowAdvance-windowSeconds*rate),samples:chain};
+  }
+  return {playCall:call,firstPlaying:first,firstPlayingErrorSeconds:Math.abs(first.currentTime-target),confirmed,elapsedSeconds:elapsed,startup,continuousWindow,allPreConfirmationProgress:advances};
 }
 async function normalRate(rate,target) {
   await fresh();const identity=(await state()).mediaId;
@@ -79,22 +124,21 @@ async function normalRate(rate,target) {
   for(let i=0;i<3;i++){
     const t=i===0?target:(await state()).position;
     const sequence=await request('resume',rate,i===0?target:undefined);await confirmedAfter(sequence);
-    const log=await page.evaluate(()=>window.fixture.snapshot());const start=await state();await sleep(1050);const end=await state();
+    const log=await page.evaluate(()=>window.fixture.snapshot());const postConfirmationSlope=await steadyAfterConfirmation(sequence,rate);const end=await state();
     assert.equal(end.mediaId,identity);assert.equal(end.paused,false);assert.equal(end.rate,rate);
-    const elapsed=(end.now-start.now)/1000,advance=end.currentTime-start.currentTime;assert(advance>rate*.7);assert(Math.abs(advance-elapsed*rate)<.25);
     const paused=await page.evaluate(()=>window.fixture.pause());assert(paused.position>=t);assert(Math.abs(paused.position-paused.currentTime)<.1);
-    resume.push({iteration:i+1,target:t,...positioning(log,sequence,t,rate),postConfirmationSlope:{elapsed,advance,ratio:advance/elapsed},paused});
+    resume.push({iteration:i+1,target:t,...positioning(log,sequence,t,rate),postConfirmationSlope,paused});
     await sleep(180);const quiet=await state();assert.equal(quiet.paused,true);assert.equal(quiet.position,paused.position);
   }
   const old=(await state()).position,sequence=await request('play',rate,0);await confirmedAfter(sequence);
-  const replayLog=await page.evaluate(()=>window.fixture.snapshot());const replay=positioning(replayLog,sequence,0,rate);assert(old>10);await page.evaluate(()=>window.fixture.pause());
+  const replayLog=await page.evaluate(()=>window.fixture.snapshot());const replay={...positioning(replayLog,sequence,0,rate),postConfirmationSlope:await steadyAfterConfirmation(sequence,rate)};assert(old>10);await page.evaluate(()=>window.fixture.pause());
   const log=await evidence('rate-'+String(rate).replace('.','_'));assert.equal(log.storageTouches.length,0);assert(log.events.filter(e=>e.type==='volumechange').every(e=>!e.muted));
   return {rate,initialTarget:target,mediaId:identity,resume,replay,oldPositionBeforeReplay:old,evidence:'rate-'+String(rate).replace('.','_')+'.json'};
 }
 function fixtureHtml(code) {return '<!doctype html><meta charset="utf-8"><title>Paused prepare real media fixture</title><body><h1>Real HTMLAudio controller fixture</h1><p>No application state or storage.</p><script type="module">'+code+`\n
   const log={events:[],calls:[],changed:[],failed:[],confirmed:[],requests:[],samples:[]};let audio,controller,sequence=0,mediaId=0,timer,behavior={},fixtureId;
   const ranges=r=>Array.from({length:r.length},(_,i)=>[r.start(i),r.end(i)]);
-  const state=()=>({now:performance.now(),utc:new Date().toISOString(),fixtureId,mediaId,requestSequence:sequence,currentTime:audio.currentTime,duration:Number.isFinite(audio.duration)?audio.duration:null,paused:audio.paused,seeking:audio.seeking,ended:audio.ended,muted:audio.muted,rate:audio.playbackRate,readyState:audio.readyState,source:audio.currentSrc||audio.src,seekable:ranges(audio.seekable),position:controller?.position()??null});
+  const state=()=>({now:performance.now(),utc:new Date().toISOString(),fixtureId,mediaId,requestSequence:sequence,currentTime:audio.currentTime,duration:Number.isFinite(audio.duration)?audio.duration:null,paused:audio.paused,seeking:audio.seeking,ended:audio.ended,muted:audio.muted,rate:audio.playbackRate,mediaErrorCode:audio.error?.code??null,readyState:audio.readyState,source:audio.currentSrc||audio.src,seekable:ranges(audio.seekable),position:controller?.position()??null});
   window.fixture={create(source,options,id){fixtureId=id;behavior=options;audio=new Audio();mediaId++;audio.controls=true;audio.preload='none';audio.src='/'+source+'.mp3?fixture='+fixtureId;document.body.append(audio);
     const play=audio.play.bind(audio),load=audio.load.bind(audio),pause=audio.pause.bind(audio);
     audio.play=function(){log.calls.push({type:'play-call',...state()});return play();};
@@ -107,7 +151,7 @@ function fixtureHtml(code) {return '<!doctype html><meta charset="utf-8"><title>
     });
     controller=createBundledPlayback(audio,value=>log.changed.push({playing:value,...state()}),()=>log.failed.push(state()),()=>log.confirmed.push(state()));
     timer=setInterval(()=>log.samples.push(state()),50);return state();},state,
-    request(method,rate,target){sequence++;log.requests.push({method,rate,target:target??null,...state()});if(target===undefined)controller[method](rate);else controller[method](rate,target);return sequence;},
+    request(method,rate,target){sequence++;log.requests.push({...state(),method,requestedRate:rate,requestedTarget:target??null});if(target===undefined)controller[method](rate);else controller[method](rate,target);return sequence;},
     pause(reload=false){const p=controller.pause(reload);return {...state(),returnedPosition:p};},
     changeSource(){audio.src='/other.mp3?fixture='+fixtureId;audio.load();},reload(){audio.load();},
     snapshot(){return {...log,state:state(),storageTouches:window.__storageTouches.slice()};},dispose(){clearInterval(timer);controller.dispose();}};
@@ -144,7 +188,7 @@ async function main(){
   await check('first genuine short progression then real pause cannot confirm',async()=>{await fresh('main',{stopAfterFirstProgress:true});await request('resume',1,14.376);await until(async()=>{const log=await page.evaluate(()=>window.fixture.snapshot());return log.calls.some(c=>c.type==='real-early-stop');},'first genuine progress followed by native pause');await sleep(1100);const log=await evidence('early-progress-stop');assert(log.events.some(e=>e.type==='timeupdate'&&e.currentTime>14.376&&e.trusted&&!e.paused));assert.equal(log.confirmed.length,0);assert.equal(log.failed.length,0);assert.equal(log.state.position,14.376);assert(log.state.paused);return {evidence:'early-progress-stop.json',stop:log.calls.find(c=>c.type==='real-early-stop'),state:log.state};});
   for(const rate of [1,.85])await check('short actual 1.049-second packaged clip remains playable at '+rate+'x',async()=>{await fresh('short');const sequence=await request('play',rate,0);await naturalEndAfter(sequence);const log=await evidence('short-'+rate);assert(Math.abs(log.state.duration-short.durationSeconds)<.03);assert.equal(log.failed.length,0,'A fully played short clip must not become controller error');assert.equal(log.confirmed.length,1,'Short clip must retain usable confirmed playback');const result=positioning(log,sequence,0,rate,{shortEnd:!!log.confirmed[0].ended});return {evidence:'short-'+rate+'.json',...result,ended:log.state};});
   for(const rate of [1,.85])await check('nonzero paused seek to actual last 0.4 seconds naturally ends at '+rate+'x',async()=>{await fresh('main');const target=main.durationSeconds-.4,sequence=await request('resume',rate,target);await naturalEndAfter(sequence);const log=await evidence('short-tail-'+rate);assert.equal(log.failed.length,0,'A genuinely progressing natural short tail must not fail');assert.equal(log.confirmed.length,1,'Short tail needs confirmation from progression plus natural end');assert(log.confirmed[0].ended);assert(Math.abs(log.state.position-log.state.duration)<.03);const result=positioning(log,sequence,target,rate,{shortEnd:true});return {evidence:'short-tail-'+rate+'.json',target,remainingSeconds:log.state.duration-target,...result,ended:log.state};});
-  await check('real Range206 and immutable source/assets/storage isolation',async()=>{assert(report.network.some(r=>r.status===206&&r.requestRange&&r.path==='/main.mp3'));assert(report.browserResponses.some(r=>r.status===206&&r.url.includes('/main.mp3')));assert.equal(report.externalRequests.length,0);assert.equal(report.pageErrors.length,0);assert.equal(sha(await fs.readFile(sourcePath)),expected);assert.equal(sha(await fs.readFile(path.join(ROOT,'mobile/offline-audio/mp3',main.file))),main.sha256);assert.equal(sha(await fs.readFile(path.join(ROOT,'mobile/offline-audio/mp3',short.file))),short.sha256);return {controllerUnchanged:true,mediaUnchanged:true,range206:report.network.filter(r=>r.status===206).length};});
+  await check('real Range206 and immutable source/assets/storage isolation',async()=>{assert(report.network.some(r=>r.status===206&&r.requestRange&&r.path==='/main.mp3'));assert(report.browserResponses.some(r=>r.status===206&&r.url.includes('/main.mp3')));assert.equal(report.externalRequests.length,0);assert.equal(report.pageErrors.length,0);assert.equal(sha(await fs.readFile(sourcePath)),expected);assert.equal(sha(await fs.readFile(path.join(ROOT,'mobile/offline-audio/mp3',main.file))),main.sha256);assert.equal(sha(await fs.readFile(path.join(ROOT,'mobile/offline-audio/mp3',short.file))),short.sha256);return {controllerUnchanged:true,mediaUnchanged:true,range206:{browserActuallyObserved:report.browserResponses.filter(r=>r.status===206).length,serverCompleted:report.network.filter(r=>r.status===206&&r.sentUtc).length,serverPlanned:report.network.filter(r=>r.status===206).length}};});
   report.status=report.checks.some(c=>c.status==='FAIL')?'FAIL':'PASS_LIMITED_CHROME_CONTROLLER';if(report.status==='FAIL')process.exitCode=1;
 }
 main().catch(e=>{report.status='FAIL_TOOL_OR_PRECONDITION';report.error=String(e.stack||e);process.exitCode=1;console.error(e);}).finally(async()=>{

@@ -1,3 +1,15 @@
+# CT-r14：原生失败候选，等待根因与替代路线协调（2026-10-15）
+
+`CT-20261015-r14-50737e67a3e7` /0.3.5/20029；独立树 `vocab-work/ct-sustain-guard-20261015/site`，分支 `fix/ct-sustain-guard-20261015`。源输入1370项SHA256 `50737e67a3e76e59a7e65140028cec4a51c0b5357e8a3ad4e650a02f65aff1c9`，HAP SHA256 `5b5af95f59aa1af30eac9c8cd7b043a47e47ff37fd6ac15d25c35c0b8724b1f7`；构建后未修改运行时。776 CJS/宿主、34契约、类型/Web/SDK及真实Chrome11项通过，不能替代原生结果。
+
+**原生媒体实际 FAIL，不能交作修复完成或发布。** 保留13组限定持续播放观察、2组失败，未重试洗掉结果。旧元素在9.969054秒暂停定位14ms报MediaError2；正常重入的新元素在同保存点成功；其后保持1×不切速，暂停52.028秒再定位15.170487，19ms重现同错，均在play前、未收到seeked、旧点保留。故“切速必需”已证伪；可复现范围是暂停后复用媒体元素/资源生命周期路径，宿主传输与ArkWeb资源状态的最终归因仍未证实。Range尾段206数学与本地字节正确，不称无Range或不能paused-seek。详见 [原生失败诊断](docs/testing/CT-R14-NATIVE-FAILURE-READONLY.md)、[替代路线](docs/testing/CT-R14-MEDIA-ALTERNATIVES-READONLY.md) 及外层原证据。
+
+口语原生弹窗完整、内部滚动及一次6秒录放路径有限通过；无新Checkin或分钟。SpeakingRoom无可编辑输入，IME未验证。原数据与新增录音分别审计，设备归位以外层新DEVICE-HANDOFF为准。完整字节校验Blob或原生媒体仅为待协调诊断路线，尚未实现/证明修复；不继续靠放宽事件等待或容差修改。独立救援r1原件与只读边界保留，其原生文件导入/原字节回导子项通过，复制DB及实际回滚仍NOT_RUN。r11/CT-r3原FAIL、public-local及所有历史工件保留；未push、合入、上传、部署、Release或操作手机。
+
+以下为保留的历史版本记录，按其各自日期与候选理解。
+
+---
+
 # 历史离线候选：CT-r13 暂停准备与诊断（2026-10-15）
 
 `CT-20261015-r13-1d60121e4a86` /0.3.5/20028，独立树 `vocab-work/ct-paused-prepare-20261015/site`。基于r12保留口语布局，新增暂停auto/load、真实seeked后播放、持续窗口及受控诊断。类型、Web、实际SDK与聚焦验证通过，真实Chrome三轮及失败均保留，详见专属testing文档。
