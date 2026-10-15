@@ -1,3 +1,13 @@
+# 历史离线候选：CT-r13 暂停准备与诊断（2026-10-15）
+
+`CT-20261015-r13-1d60121e4a86` /0.3.5/20028，独立树 `vocab-work/ct-paused-prepare-20261015/site`。基于r12保留口语布局，新增暂停auto/load、真实seeked后播放、持续窗口及受控诊断。类型、Web、实际SDK与聚焦验证通过，真实Chrome三轮及失败均保留，详见专属testing文档。
+
+**r13已发现持续确认门禁的静态缺陷，不能交QA为修复完成。** 几次推进后停住、随后重复timeupdate仍可能满足旧累计窗口；下一独立r14修订，r13源码/工件全部保留。尚未安装r13；收到15551正式交接后已正常UI新导出三域，workflow/vocab与QA末版逐字节一致、Study只导出时间不同，保留122命令/rev103/13.554秒。独立救援bundle已单独安装验证中，不覆盖学习包。原生媒体、布局与录放仍待新修订，未push/合入/上传/部署/发布。
+
+以下记录按各自历史版本理解。
+
+---
+
 # 当前修订：CT-r12 口语弹窗与可视窗口（2026-10-15）
 
 独立于r11冻结件的新树 `vocab-work/ct-speaking-repair-20261015/site` / `fix/ct-speaking-layout-20261015`，身份 `CT-20261015-r12-dbaa84e640e9` /0.3.5/20027。新修订移除口语/未保存弹窗继承的居中位移与zoom类，由专属inset定位和visualViewport管理可见边界、键盘缩小及内部滚动。739源码/宿主、34契约、类型/Web/SDK通过；实际SDK压缩CSS的9项DOM回归通过，r11负向对照能检出原裁切。详见 `docs/testing/CT-SPEAKING-REPAIR-DEVELOPMENT.md` 和外层交付清单。

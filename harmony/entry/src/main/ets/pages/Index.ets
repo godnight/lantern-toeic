@@ -1,12 +1,255 @@
 import { assetBytes } from '../services/AssetRange';
 import { abilityAccessCtrl, common } from '@kit.AbilityKit';
 import { webview } from '@kit.ArkWeb';
-import { BusinessError } from '@kit.BasicServicesKit';
+import { BusinessError, systemDateTime } from '@kit.BasicServicesKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { NativeDownloads } from '../NativeDownloads';
 
 // This is an intercepted local origin. No server or certificate is required.
 const APP_ORIGIN: string = 'https://lantern.local';
 const APP_URL: string = APP_ORIGIN + '/';
+
+// Process-local diagnostic budget. Never inspect arbitrary URLs, header values or bodies.
+const MEDIA_RANGE_LOG_LIMIT: number = 64;
+
+class BundledRangeTrace {
+  id: number = 0;
+  path: string = '';
+  range: string = '';
+  ifRange: boolean = false;
+  head: boolean = false;
+  startedMs: number = -1;
+}
+
+function mediaRangeUptime(): number {
+  try {
+    return systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false);
+  } catch {
+    return -1;
+  }
+}
+
+class BundledRangeDiagnostics {
+  private count: number = 0;
+  private limitReported: boolean = false;
+
+  begin(path: string, range: string, ifRange: boolean, head: boolean): BundledRangeTrace | undefined {
+    try {
+      if (!/^web\/audio\/offline\/[a-f0-9]{20}\.mp3$/.test(path)) return undefined;
+      if (this.count >= MEDIA_RANGE_LOG_LIMIT) {
+        if (!this.limitReported) {
+          this.limitReported = true;
+          hilog.info(0x1001, 'LANTERN_RANGE', '%{public}s', 'v=1 phase=limit requests=64');
+        }
+        return undefined;
+      }
+      const trace: BundledRangeTrace = new BundledRangeTrace();
+      trace.id = ++this.count;
+      trace.path = path;
+      // Keep bounded numeric byte-range syntax only; arbitrary text is never logged.
+      trace.range = range === '' ? 'none' : range.length > 160 ? 'oversize' :
+        /^\s*bytes=(?:\d*-\d*)(?:\s*,\s*(?:bytes=)?\d*-\d*)*\s*$/i.test(range) ?
+          range.replace(/\s/g, ' ') : 'redacted';
+      trace.ifRange = ifRange;
+      trace.head = head;
+      trace.startedMs = mediaRangeUptime();
+      this.write(trace, 'request', 0, '', -1, -1);
+      return trace;
+    } catch {
+      return undefined;
+    }
+  }
+
+  ready(trace: BundledRangeTrace | undefined, code: number, contentRange: string,
+    bodyBytes: number, contentLength: number): void {
+    if (trace) this.write(trace, 'ready', code, contentRange, bodyBytes, contentLength);
+  }
+
+  private write(trace: BundledRangeTrace, phase: string, code: number, contentRange: string,
+    bodyBytes: number, contentLength: number): void {
+    try {
+      const uptimeMs: number = mediaRangeUptime();
+      const elapsedMs: number = trace.startedMs >= 0 && uptimeMs >= trace.startedMs ?
+        uptimeMs - trace.startedMs : -1;
+      hilog.info(0x1001, 'LANTERN_RANGE', '%{public}s',
+        'v=1 id=' + trace.id + ' phase=' + phase + ' uptimeMs=' + uptimeMs +
+        ' wallMs=' + Date.now() + ' elapsedMs=' + elapsedMs + ' path=' + trace.path +
+        ' range=' + trace.range + ' ifRange=' + (trace.ifRange ? '1' : '0') +
+        ' head=' + (trace.head ? '1' : '0') + ' code=' + code +
+        ' contentRange=' + (contentRange === '' ? 'none' : contentRange) +
+        ' bodyBytes=' + bodyBytes + ' contentLength=' + contentLength);
+    } catch {
+      // Clock/log failures must never alter media responses or readiness.
+    }
+  }
+}
+
+const bundledRangeDiagnostics: BundledRangeDiagnostics = new BundledRangeDiagnostics();
+
+const PLAYBACK_CONSOLE_PREFIX: string = 'Bundled playback ';
+const PLAYBACK_CONSOLE_LIMIT: number = 256;
+const PLAYBACK_STAGES: string[] = ['metadata', 'paused-seek', 'confirming-progress', 'playing'];
+const PLAYBACK_EVENTS: string[] = ['begin', 'load', 'loadedmetadata', 'canplay', 'progress', 'durationchange',
+  'seek-request', 'seeked', 'seek-settled', 'play', 'play-resolved', 'playing', 'timeupdate', 'waiting',
+  'stalled', 'abort', 'emptied', 'rejected', 'confirmed', 'confirmed-short-end', 'stop', 'pause', 'ended'];
+const PLAYBACK_REASONS: string[] = ['ended-before-confirmation', 'media-error', 'startup-position',
+  'playing-position', 'progress-position', 'confirmed-position', 'not-prepared-paused', 'play-rejected',
+  'play-threw', 'paused-seek-position', 'source-changed', 'metadata-source', 'preparation-not-paused',
+  'seek-threw', 'media-aborted', 'media-emptied', 'confirmation-timeout', 'load-threw'];
+const PLAYBACK_EXCEPTIONS: string[] = ['AbortError', 'NotAllowedError', 'NotSupportedError', 'InvalidStateError',
+  'IndexSizeError', 'NetworkError', 'OperationError', 'SecurityError', 'TypeError', 'Error'];
+
+class BundledPlaybackData {
+  player: number = 0;
+  request: number = 0;
+  stage: string = '';
+  event: string = '';
+  reason?: string;
+  target: number = 0;
+  targetPosition: number = 0;
+  current: number | null = null;
+  baseline: number = 0;
+  readyState: number = 0;
+  duration: number | null = null;
+  preparedDuration: number | null = null;
+  preparedPosition: number | null = null;
+  firstProgressPosition: number | null = null;
+  firstProgressElapsed: number | null = null;
+  paused: boolean = false;
+  seeking: boolean = false;
+  muted: boolean = false;
+  rate: number = 1;
+  sourceMatches: boolean = false;
+  metadataSeen: boolean = false;
+  seekAssigned: boolean = false;
+  seekEventSeen: boolean = false;
+  seekComplete: boolean = false;
+  playingSeen: boolean = false;
+  interrupted: boolean = false;
+  advances: number = 0;
+  elapsed: number = 0;
+  seekable: number[][] = [];
+  events: Record<string, number> = {};
+  exceptionName?: string;
+  exceptionCode?: number;
+}
+
+class BundledPlaybackLog {
+  v: number = 1;
+  seq: number = 0;
+  uptimeMs: number = -1;
+  wallMs: number = 0;
+  data: BundledPlaybackData = new BundledPlaybackData();
+}
+
+function playbackNumber(value: number): boolean {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0;
+}
+
+function playbackNullableNumber(value: number | null): boolean {
+  return value === null || playbackNumber(value);
+}
+
+class BundledPlaybackDiagnostics {
+  private count: number = 0;
+  private limitReported: boolean = false;
+
+  forward(message: string): boolean {
+    try {
+      if (message.length > 4096 || !message.startsWith(PLAYBACK_CONSOLE_PREFIX)) return false;
+      const input = JSON.parse(message.substring(PLAYBACK_CONSOLE_PREFIX.length)) as BundledPlaybackData;
+      if (input === null || typeof input !== 'object' || Array.isArray(input) ||
+        !PLAYBACK_STAGES.includes(input.stage) || !PLAYBACK_EVENTS.includes(input.event)) return false;
+      if (!Number.isSafeInteger(input.player) || input.player < 1 ||
+        !Number.isSafeInteger(input.request) || input.request < 1 ||
+        !playbackNumber(input.target) || !playbackNumber(input.targetPosition) ||
+        !playbackNumber(input.baseline) || !playbackNumber(input.elapsed) ||
+        !Number.isSafeInteger(input.readyState) || input.readyState < 0 || input.readyState > 4 ||
+        !Number.isSafeInteger(input.advances) || input.advances < 0 ||
+        !playbackNumber(input.rate) || input.rate <= 0 || input.rate > 16 ||
+        !playbackNullableNumber(input.current) || !playbackNullableNumber(input.duration) ||
+        !playbackNullableNumber(input.preparedDuration) ||
+        !playbackNullableNumber(input.preparedPosition) || !playbackNullableNumber(input.firstProgressPosition) ||
+        !playbackNullableNumber(input.firstProgressElapsed)) return false;
+      if (typeof input.paused !== 'boolean' || typeof input.seeking !== 'boolean' ||
+        typeof input.muted !== 'boolean' || typeof input.sourceMatches !== 'boolean' ||
+        typeof input.metadataSeen !== 'boolean' || typeof input.seekAssigned !== 'boolean' ||
+        typeof input.seekEventSeen !== 'boolean' || typeof input.seekComplete !== 'boolean' ||
+        typeof input.playingSeen !== 'boolean' || typeof input.interrupted !== 'boolean') return false;
+      if (!Array.isArray(input.seekable) || input.seekable.length > 8 || input.events === null ||
+        typeof input.events !== 'object' || Array.isArray(input.events)) return false;
+      const output: BundledPlaybackData = new BundledPlaybackData();
+      for (const range of input.seekable) {
+        if (!Array.isArray(range) || range.length !== 2 || !playbackNumber(range[0]) ||
+          !playbackNumber(range[1]) || range[1] < range[0]) return false;
+        output.seekable.push([range[0], range[1]]);
+      }
+      for (const event of PLAYBACK_EVENTS) {
+        const count: number | undefined = input.events[event];
+        if (count === undefined) continue;
+        if (!Number.isSafeInteger(count) || count < 0 || count > 1000000) return false;
+        output.events[event] = count;
+      }
+      // Rebuild every field; never log the parsed object, its unknown keys, or its arbitrary strings.
+      output.player = input.player;
+      output.request = input.request;
+      output.stage = input.stage;
+      output.event = input.event;
+      if (input.event === 'rejected' && PLAYBACK_REASONS.includes(input.reason ?? '')) output.reason = input.reason;
+      output.target = input.target;
+      output.targetPosition = input.targetPosition;
+      output.current = input.current;
+      output.baseline = input.baseline;
+      output.readyState = input.readyState;
+      output.duration = input.duration;
+      output.preparedDuration = input.preparedDuration;
+      output.preparedPosition = input.preparedPosition;
+      output.firstProgressPosition = input.firstProgressPosition;
+      output.firstProgressElapsed = input.firstProgressElapsed;
+      output.paused = input.paused;
+      output.seeking = input.seeking;
+      output.muted = input.muted;
+      output.rate = input.rate;
+      output.sourceMatches = input.sourceMatches;
+      output.metadataSeen = input.metadataSeen;
+      output.seekAssigned = input.seekAssigned;
+      output.seekEventSeen = input.seekEventSeen;
+      output.seekComplete = input.seekComplete;
+      output.playingSeen = input.playingSeen;
+      output.interrupted = input.interrupted;
+      output.advances = input.advances;
+      output.elapsed = input.elapsed;
+      if (PLAYBACK_EXCEPTIONS.includes(input.exceptionName ?? '')) output.exceptionName = input.exceptionName;
+      if (typeof input.exceptionCode === 'number' && Number.isFinite(input.exceptionCode)) output.exceptionCode = input.exceptionCode;
+      if (this.count >= PLAYBACK_CONSOLE_LIMIT) {
+        if (!this.limitReported) {
+          this.limitReported = true;
+          this.write('v=1 phase=limit messages=256');
+        }
+        return true;
+      }
+      const log: BundledPlaybackLog = new BundledPlaybackLog();
+      log.seq = ++this.count;
+      log.uptimeMs = mediaRangeUptime();
+      log.wallMs = Date.now();
+      log.data = output;
+      this.write(JSON.stringify(log));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private write(message: string): void {
+    try {
+      hilog.info(0x1001, 'LANTERN_PLAYBACK', '%{public}s', message);
+    } catch {
+      // Handled diagnostics stay handled even if the native log sink is unavailable.
+    }
+  }
+}
+
+const bundledPlaybackDiagnostics: BundledPlaybackDiagnostics = new BundledPlaybackDiagnostics();
 
 function isAppUrl(value: string): boolean {
   return value === APP_ORIGIN || value.startsWith(APP_URL);
@@ -121,6 +364,15 @@ struct Index {
     }
   }
 
+  private playbackConsole(message: ConsoleMessage): boolean {
+    try {
+      if (!this.pageReady || !this.isTrustedDocument()) return false;
+      return bundledPlaybackDiagnostics.forward(message.getMessage());
+    } catch {
+      return false;
+    }
+  }
+
   private invalidateBridge(): void {
     this.bridgeReady = false;
     this.bridgeSequence++;
@@ -222,7 +474,12 @@ struct Index {
     return response;
   }
 
-  private async readAsset(response: WebResourceResponse, path: string, range: string, head: boolean): Promise<void> {
+  private async readAsset(response: WebResourceResponse, path: string, range: string, head: boolean,
+    trace: BundledRangeTrace | undefined): Promise<void> {
+    let diagnosticCode: number = 404;
+    let diagnosticContentRange: string = '';
+    let diagnosticBodyBytes: number = 'Bundled resource not found'.length;
+    let diagnosticContentLength: number = -1;
     try {
       // Complete packaged short clips before returning so ArkWeb uses the synchronous binary
       // response path. Document assets retain the asynchronous loading path.
@@ -245,11 +502,10 @@ struct Index {
       response.setResponseCode(selected.code);
       response.setReasonMessage(selected.reason);
       response.setResponseHeader(headers);
-      if (selected.code === 206 || selected.code === 416) {
-        // No text, account, credentials or private recording is included in this diagnostic.
-        console.info('Bundled byte range: ' + selected.code + ' ' + selected.start + '-' + selected.end +
-          '/' + selected.total + ' body=' + selected.body.byteLength);
-      }
+      diagnosticCode = selected.code;
+      diagnosticContentRange = selected.contentRange;
+      diagnosticBodyBytes = selected.body.byteLength;
+      diagnosticContentLength = selected.length;
     } catch {
       response.setResponseData('Bundled resource not found');
       response.setResponseMimeType('text/plain');
@@ -258,6 +514,8 @@ struct Index {
       response.setReasonMessage('Not Found');
     } finally {
       response.setResponseIsReady(true);
+      bundledRangeDiagnostics.ready(trace, diagnosticCode, diagnosticContentRange,
+        diagnosticBodyBytes, diagnosticContentLength);
     }
   }
 
@@ -287,7 +545,8 @@ struct Index {
     }
     const response: WebResourceResponse = new WebResourceResponse();
     response.setResponseIsReady(false);
-    this.readAsset(response, path, ifRange ? '' : range, method === 'HEAD');
+    const trace: BundledRangeTrace | undefined = bundledRangeDiagnostics.begin(path, range, ifRange, method === 'HEAD');
+    this.readAsset(response, path, ifRange ? '' : range, method === 'HEAD', trace);
     return response;
   }
 
@@ -499,6 +758,7 @@ struct Index {
         })
         .onPageBegin(() => this.pageBegin())
         .onPageEnd((event) => this.pageEnd(event.url))
+        .onConsole((event) => this.playbackConsole(event.message))
         // SDK 18 documents null as pass-through, but its callback type omits null.
         // Keep that runtime behavior for blob audio and other non-bundled resources.
         .onInterceptRequest((event) => this.intercept(event.request)!)
