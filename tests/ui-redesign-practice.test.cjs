@@ -12,12 +12,12 @@ const ts = require(path.join(root, 'node_modules/typescript'));
 function load(file, imports, globals = {}) {
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(file==='app/learn/practice.tsx' && process.env.LANTERN_PRACTICE_COMPONENT ? process.env.LANTERN_PRACTICE_COMPONENT : path.join(root, file), 'utf8'), {
-    compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX}
+    fileName:file,compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX}
   }).outputText;
   vm.runInNewContext(code, {exports, require(name) {
     assert.ok(name in imports, 'Unexpected import: ' + name);
     return imports[name];
-  }, Date, Map, Set, crypto: webcrypto, ...globals}, {filename: file});
+  }, Date, Map, Set, TextEncoder, structuredClone, crypto: webcrypto, ...globals}, {filename: file});
   return exports;
 }
 
@@ -61,11 +61,17 @@ function harness({attempts = [], outcomes = [true], queue, browser, lookup = fal
   const imports = {
     react, 'react/jsx-runtime': {jsx, jsxs: jsx, Fragment: 'fragment'}, 'lucide-react': stubs,
     sonner: {toast: {error(){}}}, '@/lib/study-model': model,
-    '@/lib/lesson-audio': {bundledLessonAudio: () => null, createBundledPlayback: () => null},
-    '@/lib/native-host': {registerNativeBack(fn, priority) {backs.set(priority, fn); return () => backs.delete(priority);}}
+    '@/lib/lesson-audio': {bundledLessonAudio: () => null,bundledLessonSource:()=>null,stopLessonAudio(){},createBundledPlayback: () => null},
+    '@/lib/native-host': {subscribeNativeState:()=>()=>{},registerNativeBack(fn, priority) {backs.set(priority, fn); return () => backs.delete(priority);}}
   };
   for (const widget of ['dialog', 'tabs', 'radio-group', 'select', 'progress']) imports['@/components/ui/' + widget] = stubs;
-  const Practice = load('app/learn/practice.tsx', imports, {Date: Clock, window: browser?.window || {speechSynthesis: {cancel(){}}},setTimeout:browser?.setTimeout || setTimeout,clearTimeout:browser?.clearTimeout || clearTimeout}).default;
+  const canonical=load('lib/domain-command.ts',{}),training=load('lib/practice-training.ts',{'./domain-command':canonical});
+  const draft=load('lib/practice-training-draft.ts',{'./practice-training':training,'./study-model':model});
+  const window=browser?.window||{speechSynthesis:{cancel(){}},addEventListener(){},removeEventListener(){}};
+  const globals={Date:Clock,window,setTimeout:browser?.setTimeout||setTimeout,clearTimeout:browser?.clearTimeout||clearTimeout};
+  const hook=load('app/learn/use-practice-training.ts',{react,'@/lib/practice-training-draft':draft},globals);
+  imports['@/lib/domain-command']=canonical;imports['@/lib/practice-training']=training;imports['./use-practice-training']=hook;
+  const Practice=load('app/learn/practice.tsx',imports,globals).default;
   const questions = queue || [
     {id:'review-fixture-one', part:1, title:'Original picture', prompt:'Which scene is described?', options:['A fixture answer','B fixture answer','C fixture answer','D fixture answer'], correctIndex:1, explanation:'Original explanation fixture', evidence:'Evidence fixture', skill:'图片信息', difficulty:'起步', image:'/review-fixture-picture.svg', transcript:'The woman is opening a box.'},
     {id:'review-fixture-two', part:7, title:'Original reading', prompt:'When will the work start?', options:['At eight.','At nine.','At ten.','At noon.'], correctIndex:0, explanation:'Second explanation fixture', evidence:'At eight.', skill:'阅读依据', difficulty:'起步', passage:'Original long material fixture. '.repeat(30)}
@@ -118,7 +124,7 @@ test('submitted count and score advance once per saved question, preserving firs
   assert.equal(h.calls[1].mode, 'first');
   assert.equal(h.one(n => n.type === 'Progress').props.value, 100);
   assert.match(textOf(h.one(n => n.type === 'DialogDescription')), /已提交 2 题/);
-  h.click('完成本组');
+  h.click('完成本组答题');
   assert.match(textOf(h.one(n => n.props?.className === 'session-complete')), /1 \/ 2 题/);
   assert.equal(h.calls.length, 2); assert.deepEqual(attempts, [prior]);
   assert.equal(h.finishes.length, 0, 'Finishing questions must not invent a checkin'); h.unmount();
@@ -141,28 +147,28 @@ test('Native Back closes the enlarged picture before opening exit confirmation',
   assert.equal(nodes(h.tree, n => n.props?.className === 'practice-image-dialog').length, 0);
   assert.equal(nodes(h.tree, n => n.type === 'DialogTitle' && textOf(n) === '先结束这组练习？').length, 0);
   assert.equal(h.one(n => n.type === 'RadioGroup').props.value, '2');
-  h.nativeBack(); h.click('结束并返回'); assert.equal(h.closed, 1);
+  h.nativeBack(); h.click('保存并返回'); assert.equal(h.closed, 1);
   assert.equal(h.calls.length, 0); assert.equal(h.finishes.length, 0); h.unmount();
 });
 
 test('explicit exit after a failed save preserves only durable answers and creates no learning time', () => {
   const h = harness({outcomes:[true,false]}); h.choose(1); h.click('确认答案'); h.click('下一题'); h.choose(0); h.click('确认答案');
-  h.dismissMain(); h.click('结束并返回'); assert.equal(h.closed, 1);
+  h.dismissMain(); h.click('保存并返回'); assert.equal(h.closed, 1);
   assert.equal(h.saved.length, 1); assert.equal(h.saved[0].qid, 'review-fixture-one');
   assert.equal(h.calls.length, 2); assert.equal(h.finishes.length, 0); h.unmount();
 });
 
 test('learning-time handoff happens only through the explicit completed-session action', () => {
-  const h = harness(); h.choose(1); h.click('确认答案'); h.click('下一题'); h.choose(0); h.click('确认答案'); h.click('完成本组');
+  const h = harness(); h.choose(1); h.click('确认答案'); h.click('下一题'); h.choose(0); h.click('确认答案'); h.click('完成本组答题');
   h.advance(120000); h.click('记录时间与收获'); assert.deepEqual(h.finishes, [2]);
   assert.equal(h.saved.length, 2); assert.equal(h.closed, 0); h.unmount();
 });
 
-test('dictation remains post-save feedback and does not create a second question attempt', () => {
+test('dictation remains post-save feedback and does not create a second question attempt', async () => {
   const h = harness(); h.choose(1); h.click('确认答案');
   const textarea = h.one(n => n.type === 'textarea' && n.props['aria-label'] === '听写答案');
-  textarea.props.onChange({target:{value:'the woman is opening a box'}}); h.render(); h.click('核对听写');
-  assert.match(textOf(h.tree), /听写正确/); assert.equal(h.calls.length, 1); assert.equal(h.finishes.length, 0); h.unmount();
+  textarea.props.onChange({target:{value:'the woman is opening a box'}}); h.render(); h.click('核对听写'); await new Promise(resolve=>setImmediate(resolve));h.render();
+  assert.match(textOf(h.tree), /听写核对一致/); assert.equal(h.calls.length, 1); assert.equal(h.finishes.length, 0); h.unmount();
 });
 
 test('picture and long passage use the material/response layout without changing question content', () => {
@@ -279,7 +285,7 @@ test('actual word detail survives Practice StrictMode, guarded Browser/Native/Es
   practice.dismissMain();practice.click('继续练习');
   browser.window.history.back();browser.flushHistory();practice.render();words.render();assert.match(textOf(practice.tree),/先结束这组练习/);
   assert.equal(nodes(words.tree,n=>n.props?.['data-vocabulary-detail']==='true').length,1);assert.equal(practice.closed,0);
-  practice.click('结束并返回');assert.equal(practice.closed,1);practice.unmount();words.block(false);browser.flush();words.render();
+  practice.click('保存并返回');assert.equal(practice.closed,1);practice.unmount();words.block(false);browser.flush();words.render();
   assert.equal(browser.window.history.state.lanternPracticeView,undefined);assert.equal(browser.window.history.state.lanternVocabularyView.token,detailToken);
   assert.equal(nodes(words.tree,n=>n.props?.['data-vocabulary-detail']==='true').length,1);assert.equal(nodes(words.tree,n=>n.type==='input'&&n.props.type==='search').length,0);
   assert.equal(practice.calls.length,0);assert.equal(practice.finishes.length,0);
@@ -308,10 +314,10 @@ test('I09: lookup is absent before a durable answer and after save failure, then
   assert.equal(h.one(n=>n.type==='RadioGroup').props.disabled,true);assert.equal(h.closed,0);assert.equal(h.finishes.length,0);h.unmount();
 });
 
-test('I09: controlled lookup leaves Practice mounted with identical question, answer, material, dictation and image state on return',()=>{
+test('I09: controlled lookup leaves Practice mounted with identical question, answer, material, dictation and image state on return',async()=>{
   const questions=lookupQuestions(),original=structuredClone(questions),h=harness({queue:questions,lookup:true});
   h.choose(1);h.click('确认答案');const answer=structuredClone(h.saved[0]);
-  h.one(n=>n.type==='textarea'&&n.props['aria-label']==='听写答案').props.onChange({target:{value:'the reservation is confirmed'}});h.render();h.click('核对听写');
+  h.one(n=>n.type==='textarea'&&n.props['aria-label']==='听写答案').props.onChange({target:{value:'the reservation is confirmed'}});h.render();h.click('核对听写');await new Promise(resolve=>setImmediate(resolve));h.render();
   const main=h.one(n=>n.props?.className==='question-scroll practice-with-material');
   assert.equal(main.key,'lookup-fixture-one');
   h.click('查词 reservation');h.dismissMain();assert.equal(h.closed,0);
@@ -322,7 +328,7 @@ test('I09: controlled lookup leaves Practice mounted with identical question, an
   h.lookupActive(false);
   assert.equal(h.one(n=>n.type==='RadioGroup').props.value,'1');assert.equal(h.one(n=>n.type==='Progress').props.value,50);
   assert.equal(h.one(n=>n.type==='textarea'&&n.props['aria-label']==='听写答案').props.value,'the reservation is confirmed');
-  assert.match(textOf(h.tree),/听写正确/);assert.equal(textOf(h.one(n=>n.props?.className==='passage')),original[0].passage);
+  assert.match(textOf(h.tree),/听写核对一致/);assert.equal(textOf(h.one(n=>n.props?.className==='passage')),original[0].passage);
   assert.equal(h.one(n=>n.props?.className==='question-image').props.src,original[0].image);
   assert.deepEqual(h.saved,[answer]);assert.deepEqual(questions,original);assert.equal(h.calls.length,1);assert.equal(h.finishes.length,0);
   h.click('放大本题配图');h.nativeBack();assert.equal(nodes(h.tree,n=>n.props?.className==='practice-image-dialog').length,0);
@@ -371,4 +377,20 @@ test('an already-visible durable session whose legacy reference becomes unverifi
  const h=harness({durable:state});assert.equal(nodes(h.tree,n=>n.props?.className==='answer-feedback').length,1);
  h.durable({...state,submitted:false,blocked:'Legacy reference missing'});assert.match(textOf(h.tree),/这组记录还需要核对/);assert.equal(nodes(h.tree,n=>n.props?.className==='answer-feedback').length,0);
  h.nativeBack();assert.equal(h.closed,1);assert.equal(h.calls.length,0);assert.equal(h.finishes.length,0);h.unmount();
+});
+
+test('both unanswered navigation controls reset shared material stage while retaining draft/check/audio',async()=>{
+ const canonical=load('lib/domain-command.ts',{}),training=load('lib/practice-training.ts',{'./domain-command':canonical});const queue=lookupQuestions().map(q=>({...q,groupId:'shared',part:3,transcript:'Shared material.'}));
+ for(const navigation of ['查看下一题','2 · 待答']){const initial=training.initialPracticeTraining(queue,1);initial.viewIndex=0;Object.assign(initial.materials[0],{step:'dictation',dictationDraft:'shared draft',checkedDraft:'shared draft',audio:{trackId:'sentence:0',sourceId:'tts:'+canonical.canonicalHash('Shared material.'),kind:'tts',capability:'sentence',positionSeconds:0,rate:1}});const writes=[];
+  const state={revision:1,training:initial,steps:[{choice:1,status:'applied'},{choice:null,status:'unanswered'}],cursor:1,choice:null,submitted:false,finished:false,correct:1,busy:false,submit:async()=>true,next:async()=>true,updateTraining:async value=>{writes.push(structuredClone(value));return {status:'updated',sessionId:'s',revision:2};}};
+  const h=harness({queue,durable:state});h.click(navigation);await new Promise(resolve=>setImmediate(resolve));h.render();assert.equal(writes.at(-1).training.viewIndex,1);assert.equal(writes.at(-1).training.materials[0].step,'answer');assert.equal(writes.at(-1).training.materials[0].dictationDraft,'shared draft');assert.equal(writes.at(-1).training.materials[0].checkedDraft,'shared draft');assert.deepEqual(writes.at(-1).training.materials[0].audio,initial.materials[0].audio);assert.equal(h.calls.length,0);h.unmount();
+ }
+});
+test('same-owner read failure retains visible input, pauses new answering/navigation and offers recovery',()=>{
+ const queue=lookupQuestions(),state={cursor:0,choice:1,submitted:true,finished:false,correct:1,busy:false,submit:async()=>true,next:async()=>true};const h=harness({queue,durable:state});h.one(n=>n.type==='textarea').props.onChange({target:{value:'unconfirmed local text'}});h.render();let retries=0;h.durable({...state,readError:'storage temporarily unavailable',retryRead:()=>retries++});assert.equal(h.one(n=>n.type==='textarea').props.value,'unconfirmed local text');assert.equal(h.button('下一题').props.disabled,true);assert.match(textOf(h.tree),/本页输入保留/);h.click('重新读取，保留本页草稿');assert.equal(retries,1);assert.equal(h.one(n=>n.type==='textarea').props.value,'unconfirmed local text');h.unmount();
+});
+test('read failure pauses both debounce and blur writes; recovery saves the retained draft once',async()=>{
+ const canonical=load('lib/domain-command.ts',{}),training=load('lib/practice-training.ts',{'./domain-command':canonical}),queue=lookupQuestions(),initial=training.initialPracticeTraining(queue,0),writes=[];
+ const state={revision:1,training:initial,steps:[{choice:1,status:'applied'},{choice:null,status:'unanswered'}],cursor:0,choice:1,submitted:true,finished:false,correct:1,busy:false,submit:async()=>true,next:async()=>true,updateTraining:async value=>{writes.push(value);return {status:'updated',sessionId:'s',revision:2};}};
+ const h=harness({queue,durable:state});h.one(n=>n.type==='textarea').props.onChange({target:{value:'still here'}});h.render();h.durable({...state,readError:'read-failed'});await new Promise(resolve=>setTimeout(resolve,550));h.one(n=>n.type==='textarea').props.onBlur();await new Promise(resolve=>setImmediate(resolve));assert.equal(writes.length,0);assert.equal(h.one(n=>n.type==='textarea').props.value,'still here');h.durable(state);await new Promise(resolve=>setTimeout(resolve,550));h.render();assert.equal(writes.length,1);assert.equal(writes[0].training.materials[0].dictationDraft,'still here');h.unmount();
 });

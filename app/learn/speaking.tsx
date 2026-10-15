@@ -1,4 +1,5 @@
 'use client';
+import {stopLessonAudio} from '@/lib/lesson-audio';
 
 import {useEffect,useRef,useState} from 'react';
 import {ArrowLeft,ArrowRight,CheckCircle2,Download,Headphones,Mic,Play,RotateCcw,Square} from 'lucide-react';
@@ -77,6 +78,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
  };
  const stop=()=>{if(recorder.current?.state!=='recording')return;stoppedAt.current=Date.now();changePhase('processing');recorder.current.stop();releaseMicrophone();};
  const begin=()=>{
+  stopLessonAudio();
   if(!stream.current||beginning.current||recorder.current?.state==='recording'||document.hidden||!isNativeForeground())return;
   beginning.current=true;
   try{
@@ -104,6 +106,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
   }catch{beginning.current=false;releaseMicrophone();changePhase('ready');setAccessError('录音未能启动，请检查设备麦克风后重试。');toast.error('录音未能启动，请检查设备麦克风后重试');}
  };
  const start=async()=>{
+  stopLessonAudio();
   if(acquiring.current||busy||savingNow.current||!['ready','done'].includes(currentPhase.current)||document.hidden||!isNativeForeground())return;
   // Downloading does not authorize replacing an unsaved Blob with a fresh clip.
   if(currentPhase.current==='done'&&!saved)return;

@@ -377,7 +377,7 @@ test('an earlier recording save cannot mark the current recording as saved', asy
   }
   const jsx=(type,props)=>({type,props});
   const stub=new Proxy({},{get:(_,name)=>String(name)});
-  const Room=load('app/learn/speaking.tsx',{
+  const Room=load('app/learn/speaking.tsx',{'@/lib/lesson-audio':{stopLessonAudio(){}},
     '@/lib/study-model':model,
     react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stub,
     '@/components/ui/dialog':stub,'@/components/ui/checkbox':stub,
@@ -424,7 +424,7 @@ test('background recording stop preserves elapsed time and pending save completi
   const document={hidden:false,addEventListener(type,fn){if(type==='visibilitychange')this.onVisibility=fn;},removeEventListener(){}};
   const jsx=(type,props)=>({type,props});
   const stub=new Proxy({},{get:(_,name)=>String(name)});
-  const Room=load('app/learn/speaking.tsx',{
+  const Room=load('app/learn/speaking.tsx',{'@/lib/lesson-audio':{stopLessonAudio(){}},
     '@/lib/study-model':model,
     react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stub,
     '@/components/ui/dialog':stub,'@/components/ui/checkbox':stub,

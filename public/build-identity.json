@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "buildId": "P2-20261014-r3-f5ab766451ef",
-  "sourceInputsSha256": "f5ab766451eff9cd0923870f2aa5f63d664a1f83f9cfc45b4610ceb8b663e671",
-  "inputCount": 1363,
+  "buildId": "CT-20261015-r3-388f17aaa010",
+  "sourceInputsSha256": "388f17aaa010b4507161aeb8b57f40f1b5ccc90b02c24f40f02be57bb141f326",
+  "inputCount": 1366,
   "excludedSelf": "public/build-identity.json",
-  "versionName": "0.3.4",
-  "versionCode": 20012
+  "versionName": "0.3.5",
+  "versionCode": 20015
 }

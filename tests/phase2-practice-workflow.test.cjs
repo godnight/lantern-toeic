@@ -7,7 +7,8 @@ function load(file,imports={},globals={}){
  vm.runInNewContext(code,{exports,require:name=>{assert.ok(name in imports,`Unexpected import ${name}`);return imports[name];},Date,Intl,Map,Set,Error,JSON,Promise,Object,Number,Array,DataView,Uint8Array,Uint32Array,TextEncoder,structuredClone,crypto:crypto.webcrypto,...globals},{filename:file});return exports;
 }
 const canonical=load('lib/domain-command.ts'),storage=load('lib/learning-domain-repository.ts',{'./domain-command':canonical}),model=load('lib/study-model.ts');
-const workflow=load('lib/practice-workflow.ts',{'./domain-command':canonical,'./learning-domain-repository':storage,'./study-model':model});
+const training=load('lib/practice-training.ts',{'./domain-command':canonical});
+const workflow=load('lib/practice-workflow.ts',{'./domain-command':canonical,'./learning-domain-repository':storage,'./study-model':model,'./practice-training':training});
 const plain=value=>JSON.parse(JSON.stringify(value));
 const question=(id,extra={})=>({id,part:1,title:id,prompt:'Choose one.',options:['A','B','C','D'],correctIndex:0,explanation:'Because A.',evidence:'A',skill:'detail',difficulty:'basic',...extra});
 const questions=[question('a'),question('b'),question('c',{part:3,groupId:'talk'}),question('d',{part:3,groupId:'talk'})];
@@ -159,17 +160,24 @@ test('projection retries a read straddling atomic start instead of reporting a c
 
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function hookHarness({factory=new IDBFactory(),facts=legacy(),allowed=true}={}){
- let slots=[],cursor=0,effects=[],options={owner:'alice',nativeMode:false,ready:true,timezone:'Asia/Shanghai',questions,attempts:[],legacy:facts.adapter},opens=0,available=allowed;
+ let slots=[],cursor=0,effects=[],options={owner:'alice',nativeMode:false,ready:true,timezone:'Asia/Shanghai',questions,attempts:[],legacy:facts.adapter},opens=0,available=allowed,readFailure=false;
  const listeners=new Map(),sameDeps=(a,b)=>a&&b&&a.length===b.length&&a.every((value,i)=>Object.is(value,b[i]));
  const react={useState(initial){const index=cursor++;if(!(index in slots))slots[index]=typeof initial==='function'?initial():initial;return [slots[index],value=>slots[index]=typeof value==='function'?value(slots[index]):value];},useRef(initial){const index=cursor++;if(!(index in slots))slots[index]={current:initial};return slots[index];},useEffect(fn,deps){const index=cursor++;if(!slots[index]||!sameDeps(slots[index].deps,deps)){const prior=slots[index];slots[index]={deps};effects.push(()=>{prior?.cleanup?.();slots[index].cleanup=fn();});}}};
- const api=load('lib/use-practice-workflow.ts',{react,'./learning-domain-repository':storage,'./practice-workflow':{...workflow,createPracticeWorkflow:input=>{opens++;return workflow.createPracticeWorkflow({...input,factory:available?factory:{open(){throw Error('initially-unavailable');}},name:'practice-test'});}}},{window:{addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:name=>listeners.delete(name)}});
+ const api=load('lib/use-practice-workflow.ts',{react,'./learning-domain-repository':storage,'./practice-workflow':{...workflow,createPracticeWorkflow:async input=>{opens++;const value=await workflow.createPracticeWorkflow({...input,factory:available?factory:{open(){throw Error('initially-unavailable');}},name:'practice-test'});const read=value.readProjection.bind(value);value.readProjection=()=>readFailure?Promise.reject(Error('temporarily-unavailable')):read();return value;}}},{window:{addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:name=>listeners.delete(name)}});
  const render=changes=>{options={...options,...changes};cursor=0;const result=api.usePracticeWorkflow(options),batch=effects;effects=[];batch.forEach(fn=>fn());return result;};
  const flush=async predicate=>{let result;for(let i=0;i<35;i++){await tick();result=render();if(predicate(result))return result;}throw Error('hook did not reach requested state: '+JSON.stringify({ready:result?.ready,error:result?.error}));};
- return {render,flush,get opens(){return opens;},enable(){available=true;},fire(name){listeners.get(name)?.();},unmount(){slots.forEach(slot=>slot?.cleanup?.());}};
+ return {render,flush,get opens(){return opens;},enable(){available=true;},failReads(){readFailure=true;},recoverReads(){readFailure=false;},fire(name){listeners.get(name)?.();},unmount(){slots.forEach(slot=>slot?.cleanup?.());}};
 }
 test('hook loads durable sessions without forcing practice open; resume and closeView preserve them',async()=>{
  const initial=await setup(),id=await start(initial.value);initial.value.close();const h=hookHarness({factory:initial.factory,facts:initial.facts});h.render();let api=await h.flush(value=>value.ready);assert.equal(api.session,null);assert.equal(api.sessions.length,1);await api.resume(id);api=h.render();assert.equal(api.session.id,id);await api.closeView();api=h.render();assert.equal(api.session,null);assert.equal(api.sessions.length,1);h.unmount();
 });
 test('public refresh reopens failed initialization; background invalidation never spins initialization',async()=>{
  const h=hookHarness({allowed:false});h.render();let api=await h.flush(value=>!!value.error);assert.equal(h.opens,1);h.fire('focus');await tick();h.render();h.fire('storage');await tick();api=h.render();assert.equal(h.opens,1);assert.equal(api.ready,false);h.enable();await api.refresh();h.render();api=await h.flush(value=>value.ready);assert.equal(h.opens,2);assert.equal(api.session,null);assert.equal(api.sessions.length,0);h.unmount();
+});
+
+test('same-scope read/reopen failures preserve the visible session; owner switch immediately removes it',async()=>{
+ const initial=await setup(),id=await start(initial.value);initial.value.close();const h=hookHarness({factory:initial.factory,facts:initial.facts});h.render();let api=await h.flush(value=>value.ready);await api.resume(id);api=h.render();h.failReads();h.fire('focus');api=await h.flush(value=>!!value.error);assert.equal(api.ready,false);assert.equal(api.session.id,id);assert.equal((await api.submit(0,4)).status,'blocked');assert.equal(initial.facts.attempts.size,0);await api.refresh();h.render();api=await h.flush(value=>!!value.error);assert.equal(api.session.id,id);h.recoverReads();await api.refresh();h.render();api=await h.flush(value=>value.ready);assert.equal(api.session.id,id);api=h.render({owner:'bob'});assert.equal(api.session,null);assert.equal(api.sessions.length,0);h.unmount();
+});
+test('an operation queued before a known projection failure cannot advance after the failure',async()=>{
+ const initial=await setup(),id=await start(initial.value,[questions[0],questions[1]]);initial.value.close();const h=hookHarness({factory:initial.factory,facts:initial.facts});h.render();let api=await h.flush(value=>value.ready);await api.resume(id);api=h.render();h.failReads();const [answer,next]=await Promise.all([api.submit(0,5),api.next(0)]);assert.equal(answer.status,'applied');assert.equal(next.status,'blocked');assert.equal(initial.facts.attempts.size,1);h.recoverReads();api=h.render();await api.refresh();h.render();api=await h.flush(value=>value.ready);assert.equal(api.session.cursor,0);h.unmount();
 });

@@ -40,3 +40,25 @@ body[data-ui-theme] .review-row>.pill{font-size:13px}
 @media(max-width:700px){body[data-ui-theme] .button.primary{min-height:48px}.workspace-heading h1{font-size:28px}}
 
 .mock-question,.mock-materials{scroll-margin-top:24px}.mock-return-material{display:none}@media(max-width:1319px){.mock-return-material{display:inline-flex}}
+
+/* Continuous training keeps navigation and durability feedback visible on narrow screens. */
+.training-save-status{display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;font-size:.8rem;padding:.55rem .75rem;border:1px solid var(--border);border-radius:12px;flex-shrink:0}
+.training-save-status[role=alert]{color:var(--destructive);background:color-mix(in srgb,var(--destructive) 6%,transparent)}
+.training-question-nav{display:flex;gap:.25rem;flex-wrap:wrap;max-height:6rem;overflow:auto;flex-shrink:0}
+.training-question-nav button{min-height:40px;padding:.4rem .65rem;border-radius:8px}
+.training-question-nav .active{font-weight:700;background:var(--muted)}
+.training-steps{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));height:auto!important;width:100%;gap:.2rem}
+.training-steps button{min-height:40px;padding:.35rem .25rem;white-space:normal}
+@media(max-width:430px){.training-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.training-save-status{font-size:.75rem}.training-save-status button{min-height:40px}}
+
+.practice-dialog .workspace-save-error p{overflow-wrap:anywhere;}
+
+/* Keep the sentence label readable beside fixed-size playback controls. */
+.practice-dialog .audio-player{display:grid;grid-template-columns:36px minmax(0,1fr) 66px;gap:10px;align-items:center;}
+.practice-dialog .audio-player>.play-circle{grid-column:1;grid-row:1;}
+.practice-dialog .audio-player>.audio-meta{grid-column:2;grid-row:1;min-width:0;overflow-wrap:anywhere;}
+.practice-dialog .audio-player>.speed-select{grid-column:3;grid-row:1;width:66px!important;min-width:0;margin-left:0;}
+.practice-dialog .audio-player>.wave{display:none;}
+.practice-dialog .audio-player>.text-button{grid-column:2/-1;justify-self:start;}
+.practice-dialog .transcript-lines .audio-meta{grid-column:2/-1;}
+@media(max-width:360px){.practice-dialog .audio-player{grid-template-columns:36px minmax(0,1fr);}.practice-dialog .audio-player>.speed-select{grid-column:2;grid-row:2;justify-self:start;}}

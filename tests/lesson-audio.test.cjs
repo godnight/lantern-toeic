@@ -98,3 +98,15 @@ test('only explicitly registered native clips resolve, without remote URLs or pa
   assert.throws(() => installBundledLessonAudio([{text:'Bad', file:'../private.mp3'}]), /Invalid/);
   assert.equal(bundledLessonAudio('Hello.'), '/audio/offline/0123456789abcdef0123.mp3');
 });
+
+test('pause and resume keep the confirmed offset and speed; explicit play still restarts',()=>{
+ const {createBundledPlayback}=implementation(),audio=new AudioFixture();audio.readyState=1;audio.duration=60;
+ const player=createBundledPlayback(audio,()=>{},assert.fail);player.resume(0.85,12.25);assert.equal(audio.currentTime,12.25);audio.currentTime=18.75;assert.equal(player.pause(),18.75);player.resume(1.15);assert.equal(audio.currentTime,18.75);assert.equal(audio.playbackRate,1.15);player.play(1);assert.equal(audio.currentTime,0);player.dispose();
+});
+test('late metadata after pause retains the target offset and resume clamps to current duration',()=>{
+ const {createBundledPlayback}=implementation();class Delayed extends EventTarget{readyState=0;duration=NaN;offset=0;paused=true;playbackRate=1;play(){this.paused=false;return Promise.resolve();}pause(){this.paused=true;this.dispatchEvent(new Event('pause'));}get currentTime(){return this.offset||0;}set currentTime(value){if(this.readyState===0)throw Error('no metadata');this.offset=value;}}
+ const audio=new Delayed(),player=createBundledPlayback(audio,()=>{},assert.fail);player.resume(1,12);player.pause();audio.readyState=1;audio.duration=8;audio.dispatchEvent(new Event('loadedmetadata'));assert.equal(audio.currentTime,0);assert.equal(player.position(),12);assert.equal(audio.paused,true);player.resume(1);assert.equal(audio.currentTime,7.99);assert.equal(player.position(),7.99);player.dispose();
+});
+test('creating a player with a restored target never autoplays; old metadata cannot seek a newer play',()=>{
+ const {createBundledPlayback}=implementation(),audio=new AudioFixture();audio.readyState=0;audio.duration=30;let calls=0;audio.play=()=>{calls++;audio.paused=false;return Promise.resolve();};const player=createBundledPlayback(audio,()=>{},assert.fail);assert.equal(calls,0);player.resume(1,5);player.pause();player.resume(1,9);audio.readyState=1;audio.dispatchEvent(new Event('loadedmetadata'));assert.equal(audio.currentTime,9);assert.equal(calls,2);player.dispose();
+});

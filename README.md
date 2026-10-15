@@ -1,3 +1,11 @@
+# Current local candidate — continuous training
+
+`CT-20261015-r3-388f17aaa010`, version `0.3.5/20015`, branch `feat/continuous-training-20261015`. Development checks/builds passed; awaiting independent QA. This does not update the deployed Site, create phone authentication or authorize publication. See [candidate validation](docs/testing/CONTINUOUS-TRAINING-DEVELOPMENT.md) and [v0.3.5 notes](docs/releases/v0.3.5.md). Session v2 cannot be safely rolled back to old r3; use a compatible reader/export build. Original accepted P2-r3 and all earlier theme/Demo records are preserved.
+
+Earlier records below retain their historical scope and dates.
+
+---
+
 # LANTERN · 微光托业
 
 ## 当前接续：r3 查词详情返回候选（2026-10-14）

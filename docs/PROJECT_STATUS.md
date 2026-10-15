@@ -1,3 +1,11 @@
+# Continuous-training local candidate — 2026-10-15
+
+Current implementation workspace: `vocab-work/continuous-training-20261015/site`, branch `feat/continuous-training-20261015`, based on accepted r3 `3daf2d108b2a48c67e1603e93ec2839eb636f627`. Version `0.3.5/20015`; development candidate only, not deployed or independently accepted. See [continuous-training validation](testing/CONTINUOUS-TRAINING-DEVELOPMENT.md) and external `DELIVERY-CT-r1.json` once frozen. Original phase2 and historical theme checkouts remain preserved. Session v2 uses inline training; old r3 cannot read/export v2 and is not a safe rollback reader. Web TTS is sentence-level only; no unverified audio is copied to public assets. No push, merge, deployment, release or device action.
+
+Previous records below retain their original scope/time.
+
+---
+
 # 项目状态
 
 ## 当前接续：r3 查词详情返回候选（2026-10-14）

@@ -113,7 +113,7 @@ export function validateVocabularyWorkflowBackup(input:unknown,expectedScopeKey?
       if(row.id===PLAN_ID&&(row.value as unknown as VocabularyPlan).revision!==row.revision)throw Error('单词计划版本引用损坏。');
     }
   }
-  for(const stored of value.commands)if(!object(stored)||!object(stored.command)||typeof stored.command.commandId!=='string'||(!stored.command.commandId.startsWith('vocab:')&&!/^practice(?::|-(?:answer|settlement|start|next|leave|draft):)/.test(stored.command.commandId)))throw Error('工作流备份含未知命令领域。');
+  for(const stored of value.commands)if(!object(stored)||!object(stored.command)||typeof stored.command.commandId!=='string'||(!stored.command.commandId.startsWith('vocab:')&&!/^practice(?::|-(?:answer|settlement|start|next|leave|draft|training):)/.test(stored.command.commandId)))throw Error('工作流备份含未知命令领域。');
   const sessions=value.records.sessions.filter(row=>row.id.startsWith('vocab:')&&row.id!==ACTIVE_ID) as unknown as DomainRecord<VocabularySession>[],commands=value.records.commands.filter(row=>row.id.startsWith('vocab:')) as unknown as DomainRecord<VocabularyCommand>[];
   const seenLegacyIds=new Set<string>();
   for(const row of commands){

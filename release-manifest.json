@@ -1,7 +1,7 @@
 {
-  "version": "0.3.4",
+  "version": "0.3.5",
   "prerelease": true,
-  "notes": "docs/releases/v0.3.4.md",
-  "qa": "docs/testing/PHASE2-DEVELOPMENT-VALIDATION.md",
+  "notes": "docs/releases/v0.3.5.md",
+  "qa": "docs/testing/CONTINUOUS-TRAINING-DEVELOPMENT.md",
   "nativeHapAvailable": false
 }
