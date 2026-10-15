@@ -73,7 +73,7 @@ test('play rejection, native abort after metadata, and premature ended preserve 
  for(const event of ['reject','abort','ended']){const h=fixture().begin();h.audio.seek(8.681);if(event==='reject'){h.audio.rejectPlay(Object.assign(Error('private URL must never be logged'),{name:'NotAllowedError'}));await Promise.resolve();}else{if(event==='ended')h.audio.ended=true;h.audio.dispatchEvent(new Event(event));}assert.equal(h.errors,1,event);assert.equal(h.confirmations,0);assert.equal(h.audio.paused,true);assert.equal(h.player.position(),8.681);assert.ok(!JSON.stringify(h.logs).includes('private URL'));h.player.dispose();}
 });
 test('a paused DOM zero reset is not the next resume target and later backward playback is rejected',()=>{
- const h=fixture().begin();h.audio.seek(8.681);h.sustain();h.audio.progress(12.2);h.player.pause();h.audio.raw=0;h.player.resume(.85);assert.equal(h.audio.targets.at(-1),12.2);assert.equal(h.audio.plays,1);h.audio.seek(12.2);h.sustain(12.2);assert.equal(h.confirmations,2);h.audio.progress(0);assert.equal(h.errors,1);assert.ok(h.player.position()>12.2);h.player.dispose();
+ const h=fixture().begin();h.audio.seek(8.681);h.sustain();h.advance(3000);h.audio.progress(12.2);h.player.pause();h.audio.raw=0;h.player.resume(.85);assert.equal(h.audio.targets.at(-1),12.2);assert.equal(h.audio.plays,1);h.audio.seek(12.2);h.sustain(12.2);assert.equal(h.confirmations,2);h.audio.progress(0);assert.equal(h.errors,1);assert.ok(h.player.position()>12.2);h.player.dispose();
 });
 test('only explicit replay may replace a nonzero point with confirmed progression from zero',()=>{
  const h=fixture().begin();h.audio.seek(8.681);h.sustain();h.player.pause();const old=h.player.position();h.player.play(.85);assert.equal(h.audio.targets.at(-1),0);assert.equal(h.audio.plays,1);assert.equal(h.player.position(),old);h.audio.seek(0);assert.equal(h.audio.plays,2);h.sustain(0);assert.equal(h.confirmations,2);assert.ok(h.player.position()<1);h.player.dispose();
@@ -215,5 +215,80 @@ test('a short-end needs a timely first advance, an observable final fifth, and r
   const h=fixture();h.player.play(1);h.audio.metadata({duration:1});h.audio.playing(0);h.audio.progress(0);
   if(mode==='late-first'){h.advance(600);h.audio.progress(.5);h.advance(400);}else if(mode==='near-end-first'){h.advance(250);h.audio.progress(.99);h.advance(750);}else{h.advance(250);h.audio.progress(.25);h.advance(750);}
   h.audio.raw=1;h.audio.ended=true;h.audio.paused=true;h.audio.dispatchEvent(new Event('ended'));assert.equal(h.errors,1,mode);assert.equal(h.confirmations,0);assert.equal(h.player.position(),0);h.player.dispose();
+ }
+});
+
+test('QA r15 confirmed Continue survives its later same-source duration refinement without another confirmation',()=>{
+ const h=fixture().begin(30.014214,.7);h.audio.seek(30.014214);h.audio.playing();
+ for(const [ms,position] of [[252.9,30.084302],[265.9,30.171781],[265.5,30.367322],[265.6,30.549720]]){h.advance(ms);h.audio.progress(position);}
+ // QA recorded this next trusted baseline, but not its precise event time; 250ms is fixture timing only.
+ assert.equal(h.confirmations,1);h.advance(250);h.audio.progress(30.735384);const baseline=h.player.position();h.advance(103.1);h.audio.raw=30.804094;h.audio.duration=33.175510;h.audio.dispatchEvent(new Event('durationchange'));
+ assert.equal(h.errors,0);assert.equal(h.audio.paused,false);assert.equal(h.confirmations,1);assert.equal(h.audio.plays,1);assert.deepEqual(h.audio.targets,[30.014214]);
+ const event=h.logs.findLast(row=>row.event==='durationchange');assert.equal(event.baseline,baseline);assert.equal(event.preparedDuration,33.151519);
+ h.audio.dispatchEvent(new Event('canplay'));assert.equal(h.logs.at(-1).baseline,baseline);assert.equal(h.player.position(),30.804094);
+ h.advance(250);h.audio.progress(30.979094);assert.equal(h.player.pause(),30.979094);assert.equal(h.errors,0);h.player.dispose();
+});
+test('accepted duration revisions keep progress, capture and natural ending on the same confirmed epoch at every selected rate',()=>{
+ for(const rate of [1,.85,.7,1.15])for(const action of ['position','pause','stop','ended','natural-pause']){
+  const h=fixture().begin(8,rate);h.audio.seek(8);h.sustain(8,rate);const baseline=h.player.position();
+  h.advance(250);h.audio.raw=baseline+.25*rate;h.audio.duration=33.175510;h.audio.dispatchEvent(new Event('durationchange'));
+  assert.equal(h.errors,0,rate+action);assert.equal(h.confirmations,1);assert.equal(h.audio.plays,1);assert.equal(h.logs.findLast(row=>row.event==='durationchange').baseline,baseline);
+  h.advance(250);h.audio.progress(baseline+.5*rate);assert.equal(h.player.position(),baseline+.5*rate);
+  if(action==='ended'||action==='natural-pause'){h.audio.raw=h.audio.duration;h.audio.ended=true;h.audio.paused=true;h.audio.dispatchEvent(new Event(action==='ended'?'ended':'pause'));assert.equal(h.player.position(),h.audio.duration);}else{h.player[action]();assert.equal(h.player.position(),baseline+.5*rate);}
+  assert.equal(h.errors,0);assert.equal(h.confirmations,1);h.player.dispose();
+ }
+});
+test('confirmed duration events cannot authorize invalid metadata, changed identity, interrupted media or a discontinuous position',()=>{
+ const mutations={nan:a=>a.duration=NaN,infinity:a=>a.duration=Infinity,zero:a=>a.duration=0,negative:a=>a.duration=-1,truncated:a=>a.duration=8.5,declared:a=>a.src+='?other',resolved:a=>a.currentSrc+='?other',rate:a=>a.playbackRate=.85,seeking:a=>a.seeking=true,notReady:a=>a.readyState=0,mediaError:a=>a.error={code:2},jump:a=>a.raw=20,backward:a=>a.raw=6,negativePosition:a=>a.raw=-1};
+ for(const [mode,mutate] of Object.entries(mutations)){
+  const h=fixture().begin(8,1);h.audio.seek(8);h.sustain(8,1);const baseline=h.player.position();h.advance(250);h.audio.raw=baseline+.25;h.audio.duration=33.175510;mutate(h.audio);h.audio.dispatchEvent(new Event('durationchange'));
+  assert.equal(h.errors,1,mode);assert.equal(h.confirmations,1,mode);assert.equal(h.audio.paused,true,mode);assert.equal(h.player.position(),baseline,mode);assert.equal(h.audio.plays,1,mode);h.player.dispose();
+ }
+});
+test('multiple explicit confirmed refinements preserve startup proof and never bless an unannounced mutation',()=>{
+ const h=fixture().begin(8,1);h.audio.seek(8);h.sustain(8,1);const baseline=h.player.position();
+ for(const duration of [33.175510,33.16,34]){h.advance(100);h.audio.duration=duration;h.audio.dispatchEvent(new Event('durationchange'));assert.equal(h.errors,0);assert.equal(h.confirmations,1);assert.equal(h.logs.findLast(row=>row.event==='durationchange').preparedDuration,33.151519);}
+ assert.equal(h.logs.filter(row=>row.event==='confirmed').length,1);assert.equal(h.logs.findLast(row=>row.event==='durationchange').baseline,baseline);
+ h.audio.duration=34.02;h.advance(250);h.audio.progress(baseline+.25);assert.equal(h.errors,1);assert.equal(h.player.position(),baseline);h.player.dispose();
+});
+test('late loadedmetadata after confirmation cannot replace immutable preparation proof',()=>{
+ const h=fixture().begin();h.audio.seek(8.681);h.sustain();const baseline=h.player.position();h.audio.duration=33.175510;h.audio.dispatchEvent(new Event('loadedmetadata'));assert.equal(h.confirmations,1);
+ h.advance(250);h.audio.progress(baseline+.25);assert.equal(h.errors,1);assert.equal(h.player.position(),baseline);h.player.dispose();
+});
+test('a duration getter that stops or replaces its request cannot commit or fail into the new generation',()=>{
+ for(const action of ['stop','resume']){
+  const h=fixture().begin(8,1);h.audio.seek(8);h.sustain(8,1);const baseline=h.player.position();let reads=0;
+  Object.defineProperty(h.audio,'duration',{configurable:true,get(){if(++reads===2){Object.defineProperty(h.audio,'duration',{configurable:true,writable:true,value:33.175510});if(action==='stop')h.player.stop();else h.player.resume(1,8);}return 33.175510;}});
+  h.audio.dispatchEvent(new Event('durationchange'));assert.equal(h.errors,0,action);assert.equal(h.confirmations,1,action);
+  if(action==='resume'){h.audio.seek(8);h.sustain(8,1);assert.equal(h.confirmations,2);assert.equal(h.errors,0);}else assert.equal(h.player.position(),baseline);
+  h.player.dispose();assert.equal(h.pendingTimers,0);
+ }
+});
+test('a jumped timeupdate cannot become the trusted anchor for a later duration revision',()=>{
+ const h=fixture().begin(8,1);h.audio.seek(8);h.sustain(8,1);const baseline=h.player.position();h.advance(250);h.audio.progress(20);assert.equal(h.errors,1);assert.equal(h.player.position(),baseline);
+ h.audio.duration=33.175510;h.audio.dispatchEvent(new Event('durationchange'));assert.equal(h.errors,1);assert.equal(h.confirmations,1);assert.equal(h.player.position(),baseline);h.player.dispose();
+});
+test('a valid queued duration revision at pause or natural end does not manufacture a failure',()=>{
+ for(const ending of [false,'old-end','new-end']){
+  const h=fixture().begin(8,1);h.audio.seek(8);h.sustain(8,1);const baseline=h.player.position();
+  if(ending){const end=ending==='new-end'?33.175510:33.151519;h.advance((end-baseline)*1000);h.audio.raw=end;h.audio.ended=true;}else{h.advance(250);h.audio.raw=baseline+.25;}
+  h.audio.paused=true;h.audio.duration=33.175510;h.audio.dispatchEvent(new Event('durationchange'));h.audio.dispatchEvent(new Event(ending?'ended':'pause'));
+  assert.equal(h.errors,0);assert.equal(h.confirmations,1);assert.equal(h.audio.plays,1);assert.equal(h.player.position(),h.audio.raw);h.player.dispose();
+ }
+});
+test('confirmed timeupdate evidence remains bounded and metadata events alone never advance its checkpoint',()=>{
+ const h=fixture().begin(8,1);h.audio.seek(8);h.sustain(8,1);const baseline=h.player.position();
+ for(let i=1;i<=60;i++){h.advance(100);h.audio.progress(baseline+i*.1);}
+ assert.ok(h.logs.length<=33);assert.ok(h.logs.some(row=>row.stage==='playing'&&row.event==='timeupdate'));assert.equal(h.errors,0);h.player.pause();assert.equal(h.logs.at(-1).event,'stop');h.player.dispose();
+});
+test('confirmed progress cannot write a new baseline after a source getter replaces its generation',()=>{
+ const h=fixture().begin(8,1);h.audio.seek(8);h.sustain(8,1);const baseline=h.player.position(),source=h.audio.src;let replaced=false;
+ Object.defineProperty(h.audio,'currentSrc',{configurable:true,get(){if(!replaced){replaced=true;h.audio.raw=baseline;h.player.resume(1,8);}return source;}});
+ h.advance(250);h.audio.progress(baseline+.25);assert.equal(h.errors,0);assert.equal(h.confirmations,1);assert.equal(h.player.position(),baseline);h.audio.seek(8);h.sustain(8,1);assert.equal(h.confirmations,2);assert.equal(h.errors,0);h.player.dispose();
+});
+test('an accepted duration event leaves capture pending until the next explicit sample or pause',()=>{
+ for(const action of ['position','pause','stop']){
+  const h=fixture().begin(8,1);h.audio.seek(8);h.sustain(8,1);const baseline=h.player.position();h.advance(250);h.audio.raw=baseline+.25;h.audio.duration=33.175510;h.audio.dispatchEvent(new Event('durationchange'));h.audio.dispatchEvent(new Event('canplay'));
+  assert.equal(h.logs.at(-1).baseline,baseline);h.player[action]();assert.equal(h.player.position(),baseline+.25);assert.equal(h.errors,0);assert.equal(h.confirmations,1);h.player.dispose();
  }
 });
