@@ -8,17 +8,18 @@ const source = fs.readFileSync(path.join(__dirname, '../lib/lesson-audio.ts'), '
 const code = ts.transpileModule(source, {compilerOptions:{module:ts.ModuleKind.CommonJS, target:ts.ScriptTarget.ES2022}}).outputText;
 function implementation() {
   const exports = {};
-  vm.runInNewContext(code, {exports, Map, Error});
+  vm.runInNewContext(code, {exports, Map, Error, setTimeout, clearTimeout});
   return exports;
 }
 class AudioFixture extends EventTarget {
-  currentTime = 0;
-  playbackRate = 1;
-  paused = true;
-  fail = null;
-  play() { this.paused = false; return new Promise((resolve, reject) => {this.fail = reject;}); }
-  pause() { this.paused = true; this.dispatchEvent(new Event('pause')); }
+  _time=0;readyState=1;duration=60;seeking=false;playbackRate=1;paused=true;fail=null;
+  seekable={length:1,start:()=>0,end:()=>this.duration};
+  get currentTime(){return this._time;}
+  set currentTime(value){this._time=value;this.seeking=true;queueMicrotask(()=>{this.seeking=false;this.dispatchEvent(new Event('seeked'));});}
+  play(){this.paused=false;queueMicrotask(()=>{if(!this.paused){this.dispatchEvent(new Event('playing'));this.dispatchEvent(new Event('timeupdate'));}});return new Promise((resolve,reject)=>{this.fail=reject;});}
+  pause(){this.paused=true;this.dispatchEvent(new Event('pause'));}
 }
+
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
 test('a new clip stops the previous lesson player and applies the requested speed', () => {
@@ -99,14 +100,14 @@ test('only explicitly registered native clips resolve, without remote URLs or pa
   assert.equal(bundledLessonAudio('Hello.'), '/audio/offline/0123456789abcdef0123.mp3');
 });
 
-test('pause and resume keep the confirmed offset and speed; explicit play still restarts',()=>{
+test('pause and resume keep the confirmed offset and speed; explicit play still restarts',async()=>{
  const {createBundledPlayback}=implementation(),audio=new AudioFixture();audio.readyState=1;audio.duration=60;
- const player=createBundledPlayback(audio,()=>{},assert.fail);player.resume(0.85,12.25);assert.equal(audio.currentTime,12.25);audio.currentTime=18.75;assert.equal(player.pause(),18.75);player.resume(1.15);assert.equal(audio.currentTime,18.75);assert.equal(audio.playbackRate,1.15);player.play(1);assert.equal(audio.currentTime,0);player.dispose();
+ const player=createBundledPlayback(audio,()=>{},assert.fail);player.resume(0.85,12.25);await tick();assert.equal(audio.currentTime,12.25);audio.currentTime=18.75;await tick();assert.equal(player.pause(),18.75);player.resume(1.15);await tick();assert.equal(audio.currentTime,18.75);assert.equal(audio.playbackRate,1.15);player.play(1);assert.equal(audio.currentTime,0);player.dispose();
 });
-test('late metadata after pause retains the target offset and resume clamps to current duration',()=>{
- const {createBundledPlayback}=implementation();class Delayed extends EventTarget{readyState=0;duration=NaN;offset=0;paused=true;playbackRate=1;play(){this.paused=false;return Promise.resolve();}pause(){this.paused=true;this.dispatchEvent(new Event('pause'));}get currentTime(){return this.offset||0;}set currentTime(value){if(this.readyState===0)throw Error('no metadata');this.offset=value;}}
- const audio=new Delayed(),player=createBundledPlayback(audio,()=>{},assert.fail);player.resume(1,12);player.pause();audio.readyState=1;audio.duration=8;audio.dispatchEvent(new Event('loadedmetadata'));assert.equal(audio.currentTime,0);assert.equal(player.position(),12);assert.equal(audio.paused,true);player.resume(1);assert.equal(audio.currentTime,7.99);assert.equal(player.position(),7.99);player.dispose();
+test('late metadata after pause retains the target offset and resume clamps to current duration',async()=>{
+ const {createBundledPlayback}=implementation();class Delayed extends EventTarget{readyState=0;duration=NaN;offset=0;paused=true;seeking=false;seekable={length:1,start:()=>0,end:()=>this.duration};playbackRate=1;play(){this.paused=false;queueMicrotask(()=>{this.dispatchEvent(new Event('playing'));this.dispatchEvent(new Event('timeupdate'));});return Promise.resolve();}pause(){this.paused=true;this.dispatchEvent(new Event('pause'));}get currentTime(){return this.offset||0;}set currentTime(value){if(this.readyState===0)throw Error('no metadata');this.offset=value;this.seeking=true;queueMicrotask(()=>{this.seeking=false;this.dispatchEvent(new Event('seeked'));});}}
+ const audio=new Delayed(),player=createBundledPlayback(audio,()=>{},assert.fail);player.resume(1,12);player.pause();audio.readyState=1;audio.duration=8;audio.dispatchEvent(new Event('loadedmetadata'));assert.equal(audio.currentTime,0);assert.equal(player.position(),12);assert.equal(audio.paused,true);player.resume(1);await tick();assert.equal(audio.currentTime,7.99);assert.equal(player.position(),7.99);player.dispose();
 });
-test('creating a player with a restored target never autoplays; old metadata cannot seek a newer play',()=>{
- const {createBundledPlayback}=implementation(),audio=new AudioFixture();audio.readyState=0;audio.duration=30;let calls=0;audio.play=()=>{calls++;audio.paused=false;return Promise.resolve();};const player=createBundledPlayback(audio,()=>{},assert.fail);assert.equal(calls,0);player.resume(1,5);player.pause();player.resume(1,9);audio.readyState=1;audio.dispatchEvent(new Event('loadedmetadata'));assert.equal(audio.currentTime,9);assert.equal(calls,2);player.dispose();
+test('creating a player with a restored target never autoplays; old metadata cannot seek a newer play',async()=>{
+ const {createBundledPlayback}=implementation(),audio=new AudioFixture();audio.readyState=0;audio.duration=30;let calls=0;audio.play=()=>{calls++;audio.paused=false;return Promise.resolve();};const player=createBundledPlayback(audio,()=>{},assert.fail);assert.equal(calls,0);player.resume(1,5);player.pause();player.resume(1,9);audio.readyState=1;audio.dispatchEvent(new Event('loadedmetadata'));await tick();assert.equal(audio.currentTime,9);assert.equal(calls,1);player.dispose();
 });

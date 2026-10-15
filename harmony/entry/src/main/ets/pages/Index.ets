@@ -1,3 +1,4 @@
+import { assetBytes } from '../services/AssetRange';
 import { abilityAccessCtrl, common } from '@kit.AbilityKit';
 import { webview } from '@kit.ArkWeb';
 import { BusinessError } from '@kit.BasicServicesKit';
@@ -221,22 +222,35 @@ struct Index {
     return response;
   }
 
-  private async readAsset(response: WebResourceResponse, path: string): Promise<void> {
+  private async readAsset(response: WebResourceResponse, path: string, range: string, head: boolean): Promise<void> {
     try {
-      const data: Uint8Array = await this.context().resourceManager.getRawFileContent(path);
-      // WebResourceResponse accepts ArrayBuffer, not Uint8Array. Preserve exact bounds.
-      const bytes: ArrayBuffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
-      response.setResponseData(bytes);
+      // Complete packaged short clips before returning so ArkWeb uses the synchronous binary
+      // response path. Document assets retain the asynchronous loading path.
+      const media: boolean = /^web\/audio\/offline\/[a-f0-9]{20}\.mp3$/.test(path);
+      const data: Uint8Array = media ? this.context().resourceManager.getRawFileContentSync(path) :
+        await this.context().resourceManager.getRawFileContent(path);
+      const selected = assetBytes(data, range, head);
+      const headers: Header[] = [
+        { headerKey: 'Cache-Control', headerValue: 'no-store' },
+        { headerKey: 'X-Content-Type-Options', headerValue: 'nosniff' },
+        { headerKey: 'Accept-Ranges', headerValue: 'bytes' },
+        { headerKey: 'Content-Length', headerValue: String(selected.length) }
+      ];
+      if (selected.contentRange !== '') {
+        headers.push({ headerKey: 'Content-Range', headerValue: selected.contentRange });
+      }
+      response.setResponseData(selected.body);
       response.setResponseMimeType(mimeType(path));
       response.setResponseEncoding('utf-8');
-      response.setResponseCode(200);
-      response.setReasonMessage('OK');
-      response.setResponseHeader([
-        { headerKey: 'Cache-Control', headerValue: 'no-store' },
-        { headerKey: 'X-Content-Type-Options', headerValue: 'nosniff' }
-      ]);
+      response.setResponseCode(selected.code);
+      response.setReasonMessage(selected.reason);
+      response.setResponseHeader(headers);
+      if (selected.code === 206 || selected.code === 416) {
+        // No text, account, credentials or private recording is included in this diagnostic.
+        console.info('Bundled byte range: ' + selected.code + ' ' + selected.start + '-' + selected.end +
+          '/' + selected.total + ' body=' + selected.body.byteLength);
+      }
     } catch {
-      // A missing bundled resource must never fall through to a network request.
       response.setResponseData('Bundled resource not found');
       response.setResponseMimeType('text/plain');
       response.setResponseEncoding('utf-8');
@@ -256,12 +270,24 @@ struct Index {
     if (path === null) {
       return this.errorResponse(400, 'Bad Request');
     }
-    if (request.getRequestMethod() !== 'GET') {
-      return this.errorResponse(405, 'Method Not Allowed');
+    const method: string = request.getRequestMethod();
+    if (method !== 'GET' && method !== 'HEAD') {
+      const denied: WebResourceResponse = this.errorResponse(405, 'Method Not Allowed');
+      denied.setResponseHeader([{ headerKey: 'Allow', headerValue: 'GET, HEAD' }]);
+      return denied;
+    }
+    let range: string = '';
+    let ifRange: boolean = false;
+    const headers: Header[] = request.getRequestHeader();
+    for (const header of headers) {
+      if (header.headerKey.toLowerCase() === 'if-range') { ifRange = true; }
+      if (header.headerKey.toLowerCase() === 'range') {
+        range = range === '' ? header.headerValue : range + ',' + header.headerValue;
+      }
     }
     const response: WebResourceResponse = new WebResourceResponse();
     response.setResponseIsReady(false);
-    this.readAsset(response, path);
+    this.readAsset(response, path, ifRange ? '' : range, method === 'HEAD');
     return response;
   }
 

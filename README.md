@@ -1,3 +1,13 @@
+# 当前接续：CT-r11 原生续播修订（2026-10-15）
+
+冻结身份 `CT-20261015-r11-eacf67c7a19a`，`0.3.5/20026`，工作区 `vocab-work/ct-audio-repair-20261015/site`、分支 `fix/ct-audio-range-20261015`，基于 CT-r3 `30257b3a8acdf26258d4310a22ef480e8c9e4f6a`。原 CT-r3 独立 QA 正式 FAIL（CT-AUDIO-01）与全部冻结件保留；此包是待独立复验的新候选，不覆盖旧结论。public-local 检查点 `6294c890` 独立保留，未混入此修订。
+
+修订提供真实单范围响应、MP3 同步二进制交付、seek/playing/新进度确认、静音预热、取消与失败保旧点，并仅在后台挂起后的下次用户播放重建解码器。开发检查：739 CJS/宿主、34 MJS、21 浏览器回归、9 真实 Chrome 媒体检查通过，类型/Web/SDK 构建通过；1091 资源与 HAP 一致。指定 15551 合成模拟器已实际验证同轨续播、明确重播、Home 停止及前台手动恢复、保存返回/冷启动静默恢复和继续推进。精确回执与完整最终身份见外层 `DELIVERY-CT-r11.json`。
+
+原生口语弹窗出现可视区域裁切，录音/回听/播放录音互斥未完成；见外层 `dev-native/R11-RECORDING-BLOCKER.json`，不得写成录放通过。人耳音质、真实麦克风、真机与独立 QA 仍未验。救援 v1/v2 禁写 reader/export 工件尚未交付，实际回滚保持 NOT_RUN；旧 P2-r3 不能安全读/export v2 或混合备份。仅保数据升级自有 15551 模拟器，未卸载/清数据/降级、未动手机或 imageRoot、未 push/合入/部署/上传/发布。下文为原 CT 与更早历史，按其版本理解。
+
+---
+
 # Current local candidate — continuous training
 
 `CT-20261015-r3-388f17aaa010`, version `0.3.5/20015`, branch `feat/continuous-training-20261015`. Development checks/builds passed; awaiting independent QA. This does not update the deployed Site, create phone authentication or authorize publication. See [candidate validation](docs/testing/CONTINUOUS-TRAINING-DEVELOPMENT.md) and [v0.3.5 notes](docs/releases/v0.3.5.md). Session v2 cannot be safely rolled back to old r3; use a compatible reader/export build. Original accepted P2-r3 and all earlier theme/Demo records are preserved.
