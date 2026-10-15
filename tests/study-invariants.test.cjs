@@ -13,6 +13,7 @@ function load(file, imports = {}, globals = {}) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX }
   }).outputText;
   vm.runInNewContext(code, { exports, require: n => {
+    if (n === '@/lib/use-dialog-viewport') return load('lib/use-dialog-viewport.ts', {react: imports.react}, globals);
     if (!(n in imports)) throw new Error('Unexpected import: ' + n);
     return imports[n];
   }, Date, Intl, Map, Set, structuredClone, AbortController, FormData, crypto: { randomUUID }, ...globals }, { filename: file });

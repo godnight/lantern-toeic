@@ -1,14 +1,12 @@
-# 当前接续：CT-r11 原生续播修订（2026-10-15）
+# 当前修订：CT-r12 口语弹窗与可视窗口（2026-10-15）
 
-冻结身份 `CT-20261015-r11-eacf67c7a19a`，`0.3.5/20026`，工作区 `vocab-work/ct-audio-repair-20261015/site`、分支 `fix/ct-audio-range-20261015`，基于 CT-r3 `30257b3a8acdf26258d4310a22ef480e8c9e4f6a`。原 CT-r3 独立 QA 正式 FAIL（CT-AUDIO-01）与全部冻结件保留；此包是待独立复验的新候选，不覆盖旧结论。public-local 检查点 `6294c890` 独立保留，未混入此修订。
+独立于r11冻结件的新树 `vocab-work/ct-speaking-repair-20261015/site` / `fix/ct-speaking-layout-20261015`，身份 `CT-20261015-r12-dbaa84e640e9` /0.3.5/20027。新修订移除口语/未保存弹窗继承的居中位移与zoom类，由专属inset定位和visualViewport管理可见边界、键盘缩小及内部滚动。739源码/宿主、34契约、类型/Web/SDK通过；实际SDK压缩CSS的9项DOM回归通过，r11负向对照能检出原裁切。详见 `docs/testing/CT-SPEAKING-REPAIR-DEVELOPMENT.md` 和外层交付清单。
 
-修订提供真实单范围响应、MP3 同步二进制交付、seek/playing/新进度确认、静音预热、取消与失败保旧点，并仅在后台挂起后的下次用户播放重建解码器。开发检查：739 CJS/宿主、34 MJS、21 浏览器回归、9 真实 Chrome 媒体检查通过，类型/Web/SDK 构建通过；1091 资源与 HAP 一致。指定 15551 合成模拟器已实际验证同轨续播、明确重播、Home 停止及前台手动恢复、保存返回/冷启动静默恢复和继续推进。精确回执与完整最终身份见外层 `DELIVERY-CT-r11.json`。
-
-原生口语弹窗出现可视区域裁切，录音/回听/播放录音互斥未完成；见外层 `dev-native/R11-RECORDING-BLOCKER.json`，不得写成录放通过。人耳音质、真实麦克风、真机与独立 QA 仍未验。救援 v1/v2 禁写 reader/export 工件尚未交付，实际回滚保持 NOT_RUN；旧 P2-r3 不能安全读/export v2 或混合备份。仅保数据升级自有 15551 模拟器，未卸载/清数据/降级、未动手机或 imageRoot、未 push/合入/部署/上传/发布。下文为原 CT 与更早历史，按其版本理解。
+**尚未操作或安装到15551：QA当前独占r11。** ArkWeb/真实键盘/录放待协调原生窗口。r12音频与r11相同；dot新增QA非零已保存点恢复失败仍开放，完整证据待收，不以开发正向数据关闭或掩盖。独立救援reader/export在另一树制作，不混入学习包。原r11源码、工件和证据保持，未push/合入/上传/部署/动真机。以下为早期记录，按版本理解。
 
 ---
 
-# Continuous-training local candidate — 2026-10-15
+ Continuous-training local candidate — 2026-10-15
 
 Current implementation workspace: `vocab-work/continuous-training-20261015/site`, branch `feat/continuous-training-20261015`, based on accepted r3 `3daf2d108b2a48c67e1603e93ec2839eb636f627`. Version `0.3.5/20015`; development candidate only, not deployed or independently accepted. See [continuous-training validation](testing/CONTINUOUS-TRAINING-DEVELOPMENT.md) and external `DELIVERY-CT-r1.json` once frozen. Original phase2 and historical theme checkouts remain preserved. Session v2 uses inline training; old r3 cannot read/export v2 and is not a safe rollback reader. Web TTS is sentence-level only; no unverified audio is copied to public assets. No push, merge, deployment, release or device action.
 

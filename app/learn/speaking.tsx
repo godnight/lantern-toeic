@@ -10,6 +10,7 @@ import {createId,type Recording,type Speaking} from '@/lib/study-model';
 import {isNativeForeground,registerNativeBack,subscribeNativeState} from '@/lib/native-host';
 import {SpeechPlayer} from './practice';
 import type {SpeakingRecovery} from '@/lib/speaking-recovery';
+import {useDialogViewport} from '@/lib/use-dialog-viewport';
 
 type SpeakingPhase='ready'|'prep'|'recording'|'processing'|'done';
 type SpeakingRoomProps={nativeMode?:boolean;timezone?:string;prompt:Speaking;onClose:()=>void;onSave:(recording:Recording,blob:Blob)=>Promise<void>;onFinish:(minutes:number)=>void;recovery?:SpeakingRecovery;onRetain?:(clip:SpeakingRecovery)=>void;onRelease?:(id:string)=>void};
@@ -59,6 +60,7 @@ export function SpeakingRecordingHistory({recordings,timezone,nativeMode=false,o
 }
 
 export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=false,timezone,recovery,onRetain,onRelease}:SpeakingRoomProps){
+ const dialogViewport=useDialogViewport();
  const [phase,setPhase]=useState<SpeakingPhase>(recovery?'done':'ready');const [seconds,setSeconds]=useState(prompt.prepSeconds);
  const [url,setUrl]=useState('');const [saved,setSaved]=useState(false);const [busy,setBusy]=useState(false);const [saving,setSaving]=useState(false);const [saveError,setSaveError]=useState(false);const [accessError,setAccessError]=useState('');const [self,setSelf]=useState<string[]>([]);const [discardOpen,setDiscardOpen]=useState(false);const [returnNotice,setReturnNotice]=useState('');
  const recorder=useRef<MediaRecorder|null>(null);const stream=useRef<MediaStream|null>(null);const chunks=useRef<Blob[]>([]);const started=useRef(0);const stoppedAt=useRef(0);const last=useRef<{meta:Recording;blob:Blob}|null>(null);const objectURL=useRef('');const mounted=useRef(true);const beginning=useRef(false);const requestGeneration=useRef(0);const deadline=useRef(0);const currentPhase=useRef(phase);const savingNow=useRef(false);const acquiring=useRef(false);const exitRequested=useRef(false);currentPhase.current=phase;
@@ -162,7 +164,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
  const retrySave=()=>last.current?persist(last.current.meta,last.current.blob):Promise.resolve();
  const download=<a href={url} download={downloadName} className="button secondary speaking-download"><Download size={17}/>下载保留录音</a>;
  return <>
-  <Dialog open onOpenChange={open=>{if(!open)requestClose();}}><DialogContent className="speaking-room" showCloseButton={false} onEscapeKeyDown={event=>{event.preventDefault();requestClose();}} onPointerDownOutside={event=>event.preventDefault()}>
+  <Dialog open onOpenChange={open=>{if(!open)requestClose();}}><DialogContent className="speaking-room" positioning="inset" style={dialogViewport(1120,true)} showCloseButton={false} onEscapeKeyDown={event=>{event.preventDefault();requestClose();}} onPointerDownOutside={event=>event.preventDefault()}>
    <div className="speaking-room-toolbar"><button type="button" className="button secondary" onClick={requestClose}><ArrowLeft size={17}/>返回口语目录</button><span>原创口语专项</span></div>
    <DialogHeader><DialogTitle>{prompt.title}</DialogTitle><DialogDescription>准备、录音、回听，只改一个地方。练习与自评不换算正式成绩。</DialogDescription></DialogHeader>
    <div className="speaking-room-scroll">
@@ -194,7 +196,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
     </section></div>
    </div>
   </DialogContent></Dialog>
-  <Dialog open={discardOpen} onOpenChange={setDiscardOpen}><DialogContent className="speaking-discard" showCloseButton={false}>
+  <Dialog open={discardOpen} onOpenChange={setDiscardOpen}><DialogContent className="speaking-discard" positioning="inset" style={dialogViewport(480)} showCloseButton={false}>
    <DialogHeader><DialogTitle>放弃这段未保存录音？</DialogTitle><DialogDescription>录音还没有保存到学习记录。离开会释放当前页面的临时音频，之后可能无法找回。可以先重试，或下载并确认文件已保留。</DialogDescription></DialogHeader>
    <div className="speaking-action-stack"><button type="button" className="button primary" onClick={()=>setDiscardOpen(false)}>留在这里</button><button type="button" className="button secondary" disabled={saving} onClick={retrySave}>重试保存<RotateCcw size={17}/></button>{download}<button type="button" className="button secondary speaking-danger" onClick={()=>{if(last.current)onRelease?.(last.current.meta.id);setDiscardOpen(false);onClose();}}>确认放弃并离开</button></div><p className="speaking-caption">下载仅保留音频文件，不代表录音已保存到学习记录。</p>
   </DialogContent></Dialog>

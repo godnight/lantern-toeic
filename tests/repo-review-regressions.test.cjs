@@ -15,6 +15,7 @@ function load(file, imports, globals = {}) {
   }).outputText;
   vm.runInNewContext(code, {exports, require: name => {
     if (name === '@/release-manifest.json') return {default:JSON.parse(fs.readFileSync(root + '/release-manifest.json','utf8'))};
+    if (name === '@/lib/use-dialog-viewport') return load('lib/use-dialog-viewport.ts', {react: imports.react}, globals);
     if (!(name in imports)) throw Error('Unexpected import: ' + name);
     return imports[name];
   }, Date, Intl, Map, Set, structuredClone, crypto: {randomUUID}, Blob, URL, URLSearchParams, AbortController, ...globals}, {filename: file});
