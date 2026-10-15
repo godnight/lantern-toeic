@@ -62,6 +62,7 @@ function harness({attempts = [], outcomes = [true], queue, browser, lookup = fal
     react, 'react/jsx-runtime': {jsx, jsxs: jsx, Fragment: 'fragment'}, 'lucide-react': stubs,
     sonner: {toast: {error(){}}}, '@/lib/study-model': model,
     '@/lib/lesson-audio': {bundledLessonAudio: () => null,bundledLessonSource:()=>null,stopLessonAudio(){},createBundledPlayback: () => null},
+    '@/lib/explicit-bundled-playback': {createExplicitBundledPlayback: () => { assert.fail('Unexpected media activation in Practice persistence fixture'); }},
     '@/lib/native-host': {subscribeNativeState:()=>()=>{},registerNativeBack(fn, priority) {backs.set(priority, fn); return () => backs.delete(priority);}}
   };
   for (const widget of ['dialog', 'tabs', 'radio-group', 'select', 'progress']) imports['@/components/ui/' + widget] = stubs;

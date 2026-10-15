@@ -13,7 +13,8 @@ import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from '@/compo
 import {Progress} from '@/components/ui/progress';
 import {toast} from 'sonner';
 import {createId,PARTS,normalizeText,type Question,type Attempt} from '@/lib/study-model';
-import {bundledLessonAudio,bundledLessonSource,createBundledPlayback,stopLessonAudio} from '@/lib/lesson-audio';
+import {bundledLessonAudio,bundledLessonSource,stopLessonAudio} from '@/lib/lesson-audio';
+import {createExplicitBundledPlayback} from '@/lib/explicit-bundled-playback';
 import {registerNativeBack,subscribeNativeState} from '@/lib/native-host';
 // Paused players remain mounted. Only the most recently started player owns the checkpoint.
 let checkpointOwner:object|null=null;
@@ -21,21 +22,48 @@ export function SpeechPlayer({text,label='播放音频',sourceLabel='原创练�
  const clip=bundledLessonAudio(text),sourceId=bundledLessonSource(text)||'tts:'+canonicalHash(text);
  const matching=checkpoint?.trackId===trackId&&checkpoint.sourceId===sourceId;
  const [playing,setPlaying]=useState(false),[rate,setRate]=useState(String(matching?checkpoint.rate:1)),[position,setPosition]=useState(matching?checkpoint.positionSeconds:0);
- const audio=useRef<HTMLAudioElement|null>(null),playback=useRef<ReturnType<typeof createBundledPlayback>|null>(null),played=useRef(false),playingRef=useRef(false),offset=useRef(matching?checkpoint.positionSeconds:0),rateRef=useRef(Number(rate)),lastSaved=useRef(0),generation=useRef(0);
+ const audioHost=useRef<HTMLSpanElement|null>(null),playback=useRef<ReturnType<typeof createExplicitBundledPlayback>|null>(null),played=useRef(false),playingRef=useRef(false),offset=useRef(matching?checkpoint.positionSeconds:0),rateRef=useRef(Number(rate)),lastSaved=useRef(0),generation=useRef(0);
  const callbacks=useRef(onCheckpoint);callbacks.current=onCheckpoint;
- const owner=useRef({}),playedSource=useRef('');
+ const owner=useRef({}),playedSource=useRef(''),effectOwner=useRef<object|null>(null),effectSource=useRef(''),renderSource=useRef('');renderSource.current=sourceId+'|'+trackId;
  const capture=(urgent=false)=>{if(!played.current||playedSource.current!==sourceId||checkpointOwner!==owner.current)return;const seconds=clip?(playback.current?.position()??offset.current):0;offset.current=seconds;setPosition(seconds);callbacks.current?.({trackId,sourceId,kind:clip?'bundled':'tts',capability:clip?'time':'sentence',positionSeconds:Math.round(seconds*1000)/1000,rate:rateRef.current},urgent);};
  const captureRef=useRef(capture);captureRef.current=capture;
  const pause=(reload=false)=>{generation.current++;playback.current?.pause(reload);if(checkpointOwner===owner.current)window.speechSynthesis?.cancel();playingRef.current=false;setPlaying(false);captureRef.current(true);};
- const pauseRef=useRef(pause);pauseRef.current=pause;
  useEffect(()=>{if(!played.current&&matching){offset.current=checkpoint.positionSeconds;setPosition(checkpoint.positionSeconds);setRate(String(checkpoint.rate));rateRef.current=checkpoint.rate;}},[checkpoint,matching]);
  useEffect(()=>{
-  const changed=(value:boolean)=>{playingRef.current=value;setPlaying(value);if(!value)captureRef.current(true);};
-  const player=clip&&audio.current?createBundledPlayback(audio.current,changed,()=>toast.error('内置音频未能确认续播，已停止并保留上次定位，请重试。'),()=>{checkpointOwner=owner.current;played.current=true;playedSource.current=sourceId;captureRef.current(true);}):null;playback.current=player;
-  const stop=()=>pauseRef.current(),suspend=()=>pauseRef.current(true);const visibility=()=>{if(document.visibilityState==='hidden')suspend();};
+  let retired=false;let player:ReturnType<typeof createExplicitBundledPlayback>|null=null;
+  const scope={};effectOwner.current=scope;
+  const identity=sourceId+'|'+trackId;
+  if(effectSource.current!==identity){effectSource.current=identity;playingRef.current=false;setPlaying(false);played.current=false;playedSource.current='';offset.current=matching?checkpoint!.positionSeconds:0;rateRef.current=matching?checkpoint!.rate:1;setPosition(offset.current);setRate(String(rateRef.current));}
+  const originalCheckpoint=callbacks.current;
+  // These callbacks close over this effect's controller and source. An old cleanup
+  // never reads a later playback.current or writes its position under a new source.
+  const captureOwn=(urgent=false)=>{
+   if(retired||effectOwner.current!==scope||!played.current||playedSource.current!==sourceId||checkpointOwner!==owner.current)return;
+   const seconds=clip?(player?.position()??offset.current):0;
+   if(playback.current===player&&renderSource.current===identity){offset.current=seconds;setPosition(seconds);}
+   const save=renderSource.current===identity?callbacks.current:originalCheckpoint;
+   save?.({trackId,sourceId,kind:clip?'bundled':'tts',capability:clip?'time':'sentence',positionSeconds:Math.round(seconds*1000)/1000,rate:rateRef.current},urgent);
+  };
+  const current=()=>!retired&&effectOwner.current===scope&&renderSource.current===identity&&playback.current===player;
+  const changed=(value:boolean)=>{if(!current())return;playingRef.current=value;setPlaying(value);if(!value)captureOwn(true);};
+  if(clip)player=createExplicitBundledPlayback(()=>{
+   const host=audioHost.current;if(!host)throw new Error('Lesson audio host unavailable');
+   const media=document.createElement('audio');media.src=clip;media.preload='metadata';media.hidden=true;host.appendChild(media);return media;
+  },changed,()=>{if(current())toast.error('内置音频未能确认续播，已停止并保留上次定位，请重试。');},()=>{
+   if(!current())return;checkpointOwner=owner.current;played.current=true;playedSource.current=sourceId;captureOwn(true);
+  },seconds=>{
+   if(!current())return;setPosition(seconds);if(Date.now()-lastSaved.current>=5000){lastSaved.current=Date.now();captureOwn();}
+  });
+  playback.current=player;
+  const stopOwn=(reload=false)=>{if(!current())return;generation.current++;player?.pause(reload);if(!clip&&checkpointOwner===owner.current)window.speechSynthesis?.cancel();playingRef.current=false;setPlaying(false);captureOwn(true);};
+  const stop=()=>stopOwn(),suspend=()=>stopOwn(true);const visibility=()=>{if(document.visibilityState==='hidden')suspend();};
   window.addEventListener('lantern-stop-lesson-audio',stop);window.addEventListener('pagehide',suspend);document.addEventListener('visibilitychange',visibility);
   const unsubscribe=subscribeNativeState(active=>{if(!active)suspend();});
-  return()=>{captureRef.current(true);player?.dispose();playback.current=null;generation.current++;if(checkpointOwner===owner.current){window.speechSynthesis?.cancel();checkpointOwner=null;}window.removeEventListener('lantern-stop-lesson-audio',stop);window.removeEventListener('pagehide',suspend);document.removeEventListener('visibilitychange',visibility);unsubscribe();};
+  return()=>{
+   const owned=effectOwner.current===scope&&playback.current===player;captureOwn(true);retired=true;player?.dispose();
+   if(owned){effectOwner.current=null;playback.current=null;generation.current++;if(checkpointOwner===owner.current){window.speechSynthesis?.cancel();checkpointOwner=null;}}
+   window.removeEventListener('lantern-stop-lesson-audio',stop);window.removeEventListener('pagehide',suspend);document.removeEventListener('visibilitychange',visibility);unsubscribe();
+  };
  },[text,clip,sourceId,trackId]);
  const play=(restart=false)=>{
   if(playingRef.current&&!restart){pause();return;}
@@ -46,7 +74,7 @@ export function SpeechPlayer({text,label='播放音频',sourceLabel='原创练�
   const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=rateRef.current;const voice=window.speechSynthesis.getVoices().find(v=>v.lang==='en-US')||window.speechSynthesis.getVoices().find(v=>v.lang.startsWith('en'));if(voice)u.voice=voice;
   u.onend=()=>{if(token!==generation.current)return;playingRef.current=false;setPlaying(false);captureRef.current(true);};u.onerror=event=>{if(token!==generation.current)return;playingRef.current=false;setPlaying(false);if(event.error!=='canceled'&&event.error!=='interrupted')toast.error('朗读失败，请检查设备的英语语音设置。');};playingRef.current=true;setPlaying(true);captureRef.current();window.speechSynthesis.speak(u);
  };
- return <div className="audio-player">{clip&&<audio ref={audio} src={clip} preload="metadata" hidden onTimeUpdate={()=>{setPosition(playback.current?.position()??offset.current);if(Date.now()-lastSaved.current>=5000){lastSaved.current=Date.now();capture();}}}/>}<button type="button" className="play-circle" aria-label={playing?'暂停 '+label:position>0?'继续 '+label:label} onClick={()=>play()}>{playing?<Pause size={18}/>:<Play size={18} fill="currentColor"/>}</button><div className="audio-meta"><b>{label}</b><small>{sourceLabel+' · '+(clip?'内置合成语音':'系统朗读 · 仅保留句子定位，重新播放从句首开始')}{clip&&position>0?` · ${position.toFixed(1)}秒`:''}</small>{checkpoint?.trackId===trackId&&!matching&&<small role="status">音频版本已变化，旧定位保留；点击从头播放当前音频。</small>}</div>{clip&&position>0&&<button type="button" className="text-button" onClick={()=>play(true)} aria-label={'从头播放 '+label}>从头播放</button>}<div className={'wave '+(playing?'playing':'')} aria-hidden="true">{Array.from({length:25},(_,i)=><i key={i} style={{height:(8+(i*13%24))+'px',animationDelay:(i*.06)+'s'}}/>)}</div><Select value={rate} onValueChange={v=>{pause();rateRef.current=Number(v);setRate(v);capture(true);}}><SelectTrigger aria-label="语速" className="speed-select"><SelectValue/></SelectTrigger><SelectContent>{['0.7','0.85','1','1.15'].map(r=><SelectItem key={r} value={r}>{r}×</SelectItem>)}</SelectContent></Select></div>
+ return <div className="audio-player">{clip&&<span ref={audioHost} hidden aria-hidden="true"/>}<button type="button" className="play-circle" aria-label={playing?'暂停 '+label:position>0?'继续 '+label:label} onClick={()=>play()}>{playing?<Pause size={18}/>:<Play size={18} fill="currentColor"/>}</button><div className="audio-meta"><b>{label}</b><small>{sourceLabel+' · '+(clip?'内置合成语音':'系统朗读 · 仅保留句子定位，重新播放从句首开始')}{clip&&position>0?` · ${position.toFixed(1)}秒`:''}</small>{checkpoint?.trackId===trackId&&!matching&&<small role="status">音频版本已变化，旧定位保留；点击从头播放当前音频。</small>}</div>{clip&&position>0&&<button type="button" className="text-button" onClick={()=>play(true)} aria-label={'从头播放 '+label}>从头播放</button>}<div className={'wave '+(playing?'playing':'')} aria-hidden="true">{Array.from({length:25},(_,i)=><i key={i} style={{height:(8+(i*13%24))+'px',animationDelay:(i*.06)+'s'}}/>)}</div><Select value={rate} onValueChange={v=>{pause();rateRef.current=Number(v);setRate(v);capture(true);}}><SelectTrigger aria-label="语速" className="speed-select"><SelectValue/></SelectTrigger><SelectContent>{['0.7','0.85','1','1.15'].map(r=><SelectItem key={r} value={r}>{r}×</SelectItem>)}</SelectContent></Select></div>
 }
 type DurablePractice = {readError?:string;retryRead?:()=>void;revision?:number;training?:PracticeTraining;steps?:{choice:number|null;status:string}[];updateTraining?:(write:TrainingWrite)=>Promise<PracticeResult>;blocked?:string;cursor:number;choice:number|null;submitted:boolean;finished:boolean;correct:number;busy:boolean;submit:(choice:number,seconds:number)=>Promise<boolean>;next:()=>Promise<boolean>};
 export default function Practice({queue,attempts,onAttempt,onClose,onFinish,onLookup,lookupActive=false,durable,renderExample,onContinue,onSpecialty,onWrong,onCustom}:{queue:Question[];attempts:Attempt[];onAttempt:(a:Attempt)=>boolean;onClose:()=>void;onFinish:(minutes:number)=>void;onLookup?:(term:string)=>void;lookupActive?:boolean;durable?:DurablePractice;renderExample?:(text:string)=>ReactNode;onContinue?:()=>void;onSpecialty?:()=>void;onWrong?:()=>void;onCustom?:()=>void}){
