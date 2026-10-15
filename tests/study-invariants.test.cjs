@@ -649,3 +649,59 @@ test('older theme upload finishing after a second tab cannot replace the latest 
  assert.equal(JSON.parse(storage.get('lantern-v1-alice:profile')).theme,'crystal');
  assert.equal(server.profile.theme,'crystal');
 });
+
+
+test('first setup distinguishes absent configuration from a zero-history legacy profile',async()=>{
+ const fresh=hookHarness();fresh.render(null);await flush();const api=fresh.render(null);
+ assert.equal(api.profileSetup,'suggested');assert.equal(api.data.profile.examDate,'');assert.equal(api.data.profile.speakingGoal,0);assert.equal(api.data.profile.onboarded,false);
+ assert.equal(api.skipProfileSetup(),true);assert.equal(fresh.render(null).profileSetup,'skipped');assert.equal(fresh.render(null).data.attempts.length,0);
+ const old={...base(),profile:{...model.DEFAULT_PROFILE,examDate:'2026-12-20',speakingGoal:130,timezone:'Asia/Shanghai',onboarded:false}};
+ const bytes=JSON.stringify({data:old}),storage=new Map([['lantern-v1-alice',bytes]]);const prior=hookHarness(storage);prior.render();await flush();
+ assert.equal(prior.render().profileSetup,'existing');assert.equal(prior.render().data.profile.examDate,'2026-12-20');assert.equal(prior.render().data.profile.timezone,'Asia/Shanghai');assert.equal(storage.get('lantern-v1-alice'),bytes);
+});
+test('an existing remote profile with zero answers preserves timezone and goals without value guessing',async()=>{
+ const profile={...model.DEFAULT_PROFILE,examDate:'2027-02-15',speakingGoal:150,timezone:'Europe/London',onboarded:false};
+ const h=hookHarness(new Map(),{remote:{hasProfile:true,profile}});h.render();await flush();h.setOnline(true);await h.render().syncNow();
+ assert.equal(h.render().profileSetup,'existing');assert.deepEqual(JSON.parse(JSON.stringify(h.render().data.profile)),profile);
+});
+test('malformed setup is preserved and blocks writes rather than resetting learner history',async()=>{
+ const storage=new Map([['lantern-v1-alice:setup','{broken']]),h=hookHarness(storage);h.render();await flush();
+ assert.equal(h.render().recordsReadable,false);assert.equal(h.render().saveProfile(model.DEFAULT_PROFILE),false);assert.equal(storage.get('lantern-v1-alice:setup'),'{broken');
+});
+test('401, 403 and identity409 remain paused on manual retry and do not change guest ownership',async()=>{
+ for(const status of [401,403,409]){
+  const storage=new Map(),h=hookHarness(storage,{handle:async()=>new Response('{}',{status})});h.render('alice');await flush();h.setOnline(true);await h.render().syncNow();
+  const api=h.render(),issue=api.issues.find(issue=>issue.kind==='session');assert.equal(issue.httpStatus,status);const count=h.requests.length;
+  api.retryIssue(issue);await flush();assert.equal(h.requests.length,count);assert.equal(storage.has('lantern-v1-device'),false);assert.equal(issue.status,'auth');
+ }
+});
+test('event409 is a payload conflict, not a login or ownership transition',async()=>{
+ const h=hookHarness(new Map(),{handle:async(url,init)=>init?.method==='POST'?new Response('{}',{status:409,headers:{'X-Lantern-Conflict':'event-payload'}}):null});h.render();await flush();h.render().addAttempt(attempt('payload-conflict','2026-09-07T10:00:00.000Z'));h.setOnline(true);await h.render().syncNow();
+ const issue=h.render().issues.find(issue=>issue.kind==='op');assert.equal(issue.httpStatus,422);assert.equal(issue.status,'blocked');assert.equal(h.render().data.attempts.length,1);
+});
+
+test('explicit same-owner session probe resumes only after a positive trusted read',async()=>{
+ let status=401;const h=hookHarness(new Map(),{handle:async()=>status===200?null:new Response('{}',{status})});h.render();await flush();h.render().addAttempt(attempt('pending-session','2026-09-07T10:00:00.000Z'));h.setOnline(true);await h.render().syncNow();
+ assert.equal(await h.render().recheckSession(),false);assert.equal(h.render().issues.some(issue=>issue.status==='auth'),true);
+ status=200;assert.equal(await h.render().recheckSession(),true);await flush();await flush();assert.equal(h.render().issues.some(issue=>issue.status==='auth'),false);assert.equal(h.requests.some(request=>request.body?.data?.id==='pending-session'),true);
+});
+test('explicit profile restoration keeps an old timezone despite an unconfirmed new setup marker',async()=>{
+ const h=hookHarness();h.render(null);await flush();const incoming=base();incoming.profile={...incoming.profile,name:'Restored fixture',timezone:'Asia/Tokyo',examDate:'2027-03-10',onboarded:false};
+ assert.equal(h.render(null).restoreBackup(incoming,true),true);assert.equal(h.render(null).data.profile.timezone,'Asia/Tokyo');assert.equal(h.render(null).profileSetup,'existing');
+ const reload=hookHarness(h.storage);reload.render(null);await flush();assert.equal(reload.render(null).data.profile.timezone,'Asia/Tokyo');
+});
+
+test('theme-only server profile provenance cannot confirm goals or replace device timezone',async()=>{
+ const remote={hasProfile:false,profileOrigin:'missing',profile:{...model.DEFAULT_PROFILE}};
+ const h=hookHarness(new Map(),{handle:async(url,init)=>{if(init?.method==='POST'){remote.hasProfile=true;remote.profileOrigin='theme-only';remote.profile={...model.DEFAULT_PROFILE,theme:'hollow'};return {ok:true};}return {ok:true,json:async()=>({...base(),owner:'alice',...remote})};}});
+ h.render();await flush();const zone=h.render().data.profile.timezone;h.setOnline(true);await h.render().syncNow();assert.equal(h.render().profileSetup,'suggested');assert.equal(h.render().saveTheme('hollow'),true);await flush();await flush();
+ assert.equal(h.render().profileSetup,'suggested');assert.equal(h.render().data.profile.timezone,zone);assert.equal(h.render().data.profile.onboarded,false);assert.equal(h.render().data.profile.examDate,'');assert.equal(h.render().data.profile.theme,'hollow');
+});
+
+test('a malformed profile without a healthy primary snapshot never becomes a writable new learner',async()=>{
+ const storage=new Map([['lantern-v1-device:profile','{broken']]),h=hookHarness(storage);h.render(null);await flush();assert.equal(h.render(null).recordsReadable,false);assert.equal(h.render(null).saveTheme('hollow'),false);assert.equal(storage.get('lantern-v1-device:profile'),'{broken');assert.equal(storage.has('lantern-v1-device'),false);
+});
+
+test('an unavailable first cloud read stays unconfirmed while the local snapshot remains usable',async()=>{
+ const h=hookHarness(new Map(),{handle:async()=>new Response('{}',{status:503})});h.render();await flush();assert.equal(h.render().remoteReadState,'unverified');h.setOnline(true);await h.render().syncNow();assert.equal(h.render().remoteReadState,'failed');assert.equal(h.render().recordsReadable,true);assert.equal(h.render().data.attempts.length,0);assert.equal(h.storage.has('lantern-v1-device'),false);
+});

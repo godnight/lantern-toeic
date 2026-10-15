@@ -1,3 +1,13 @@
+# 当前接续：公开共学本地入口候选（2026-10-15）
+
+隔离工作区`vocab-work/public-local-20261015/site`，分支`feat/public-local-20261015`，从冻结CT-r3 `30257b3a8acdf26258d4310a22ef480e8c9e4f6a`接续。版本0.3.6/20018；CT原工作区只读留小测。已接访客首配、按域保存/同步、账号与数据能力边界、来源/参与和备份说明，详见`docs/testing/PUBLIC-LOCAL-DEVELOPMENT.md`与外层`DELIVERY-PUBLIC-LOCAL-r3.json`。当前候选未独立QA、未发布；真实手机号/产品会话/迁移写入/云删除和公开权利仍有门槛，不称公开多用户完成。
+
+补充：兼容v1/v2且禁写的救援reader/export构建尚未交，回滚就绪NOT_RUN；原生续播疑似问题待CT独立QA复核。
+
+历史段落按原日期保留；旧“必须同一ChatGPT账号”仅适用旧私有站点同步，不是本地启动条件。没有改旧站访问权限、push、合入、部署或操作手机。
+
+---
+
 # Current local candidate — continuous training
 
 `CT-20261015-r3-388f17aaa010`, version `0.3.5/20015`, branch `feat/continuous-training-20261015`. Development checks/builds passed; awaiting independent QA. This does not update the deployed Site, create phone authentication or authorize publication. See [candidate validation](docs/testing/CONTINUOUS-TRAINING-DEVELOPMENT.md) and [v0.3.5 notes](docs/releases/v0.3.5.md). Session v2 cannot be safely rolled back to old r3; use a compatible reader/export build. Original accepted P2-r3 and all earlier theme/Demo records are preserved.

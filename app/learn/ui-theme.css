@@ -396,3 +396,7 @@ body[data-ui-theme="night"] .ui-theme-heading { grid-template-columns: minmax(0,
   .ui-theme-card { transition: none; }
 }
 
+
+/* Local public-entry states inherit the current theme. */
+.workspace-account{display:grid;gap:20px;max-width:900px}.workspace-account .panel,.first-visit{min-width:0}.workspace-account p,.first-visit p{line-height:1.8;overflow-wrap:anywhere}.workspace-account li{margin-block:8px;line-height:1.7}.domain-status-list{display:grid;gap:0;margin-block:18px}.domain-status{padding:16px 0;border-bottom:1px solid var(--ui-divider)}.domain-status h3{margin:0 0 8px}.domain-status b{font-size:14px}.domain-status p{margin:6px 0}.source-evidence code,.source-evidence small{display:block;overflow-wrap:anywhere}.source-evidence small{font-size:11px}.source-link{display:inline-block;margin:12px 18px 0 0}.source-links{display:flex;flex-wrap:wrap;gap:16px}.workspace-account button:disabled{cursor:not-allowed}.first-visit{margin-bottom:20px}.first-visit .button-row{flex-wrap:wrap}
+@media(max-width:430px){.workspace-account .button-row{display:flex;flex-wrap:wrap}.workspace-account .button-row .button{max-width:100%;white-space:normal}.workspace-account .panel{padding:18px}}

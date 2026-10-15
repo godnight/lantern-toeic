@@ -74,13 +74,13 @@ test('local future-schema read failure finishes ready but exposes blocked sync w
 test('owner read failure may retain prior issue rows, so issue kind alone cannot prove records readable', () => {
   const storage=new Map([['lantern-v1-alice:sync:op:'+issue.id,JSON.stringify(issue)],['lantern-v1-bob:required-schema',JSON.stringify({schemaVersion:999})]]);
   const h=hookHarness(storage);h.render('alice');assert.equal(h.render().issues[0].kind,'op');
-  const switching=h.render('bob');
+  const writesBeforeSwitch=h.writes.length;const switching=h.render('bob');
   assert.equal(switching.recordsReadable,false,'The first render of a new owner must not expose the previous owner snapshot as readable');
   const api=h.render('bob');
   assert.equal(api.ready,true);assert.equal(api.sync,'blocked');assert.equal(api.issues.length,1);
   assert.equal(api.issues[0].kind,'op');assert.equal(api.issues.some(item=>item.kind==='session'&&item.status!=='waiting'),false);
   assert.equal(api.recordsReadable,false);
-  assert.equal(api.saveTheme('silk'),false);assert.equal(h.writes.length,0);h.unmount();
+  assert.equal(api.saveTheme('silk'),false);assert.equal(h.writes.length,writesBeforeSwitch);assert.equal(h.writes.some(key=>key.startsWith('lantern-v1-bob')),false);h.unmount();
 });
 
 test('recordsReadable keeps valid local records accessible when a single upload is blocked', async () => {

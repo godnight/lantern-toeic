@@ -89,7 +89,7 @@ test('journal success with summary quota failure is confirmable and retries pres
 test('journal quota failure never confirms a new record',()=>{
  const h=harness(new Map(),{beforeSet(key){if(key.includes(':op:'))throw Error('Synthetic journal quota');}}),api=h.render(),attempt=a(),checkin=c();
  assert.equal(api.addAttempt(attempt),false);assert.equal(api.addCheckin(checkin),false);
- assert.equal(api.readAttempt(attempt.id),undefined);assert.equal(api.readCheckin(checkin.id),undefined);assert.equal(h.storage.size,0);
+ assert.equal(api.readAttempt(attempt.id),undefined);assert.equal(api.readCheckin(checkin.id),undefined);assert.equal([...h.storage.keys()].filter(key=>!key.endsWith(':setup')).length,0);assert.equal(JSON.parse([...h.storage.entries()].find(([key])=>key.endsWith(':setup'))[1]).state,'suggested');
 });
 
 test('acknowledged journal survives a lost summary and is re-read after a reload',()=>{

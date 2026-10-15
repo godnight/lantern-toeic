@@ -20,7 +20,9 @@ export type MutableStudyRecord = {revision:number;mutationId:string;updatedAt:st
 export type QuestionMark = MutableStudyRecord & {qid:string;flagged:boolean;reason:WrongReason|null;note:string};
 export type ResourceTask = MutableStudyRecord & {id:string;resourceId:string;plannedDate:string;status:'planned'|'in_progress'|'completed'|'cancelled';minutes:number;checkinId:string|null};
 export type StudyData = {schemaVersion:2;profile:Profile;attempts:Attempt[];checkins:Checkin[];recordings:Recording[];questionMarks:QuestionMark[];resourceTasks:ResourceTask[]};
-export const DEFAULT_PROFILE:Profile={name:'学习者',lrGoal:650,speakingGoal:130,examDate:'2026-12-20',dailyMinutes:25,timezone:'Asia/Shanghai',theme:'paper',weeklyTarget:4,onboarded:false};
+// Numeric values are editable suggestions until explicitly confirmed. Never inherit one learner's exam.
+export const DEFAULT_PROFILE:Profile={name:'学习者',lrGoal:650,speakingGoal:0,examDate:'',dailyMinutes:25,timezone:'Etc/UTC',theme:'paper',weeklyTarget:4,onboarded:false};
+const LEGACY_PROFILE:Profile={...DEFAULT_PROFILE,speakingGoal:130,examDate:'2026-12-20',timezone:'Asia/Shanghai'};
 export const EMPTY_DATA:StudyData={schemaVersion:DATA_SCHEMA_VERSION,profile:DEFAULT_PROFILE,attempts:[],checkins:[],recordings:[],questionMarks:[],resourceTasks:[]};
 const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export function validStudyDate(value:unknown):value is string {
@@ -63,7 +65,7 @@ export function migrateStudyData(value:unknown):StudyData {
  const version=(value as {schemaVersion?:unknown}|null)?.schemaVersion;
  if(version!==undefined&&version!==1&&version!==DATA_SCHEMA_VERSION)throw Error('学习记录版本不受支持，请更新应用后再打开');
  const result=structuredClone(EMPTY_DATA);
- if(raw.profile&&typeof raw.profile.name==='string')result.profile={...result.profile,...raw.profile};
+ if(raw.profile&&typeof raw.profile.name==='string')result.profile={...LEGACY_PROFILE,...raw.profile};
  for(const key of ['attempts','checkins','recordings'] as const){const items=raw[key];if(Array.isArray(items))(result[key] as Array<{id:string}>)=items.filter(item=>item&&typeof item.id==='string');}
  if(Array.isArray(raw.questionMarks))result.questionMarks=mergeMutableRecords(raw.questionMarks.filter(validQuestionMark));
  if(Array.isArray(raw.resourceTasks))result.resourceTasks=mergeMutableRecords(raw.resourceTasks.filter(validResourceTask));

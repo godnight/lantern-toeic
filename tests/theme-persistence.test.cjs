@@ -215,7 +215,7 @@ test('theme-only API atomically preserves existing settings, isolates users and 
   assert.equal((await post({theme:'silk'},'bob')).status,409);
   assert.equal(sqlite.prepare('SELECT body FROM profiles WHERE user_id=?').get('alice').body,before);
   owner='new-owner';assert.equal((await post({theme:'crystal'})).status,200);
-  assert.deepEqual(JSON.parse(sqlite.prepare('SELECT body FROM profiles WHERE user_id=?').get(owner).body),{...plain(model.DEFAULT_PROFILE),theme:'crystal'});
+  assert.deepEqual(JSON.parse(sqlite.prepare('SELECT body FROM profiles WHERE user_id=?').get(owner).body),{...plain(model.DEFAULT_PROFILE),theme:'crystal',__lanternProfileOrigin:'theme-only-v1'});const afterTheme=await api.GET();const view=await afterTheme.json();assert.equal(view.profileOrigin,'theme-only');assert.equal('__lanternProfileOrigin' in view.profile,false);
   const legacy={...plain(model.DEFAULT_PROFILE),name:'Legacy full profile',theme:'paper'};
   assert.equal((await post(legacy,owner,'profile')).status,200);
   assert.deepEqual(JSON.parse(sqlite.prepare('SELECT body FROM profiles WHERE user_id=?').get(owner).body),legacy);

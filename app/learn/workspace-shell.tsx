@@ -26,7 +26,7 @@ export function WorkspaceShell({nav,theme,name,scope,syncLabel,reviewCount,onNav
  nav:string;theme:Theme;name:string;scope:string;syncLabel:string;reviewCount:number;
  onNavigate:(nav:string)=>void;onSearch:()=>void;onSync:()=>void;focused?:boolean;children:ReactNode
 }){
- const titles:Record<string,string>={today:'今日',train:'练习',review:'复习',progress:'进度',resources:'资料',vocabulary:'单词计划',search:'查词',settings:'外观与偏好',backups:'记录与备份',art:'内容与来源'};
+ const titles:Record<string,string>={today:'今日',train:'练习',review:'复习',progress:'进度',resources:'资料',vocabulary:'单词计划',search:'查词',settings:'外观与偏好',backups:'记录与备份',art:'关于微光',account:'账号与数据',sync:'保存与同步'};
  return <div className={'lantern-workspace'+(focused?' workspace-focused':'')}>
   <a className="workspace-skip" href="#workspace-main">跳到学习内容</a>
   <aside className="workspace-sidebar" aria-label="学习空间">
@@ -37,7 +37,7 @@ export function WorkspaceShell({nav,theme,name,scope,syncLabel,reviewCount,onNav
   </aside>
   <div className="workspace-body"><header className="workspace-topbar">
    <button className="workspace-mobile-brand" onClick={()=>onNavigate('today')} aria-label="微光，返回今日">{theme==='hollow'?<ThemeBrandMark size={32}/>:<LampDesk size={25} aria-hidden="true"/>}<b>微光</b></button><span className="workspace-location">{titles[nav]||'学习'}</span>
-   <div><button className="workspace-search-entry" onClick={onSearch}><Search size={18}/><span>查词</span><kbd>⌘ K</kbd></button><button className="workspace-sync" onClick={onSync} title={syncLabel} aria-label={'学习记录：'+syncLabel}>{syncLabel.includes('同步')&&!syncLabel.includes('待')?<Cloud size={18}/>:<CloudOff size={18}/>}<span>{syncLabel}</span></button><button className="workspace-icon workspace-theme-entry" onClick={()=>onNavigate('settings')} aria-label="外观与偏好"><Settings2 size={19}/><span>主题</span></button></div>
+   <div><button className="workspace-search-entry" onClick={onSearch}><Search size={18}/><span>查词</span><kbd>⌘ K</kbd></button><button className="workspace-sync" onClick={onSync} title={syncLabel} aria-label={syncLabel}>{syncLabel.includes('同步')&&!syncLabel.includes('待')?<Cloud size={18}/>:<CloudOff size={18}/>}<span>{syncLabel}</span></button><button className="workspace-icon workspace-theme-entry" onClick={()=>onNavigate('settings')} aria-label="外观与偏好"><Settings2 size={19}/><span>主题</span></button></div>
   </header><main id="workspace-main" tabIndex={-1} className="workspace-main">{children}</main></div>
   <nav className="workspace-mobile-nav" aria-label="手机主导航">{WORKSPACE_NAV.map(n=><button key={n.id} aria-current={nav===n.id?'page':undefined} onClick={()=>onNavigate(n.id)}><WorkspaceNavIcon item={n} theme={theme}/><span>{n.label}</span></button>)}</nav>
  </div>

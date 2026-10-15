@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "status": "blocked-pending-review",
+  "note": "No exact public artifact is approved. Local CT/product QA builds contain pending-rights assets and must not be released.",
+  "groups": [
+    {
+      "id": "code",
+      "status": "pending",
+      "targets": [
+        "web",
+        "harmony",
+        "source"
+      ],
+      "evidence": [
+        {
+          "path": "LICENSE",
+          "sha256": "b76176589117e9b4019098af4d5abb11da5caa0cb5f7bb0c340219d18fa88de6"
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "9f53872e22114cec01bda5d6dafe7f75a700f61582b72c2f9c3af2c1317e4bc2"
+        },
+        {
+          "path": "vendor/shadcn-tailwind-4.13.0.LICENSE.md",
+          "sha256": "1564074e13439397221ffd522e2e504d56561994a23d371aa5e3ad43e4f5423f"
+        }
+      ],
+      "reason": "项目代码采用 MIT；第三方依赖保留各自许可，不能将全部依赖或素材统一标为 MIT。随包依赖通知仍需核最终产物。"
+    },
+    {
+      "id": "original-text",
+      "status": "allowed",
+      "targets": [
+        "web",
+        "harmony",
+        "source"
+      ],
+      "evidence": [
+        {
+          "path": "LICENSE-CONTENT.md",
+          "sha256": "82f6cffe5cd7c56b7c71c45af9cdc7ec9c0589f52acb657f962672ea8855c3f4"
+        },
+        {
+          "path": "content/vocabulary-expansion-sources.json",
+          "sha256": "c41c633cd9379ab83cedb4fb8ec3cd0cce0f4b2008c408e79c0237f94d1c9b92"
+        }
+      ],
+      "reason": "Only the documented licensed scope; attribution required"
+    },
+    {
+      "id": "dictionary",
+      "status": "allowed",
+      "targets": [
+        "web",
+        "harmony",
+        "source"
+      ],
+      "evidence": [
+        {
+          "path": "content/dictionary-metadata.json",
+          "sha256": "e717ec5a6663ae71518bff56f8792eda565042f5b9792c4d4aec8b38ab2c5820"
+        },
+        {
+          "path": "public/dictionaries/NOTICE.txt",
+          "sha256": "b91fb59e9e87c334a24c0a44615de9c605adfdd937f1a5b52055b92a0f2d2f75"
+        }
+      ],
+      "reason": "Only the documented licensed scope; attribution required"
+    },
+    {
+      "id": "audio",
+      "status": "pending",
+      "targets": [
+        "harmony",
+        "source"
+      ],
+      "evidence": [
+        {
+          "path": "mobile/offline-audio/README.md",
+          "sha256": "7a030d4777d22fc4a43fedc91140b93000bdef0f0399d372f5c1b1a7827439b3"
+        },
+        {
+          "path": "mobile/offline-audio/manifest.json",
+          "sha256": "ef532f6ad7b30fad96e9a3b1bb60639f988a5445a3e9cfa99b3979c066794086"
+        }
+      ],
+      "reason": "Web使用设备系统TTS，按句恢复，不承诺秒级定位或相同声音。原生已有1,015段Microsoft Zira本机合成音轨；供应商声音的公共再分发权仍待核，不能沿用文本许可。"
+    },
+    {
+      "id": "themes",
+      "status": "pending",
+      "targets": [
+        "web",
+        "harmony",
+        "source"
+      ],
+      "evidence": [
+        {
+          "path": "public/phase2-theme/SOURCES.md",
+          "sha256": "80ba49d777ce6465f8350dbf39a7d871fe15499cb0ae88d71cb4d3cf0c165a2a"
+        },
+        {
+          "path": "public/phase2-theme/ASSET-MANIFEST.json",
+          "sha256": "76e492186dd9959f58fe761a23c1447d2f7fb1061f78d6d262107c9f4f07145b"
+        },
+        {
+          "path": "art/theme-art-provenance-2026-10-12.json",
+          "sha256": "364439a9f7bda2c38df8a4ac44efaff6b886dd4278f14744ec72a1d00dd9b2fa"
+        }
+      ],
+      "reason": "当前小骑士图标及空洞主题为登记的AI同人和派生素材，保留本地设计批准。它们不是游戏官方授权；默认夜间/丝之歌新稿及新字标另批，未替换图标。"
+    },
+    {
+      "id": "external",
+      "status": "allowed",
+      "targets": [
+        "web",
+        "harmony",
+        "source"
+      ],
+      "evidence": [
+        {
+          "path": "content/resources-v2.ts",
+          "sha256": "a59ac1626b5b443d78d3e878a6ba195ece371401bcbee25a6c50e0eb38c48955"
+        },
+        {
+          "path": "content/exams/README.md",
+          "sha256": "3d34477b90186813d25cf06c4e50ed7f3dd01681a129fb29231b9ab7c839a564"
+        }
+      ],
+      "reason": "Only the documented licensed scope; attribution required"
+    },
+    {
+      "id": "private",
+      "status": "excluded",
+      "targets": [
+        "web",
+        "harmony",
+        "source"
+      ],
+      "evidence": [
+        {
+          "path": "LICENSE-CONTENT.md",
+          "sha256": "82f6cffe5cd7c56b7c71c45af9cdc7ec9c0589f52acb657f962672ea8855c3f4"
+        },
+        {
+          "path": "docs/EXAM_LIBRARY.md",
+          "sha256": "9393dc70e0f939e203275afcc579f8dfaba0b4d2d5e7bfe59222f9df1dc33f97"
+        }
+      ],
+      "reason": "个人作答、手记、录音、私人考试题包及备份不属于公共内容。只导入自己有权使用的材料；上传私包不等于同步考试记录，也不授权公开分发。"
+    }
+  ],
+  "files": []
+}

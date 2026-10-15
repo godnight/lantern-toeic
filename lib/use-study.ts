@@ -4,6 +4,15 @@ import {toast} from 'sonner';
 import {createId,EMPTY_DATA,migrateStudyData,mergeData,mergeMutableRecords,validQuestionMark,validResourceTask,compareMutableRecords,uniqueById,type StudyData,type Profile,type Theme,type Attempt,type Checkin,type Recording,type QuestionMark,type ResourceTask} from './study-model';
 import {restoreStudyBackup} from './study-backup';
 type Op={id:string;owner:string|null;type:'profile'|'theme'|'attempt'|'checkin'|'questionMark'|'resourceTask';data:Profile|{theme:Theme}|Attempt|Checkin|QuestionMark|ResourceTask};
+type ProfileSetup={version:1;state:'suggested'|'skipped'|'existing'|'confirmed';timezone:string;timezoneSource?:'device'|'fallback'|'user'|'existing'};
+function storedSetup(key:string):ProfileSetup|null{const bytes=localStorage.getItem(key+':setup');if(bytes===null)return null;const value=JSON.parse(bytes) as ProfileSetup;if(value.version!==1||!['suggested','skipped','existing','confirmed'].includes(value.state)||typeof value.timezone!=='string')throw Error('首次设置状态无法读取，原记录保留');new Intl.DateTimeFormat('en',{timeZone:value.timezone});return value;}
+function initializeSetup(key:string):ProfileSetup{
+ const prior=storedSetup(key);if(prior)return prior;
+ // Called only after strict primary validation, before automatic sync writes a summary.
+ const existing=localStorage.getItem(key)!==null||localStorage.getItem(key+':profile')!==null||journal(key).some(op=>op.type==='profile');
+ let timezone='Etc/UTC',timezoneSource:ProfileSetup['timezoneSource']=existing?'existing':'fallback';if(!existing){try{const candidate=new Intl.DateTimeFormat().resolvedOptions().timeZone;new Intl.DateTimeFormat('en',{timeZone:candidate});timezone=candidate;timezoneSource='device';}catch{/* visible UTC fallback */}}
+ const value:ProfileSetup={version:1,state:existing?'existing':'suggested',timezone,timezoneSource};if(!existing)localStorage.setItem(key+':setup',JSON.stringify(value));return value;
+}
 function openAudioDB():Promise<IDBDatabase>{return new Promise((resolve,reject)=>{const r=indexedDB.open('lantern-audio',1);r.onupgradeneeded=()=>r.result.createObjectStore('audio');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 export async function putAudio(key:string,blob:Blob){
  const db=await openAudioDB();
@@ -80,29 +89,37 @@ function readSnapshot(key:string):StudyData{
   if(op.type==='attempt'&&!d.attempts.some(a=>a.id===(op.data as Attempt).id))d.attempts=uniqueById([...d.attempts,op.data as Attempt]);
   if(op.type==='checkin'&&!d.checkins.some(c=>c.id===(op.data as Checkin).id))d.checkins=uniqueById([...d.checkins,op.data as Checkin]);
  }
- const profile=parse(key+':profile');if(profile&&typeof profile.name==='string')d.profile={...d.profile,...profile};
+ const profileBytes=localStorage.getItem(key+':profile');
+ if(profileBytes!==null){
+  try{const profile=JSON.parse(profileBytes);if(!profile||typeof profile.name!=='string'||!profile.name.trim()||typeof profile.timezone!=='string')throw Error('invalid profile');new Intl.DateTimeFormat('en',{timeZone:profile.timezone});d.profile={...d.profile,...profile};}
+  catch{const bytes=localStorage.getItem(key);const primary=bytes===null?null:JSON.parse(bytes)?.data?.profile;if(!primary||typeof primary.name!=='string'||typeof primary.timezone!=='string')throw Error('学习偏好无法读取，原始记录已保留');new Intl.DateTimeFormat('en',{timeZone:primary.timezone});}
+ }
+ const setup=storedSetup(key);if(setup&&(setup.state==='suggested'||setup.state==='skipped')&&!d.profile.onboarded)d.profile={...d.profile,timezone:setup.timezone};
  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k?.startsWith(key+':recording:')){const rec=parse(k);if(rec&&typeof rec.id==='string')d.recordings=uniqueById([...d.recordings,rec]);}}
  return d;
 }
-export type SyncIssue={id:string;kind:'op'|'recording'|'session';status:'waiting'|'blocked'|'auth'|'missing';attempts:number;nextRetryAt:number;reason:string};
+export type SyncIssue={id:string;kind:'op'|'recording'|'session';status:'waiting'|'blocked'|'auth'|'missing';attempts:number;nextRetryAt:number;reason:string;httpStatus?:number};
 function syncIssues(key:string):SyncIssue[]{const result:SyncIssue[]=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k?.startsWith(key+':sync:')){try{const item=JSON.parse(localStorage.getItem(k)||'');const complete=item.kind==='op'?localStorage.getItem(key+':ack:'+item.id):item.kind==='recording'?JSON.parse(localStorage.getItem(key+':recording:'+item.id)||'null')?.uploaded:false;if(!complete)result.push(item);}catch{}}}return result;}
 export function useStudy(owner:string|null){
- const key='lantern-v1-'+(owner||'device');const generation=useRef(0);const activeKey=useRef(key);const syncing=useRef(false);const dirty=useRef(false);const readOnly=useRef(false);const remoteReadOnly=useRef(false);const retryTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
+ const key='lantern-v1-'+(owner||'device');const generation=useRef(0);const activeKey=useRef(key);const renderKey=useRef(key);renderKey.current=key;const syncing=useRef(false);const dirty=useRef(false);const readOnly=useRef(false);const remoteReadOnly=useRef(false);const retryTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const [data,setData]=useState<StudyData>(EMPTY_DATA);const current=useRef(data);const [ready,setReady]=useState(false);const [sync,setSync]=useState<'loading'|'synced'|'local'|'pending'|'blocked'>('loading');const [issues,setIssues]=useState<SyncIssue[]>([]);
+ const [remoteRead,setRemoteRead]=useState<{key:string;state:'unverified'|'confirmed'|'failed'}>({key,state:'unverified'});
+ const requestControllers=useRef(new Set<AbortController>());
+ const [profileSetup,setProfileSetup]=useState<ProfileSetup|null>(null);
  const blockReads=useCallback(()=>{
-  readOnly.current=true;generation.current++;syncing.current=false;dirty.current=false;
+  readOnly.current=true;generation.current++;syncing.current=false;dirty.current=false;for(const controller of requestControllers.current)controller.abort();requestControllers.current.clear();
   if(retryTimer.current){clearTimeout(retryTimer.current);retryTimer.current=null;}
   setSync('blocked');toast.error('学习记录无法读取或版本不受支持，已停止写入并保留原始记录；请保留记录后重试');
  },[]);
  const persist=useCallback((d:StudyData):boolean=>{
-  if(activeKey.current!==key||readOnly.current)return false;
+  if(activeKey.current!==key||renderKey.current!==key||readOnly.current)return false;
   let stored:StudyData;try{stored=readSnapshot(key);}catch{blockReads();return false;}
   const next=mergeData(stored,d);
   try{localStorage.setItem(key,JSON.stringify({data:next}));}catch{setSync('blocked');toast.error('本机存储空间不足，保存未完成；请保留记录后重试');return false;}
   current.current=next;setData(next);return true;
  },[key,blockReads]);
  const syncNow=useCallback(async function runSync(){
-  if(activeKey.current!==key||remoteReadOnly.current)return;
+  if(activeKey.current!==key||renderKey.current!==key||remoteReadOnly.current)return;
   try{
    const saved=readSnapshot(key);
    // Recovery only revalidates externally repaired bytes; it never deletes or
@@ -110,7 +127,7 @@ export function useStudy(owner:string|null){
    if(readOnly.current){readOnly.current=false;current.current=saved;setData(saved);setIssues(syncIssues(key));}
   }catch{blockReads();return;}
   if(syncing.current){dirty.current=true;return;}
-  const gen=generation.current;const valid=()=>gen===generation.current&&activeKey.current===key;
+  const gen=generation.current;const valid=()=>gen===generation.current&&activeKey.current===key&&renderKey.current===key;
   if(retryTimer.current){clearTimeout(retryTimer.current);retryTimer.current=null;}
   if(!owner){setSync('local');return;}
   const stateKey=(kind:SyncIssue['kind'],id:string)=>key+':sync:'+kind+':'+id;
@@ -118,14 +135,15 @@ export function useStudy(owner:string|null){
   const eligible=(kind:SyncIssue['kind'],id:string)=>{const s=state(kind,id);return !s||(s.status==='waiting'&&s.nextRetryAt<=Date.now());};
   const clear=(kind:SyncIssue['kind'],id:string)=>localStorage.removeItem(stateKey(kind,id));
   const failure=(kind:SyncIssue['kind'],id:string,status:number,reason?:string,retryAfter?:string|null)=>{
+   if(kind==='session')setRemoteRead({key,state:'failed'});
    readSnapshot(key);
    if((kind==='op'&&localStorage.getItem(key+':ack:'+id))||(kind==='recording'&&readSnapshot(key).recordings.some(r=>r.id===id&&r.uploaded))){clear(kind,id);return;}
    const attempts=(state(kind,id)?.attempts||0)+1;
    const auth=[401,403,409].includes(status);const retryable=status===0||[408,425,429].includes(status)||status>=500;
    const retryDate=retryAfter?(Number.isFinite(Number(retryAfter))?Date.now()+Number(retryAfter)*1000:Date.parse(retryAfter)):0;
    const nextRetryAt=Math.max(Date.now()+(attempts===1?5000:30000),Number.isFinite(retryDate)?retryDate:0);
-   const item:SyncIssue={id,kind,attempts,status:auth?'auth':reason?(kind==='recording'?'missing':'blocked'):retryable&&attempts<3?'waiting':'blocked',nextRetryAt,
-    reason:reason||(auth?'登录或账号状态已变化，请重新登录或刷新':status===413?'内容超过上传大小限制':status===400||status===422?'这条记录的格式未被服务器接受':status===415?'录音格式未被服务器接受':retryable?(attempts<3?'网络或服务暂不可用，将稍后重试':'已尝试3次，请稍后手动重试'):'服务器拒绝了这条记录，请检查后重试')};
+   const item:SyncIssue={id,kind,attempts,status:auth?'auth':reason?(kind==='recording'?'missing':'blocked'):retryable&&attempts<3?'waiting':'blocked',nextRetryAt,httpStatus:status,
+    reason:reason||(status===401?'登录已失效，账号同步暂停；本机已保存记录保留，请恢复真实登录':status===403?'当前账号无权访问此服务；本机记录保留，请核对访问权限':status===409?'账号身份已变化，旧账号同步已暂停；请核对账号，不会转入访客记录':status===413?'内容超过上传大小限制':status===400||status===422?'这条记录的格式未被服务器接受':status===415?'录音格式未被服务器接受':retryable?(attempts<3?'网络或服务暂不可用，将稍后重试':'已尝试3次，请稍后手动重试'):'服务器拒绝了这条记录，请检查后重试')};
    localStorage.setItem(stateKey(kind,id),JSON.stringify(item));
    return item;
   };
@@ -136,7 +154,7 @@ export function useStudy(owner:string|null){
   syncing.current=true;setSync('loading');let budget=30;let stopped=false;let storageFailed=false;
   const persistForSync=(d:StudyData)=>{const saved=persist(d);if(!saved)storageFailed=true;return saved;};
   // A hung connection must not hold the queue forever. Abort only this request.
-  const request=async(url:string,init?:RequestInit,readBody=false)=>{const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),25000);try{const response=await fetch(url,{...init,signal:controller.signal});const payload=readBody&&response.ok?await response.json():null;return {response,payload};}finally{clearTimeout(timer);}};
+  const request=async(url:string,init?:RequestInit,readBody=false)=>{const controller=new AbortController();requestControllers.current.add(controller);const timer=setTimeout(()=>controller.abort(),25000);try{const response=await fetch(url,{...init,signal:controller.signal});const payload=readBody&&response.ok?await response.json():null;return {response,payload};}finally{clearTimeout(timer);requestControllers.current.delete(controller);}};
   try{
    for(let round=0;round<3;round++){
     dirty.current=false;
@@ -180,14 +198,16 @@ export function useStudy(owner:string|null){
     const profileBeforeRead=readSnapshot(key).profile;
     const {response:r,payload}=await request('/api/study',{cache:'no-store'},true);if(!valid())return;readSnapshot(key);
     if(!r.ok){failure('session','account',r.status,undefined,r.headers?.get('Retry-After'));stopped=true;break;}
-    const remote=payload as StudyData & {owner:string;hasProfile:boolean};if(!valid())return;
+    const remote=payload as StudyData & {owner:string;hasProfile:boolean;profileOrigin?:'theme-only'|'saved'|'missing'};if(!valid())return;
     if(remote.owner!==owner){failure('session','account',409);stopped=true;break;}
     try{migrateStudyData(remote);}catch{
      remoteReadOnly.current=true;readOnly.current=true;syncing.current=false;setSync('blocked');setIssues([{id:'schema',kind:'session',status:'blocked',attempts:0,nextRetryAt:0,reason:'云端学习记录版本较新，请更新应用后继续'}]);
      try{localStorage.setItem(key+':required-schema',JSON.stringify({schemaVersion:remote.schemaVersion}));}catch{toast.error('无法保存版本保护状态，请先更新应用再重新打开');}
      toast.error('云端学习记录版本较新，请更新应用；本机记录已保留');return;
     }
-    clear('session','account');
+    clear('session','account');setRemoteRead({key,state:'confirmed'});
+    // A stored remote profile is existing configuration, even with zero attempts. Never infer newness by values or history.
+    if(remote.hasProfile&&remote.profileOrigin!=='theme-only'){const setup=storedSetup(key);if(setup&&(setup.state==='suggested'||setup.state==='skipped')){const value:ProfileSetup={...setup,state:remote.profile.onboarded?'confirmed':'existing',timezone:remote.profile.timezone};localStorage.setItem(key+':setup',JSON.stringify(value));setProfileSetup(value);}}
     // A remote acknowledgement repairs stale per-recording metadata as well as the snapshot.
     for(const rec of remote.recordings.filter(r=>r.uploaded)){localStorage.setItem(key+':recording:'+rec.id,JSON.stringify(rec));clear('recording',rec.id);}
     const local=readSnapshot(key);const queued=pending();
@@ -197,6 +217,7 @@ export function useStudy(owner:string|null){
     // choice must merge into cloud settings, especially before the first GET.
     if(settingsChanged||queued.some(x=>x.type==='profile')||!remote.hasProfile)merged.profile=local.profile;
     else if(local.profile.theme!==profileBeforeRead.theme||queued.some(x=>x.type==='theme'))merged.profile={...remote.profile,theme:local.profile.theme};
+    const setup=storedSetup(key);if(remote.profileOrigin==='theme-only'&&setup&&['suggested','skipped'].includes(setup.state))merged.profile={...local.profile,theme:local.profile.theme!==profileBeforeRead.theme||queued.some(x=>x.type==='theme')?local.profile.theme:remote.profile.theme};
     localStorage.setItem(key+':profile',JSON.stringify(merged.profile));if(!persistForSync(merged))return;
     if(!dirty.current||budget<=0)break;
    }
@@ -216,33 +237,52 @@ export function useStudy(owner:string|null){
   }
  },[owner,key,persist,blockReads]);
  useEffect(()=>{
-  generation.current++;activeKey.current=key;syncing.current=false;dirty.current=false;readOnly.current=false;remoteReadOnly.current=false;setReady(false);
+  generation.current++;activeKey.current=key;syncing.current=false;dirty.current=false;readOnly.current=false;remoteReadOnly.current=false;setReady(false);setRemoteRead({key,state:'unverified'});
   current.current=structuredClone(EMPTY_DATA);setData(current.current);
-  const load=()=>{if(remoteReadOnly.current)return false;try{const saved=readSnapshot(key);readOnly.current=false;current.current=saved;setData(saved);setIssues(syncIssues(key));return true;}catch{blockReads();return false;}};
+  const load=()=>{if(remoteReadOnly.current)return false;try{readPrimarySnapshot(key);const setup=initializeSetup(key);setProfileSetup(setup);const saved=readSnapshot(key);readOnly.current=false;current.current=saved;setData(saved);setIssues(syncIssues(key));return true;}catch{blockReads();return false;}};
   const loaded=load();setReady(true);if(loaded)void syncNow();
   const online=()=>void syncNow();const changed=(e:StorageEvent)=>{if(e.key?.startsWith(key)){const wasBlocked=readOnly.current;if(!load())return;if(wasBlocked||e.key.startsWith(key+':op:')||e.key.startsWith(key+':recording:'))void syncNow();}};
   window.addEventListener('online',online);window.addEventListener('focus',online);window.addEventListener('storage',changed);
-  return()=>{generation.current++;dirty.current=false;if(retryTimer.current)clearTimeout(retryTimer.current);retryTimer.current=null;window.removeEventListener('online',online);window.removeEventListener('focus',online);window.removeEventListener('storage',changed);};
+  return()=>{generation.current++;dirty.current=false;for(const controller of requestControllers.current)controller.abort();requestControllers.current.clear();if(retryTimer.current)clearTimeout(retryTimer.current);retryTimer.current=null;window.removeEventListener('online',online);window.removeEventListener('focus',online);window.removeEventListener('storage',changed);};
  },[key,syncNow,persist,blockReads]);
- const retryIssue=(issue:SyncIssue)=>{if(activeKey.current!==key)return;if(readOnly.current){void syncNow();return;}if(!editableSnapshot())return;try{localStorage.removeItem(key+':sync:'+issue.kind+':'+issue.id);setIssues(syncIssues(key));void syncNow();}catch{toast.error('本机存储不可用，请保留记录后重试');}};
- const enqueue=(type:Op['type'],value:Op['data'],d:StudyData):boolean=>{if(activeKey.current!==key||readOnly.current||!editableSnapshot())return false;const op:Op={id:createId(),owner,type,data:value};try{localStorage.setItem(key+':op:'+op.id,JSON.stringify(op));if(type==='profile'||type==='theme')localStorage.setItem(key+':profile',JSON.stringify(d.profile));}catch{setSync('blocked');toast.error('本机存储不可用，保存未完成；请保留记录后重试');return false;}if(!persist(d))return false;setSync('pending');void syncNow();return true;};
- const saveProfile=(p:Profile)=>enqueue('profile',p,{...current.current,profile:p});
+ const retryIssue=(issue:SyncIssue)=>{if(activeKey.current!==key||renderKey.current!==key)return;if(issue.status==='auth'){toast.error('请先通过真实账号入口恢复身份或权限，本机记录保留；重发同步不能恢复登录');return;}if(readOnly.current){void syncNow();return;}if(!editableSnapshot())return;try{localStorage.removeItem(key+':sync:'+issue.kind+':'+issue.id);setIssues(syncIssues(key));void syncNow();}catch{toast.error('本机存储不可用，请保留记录后重试');}};
+ // This is an explicit probe of the existing trusted Sites session, not a login flow.
+ const recheckSession=async()=>{
+  if(!owner||activeKey.current!==key||renderKey.current!==key||readOnly.current||remoteReadOnly.current)return false;
+  const gen=generation.current,valid=()=>gen===generation.current&&activeKey.current===key&&renderKey.current===key;
+  const controller=new AbortController();requestControllers.current.add(controller);const timeout=setTimeout(()=>controller.abort(),25000);
+  try{
+   const response=await fetch('/api/study',{cache:'no-store',signal:controller.signal});
+   if(!valid())return false;
+   if(!response.ok){toast.error(response.status===401?'现有站点登录仍未恢复；本机记录保留':response.status===403?'现有站点权限仍不可用；本机记录保留':'暂未核实原会话，请稍后重试');return false;}
+   const remote=await response.json() as {owner?:string};if(!valid())return false;
+   if(remote.owner!==owner){toast.error('当前服务器身份与原记录不一致；未恢复同步');return false;}
+   migrateStudyData(remote);readSnapshot(key);
+   localStorage.removeItem(key+':sync:session:account');setIssues(syncIssues(key));
+   // Only a positive same-owner read permits the original queue to continue.
+   void syncNow();return true;
+  }catch{if(valid())toast.error('会话核对未完成；记录和原同步队列保留');return false;}
+  finally{clearTimeout(timeout);requestControllers.current.delete(controller);}
+ };
+ const enqueue=(type:Op['type'],value:Op['data'],d:StudyData):boolean=>{if(activeKey.current!==key||renderKey.current!==key||readOnly.current||!editableSnapshot())return false;const op:Op={id:createId(),owner,type,data:value};try{localStorage.setItem(key+':op:'+op.id,JSON.stringify(op));if(type==='profile'||type==='theme')localStorage.setItem(key+':profile',JSON.stringify(d.profile));}catch{setSync('blocked');toast.error('本机存储不可用，保存未完成；请保留记录后重试');return false;}if(!persist(d))return false;setSync('pending');void syncNow();return true;};
+ const saveProfile=(p:Profile)=>{const saved=enqueue('profile',p,{...current.current,profile:p});if(saved){const setup:ProfileSetup={version:1,state:'confirmed',timezone:p.timezone,timezoneSource:'user'};try{localStorage.setItem(key+':setup',JSON.stringify(setup));setProfileSetup(setup);}catch{/* profile itself is already confirmed and durable */}}return saved;};
+ const skipProfileSetup=()=>{if(activeKey.current!==key||renderKey.current!==key||readOnly.current||!editableSnapshot())return false;try{const prior=storedSetup(key);if(!prior||!['suggested','skipped'].includes(prior.state))return false;const value:ProfileSetup={...prior,state:'skipped'};localStorage.setItem(key+':setup',JSON.stringify(value));setProfileSetup(value);return true;}catch{return false;}};
  const saveTheme=(theme:Theme)=>{
-  if(activeKey.current!==key||readOnly.current)return false;
+  if(activeKey.current!==key||renderKey.current!==key||readOnly.current)return false;
   // Another tab may have saved settings before its storage event reaches us.
   const latest=editableSnapshot();if(!latest)return false;
   return enqueue('theme',{theme},{...latest,profile:{...latest.profile,theme}});
  };
  const readAttempt=(id:string):Attempt|undefined=>{
-  if(activeKey.current!==key||readOnly.current)throw Error('当前账号或学习记录不可读取');
+  if(activeKey.current!==key||renderKey.current!==key||readOnly.current)throw Error('当前账号或学习记录不可读取');
   try{return readImmutableRecord(key,owner,'attempt',id);}catch(error){blockReads();throw error;}
  };
  const readCheckin=(id:string):Checkin|undefined=>{
-  if(activeKey.current!==key||readOnly.current)throw Error('当前账号或学习记录不可读取');
+  if(activeKey.current!==key||renderKey.current!==key||readOnly.current)throw Error('当前账号或学习记录不可读取');
   try{return readImmutableRecord(key,owner,'checkin',id);}catch(error){blockReads();throw error;}
  };
  const addAttempt=(a:Attempt):boolean=>{
-  if(activeKey.current!==key||readOnly.current)return false;
+  if(activeKey.current!==key||renderKey.current!==key||readOnly.current)return false;
   let payload:string;try{payload=immutablePayload('attempt',a);}catch{toast.error('答题事件格式无效，未保存');return false;}
   try{
    const prior=readAttempt(a.id);
@@ -252,7 +292,7 @@ export function useStudy(owner:string|null){
   }catch{return false;}
  };
  const addCheckin=(c:Checkin):boolean=>{
-  if(activeKey.current!==key||readOnly.current)return false;
+  if(activeKey.current!==key||renderKey.current!==key||readOnly.current)return false;
   let payload:string;try{payload=immutablePayload('checkin',c);}catch{toast.error('打卡事件格式无效，未保存');return false;}
   try{
    const prior=readCheckin(c.id);
@@ -263,21 +303,21 @@ export function useStudy(owner:string|null){
  };
  const editableSnapshot=()=>{try{return readSnapshot(key);}catch{blockReads();return null;}};
  const saveQuestionMark=(value:Omit<QuestionMark,'revision'|'mutationId'|'updatedAt'>):boolean=>{
-  if(activeKey.current!==key||readOnly.current)return false;
+  if(activeKey.current!==key||renderKey.current!==key||readOnly.current)return false;
   const latest=editableSnapshot();if(!latest)return false;const prior=latest.questionMarks.find(mark=>mark.qid===value.qid);
   const mark:QuestionMark={...value,revision:(prior?.revision||0)+1,mutationId:createId(),updatedAt:new Date().toISOString()};
   if(!validQuestionMark(mark))return false;
   return enqueue('questionMark',mark,{...latest,questionMarks:mergeMutableRecords([...latest.questionMarks,mark])});
  };
  const saveResourceTask=(value:Omit<ResourceTask,'revision'|'mutationId'|'updatedAt'>):boolean=>{
-  if(activeKey.current!==key||readOnly.current)return false;
+  if(activeKey.current!==key||renderKey.current!==key||readOnly.current)return false;
   const latest=editableSnapshot();if(!latest)return false;const prior=latest.resourceTasks.find(task=>task.id===value.id);
   const task:ResourceTask={...value,revision:(prior?.revision||0)+1,mutationId:createId(),updatedAt:new Date().toISOString()};
   if(!validResourceTask(task))return false;
   return enqueue('resourceTask',task,{...latest,resourceTasks:mergeMutableRecords([...latest.resourceTasks,task])});
  };
  const restoreBackup=(value:unknown,restoreProfile=false):boolean=>{
-  if(activeKey.current!==key||readOnly.current)return false;
+  if(activeKey.current!==key||renderKey.current!==key||readOnly.current)return false;
   const before=editableSnapshot();if(!before)return false;
   try{
    const restored=restoreStudyBackup(before,value,restoreProfile);
@@ -290,17 +330,17 @@ export function useStudy(owner:string|null){
    // Journal each record before replacing the summary; partial restores can retry.
    for(const [type,item] of pendingRestore){const op:Op={id:createId(),owner,type,data:item};localStorage.setItem(key+':op:'+op.id,JSON.stringify(op));}
    for(const item of restored.recordings)if(!before.recordings.some(old=>old.id===item.id))localStorage.setItem(key+':recording:'+item.id,JSON.stringify(item));
-   if(restoreProfile)localStorage.setItem(key+':profile',JSON.stringify(restored.profile));
+   if(restoreProfile){const setup:ProfileSetup={version:1,state:restored.profile.onboarded?'confirmed':'existing',timezone:restored.profile.timezone,timezoneSource:'existing'};localStorage.setItem(key+':setup',JSON.stringify(setup));localStorage.setItem(key+':profile',JSON.stringify(restored.profile));setProfileSetup(setup);}
    if(!persist(restored))return false;setSync('pending');void syncNow();return true;
   }catch{toast.error('恢复未完成，请保留备份后重试；已保存记录不会丢失');return false;}
  };
  const addRecording=async(r:Recording,blob:Blob)=>{
-  if(activeKey.current!==key||readOnly.current||!editableSnapshot())throw Error('当前学习记录不可写入');
+  if(activeKey.current!==key||renderKey.current!==key||readOnly.current||!editableSnapshot())throw Error('当前学习记录不可写入');
   const gen=generation.current;await putAudio(key+':'+r.id,blob);
-  if(gen!==generation.current||activeKey.current!==key||readOnly.current)throw Error('账号或记录版本已变化，请保留录音后重试');
+  if(gen!==generation.current||activeKey.current!==key||renderKey.current!==key||readOnly.current)throw Error('账号或记录版本已变化，请保留录音后重试');
   const latest=editableSnapshot();if(!latest)throw Error('当前学习记录不可写入');
   localStorage.setItem(key+':recording:'+r.id,JSON.stringify(r));if(!persist({...latest,recordings:uniqueById([...latest.recordings,r])}))throw Error('录音保存未完成，请保留录音后重试');setSync('pending');void syncNow();
  };
  const recordingUrl=async(r:Recording)=>{const blob=await getAudio(key+':'+r.id);if(blob)return URL.createObjectURL(blob);if(owner&&r.uploaded)return '/api/recordings?id='+encodeURIComponent(r.id);throw Error('找不到这段本机录音，也没有已确认的云端副本');};
- return {data,ready,recordsReadable:ready&&activeKey.current===key&&!readOnly.current,sync,issues,syncNow,retryIssue,saveProfile,saveTheme,addAttempt,addCheckin,readAttempt,readCheckin,saveQuestionMark,saveResourceTask,restoreBackup,addRecording,recordingUrl};
+ return {data,ready,recordsReadable:ready&&activeKey.current===key&&!readOnly.current,remoteReadState:!owner?'not-applicable':remoteRead.key===key?remoteRead.state:'unverified',profileSetup:profileSetup?.state??'unknown',timezoneSource:profileSetup?.timezoneSource??'existing',skipProfileSetup,sync,issues,syncNow,recheckSession,retryIssue,saveProfile,saveTheme,addAttempt,addCheckin,readAttempt,readCheckin,saveQuestionMark,saveResourceTask,restoreBackup,addRecording,recordingUrl};
 }

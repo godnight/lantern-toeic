@@ -228,13 +228,14 @@ for (const stage of ['fetch', 'body']) test(`a hung vocabulary ${stage} is abort
   assert.equal(h.requests.length, 2); assert.match(h.current.sync, /已同步/); h.unmount();
 });
 
-for (const status of [401, 409]) test(`HTTP ${status} remains blocked across local study changes until manual retry`, async () => {
+for (const status of [401, 409]) test(`HTTP ${status} requires explicit trusted session recheck after local study changes`, async () => {
   let blocked = true;
   const h = hookFixture({ handle: () => blocked ? Response.json({ error: 'blocked' }, { status }) : undefined });
   h.render(); await h.settle(); const firstCount = h.requests.length;
   assert.equal(h.current.mark('schedule', true), true); await h.settle();
   h.fire(60000); await h.settle(); assert.equal(h.requests.length, firstCount);
-  blocked = false; h.current.retry(); await h.settle();
+  blocked = false; h.current.retry(); await h.settle();assert.equal(h.requests.length,firstCount,'A normal retry cannot restore identity');
+  assert.equal(await h.current.recheckSession(),true);await h.settle();
   assert.ok(h.requests.length > firstCount); assert.match(h.current.sync, /已同步/); h.unmount();
 });
 

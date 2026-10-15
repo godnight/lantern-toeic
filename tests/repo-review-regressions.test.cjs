@@ -130,7 +130,10 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
   for (const name of ['dialog','tabs','select','radio-group','progress','sonner']) imports['@/components/ui/'+name]=stubs;
   Object.assign(imports,require('./helpers/phase2-shell-fixture.cjs').workflowShellFixture(h.react,load('lib/practice-selection.ts',{'./study-model':h.model},h.browser)));
   imports['@/public/build-identity.json']={default:JSON.parse(fs.readFileSync(root+'/public/build-identity.json','utf8'))};
-  const app = load('app/study-app.tsx',imports,h.browser);
+  imports['@/lib/account-boundary']=load('lib/account-boundary.ts');
+ imports['@/lib/lesson-audio']={stopLessonAudio(){}};
+ imports['./learn/account-center']={FirstVisit:'FirstVisit',AccountCenter:'AccountCenter',SaveAndSync:'SaveAndSync',AboutProject:'AboutProject'};
+ const app = load('app/study-app.tsx',imports,h.browser);
   h.recovery=imports['@/lib/speaking-recovery'];
   workspaceComponent=app.StudyWorkspace;
   pureComponents.add(app.StudyWorkspace);
@@ -399,7 +402,7 @@ test('storage quota failure keeps resource checkin open without a false success 
   assert.equal(nodes(retained, n => n.type === 'textarea')[0].props.value, 'Keep my takeaway when storage fails');
 });
 
-test('mobile access guidance distinguishes synchronized PWA and local native modes', async () => {
+test('device guidance separates local capability, legacy site access and unavailable phone auth', async () => {
   const createApp = h => createStudyApp(h);
   const openInstall = (h, StudyApp, owner, nativeMode) => {
     h.setRenderer(() => StudyApp({owner, nativeMode}));
@@ -412,20 +415,20 @@ test('mobile access guidance distinguishes synchronized PWA and local native mod
     assert.ok(button,'Find the actual device-installation control');
     button.props.onClick();
     tree = h.render();
-    return nodes(tree, n => n.type === 'Dialog' && n.props.open && textOf(n).includes(nativeMode ? '原生预览' : '鸿蒙桌面'))[0];
+    return nodes(tree, n => n.type === 'Dialog' && n.props.open && textOf(n).includes('设备与离线使用'))[0];
   };
 
   const web = environment();
   const webDialog = openInstall(web, createApp(web), 'alice', false);
-  assert.match(textOf(webDialog), /HarmonyOS \/ 鸿蒙/);
+  assert.match(textOf(webDialog), /Web\/PWA 与鸿蒙/);
   assert.doesNotMatch(textOf(webDialog), /Android|iPhone/);
-  assert.match(textOf(webDialog), /ChatGPT 账号/);
-  assert.match(textOf(webDialog), /账号同步已开启/);
+  assert.match(textOf(webDialog), /无需 ChatGPT 账号/);
+  assert.match(textOf(webDialog), /手机号认证尚未开通/);assert.doesNotMatch(textOf(webDialog), /账号同步已开启|全部已同步/);
 
   const native = environment();
   const nativeDialog = openInstall(native, createApp(native), null, true);
-  assert.match(textOf(nativeDialog), /本机模式/);
-  const onlineLink = nodes(nativeDialog, n => n.type === 'a' && textOf(n).includes('打开同步网页版'))[0];
+  assert.match(textOf(nativeDialog), /本机模式/);assert.match(textOf(nativeDialog), /不自动带入此设备记录/);assert.match(textOf(nativeDialog), /旧站仍有访问限制/);
+  const onlineLink = nodes(nativeDialog, n => n.type === 'a' && textOf(n).includes('打开现有在线版'))[0];
   assert.equal(onlineLink.props.href, 'https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site');
   assert.equal(onlineLink.props.rel, 'noopener noreferrer');
 });

@@ -120,7 +120,7 @@ test('a backup selected before scope changes never calls restore on either accou
 });
 
 test('workflow export uses the native allowlisted filename and names both vocabulary and practice workflows',async()=>{
- const workflow=controller();const h=harness('VocabularyPlan',{workflow,theme:'paper'});h.click('导出工作流备份');await h.flush();assert.equal(h.downloads.length,1);assert.equal(h.downloads[0].download,'lantern-workflow-backup.json');assert.match(text(h.tree),/单词计划与普通练习会话的工作流备份已生成/);h.unmount();
+ const workflow=controller();const h=harness('VocabularyPlan',{workflow,theme:'paper'});h.click('导出计划与未完成练习');await h.flush();assert.equal(h.downloads.length,1);assert.equal(h.downloads[0].download,'lantern-workflow-backup.json');assert.match(text(h.tree),/单词计划与普通练习会话的工作流备份已生成/);h.unmount();
 });
 
 test('rest-day task separates due review from new words and opens only after a confirmed start',async()=>{
