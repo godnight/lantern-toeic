@@ -1,7 +1,7 @@
 'use client';
 import {useState,useEffect,useRef,useCallback} from 'react';
 import {toast} from 'sonner';
-import {createId,EMPTY_DATA,migrateStudyData,mergeData,mergeMutableRecords,validQuestionMark,validResourceTask,compareMutableRecords,uniqueById,type StudyData,type Profile,type Theme,type Attempt,type Checkin,type Recording,type QuestionMark,type ResourceTask} from './study-model';
+import {createId,EMPTY_DATA,migrateStudyData,mergeData,mergeMutableRecords,validQuestionMark,validResourceTask,validStudyDate,compareMutableRecords,uniqueById,type StudyData,type Profile,type Theme,type Attempt,type Checkin,type Recording,type QuestionMark,type ResourceTask} from './study-model';
 import {restoreStudyBackup} from './study-backup';
 type Op={id:string;owner:string|null;type:'profile'|'theme'|'attempt'|'checkin'|'questionMark'|'resourceTask';data:Profile|{theme:Theme}|Attempt|Checkin|QuestionMark|ResourceTask};
 type ProfileSetup={version:1;state:'suggested'|'skipped'|'existing'|'confirmed';timezone:string;timezoneSource?:'device'|'fallback'|'user'|'existing'};
@@ -265,7 +265,7 @@ export function useStudy(owner:string|null){
   finally{clearTimeout(timeout);requestControllers.current.delete(controller);}
  };
  const enqueue=(type:Op['type'],value:Op['data'],d:StudyData):boolean=>{if(activeKey.current!==key||renderKey.current!==key||readOnly.current||!editableSnapshot())return false;const op:Op={id:createId(),owner,type,data:value};try{localStorage.setItem(key+':op:'+op.id,JSON.stringify(op));if(type==='profile'||type==='theme')localStorage.setItem(key+':profile',JSON.stringify(d.profile));}catch{setSync('blocked');toast.error('本机存储不可用，保存未完成；请保留记录后重试');return false;}if(!persist(d))return false;setSync('pending');void syncNow();return true;};
- const saveProfile=(p:Profile)=>{const saved=enqueue('profile',p,{...current.current,profile:p});if(saved){const setup:ProfileSetup={version:1,state:'confirmed',timezone:p.timezone,timezoneSource:'user'};try{localStorage.setItem(key+':setup',JSON.stringify(setup));setProfileSetup(setup);}catch{/* profile itself is already confirmed and durable */}}return saved;};
+ const saveProfile=(p:Profile)=>{if(p.examDate!==''&&!validStudyDate(p.examDate)){toast.error('考试日期无效，偏好未保存；原记录未修改。');return false;}const saved=enqueue('profile',p,{...current.current,profile:p});if(saved){const setup:ProfileSetup={version:1,state:'confirmed',timezone:p.timezone,timezoneSource:'user'};try{localStorage.setItem(key+':setup',JSON.stringify(setup));setProfileSetup(setup);}catch{/* profile itself is already confirmed and durable */}}return saved;};
  const skipProfileSetup=()=>{if(activeKey.current!==key||renderKey.current!==key||readOnly.current||!editableSnapshot())return false;try{const prior=storedSetup(key);if(!prior||!['suggested','skipped'].includes(prior.state))return false;const value:ProfileSetup={...prior,state:'skipped'};localStorage.setItem(key+':setup',JSON.stringify(value));setProfileSetup(value);return true;}catch{return false;}};
  const saveTheme=(theme:Theme)=>{
   if(activeKey.current!==key||renderKey.current!==key||readOnly.current)return false;
@@ -297,6 +297,8 @@ export function useStudy(owner:string|null){
   try{
    const prior=readCheckin(c.id);
    if(prior){if(immutablePayload('checkin',prior)===payload)return true;toast.error('打卡事件标识已用于不同内容，请保留记录后重试');return false;}
+   // Confirm an existing immutable fact unchanged; only new writes require a valid calendar date.
+   if(!validStudyDate(c.date)){toast.error('学习日期无效，记录未保存；原记录未修改。');return false;}
    const latest=editableSnapshot();if(!latest)return false;
    return enqueue('checkin',JSON.parse(payload),{...latest,checkins:[...latest.checkins,JSON.parse(payload)]});
   }catch{return false;}

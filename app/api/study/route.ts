@@ -3,7 +3,7 @@ import {z} from 'zod';
 import {getDb} from '@/db';
 import {profiles,attempts,checkins,recordings,questionMarks,resourceTasks} from '@/db/schema';
 import {mutableStudyUpsert} from '@/db/mutable-study';
-import {DEFAULT_PROFILE,DATA_SCHEMA_VERSION,validQuestionMark,validResourceTask} from '@/lib/study-model';
+import {DEFAULT_PROFILE,DATA_SCHEMA_VERSION,validQuestionMark,validResourceTask,validStudyDate} from '@/lib/study-model';
 import {userId,safeMutation,privateJson} from '@/lib/server-auth';
 import questions from '@/content/questions.json';
 import {resources} from '@/content/resources-v2';
@@ -11,9 +11,9 @@ import examResources from '@/content/exams/catalogue.json';
 const resourceIds=new Set([...resources.map(resource=>resource.id),...examResources.map(resource=>'exam-'+resource.id)]);
 const id=z.string().uuid();
 const stamp=z.string().datetime().refine(v=>Date.parse(v)<Date.now()+300000,'Invalid future timestamp');
-const profile=z.object({name:z.string().trim().min(1).max(40),lrGoal:z.number().int().min(10).max(990),speakingGoal:z.number().int().min(0).max(200),examDate:z.string().refine(v=>v===''||(/^\d{4}-\d{2}-\d{2}$/.test(v)&&!Number.isNaN(Date.parse(v)))),dailyMinutes:z.number().int().min(5).max(120),timezone:z.string().refine(v=>{try{new Intl.DateTimeFormat('en',{timeZone:v});return true;}catch{return false;}}),theme:z.enum(['hollow','silk','paper','crystal']),weeklyTarget:z.number().int().min(1).max(7),onboarded:z.boolean()});
+const profile=z.object({name:z.string().trim().min(1).max(40),lrGoal:z.number().int().min(10).max(990),speakingGoal:z.number().int().min(0).max(200),examDate:z.string().refine(v=>v===''||validStudyDate(v)),dailyMinutes:z.number().int().min(5).max(120),timezone:z.string().refine(v=>{try{new Intl.DateTimeFormat('en',{timeZone:v});return true;}catch{return false;}}),theme:z.enum(['hollow','silk','paper','crystal']),weeklyTarget:z.number().int().min(1).max(7),onboarded:z.boolean()});
 const attempt=z.object({id,qid:z.string().max(100),choice:z.number().int().min(0).max(3),createdAt:stamp,seconds:z.number().int().min(0).max(7200)});
-const checkin=z.object({id,date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/),minutes:z.number().int().min(1).max(240),load:z.enum(['轻','刚好','重']),note:z.string().max(1000),createdAt:stamp});
+const checkin=z.object({id,date:z.string().refine(validStudyDate),minutes:z.number().int().min(1).max(240),load:z.enum(['轻','刚好','重']),note:z.string().max(1000),createdAt:stamp});
 // The wire contract deliberately excludes client-supplied correct/mode. Correct
 // is recomputed here; a replay must retain the original server-assigned mode.
 const attemptPayload=(a:z.infer<typeof attempt>)=>JSON.stringify({id:a.id,qid:a.qid,choice:a.choice,createdAt:a.createdAt,seconds:a.seconds});

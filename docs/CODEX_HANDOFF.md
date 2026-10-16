@@ -1,3 +1,11 @@
+# 当前修订：F04 日历日期一致性（2026-10-16）
+
+隔离源码候选 `vocab-work/f04-date-consistency-20261016/site`，分支 `fix/f04-study-calendar-date-20261016`，基于账号 `df567108fcb1fa25e95ea409c98b8908cc1db603`。API 与本机新写入使用既有严格日历日期判据；旧非法日期不修改、不删除，普通备份在下载前明确报错，两个导出入口共用处理。旧持久事件同 ID 原样确认保留，旧非法 pending 同步仍可能被 API 拒绝并保留待处理。
+
+范围与开发验证见 [F04 独立交接](testing/F04-STUDY-CALENDAR-DATE-20261016.md)，精确修复提交和原始证据在项目根 `项目组/engineering/F04-DATE-CONSISTENCY-20261016/`。仅源码候选待独立回归，未构建 Web/HAP，既有 PUBLIC build identity 不代表此候选；r20 尚未移植本修复。未使用真实数据、服务、设备或麦克风，未改信任、push、合入或部署。其余缺陷与原限定 QA 结论按原范围保留。
+
+---
+
 # 当前接续：200响应头身份屏障修订（2026-10-16）
 
 使用 `vocab-work/auth-response-barrier-20261016/site`，分支 `fix/auth-response-barrier-20261016`；直接从c9146e4建立，旧冻结目录不动。已针对AUTH-REV-BARRIER-01将200头后的失效、屏障和独立会话查询前移；mutation正文不再直接导航，fetch和读体有15秒整体截止，迟回/卸载/重试按代次失效。实际挂起ReadableStream负控、修订回归和命令见 [本轮交接](testing/AUTH-RESPONSE-BARRIER-20261016.md)。认证/D1/媒体边界未扩大。TLS用户许可pending，不生成或导入证书、不操作10977/15551；浏览器端到端尚未验收，未push/merge/部署。

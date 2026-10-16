@@ -14,8 +14,16 @@ const backup=z.object({
  resourceTasks:z.array(z.custom<ResourceTask>(validResourceTask)).default([])
 });
 
+export class StudyBackupDateError extends Error {
+ constructor(field:string){super(`学习记录含无效日期（${field}），备份未生成；原记录未修改。`);this.name='StudyBackupDateError';}
+}
+
 export function createStudyBackup(data:StudyData,exportedAt=new Date().toISOString()){
- return {version:'2.0.0',exportedAt,audioIncluded:false,...migrateStudyData(data)};
+ const saved=migrateStudyData(data);
+ if(saved.profile.examDate!==''&&!validStudyDate(saved.profile.examDate))throw new StudyBackupDateError('考试日期');
+ const invalidCheckin=saved.checkins.findIndex(record=>!validStudyDate(record.date));
+ if(invalidCheckin>=0)throw new StudyBackupDateError(`第${invalidCheckin+1}条学习手记`);
+ return {version:'2.0.0',exportedAt,audioIncluded:false,...saved};
 }
 
 export function parseStudyBackup(value:unknown):StudyData {

@@ -1,3 +1,11 @@
+# 当前修订：F04 日历日期一致性（2026-10-16）
+
+隔离源码候选 `vocab-work/f04-date-consistency-20261016/site`，分支 `fix/f04-study-calendar-date-20261016`，基于账号 `df567108fcb1fa25e95ea409c98b8908cc1db603`。API 与本机新写入使用既有严格日历日期判据；旧非法日期不修改、不删除，普通备份在下载前明确报错，两个导出入口共用处理。旧持久事件同 ID 原样确认保留，旧非法 pending 同步仍可能被 API 拒绝并保留待处理。
+
+范围与开发验证见 [F04 独立交接](testing/F04-STUDY-CALENDAR-DATE-20261016.md)，精确修复提交和原始证据在项目根 `项目组/engineering/F04-DATE-CONSISTENCY-20261016/`。仅源码候选待独立回归，未构建 Web/HAP，既有 PUBLIC build identity 不代表此候选；r20 尚未移植本修复。未使用真实数据、服务、设备或麦克风，未改信任、push、合入或部署。其余缺陷与原限定 QA 结论按原范围保留。
+
+---
+
 # 当前修订：200响应头身份屏障（2026-10-16）
 
 新工作区 `vocab-work/auth-response-barrier-20261016/site`、分支 `fix/auth-response-barrier-20261016`，保留c9146e4冻结目录。AUTH-REV-BARRIER-01修订将失效/屏障/独立session核验提前到200头，整个mutation有15秒截止，正文不决定owner或导航。详情与本轮测试见 [独立交接](testing/AUTH-RESPONSE-BARRIER-20261016.md)。原AUTH-01仅按架构复审限定关闭，不扩大生产结论。TLS授权仍pending，真实浏览器/双窗口/BFCache/启停仍BLOCKED，未创建证书/信任、未动10977/15551，未公开上线。
