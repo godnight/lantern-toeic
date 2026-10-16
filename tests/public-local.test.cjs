@@ -15,7 +15,7 @@ test('identity capability remains unknown until readable and never turns native 
 // No browser storage, cookies, real users or network requests are involved.
 const uiTick=()=>new Promise(resolve=>setImmediate(resolve));
 function accountUi(responses=[],native=false,file='app/account/account-form.tsx'){
- let slots=[],cursor=0,effects=[],tree;
+ let slots=[],cursor=0,effects=[],tree,rechecks=0;
  const calls=[],navigations=[];
  const same=(a,b)=>a&&b&&a.length===b.length&&a.every((value,index)=>Object.is(value,b[index]));
  const react={
@@ -24,10 +24,10 @@ function accountUi(responses=[],native=false,file='app/account/account-form.tsx'
   useEffect(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps)){const previous=slots[i];slots[i]={deps};effects.push(()=>{previous?.cleanup?.();slots[i].cleanup=fn();});}}
  };
  const jsx=(type,props)=>({type,props});
- const imports={react,'react/jsx-runtime':{jsx,jsxs:jsx},'@/lib/account-boundary':boundary,'@/content/source-index.json':{default:{entries:[]}},'@/lib/use-product-session':{useProductSession:()=>({status:'ready',recheck(){}}),broadcastProductSessionChange(){}}};
+ const imports={react,'react/jsx-runtime':{jsx,jsxs:jsx},'@/lib/account-boundary':boundary,'@/content/source-index.json':{default:{entries:[]}},'@/lib/use-product-session':{useProductSession:()=>({status:'ready',recheck(){rechecks++;}}),broadcastProductSessionChange(){}}};
  const exports={};
  vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,{
-  exports,require(name){assert.ok(name in imports,'Unexpected client import: '+name);return imports[name];},AbortController,
+  exports,require(name){assert.ok(name in imports,'Unexpected client import: '+name);return imports[name];},AbortController,setTimeout,clearTimeout,
   window:{location:{origin:native?'https://lantern.local':'https://accounts.example.test',assign:url=>navigations.push(url)}},
   fetch:async(url,options={})=>{calls.push({url,options});const response=responses.shift();assert.ok(response,'Unexpected request: '+url);if(response instanceof Error)throw response;return {status:response.status,ok:response.status>=200&&response.status<300,json:async()=>response.body};}
  });
@@ -37,7 +37,7 @@ function accountUi(responses=[],native=false,file='app/account/account-form.tsx'
  function render(){cursor=0;tree=file.includes('account-center')?exports.AccountCenter(props):exports.default();const pending=effects;effects=[];pending.forEach(effect=>effect());return tree;}
  function node(type,label){const found=walk(tree).find(item=>item.type===type&&(label===undefined||text(item)===label||item.props?.id===label));assert.ok(found,'Missing '+type+': '+label);return found;}
  render();
- return {calls,navigations,props,render,all:()=>walk(tree),text:()=>text(tree),node,async settle(){await uiTick();render();await uiTick();render();},async click(label){await node('button',label).props.onClick();await this.settle();},input(id,value){node('input',id).props.onChange({target:{value}});render();},async submit(){node('form').props.onSubmit({preventDefault(){}});await this.settle();}};
+ return {calls,navigations,props,render,get rechecks(){return rechecks;},all:()=>walk(tree),text:()=>text(tree),node,async settle(){await uiTick();render();await uiTick();render();},async click(label){await node('button',label).props.onClick();await this.settle();},input(id,value){node('input',id).props.onChange({target:{value}});render();},async submit(){node('form').props.onSubmit({preventDefault(){}});await this.settle();}};
 }
 const userA={id:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'};
 const userB={id:'usr_bbbbbbbb-2222-4222-8222-222222222222',username:'synthetic_b'};
@@ -48,12 +48,12 @@ test('account form remains closed for disabled, unconfirmed and native sessions'
  }
  const native=accountUi([],true);await native.settle();assert.equal(native.calls.length,0);assert.match(native.text(),/鸿蒙原生版/);assert.equal(native.all().some(item=>item.type==='form'),false);
 });
-test('account switching can be cancelled and only server success navigates to the new owner',async()=>{
+test('account switching can be cancelled and mutation success requires independent session proof',async()=>{
  const ui=accountUi([sessionResponse(userA),{status:401,body:{debug:'must not show account existence'}},{status:200,body:{user:userB}}]);await ui.settle();
  await ui.click('切换账号');await ui.click('取消');assert.equal(ui.calls.length,1);assert.equal(ui.all().some(item=>item.type==='form'),false);assert.match(ui.text(),/synthetic_a/);
  await ui.click('切换账号');assert.match(ui.text(),/草稿和录音/);await ui.click('继续选择账号');ui.input('account-username',' Synthetic_B ');ui.input('account-password','synthetic password 123');await ui.submit();
  assert.deepEqual(ui.navigations,[]);assert.match(ui.text(),/已由服务器验证：synthetic_a/);assert.match(ui.text(),/登录失败，请检查用户名和密码/);assert.doesNotMatch(ui.text(),/must not show/);assert.equal(ui.node('input','account-password').props.value,'');
- ui.input('account-password','synthetic password 123');await ui.submit();assert.deepEqual(ui.navigations,['/']);
+ ui.input('account-password','synthetic password 123');await ui.submit();assert.deepEqual(ui.navigations,[]);assert.equal(ui.rechecks,1);assert.match(ui.text(),/核对账号状态/);
  for(const call of ui.calls.slice(1)){assert.equal(call.url,'/api/auth/login');assert.equal(call.options.credentials,'same-origin');assert.deepEqual(JSON.parse(call.options.body),{username:' Synthetic_B ',password:'synthetic password 123'});}
 });
 test('registration validates confirmation and never turns a malformed success into a login',async()=>{
@@ -62,9 +62,9 @@ test('registration validates confirmation and never turns a malformed success in
  ui.input('account-password-confirmation','synthetic password 123');await ui.submit();assert.equal(ui.calls[1].url,'/api/auth/register');assert.deepEqual(ui.navigations,[]);assert.match(ui.text(),/请求结果未能确认/);
 });
 test('logout requires an affirmative continuation and preserves the account when rejected',async()=>{
- const ui=accountUi([sessionResponse(userA),{status:503},{status:200}]);await ui.settle();await ui.click('退出当前账号');await ui.click('取消');assert.equal(ui.calls.length,1);
+ const ui=accountUi([sessionResponse(userA),{status:503},{status:200,body:{ok:true}}]);await ui.settle();await ui.click('退出当前账号');await ui.click('取消');assert.equal(ui.calls.length,1);
  await ui.click('退出当前账号');await ui.click('继续退出');assert.match(ui.text(),/退出未获服务器确认/);assert.match(ui.text(),/synthetic_a/);assert.deepEqual(ui.navigations,[]);
- await ui.click('继续退出');assert.deepEqual(ui.navigations,['/']);assert.equal(ui.calls[1].url,'/api/auth/logout');assert.equal(ui.calls[1].options.body,'{}');assert.equal(ui.calls[1].options.credentials,'same-origin');
+ await ui.click('继续退出');assert.deepEqual(ui.navigations,[]);assert.equal(ui.rechecks,1);assert.match(ui.text(),/核对账号状态/);assert.equal(ui.calls[1].url,'/api/auth/logout');assert.equal(ui.calls[1].options.body,'{}');assert.equal(ui.calls[1].options.credentials,'same-origin');
 });
 test('account center presents product identity correctly and keeps the account entry out of native mode',async()=>{
  const ui=accountUi([],false,'app/learn/account-center.tsx');ui.props.owner=userA.id;ui.render();assert.match(ui.text(),/微光账号会话/);assert.doesNotMatch(ui.text(),/旧站记录分区/);assert.equal(ui.all().some(item=>item.type==='a'&&item.props.href==='/account'),false);

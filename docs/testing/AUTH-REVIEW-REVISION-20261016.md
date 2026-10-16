@@ -1,5 +1,7 @@
 # 账号独立审查修订回执（2026-10-16）
 
+> 本文保留c9146e4的开发回执。独立复审其后发现200头后正文持续挂起仍缺屏障，后续最小修订、真正挂体负控及最新结果见 [AUTH-REV-BARRIER-01交接](AUTH-RESPONSE-BARRIER-20261016.md)；不能把本文原15项guard及60/618/40当作挂体缺陷已关闭的证据。
+
 本文件记录冻结源码之后的本地修订，不能替代独立 QA 或公开发布批准。已读取外层 `项目组/architecture/USERNAME-PASSWORD-BOUNDARY-20261016.md`、`architecture/AUTH-REVIEW-20261016-01/README.md`、`QA-RESULT-AUTH-WEB-20261016.md` 和 `QA-EVIDENCE-AUTH-WEB-20261016-01/PHASE-HANDOFF.json`。
 
 ## 身份与冻结边界

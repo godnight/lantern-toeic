@@ -1,5 +1,7 @@
 # 账号页本地 HTTPS 运行手册
 
+> 200响应头屏障修订的新独立目录是 `vocab-work/auth-response-barrier-20261016/site`、分支 `fix/auth-response-barrier-20261016`；若验该修订，请把下文Set-Location切到新目录再按同一严格约束执行，D1/R2状态不与旧目录共享。TLS创建/信任许可仍pending，本轮未创建材料或启动服务。见 [本轮交接](AUTH-RESPONSE-BARRIER-20261016.md)。
+
 > 启动补件冻结于 `7660d8b622eae9359b596e3eb8bf33c287066dda`。当前同一独立目录已接续到 `fix/auth-review-20261016`，追加0005迁移；本手册启动约束继续有效，最新修订/传输证据见 [审查回应](AUTH-REVIEW-REVISION-20261016.md)。下文原分支名为补件的历史身份，不要求回退源码。可信TLS与浏览器验收仍BLOCKED。
 
 2026-10-16，独立补件；冻结实现 `101209685a200ba49a8762818f86dd8be8a91f29` 及其 worktree 未修改。当前目录 `D:/zzl/托业学习/vocab-work/auth-local-https-20261016/site`，分支 `docs/auth-local-https-20261016`。本文件不宣称浏览器认证链路已验收。

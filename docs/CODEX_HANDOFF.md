@@ -1,3 +1,9 @@
+# 当前接续：200响应头身份屏障修订（2026-10-16）
+
+使用 `vocab-work/auth-response-barrier-20261016/site`，分支 `fix/auth-response-barrier-20261016`；直接从c9146e4建立，旧冻结目录不动。已针对AUTH-REV-BARRIER-01将200头后的失效、屏障和独立会话查询前移；mutation正文不再直接导航，fetch和读体有15秒整体截止，迟回/卸载/重试按代次失效。实际挂起ReadableStream负控、修订回归和命令见 [本轮交接](testing/AUTH-RESPONSE-BARRIER-20261016.md)。认证/D1/媒体边界未扩大。TLS用户许可pending，不生成或导入证书、不操作10977/15551；浏览器端到端尚未验收，未push/merge/部署。
+
+---
+
 # 当前接续：账号审查修订（2026-10-16）
 
 工作区 `vocab-work/auth-local-https-20261016/site`，分支 `fix/auth-review-20261016`，从冻结1012096后的HTTPS补件7660d8b接续。已修AUTH-01原子限流准入、旧标签页/BFCache服务端身份复核及认证结果不确定时的失效；追加0005迁移，不改学习归属。开发618/618、构建后mjs40/40、类型/构建通过。传输诊断将截断缩到本机Miniflare HTTPS入口，Node HTTPS对照完整，未改产品读体。完整变更、负控、命令与边界见 [修订回执](testing/AUTH-REVIEW-REVISION-20261016.md) 和 [本地HTTPS手册](testing/AUTH-LOCAL-HTTPS-RUNBOOK.md)。缺可信localhost TLS，真实浏览器及实际启停仍BLOCKED，待独立复测。保留QA10977/PID88408、冻结原码及媒体候选；未push/merge、部署、短信或迁移用户数据。

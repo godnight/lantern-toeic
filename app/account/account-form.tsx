@@ -7,6 +7,7 @@ import {broadcastProductSessionChange,useProductSession} from '@/lib/use-product
 type User = {id:string;username:string};
 type Session = {status:'loading'|'guest'|'unavailable'|'error'|'native'} | {status:'authenticated';user:User};
 type Mode = 'login'|'register';
+type AuthOperation = {generation:number;controller:AbortController;timer:ReturnType<typeof setTimeout>|null;deadline:Promise<never>;reject:(reason:Error)=>void;active:boolean;invalidated:boolean;timedOut:boolean};
 
 // Response validation is presentation only. Authentication and data ownership
 // are decided by the server's opaque HttpOnly session, never this object.
@@ -29,8 +30,37 @@ export default function AccountForm() {
   const [review,setReview]=useState<'switch'|'logout'|null>(null);
   const [switching,setSwitching]=useState(false);
   const [check,setCheck]=useState(0);
+  const [resultBarrier,setResultBarrier]=useState(false);
+  const barrierChecked=useRef(false);
   const requestPending=useRef(false);
+  const alive=useRef(true);
+  const operationGeneration=useRef(0);
+  const operation=useRef<AuthOperation|null>(null);
   const sessionGuard=useProductSession(session.status==='authenticated'?session.user.id:null,session.status==='native');
+
+  function belongsToPage(op:AuthOperation){return alive.current&&operation.current===op&&operationGeneration.current===op.generation;}
+  function isActive(op:AuthOperation){return belongsToPage(op)&&op.active;}
+  function cancelOperation(){
+    const op=operation.current;
+    if(!op)return;
+    operation.current=null;operationGeneration.current++;op.active=false;
+    if(op.timer!==null)clearTimeout(op.timer);
+    op.controller.abort();op.reject(new Error('Authentication result superseded'));
+    requestPending.current=false;
+  }
+  useEffect(()=>{
+    alive.current=true;
+    return ()=>{alive.current=false;cancelOperation();};
+  },[]);
+  useEffect(()=>{
+    if(sessionGuard.status==='redirecting'){cancelOperation();return;}
+    if(!resultBarrier)return;
+    if(sessionGuard.status==='checking')barrierChecked.current=true;
+    else if(sessionGuard.status==='ready'&&barrierChecked.current){
+      // Only a completed independent server-session probe may lift this gate.
+      barrierChecked.current=false;setResultBarrier(false);
+    }
+  },[sessionGuard.status,resultBarrier]);
 
   useEffect(()=>{
     if(window.__LANTERN_HARMONY__||window.location.origin==='https://lantern.local'){
@@ -62,9 +92,64 @@ export default function AccountForm() {
     setMode(next);setPassword('');setConfirmation('');setError('');
   }
 
+  function invalidateIdentity(op:AuthOperation){
+    if(!belongsToPage(op)||op.invalidated)return;
+    op.invalidated=true;barrierChecked.current=false;setResultBarrier(true);
+    broadcastProductSessionChange();
+    sessionGuard.recheck();
+  }
+
+  async function mutate(kind:Mode|'logout',credentials:{username:string;password:string}|Record<string,never>){
+    const controller=new AbortController();
+    let rejectDeadline!:(reason:Error)=>void;
+    const deadline=new Promise<never>((_,reject)=>{rejectDeadline=reject;});
+    const op:AuthOperation={generation:++operationGeneration.current,controller,timer:null,deadline,reject:rejectDeadline,active:true,invalidated:false,timedOut:false};
+    operation.current=op;requestPending.current=true;setBusy(true);setError('');
+    op.timer=setTimeout(()=>{
+      if(!belongsToPage(op))return;
+      op.active=false;op.timedOut=true;controller.abort();rejectDeadline(new Error('Authentication result timed out'));
+    },15000);
+    try{
+      // The deadline races the complete operation, including a body reader that
+      // never settles after abort. Every late continuation checks its generation.
+      await Promise.race([(async()=>{
+        const response=await fetch(`/api/auth/${kind}`,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(credentials),signal:controller.signal});
+        if(!isActive(op))return;
+        if(response.status!==200){
+          setError(kind==='logout'?'退出未获服务器确认，仍保留当前账号视图。请检查网络并重新核对登录状态。':response.status===429?'尝试过于频繁，请稍后再试。':response.status===503?'账号服务暂不可用，当前身份没有切换。':response.status===403?'请求未通过安全校验，请重新核对登录状态后再试。':kind==='login'?'登录失败，请检查用户名和密码，或稍后再试。':'未能注册，请检查用户名和密码要求，或稍后再试。');return;
+        }
+        // Set-Cookie may already have changed the browser identity. Invalidate
+        // at response headers, before awaiting any mutation response body.
+        invalidateIdentity(op);
+        if(!isActive(op))return;
+        const body:unknown=await response.json();
+        if(!isActive(op))return;
+        // The body is diagnostic only. It never selects an owner, lifts the
+        // barrier, or navigates; the independent session guard does that.
+        if(kind==='logout'){
+          if(!body||typeof body!=='object'||(body as {ok?:unknown}).ok!==true)throw new Error('Invalid response');
+        }else if(!responseUser(body))throw new Error('Invalid response');
+      })(),deadline]);
+    }catch{
+      if(!belongsToPage(op))return;
+      setError(kind==='logout'?'退出结果未能确认。账号操作已暂停并重新核对服务器会话；此页不会假定已退出。':'请求结果未能确认。账号操作已暂停并重新核对服务器会话；此页不会假定已成功。');
+      // Abort is not evidence of rollback. A timeout requires fresh independent
+      // evidence even when an earlier header-triggered probe had confirmed A.
+      if(op.timedOut&&op.invalidated){
+        barrierChecked.current=false;setResultBarrier(true);sessionGuard.recheck();
+      }else invalidateIdentity(op);
+    }finally{
+      if(belongsToPage(op)){
+        if(op.timer!==null)clearTimeout(op.timer);
+        op.active=false;operation.current=null;operationGeneration.current++;controller.abort();
+        setPassword('');setConfirmation('');requestPending.current=false;setBusy(false);
+      }
+    }
+  }
+
   async function submit(event:FormEvent<HTMLFormElement>){
     event.preventDefault();
-    if(requestPending.current||busy||sessionGuard.status!=='ready'||(session.status!=='guest'&&!(session.status==='authenticated'&&switching)))return;
+    if(!alive.current||requestPending.current||busy||resultBarrier||sessionGuard.status!=='ready'||(session.status!=='guest'&&!(session.status==='authenticated'&&switching)))return;
     setError('');
     if(/[^\x00-\x7f]/.test(username)||!/^[a-zA-Z0-9_]{3,32}$/.test(username.trim())){
       setError('用户名须为 3–32 个英文字母、数字或下划线，首尾空白会去除，大小写不区分。');return;
@@ -72,44 +157,16 @@ export default function AccountForm() {
     const count=[...password].length;
     if(count<15||count>128){setError('密码须为 15–128 个字符，首尾空白属于密码。');return;}
     if(mode==='register'&&password!==confirmation){setError('两次输入的密码不一致。');return;}
-    requestPending.current=true;setBusy(true);
-    try{
-      const response=await fetch(`/api/auth/${mode}`,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({username,password})});
-      if(response.status!==200){
-        setError(response.status===429?'尝试过于频繁，请稍后再试。':response.status===503?'账号服务暂不可用，当前身份没有切换。':response.status===403?'请求未通过安全校验，请重新核对登录状态后再试。':mode==='login'?'登录失败，请检查用户名和密码，或稍后再试。':'未能注册，请检查用户名和密码要求，或稍后再试。');return;
-      }
-      if(!responseUser(await response.json()))throw new Error('Invalid response');
-      broadcastProductSessionChange();
-      // Full navigation drops the old owner's in-memory views and requests.
-      window.location.assign('/');
-    }catch{
-      setError('请求结果未能确认。请重新核对登录状态，确认后再继续；此页不会假定已成功。');
-      // The mutation may have committed (and Set-Cookie may have arrived) even
-      // when fetching/parsing its response fails. Invalidate, never infer success.
-      broadcastProductSessionChange();
-      sessionGuard.recheck();
-    }finally{
-      setPassword('');setConfirmation('');requestPending.current=false;setBusy(false);
-    }
+    await mutate(mode,{username,password});
   }
 
   async function logout(){
-    if(requestPending.current||busy||sessionGuard.status!=='ready'||session.status!=='authenticated')return;
-    requestPending.current=true;setBusy(true);setError('');
-    try{
-      const response=await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:'{}'});
-      if(response.status!==200){setError('退出未获服务器确认，仍保留当前账号视图。请检查网络并重新核对登录状态。');return;}
-      broadcastProductSessionChange();
-      window.location.assign('/');
-    }catch{
-      setError('退出结果未能确认。账号操作已暂停并重新核对服务器会话；此页不会假定已退出。');
-      broadcastProductSessionChange();
-      sessionGuard.recheck();
-    }finally{requestPending.current=false;setBusy(false);}
+    if(!alive.current||requestPending.current||busy||resultBarrier||sessionGuard.status!=='ready'||session.status!=='authenticated')return;
+    await mutate('logout',{});
   }
 
   const available=session.status==='guest'||session.status==='authenticated';
-  if(sessionGuard.status!=='ready')return <section className="panel" aria-live="polite" aria-busy={sessionGuard.status==='checking'}><h2>核对账号状态</h2><p>{sessionGuard.status==='checking'?'正在重新核对服务器会话，账号操作已暂停。':sessionGuard.status==='redirecting'?'会话已变化，正在重新打开学习页。':'当前会话无法确认，账号操作保持暂停，请重试。'}</p>{error&&<p role="alert" className="bad">{error}</p>}<div className="button-row">{sessionGuard.status==='error'&&<button className="button primary" onClick={sessionGuard.recheck}>重新核对账号</button>}<a className="button secondary" href="/">返回学习</a></div></section>;
+  if(resultBarrier||sessionGuard.status!=='ready')return <section className="panel" aria-live="polite" aria-busy={resultBarrier&&sessionGuard.status==='ready'||sessionGuard.status==='checking'}><h2>核对账号状态</h2><p>{sessionGuard.status==='checking'||resultBarrier&&sessionGuard.status==='ready'?'正在重新核对服务器会话，账号操作已暂停。':sessionGuard.status==='redirecting'?'会话已变化，正在重新打开学习页。':'当前会话无法确认，账号操作保持暂停，请重试。'}</p>{error&&<p role="alert" className="bad">{error}</p>}<div className="button-row">{(sessionGuard.status==='error'||resultBarrier&&sessionGuard.status==='ready')&&<button className="button primary" onClick={sessionGuard.recheck}>重新核对账号</button>}<a className="button secondary" href="/">返回学习</a></div></section>;
   return <div className="workspace-account" aria-busy={busy||session.status==='loading'} style={{display:'grid',gap:20}}>
     <section className="panel" aria-labelledby="account-session-title" style={{display:'grid',gap:16}}>
       <h2 id="account-session-title">当前账号状态</h2>
