@@ -14,6 +14,7 @@ function load(file, imports, globals = {}) {
     compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX}
   }).outputText;
   vm.runInNewContext(code, {exports, require: name => {
+    if (name === '@/lib/recording-media-diagnostics') return {recordingMediaTrace(){}};
     if (name === '@/release-manifest.json') return {default:JSON.parse(fs.readFileSync(root + '/release-manifest.json','utf8'))};
     if (name === '@/lib/use-dialog-viewport') return load('lib/use-dialog-viewport.ts', {react: imports.react}, globals);
     if (!(name in imports)) throw Error('Unexpected import: ' + name);
@@ -23,7 +24,7 @@ function load(file, imports, globals = {}) {
 }
 
 function environment({reverse = false} = {}) {
-  const storage = new Map(), messages = {success: [], error: []}, listeners = new Map();
+  const storage = new Map(), messages = {success: [], error: []}, listeners = new Map(), backs = new Set();
   let slots = [], cursor = 0, effects = [], online = false, failWrites = false;
   let remote, latest, renderer, workspaceKey;
   const same = (a, b) => a && b && a.length === b.length && a.every((v, i) => Object.is(v, b[i]));
@@ -62,13 +63,14 @@ function environment({reverse = false} = {}) {
   const study = load('lib/use-study.ts', {react, sonner: {toast}, './study-model': model,'./study-backup':backup}, browser);
   const render = () => {cursor = 0; const value = renderer(); const pending = effects; effects = []; pending.forEach(run => run()); return value;};
   return {
-    react, model, backup, browser, toast, messages, storage, study, render,
+    react, model, backup, browser, toast, messages, storage, study, render, backs,
     get latest() {return latest;},
     useStudy(owner) {latest = study.useStudy(owner); return latest;},
     setRenderer(fn) {renderer = fn;},
     replaceWorkspace(key) {if(workspaceKey===key)return;slots.forEach(slot=>slot?.cleanup?.());slots=[];cursor=0;effects=[];workspaceKey=key;},
     setOnline(value) {online = value;},
-    setFailWrites(value) {failWrites = value;}
+    setFailWrites(value) {failWrites = value;},
+    cleanup() {slots.forEach(slot=>slot?.cleanup?.());slots=[];effects=[];}
   };
 }
 
@@ -108,7 +110,7 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
   for (const component of Object.values(workspace)) if (typeof component === 'function') pureComponents.add(component);
   const speaking = load('app/learn/speaking.tsx', {'@/lib/lesson-audio':{stopLessonAudio(){}},
     react:h.react, 'react/jsx-runtime':runtime, 'lucide-react':stubs,
-    '@/components/ui/dialog':stubs, '@/components/ui/checkbox':stubs, './practice':stubs,
+    '@/components/ui/dialog':stubs, '@/components/ui/checkbox':stubs, './practice':stubs, './recording-player':{RecordingPlayer:'audio'},
     '@/lib/study-model':h.model,
     '@/lib/native-host':{registerNativeBack:()=>()=>{},isNativeForeground:()=>true,subscribeNativeState:()=>()=>{}},
     sonner:{toast:h.toast}
@@ -117,11 +119,12 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
     react:h.react, 'react/jsx-runtime':runtime, 'lucide-react':stubs, sonner:{toast:h.toast},
     '@/lib/use-study':{useStudy: data ? () => ({data,ready:true,recordsReadable:true,sync:'local',issues:[],...api}) : owner => h.useStudy(owner)},
     '@/lib/study-model':h.model, '@/lib/study-backup':h.backup, '@/lib/speaking-recovery':load('lib/speaking-recovery.ts',{}),
-    '@/lib/native-host':{registerNativeBack:()=>()=>{}},
+    '@/lib/native-host':{registerNativeBack(fn){h.backs.add(fn);return()=>h.backs.delete(fn);}},
     '@/lib/ui-theme':themeModel, './learn/workspace-shell':workspace, './learn/ui-theme':themeUi,
     './learn/exam-collection':{default:'ExamCollection'}, './learn/resource-library':{default:'ResourceLibrary'},
     './learn/practice':{default:'Practice'},
     './learn/speaking':{default:'SpeakingRoom',SpeakingTaskCatalog:speaking.SpeakingTaskCatalog,SpeakingRecordingHistory:speaking.SpeakingRecordingHistory},
+    './learn/recording-player':{RecordingPlayer:'RecordingPlayer'},
     './learn/vocabulary-library':{default:'VocabularyLibrary',VocabularyEntry:'VocabularyEntry',VocabularyReviewSummary:'VocabularyReviewSummary'},
     './learn/mock-exam':{default:'MockExam'}
   };
@@ -222,7 +225,7 @@ test('I09: nested lookup preserves the same practice queue and restores its look
 });
 function navigateApp(render, id) {
   const nav=nodes(render(),n=>n.type==='nav'&&n.props['aria-label']==='桌面主导航')[0];
-  const labels={train:'练习',resources:'资料'};
+  const labels={today:'今日',train:'练习',resources:'资料'};
   const button=nodes(nav,n=>n.type==='button'&&textOf(n)===labels[id])[0];
   assert.ok(button,'Find the real WorkspaceShell navigation button for '+id);
   button.props.onClick();
@@ -260,7 +263,7 @@ test('recording dates follow the configured timezone across UTC day boundaries',
   const history=environment(), jsx=(type,props)=>({type,props}), stubs=new Proxy({},{get:(_,name)=>String(name)});
   const actualHistory=load('app/learn/speaking.tsx',{'@/lib/lesson-audio':{stopLessonAudio(){}},
     react:history.react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stubs,
-    '@/components/ui/dialog':stubs,'@/components/ui/checkbox':stubs,'./practice':stubs,
+    '@/components/ui/dialog':stubs,'@/components/ui/checkbox':stubs,'./practice':stubs,'./recording-player':{RecordingPlayer:'audio'},
     '@/lib/study-model':history.model,'@/lib/native-host':{registerNativeBack:()=>()=>{},isNativeForeground:()=>true,subscribeNativeState:()=>()=>{}},sonner:{toast:history.toast}
   },history.browser).SpeakingRecordingHistory;
   for(const [timezone,expected] of [['Asia/Shanghai','10月11日 00:30'],['America/Los_Angeles','10月10日 09:30'],['UTC','10月10日 16:30']]){
@@ -274,16 +277,85 @@ test('recording dates follow the configured timezone across UTC day boundaries',
   }
 });
 
-test('I04: media failure after URL acquisition has inline retry and retains the original recording',async()=>{
+test('I04: shared player retry rereads the original recording and remounts an unchanged cloud URL',async()=>{
   const h=environment(),data=structuredClone(h.model.EMPTY_DATA),requests=[];
   const recording={id:'qa-cloud-media-error',promptId:'s1',title:'Existing cloud recording',createdAt:'2026-10-13T08:00:00Z',duration:24,mime:'audio/webm',uploaded:true};data.recordings=[recording];
   const App=createStudyApp(h,{data,api:{recordingUrl:async r=>{requests.push(r);return '/api/recordings/'+r.id;}}});h.setRenderer(()=>App({owner:'alice',nativeMode:false}));const render=()=>h.render();
   navigateApp(render,'train');nodes(render(),n=>n.type==='Tabs')[0].props.onValueChange('speaking');
   await nodes(render(),n=>typeof n.type==='function'&&n.type.name==='SpeakingRecordingHistory')[0].props.onPlay(recording);
-  const firstAudio=nodes(render(),n=>n.type==='audio'&&n.props.className==='recording-player')[0];firstAudio.props.onError();
-  assert.match(textOf(render()),/音频加载或解码失败/);assert.equal(data.recordings[0],recording);assert.equal(data.recordings.length,1);
-  nodes(render(),n=>n.type==='button'&&textOf(n)==='重新读取音频')[0].props.onClick();await tick();
-  const retryAudio=nodes(render(),n=>n.type==='audio'&&n.props.className==='recording-player')[0];assert.equal(requests.length,2);assert.equal(requests[1],recording);assert.equal(retryAudio.props.src,firstAudio.props.src);assert.notEqual(retryAudio.key,firstAudio.key,'The unchanged cloud URL must mount a fresh audio element');assert.doesNotMatch(textOf(render()),/音频加载或解码失败/);
+  const firstAudio=nodes(render(),n=>n.type==='RecordingPlayer')[0];assert.ok(firstAudio);assert.equal(firstAudio.props.autoPlay,true);
+  assert.equal(data.recordings[0],recording);assert.equal(data.recordings.length,1);
+  await firstAudio.props.onRetry();await tick();
+  const retryAudio=nodes(render(),n=>n.type==='RecordingPlayer')[0];assert.equal(requests.length,2);assert.equal(requests[1],recording);assert.equal(retryAudio.props.src,firstAudio.props.src);assert.notEqual(retryAudio.key,firstAudio.key,'The unchanged cloud URL must mount a fresh audio element');assert.equal(data.recordings[0],recording);
+});
+
+// The owner executes unchanged recording reads; only URL creation/retirement is
+// observed. These synthetic URLs never enter learner storage or a media device.
+function recordingOwnerFixture(read) {
+  const h=environment(),data=structuredClone(h.model.EMPTY_DATA),revoked=[],requests=[];
+  const recording={id:'url-owner-recording',promptId:'s1',title:'Owned recording URL',createdAt:'2026-10-13T08:00:00Z',duration:6,mime:'audio/webm'};
+  data.recordings=[recording];
+  h.browser.URL={revokeObjectURL:url=>revoked.push(url),createObjectURL(){throw Error('The URL must come from the recording repository');}};
+  const App=createStudyApp(h,{data,api:{recordingUrl:async r=>{requests.push(r);return read(r,requests.length);}}});
+  h.setRenderer(()=>App({owner:'alice',nativeMode:false}));const render=()=>h.render();
+  navigateApp(render,'train');nodes(render(),n=>n.type==='Tabs')[0].props.onValueChange('speaking');render();
+  const history=()=>nodes(render(),n=>typeof n.type==='function'&&n.type.name==='SpeakingRecordingHistory')[0];
+  const player=()=>nodes(render(),n=>n.type==='RecordingPlayer')[0];
+  const close=()=>{const dialog=nodes(render(),n=>n.type==='Dialog'&&n.props.open&&nodes(n,x=>x.type==='RecordingPlayer').length)[0];assert.ok(dialog);dialog.props.onOpenChange(false);render();};
+  return {h,data,recording,revoked,requests,render,history,player,close};
+}
+test('history owns Blob URL by URL value: unchanged-URL request remount does not revoke a mounted URL',async t=>{
+  const f=recordingOwnerFixture(()=> 'blob:owned-same');t.after(()=>f.h.cleanup());
+  await f.history().props.onPlay(f.recording);const first=f.player();await first.props.onRetry();const second=f.player();
+  assert.notEqual(second.key,first.key);assert.equal(second.props.src,first.props.src);assert.deepEqual(f.revoked,[]);
+  assert.equal(f.requests.length,2);assert.equal(f.requests[0],f.recording);assert.equal(f.requests[1],f.recording);
+  f.close();assert.deepEqual(f.revoked,['blob:owned-same']);f.h.cleanup();assert.deepEqual(f.revoked,['blob:owned-same']);
+});
+test('history replaces a Blob URL exactly once and unmount releases only the final owned URL',async()=>{
+  const f=recordingOwnerFixture((r,n)=>'blob:owned-'+n);
+  await f.history().props.onPlay(f.recording);const first=f.player();await first.props.onRetry();
+  assert.equal(f.player().props.src,'blob:owned-2');assert.deepEqual(f.revoked,['blob:owned-1']);
+  f.render();f.render();assert.deepEqual(f.revoked,['blob:owned-1'],'Ordinary rerenders do not retire the active URL');
+  f.h.cleanup();assert.deepEqual(f.revoked,['blob:owned-1','blob:owned-2']);
+});
+test('native Back closes history with one URL retirement and later unmount does not double-release',async()=>{
+  const f=recordingOwnerFixture(()=> 'blob:back-owned');await f.history().props.onPlay(f.recording);f.player();
+  assert.equal([...f.h.backs].at(-1)(),true);f.render();assert.equal(f.player(),undefined);
+  assert.deepEqual(f.revoked,['blob:back-owned']);f.h.cleanup();assert.deepEqual(f.revoked,['blob:back-owned']);
+});
+test('out-of-order recording reads release the obsolete unpublished Blob without replacing the newer player',async t=>{
+  const pending=[];const f=recordingOwnerFixture(()=>new Promise(resolve=>pending.push(resolve)));t.after(()=>f.h.cleanup());
+  const oldRead=f.history().props.onPlay(f.recording),newRead=f.history().props.onPlay(f.recording);
+  pending[1]('blob:published-new');await newRead;const current=f.player();pending[0]('blob:unpublished-old');await assert.rejects(oldRead,/已取消/);
+  assert.equal(f.player().props.src,'blob:published-new');assert.equal(f.player().key,current.key);assert.deepEqual(f.revoked,['blob:unpublished-old']);
+});
+test('recording URL resolved after workspace unmount is retired without exposing a player or changing records',async()=>{
+  let resolve;const f=recordingOwnerFixture(()=>new Promise(yes=>resolve=yes));const before=JSON.stringify(f.data);
+  const reading=f.history().props.onPlay(f.recording);f.h.cleanup();resolve('blob:unmounted-read');await assert.rejects(reading,/已取消/);
+  assert.deepEqual(f.revoked,['blob:unmounted-read']);assert.equal(JSON.stringify(f.data),before);
+});
+test('cloud recording URLs are never revoked on replacement, close or owner unmount',async()=>{
+  const f=recordingOwnerFixture((r,n)=>'/api/recordings/'+r.id+'?read='+n);await f.history().props.onPlay(f.recording);await f.player().props.onRetry();f.close();f.h.cleanup();
+  assert.deepEqual(f.revoked,[]);assert.equal(f.data.recordings.length,1);assert.equal(f.data.recordings[0],f.recording);
+});
+for(const closeBy of ['dialog','Back'])for(const outcome of ['success','failure'])test(`history retry pending then ${closeBy}: obsolete ${outcome} cannot reopen playback or issue a stale error`,async t=>{
+  let resolve,reject;const f=recordingOwnerFixture((r,n)=>n===1?'blob:before-close':new Promise((yes,no)=>{resolve=yes;reject=no;}));t.after(()=>f.h.cleanup());
+  await f.history().props.onPlay(f.recording);const old=f.player(),retry=old.props.onRetry();f.render();
+  if(closeBy==='dialog')f.close();else{assert.equal([...f.h.backs].at(-1)(),true);f.render();}
+  assert.equal(f.player(),undefined);const errors=f.h.messages.error.slice();assert.deepEqual(f.revoked,['blob:before-close']);
+  if(outcome==='success'){resolve('blob:retry-after-close');await assert.rejects(retry,/已取消/);assert.deepEqual(f.revoked,['blob:before-close','blob:retry-after-close']);}
+  else{reject(Error('obsolete repository failure'));await assert.rejects(retry,/obsolete repository failure/);assert.deepEqual(f.revoked,['blob:before-close']);}
+  assert.equal(f.player(),undefined);assert.deepEqual(f.h.messages.error,errors);assert.equal(f.data.recordings[0],f.recording);assert.equal(f.requests.length,2);
+});
+for(const boundary of ['navigation','training-tab'])for(const outcome of ['success','failure'])test(`pending history read across ${boundary} leave-and-return rejects obsolete ${outcome} despite returning to the same page`,async t=>{
+  let resolve,reject;const f=recordingOwnerFixture(()=>new Promise((yes,no)=>{resolve=yes;reject=no;}));t.after(()=>f.h.cleanup());const before=JSON.stringify(f.data);
+  const oldRead=f.history().props.onPlay(f.recording);
+  if(boundary==='navigation'){navigateApp(f.render,'today');f.render();navigateApp(f.render,'train');f.render();}
+  else{nodes(f.render(),n=>n.type==='Tabs')[0].props.onValueChange('lr');f.render();nodes(f.render(),n=>n.type==='Tabs')[0].props.onValueChange('speaking');f.render();}
+  assert.ok(f.history(),'Returned to the same current history surface');assert.equal(f.player(),undefined);const errors=f.h.messages.error.slice();
+  if(outcome==='success'){resolve('blob:obsolete-'+boundary);await assert.rejects(oldRead,/已取消/);assert.deepEqual(f.revoked,['blob:obsolete-'+boundary]);}
+  else{reject(Error('obsolete ABA read failure'));await assert.rejects(oldRead,/obsolete ABA read failure/);assert.deepEqual(f.revoked,[]);}
+  assert.equal(f.player(),undefined);assert.deepEqual(f.h.messages.error,errors);assert.equal(JSON.stringify(f.data),before);assert.equal(f.requests.length,1);
 });
 
 for(const part of [1,5]) test(`daily Part ${part} task keeps its title after an answer and remount`,()=>{

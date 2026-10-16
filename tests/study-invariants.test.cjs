@@ -13,6 +13,7 @@ function load(file, imports = {}, globals = {}) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX }
   }).outputText;
   vm.runInNewContext(code, { exports, require: n => {
+    if (n === '@/lib/recording-media-diagnostics') return {recordingMediaTrace(){}};
     if (n === '@/lib/use-dialog-viewport') return load('lib/use-dialog-viewport.ts', {react: imports.react}, globals);
     if (!(n in imports)) throw new Error('Unexpected import: ' + n);
     return imports[n];
@@ -381,7 +382,7 @@ test('an earlier recording save cannot mark the current recording as saved', asy
   const Room=load('app/learn/speaking.tsx',{'@/lib/lesson-audio':{stopLessonAudio(){}},
     '@/lib/study-model':model,
     react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stub,
-    '@/components/ui/dialog':stub,'@/components/ui/checkbox':stub,
+    '@/components/ui/dialog':stub,'@/components/ui/checkbox':stub,'./recording-player':{RecordingPlayer:'audio'},
     sonner:{toast:Object.assign(()=>{},{error(){},success(){}})},'./practice':stub,'@/lib/native-host':load('lib/native-host.ts')
   },{Blob,URL,MediaRecorder:Recorder,window:{MediaRecorder:Recorder},document:{hidden:false,addEventListener(){},removeEventListener(){}},navigator:{mediaDevices:{getUserMedia:async()=>({getTracks:()=>[{stop(){}}]})}},setInterval:()=>1,clearInterval(){}}).default;
   const prompt=JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8'))[0];
@@ -428,7 +429,7 @@ test('background recording stop preserves elapsed time and pending save completi
   const Room=load('app/learn/speaking.tsx',{'@/lib/lesson-audio':{stopLessonAudio(){}},
     '@/lib/study-model':model,
     react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stub,
-    '@/components/ui/dialog':stub,'@/components/ui/checkbox':stub,
+    '@/components/ui/dialog':stub,'@/components/ui/checkbox':stub,'./recording-player':{RecordingPlayer:'audio'},
     sonner:{toast:Object.assign(()=>{},{error(){},success(){}})},'./practice':stub,'@/lib/native-host':load('lib/native-host.ts')
   },{Date:ClockDate,Blob,URL,MediaRecorder:Recorder,window:{MediaRecorder:Recorder},document,navigator:{mediaDevices:{getUserMedia:async()=>({getTracks:()=>[{stop(){}}]})}},setInterval:()=>1,clearInterval(){}}).default;
   const prompt=JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8'))[0];

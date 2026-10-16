@@ -16,6 +16,7 @@ function load(file, imports = {}, globals = {}) {
   }).outputText;
   vm.runInNewContext(code, {
     exports, require(name) {
+      if (name === '@/lib/recording-media-diagnostics') return {recordingMediaTrace(){}};
       if (name === '@/lib/use-dialog-viewport') return load('lib/use-dialog-viewport.ts', {react: imports.react}, globals);
       if (!(name in imports)) throw new Error('Unexpected import: ' + name);
       return imports[name];
@@ -124,7 +125,7 @@ function speakingHarness({ manualPermissions = false } = {}) {
   const Room = load('app/learn/speaking.tsx', {'@/lib/lesson-audio':{stopLessonAudio(){}},
     '@/lib/study-model': load('lib/study-model.ts',{}),
     react, 'react/jsx-runtime': { jsx, jsxs: jsx, Fragment: 'fragment' }, 'lucide-react': stub,
-    '@/components/ui/dialog': stub, '@/components/ui/checkbox': stub, './practice': stub,
+    '@/components/ui/dialog': stub, '@/components/ui/checkbox': stub, './practice': stub, './recording-player':{RecordingPlayer:'audio'},
     '@/lib/native-host': host.native,
     sonner: { toast: Object.assign(() => {}, { error() {}, success() {} }) }
   }, { ...host.globals, navigator, Date: ClockDate, MediaRecorder: Recorder, setInterval: () => 1, clearInterval() {} });

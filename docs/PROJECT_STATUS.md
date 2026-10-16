@@ -357,3 +357,7 @@ PR #7已合并，GitHub main发布基线为`c3f7f460b6140f669f5d0c273d3f5f2666d0
 
 新增`docs/CODEX_HANDOFF.md`与`scripts/codex-setup.sh`，将项目状态、工具链边界、任务顺序和GitHub维护方式交接给新的Codex任务；Core CI复用同一初始化入口。当前尚未替用户创建或启动Codex cloud环境；聊天、生产数据与签名凭据不随Git复制。
 
+# CT r18 isolated recording repair — 2026-10-16
+
+This independent candidate starts from frozen r17 and addresses recording URL ownership, shared playback states, stale asynchronous reads, and bounded native diagnosis. Source details and scope limits: [recording player r18](RECORDING-PLAYER-R18.md). CJS development checks passed 841/841 at source completion. Build and native acceptance remain separate evidence gates; the original r17 independent QA failure remains valid. No push, merge, deployment, upload, or release is authorized by this entry.
+

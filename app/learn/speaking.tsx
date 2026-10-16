@@ -9,6 +9,8 @@ import {toast} from 'sonner';
 import {createId,type Recording,type Speaking} from '@/lib/study-model';
 import {isNativeForeground,registerNativeBack,subscribeNativeState} from '@/lib/native-host';
 import {SpeechPlayer} from './practice';
+import {RecordingPlayer} from './recording-player';
+import {recordingMediaTrace} from '@/lib/recording-media-diagnostics';
 import type {SpeakingRecovery} from '@/lib/speaking-recovery';
 import {useDialogViewport} from '@/lib/use-dialog-viewport';
 
@@ -68,7 +70,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
  const recordingMeta=()=>stopMeta.current||(stopMeta.current={id:createId(),promptId:prompt.id,title:prompt.title,duration:Math.max(0,Math.round(((stoppedAt.current||Date.now())-started.current)/1000)),createdAt:new Date(started.current).toISOString(),mime:recorder.current?.mimeType||'audio/webm',note:''});
  const releaseMicrophone=()=>stream.current?.getTracks().forEach(track=>track.stop());
  const changePhase=(next:SpeakingPhase)=>{currentPhase.current=next;setPhase(next);};
- useEffect(()=>{mounted.current=true;if(recovery){last.current={meta:recovery.meta,blob:recovery.blob};objectURL.current=URL.createObjectURL(recovery.blob);setUrl(objectURL.current);setSaveError(!recovery.saving);if(recovery.saving){savingNow.current=true;setSaving(true);void recovery.saving.then(()=>{if(mounted.current){setSaved(true);setSaveError(false);}},()=>{if(mounted.current)setSaveError(true);}).finally(()=>{if(mounted.current){savingNow.current=false;setSaving(false);}});}}return()=>{mounted.current=false;requestGeneration.current++;if(recorder.current&&['recording','processing'].includes(currentPhase.current)){if(!stoppedAt.current)stoppedAt.current=Date.now();onRetain?.({prompt,meta:recordingMeta(),blob:new Blob(chunks.current,{type:recorder.current.mimeType||'audio/webm'}),processing:true});if(recorder.current.state==='recording')recorder.current.stop();}releaseMicrophone();if(objectURL.current)URL.revokeObjectURL(objectURL.current);};},[]);
+ useEffect(()=>{mounted.current=true;if(recovery){last.current={meta:recovery.meta,blob:recovery.blob};objectURL.current=URL.createObjectURL(recovery.blob);recordingMediaTrace('source-ready',objectURL.current);setUrl(objectURL.current);setSaveError(!recovery.saving);if(recovery.saving){savingNow.current=true;setSaving(true);void recovery.saving.then(()=>{if(mounted.current){setSaved(true);setSaveError(false);}},()=>{if(mounted.current)setSaveError(true);}).finally(()=>{if(mounted.current){savingNow.current=false;setSaving(false);}});}}return()=>{mounted.current=false;requestGeneration.current++;if(recorder.current&&['recording','processing'].includes(currentPhase.current)){if(!stoppedAt.current)stoppedAt.current=Date.now();onRetain?.({prompt,meta:recordingMeta(),blob:new Blob(chunks.current,{type:recorder.current.mimeType||'audio/webm'}),processing:true});if(recorder.current.state==='recording')recorder.current.stop();}releaseMicrophone();if(objectURL.current){recordingMediaTrace('url-released',objectURL.current);URL.revokeObjectURL(objectURL.current);}};},[]);
  const persist=async(meta:Recording,blob:Blob)=>{
   // A rapid second retry must not write/upload the same clip concurrently.
   if(savingNow.current)return;
@@ -91,7 +93,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
     const meta:Recording={...recordingMeta(),mime:blob.type};
     if(!mounted.current){if(blob.size)onRetain?.({prompt,meta,blob});else onRelease?.(meta.id);return;}
     if(!blob.size){setAccessError('没有收到录音，请检查麦克风后重新准备。');toast.error('没有收到录音，请检查麦克风');changePhase('ready');return;}
-    if(objectURL.current)URL.revokeObjectURL(objectURL.current);objectURL.current=URL.createObjectURL(blob);setUrl(objectURL.current);changePhase('done');
+    if(objectURL.current){recordingMediaTrace('url-released',objectURL.current);URL.revokeObjectURL(objectURL.current);}objectURL.current=URL.createObjectURL(blob);recordingMediaTrace('source-ready',objectURL.current);setUrl(objectURL.current);changePhase('done');
     last.current={meta,blob};onRetain?.({prompt,meta,blob});await persist(meta,blob);
    };
    recording.onerror=()=>{
@@ -184,7 +186,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
      {phase==='recording'&&<><p className="speaking-recording-status" role="status"><i aria-hidden="true"/>正在录音</p><p className="speaking-secondary">时间到会自动结束，也可以提前停录。</p><button type="button" className="button primary speaking-main-action" onClick={stop}><Square size={16} fill="currentColor"/>结束录音</button></>}
      {phase==='processing'&&<div className="speaking-notice" role="status"><strong>正在整理已录内容</strong><p>整理完成后会尝试本机保存，请留在本页。</p></div>}
      {phase==='done'&&<>
-      <audio controls src={url} className="speaking-audio" aria-label="回听本次录音"/>
+      <RecordingPlayer src={url} className="speaking-audio" label="回听本次录音"/>
       <div className={'speaking-notice '+(saveError?'error':saved?'success':'')} role={saveError?'alert':'status'}><strong>{saved?'录音已保存在本机':saveError?'录音尚未保存':'正在保存录音…'}</strong><p>{saved?(nativeMode?'保存在这台设备。':'本机副本已保留，联网后同步。'):saveError?'这段音频仍在当前页面，可回听、重试或下载保留。离开后可能无法找回。':'可以先回听。保存成功后，才能再录或记录收获。'}</p></div>
       {saveError&&<div className="speaking-action-stack"><button type="button" className="button primary" disabled={saving} onClick={retrySave}><RotateCcw size={17}/>重试保存</button>{download}<button type="button" className="button secondary speaking-danger" onClick={()=>setDiscardOpen(true)}>放弃并离开</button></div>}
       <dl className="speaking-recording-meta"><div><dt>练习开始</dt><dd>{last.current?recordingTime(last.current.meta.createdAt,timezone):'—'}</dd></div><div><dt>录音长度</dt><dd>{last.current?.meta.duration??0} 秒</dd></div></dl>

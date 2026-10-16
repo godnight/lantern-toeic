@@ -12,7 +12,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 function load(file, imports = {}, globals = {}) {
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(path.join(root, file), 'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-  vm.runInNewContext(code, {exports,require(name){assert.ok(name in imports, 'Unexpected import: '+name);return imports[name];},Date,Map,Set,structuredClone,crypto:webcrypto,Blob,URL,AbortController,...globals}, {filename:file});
+  vm.runInNewContext(code, {exports,require(name){if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};assert.ok(name in imports, 'Unexpected import: '+name);return imports[name];},Date,Map,Set,structuredClone,crypto:webcrypto,Blob,URL,AbortController,...globals}, {filename:file});
   return exports;
 }
 const model = load('lib/study-model.ts');
@@ -48,7 +48,7 @@ const observedFiles={};
 function load(file,imports={},globals={}) {
  const source=fs.readFileSync(path.join(root,file),'utf8');observedFiles[file]=crypto.createHash('sha256').update(source).digest('hex');
  const exports={},code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
- vm.runInNewContext(code,{exports,require:name=>{if(!(name in imports))throw Error(name);return imports[name];},Date,Intl,Set,Map,URLSearchParams,Blob,URL,...globals});return exports;
+ vm.runInNewContext(code,{exports,require:name=>{if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};if(!(name in imports))throw Error(name);return imports[name];},Date,Intl,Set,Map,URLSearchParams,Blob,URL,...globals});return exports;
 }
 const model=load('lib/study-model.ts'),data=structuredClone(model.EMPTY_DATA);
 const jsx=(type,props)=>({type,props}),proxy=new Proxy({},{get:(_,key)=>String(key)});
@@ -75,7 +75,7 @@ const imports={react:hooks,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'
  '@/lib/study-backup':{},'@/lib/speaking-recovery':load('lib/speaking-recovery.ts'),'@/lib/native-host':{registerNativeBack:fn=>{nativeBack=fn;return()=>{if(nativeBack===fn)nativeBack=null;};}},'@/lib/ui-theme':{applyDocumentTheme(theme){appliedThemes.push(theme);},UI_THEME_META:{paper:{name:'日间'},crystal:{name:'夜间'},hollow:{name:'空洞骑士'},silk:{name:'丝之歌'}}},
  sonner:{toast:{message(){},success(){},error(){}}},'./learn/workspace-shell':{WorkspaceShell:'WorkspaceShell',WorkspaceHeading:'WorkspaceHeading',BackToWorkspace:'BackToWorkspace'},
  './learn/ui-theme':{ThemeChooser:'ThemeChooser'},'./learn/vocabulary-library':{default:'VocabularyLibrary',VocabularyEntry:'VocabularyEntry',VocabularyReviewSummary:'VocabularyReviewSummary'},
- './learn/speaking':{default:'SpeakingRoom',SpeakingTaskCatalog:'SpeakingTaskCatalog',SpeakingRecordingHistory:'SpeakingRecordingHistory'}};
+ './learn/speaking':{default:'SpeakingRoom',SpeakingTaskCatalog:'SpeakingTaskCatalog',SpeakingRecordingHistory:'SpeakingRecordingHistory'},'./learn/recording-player':{RecordingPlayer:'RecordingPlayer'}};
 for(const file of ['dialog','tabs','select','radio-group','progress','sonner'])imports['@/components/ui/'+file]=proxy;
 for(const file of ['resource-library','exam-collection','mock-exam','practice'])imports['./learn/'+file]={default:file};
 for(const file of ['questions','speaking'])imports['@/content/'+file+'.json']={default:JSON.parse(fs.readFileSync(path.join(root,'content',file+'.json'),'utf8'))};

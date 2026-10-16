@@ -251,6 +251,109 @@ class BundledPlaybackDiagnostics {
 
 const bundledPlaybackDiagnostics: BundledPlaybackDiagnostics = new BundledPlaybackDiagnostics();
 
+const RECORDING_CONSOLE_PREFIX: string = 'Recording playback ';
+const RECORDING_CONSOLE_LIMIT: number = 128;
+const RECORDING_EVENTS: string[] = ['reading', 'source-ready', 'url-attached', 'url-released', 'url-discarded',
+  'loadstart', 'loadedmetadata', 'durationchange', 'canplay', 'play', 'playing', 'timeupdate', 'pause', 'ended', 'error', 'waiting',
+  'stalled', 'timeout', 'retry', 'retired', 'global-stop', 'native-background', 'budget'];
+const RECORDING_KEYS: string[] = ['source', 'request', 'event', 'current', 'duration', 'ready', 'network',
+  'errorCode', 'paused', 'ended', 'seeking', 'sourceKind'];
+const RECORDING_SOURCE_KINDS: string[] = ['blob', 'local', 'remote', 'none'];
+
+class RecordingPlaybackData {
+  source: number = 0;
+  request: number = 0;
+  event: string = '';
+  current: number | null = null;
+  duration: number | null = null;
+  ready: number = 0;
+  network: number = 0;
+  errorCode: number | null = null;
+  paused: boolean = true;
+  ended: boolean = false;
+  seeking: boolean = false;
+  sourceKind: string = 'none';
+}
+
+class RecordingPlaybackLog {
+  v: number = 1;
+  seq: number = 0;
+  uptimeMs: number = -1;
+  wallMs: number = 0;
+  data: RecordingPlaybackData = new RecordingPlaybackData();
+}
+
+function recordingNullableNumber(value: number | null): boolean {
+  return value === null || typeof value === 'number' && Number.isFinite(value);
+}
+
+class RecordingPlaybackDiagnostics {
+  private count: number = 0;
+  private limitReported: boolean = false;
+
+  forward(message: string): boolean {
+    try {
+      if (message.length > 2048 || !message.startsWith(RECORDING_CONSOLE_PREFIX)) return false;
+      const input = JSON.parse(message.substring(RECORDING_CONSOLE_PREFIX.length)) as RecordingPlaybackData;
+      if (input === null || typeof input !== 'object' || Array.isArray(input)) return false;
+      const keys: string[] = Object.keys(input);
+      if (keys.length !== RECORDING_KEYS.length || keys.some((key: string) => !RECORDING_KEYS.includes(key))) return false;
+      if (!RECORDING_EVENTS.includes(input.event) || !RECORDING_SOURCE_KINDS.includes(input.sourceKind) ||
+        !Number.isSafeInteger(input.source) || input.source < 0 || input.source > 64 ||
+        !Number.isSafeInteger(input.request) || input.request < 0 ||
+        !recordingNullableNumber(input.current) || !recordingNullableNumber(input.duration) ||
+        !Number.isSafeInteger(input.ready) || input.ready < 0 || input.ready > 4 ||
+        !Number.isSafeInteger(input.network) || input.network < 0 || input.network > 3 ||
+        !(input.errorCode === null || Number.isSafeInteger(input.errorCode) && input.errorCode > 0) ||
+        typeof input.paused !== 'boolean' || typeof input.ended !== 'boolean' ||
+        typeof input.seeking !== 'boolean') return false;
+      if (input.event === 'budget' && (input.source !== 0 || input.request !== 0 || input.current !== null ||
+        input.duration !== null || input.ready !== 0 || input.network !== 0 || input.errorCode !== null ||
+        !input.paused || input.ended || input.seeking || input.sourceKind !== 'none')) return false;
+      if (input.event === 'budget' || this.count >= RECORDING_CONSOLE_LIMIT) {
+        if (!this.limitReported) {
+          this.limitReported = true;
+          this.write('v=1 phase=limit messages=128');
+        }
+        return true;
+      }
+      // Rebuild only validated fields; the parsed object and any arbitrary strings are never logged.
+      const output: RecordingPlaybackData = new RecordingPlaybackData();
+      output.source = input.source;
+      output.request = input.request;
+      output.event = input.event;
+      output.current = input.current;
+      output.duration = input.duration;
+      output.ready = input.ready;
+      output.network = input.network;
+      output.errorCode = input.errorCode;
+      output.paused = input.paused;
+      output.ended = input.ended;
+      output.seeking = input.seeking;
+      output.sourceKind = input.sourceKind;
+      const log: RecordingPlaybackLog = new RecordingPlaybackLog();
+      log.seq = ++this.count;
+      log.uptimeMs = mediaRangeUptime();
+      log.wallMs = Date.now();
+      log.data = output;
+      this.write(JSON.stringify(log));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private write(message: string): void {
+    try {
+      hilog.info(0x1001, 'LANTERN_RECORDING', '%{public}s', message);
+    } catch {
+      // A diagnostic sink failure never changes the recording player or trusted console routing.
+    }
+  }
+}
+
+const recordingPlaybackDiagnostics: RecordingPlaybackDiagnostics = new RecordingPlaybackDiagnostics();
+
 function isAppUrl(value: string): boolean {
   return value === APP_ORIGIN || value.startsWith(APP_URL);
 }
@@ -367,7 +470,9 @@ struct Index {
   private playbackConsole(message: ConsoleMessage): boolean {
     try {
       if (!this.pageReady || !this.isTrustedDocument()) return false;
-      return bundledPlaybackDiagnostics.forward(message.getMessage());
+      const text: string = message.getMessage();
+      if (recordingPlaybackDiagnostics.forward(text)) return true;
+      return bundledPlaybackDiagnostics.forward(text);
     } catch {
       return false;
     }
