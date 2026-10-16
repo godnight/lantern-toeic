@@ -63,7 +63,17 @@ test('missing MediaError information still explains failure without claiming the
 });
 test('metadata duration zero is explicitly unplayable; a later positive metadata duration recovers readiness',t=>{
  const h=harness();t.after(h.cleanup);h.emit('loadedmetadata',{duration:0,readyState:1});assert.match(text(h.tree),/时长.*0|0.*时长|零时长/);assert.match(text(h.tree),/无法|不能|不可/);assert.match(text(h.tree),/保留|原录音/);assert.doesNotMatch(text(h.tree),/正在播放|正在回听/);
- h.emit('durationchange',{duration:6,readyState:1});assert.doesNotMatch(text(h.tree),/零时长|时长.*0|0.*时长/);assert.deepEqual(h.revoked,[]);
+ h.emit('playing',{duration:0,readyState:4,paused:false});assert.doesNotMatch(text(h.tree),/正在播放|正在回听/);assert.match(text(h.tree),/无法|不能|不可/);
+ h.emit('durationchange',{duration:6,readyState:1,paused:true});assert.doesNotMatch(text(h.tree),/零时长|时长.*0|0.*时长/);h.emit('playing',{readyState:4,paused:false});assert.match(text(h.tree),/正在播放|正在回听/);assert.deepEqual(h.revoked,[]);
+});
+for(const readyState of [1,4])test(`known finite zero metadata then playing at readyState ${readyState} retains an explained unavailable state`,t=>{
+ const h=harness();t.after(h.cleanup);const original=h.audio;h.emit('loadedmetadata',{duration:0,readyState:1,paused:true});
+ for(let i=0;i<2;i++){h.emit('playing',{duration:0,readyState,paused:false});assert.doesNotMatch(text(h.tree),/正在播放|正在回听/);assert.match(text(h.tree),/时长.*0|0.*时长|零时长/);assert.match(text(h.tree),/无法|不能|不可/);assert.match(text(h.tree),/保留|原录音/);assert.equal(nodes(h.tree,node=>node.props?.role==='alert').length>0,true);}
+ assert.equal(h.audio,original);assert.equal(h.audio.props.src,'blob:history-original');assert.equal(h.audio.playCalls,0);assert.equal(h.audio.loadCalls,0);assert.deepEqual(h.created,[]);assert.deepEqual(h.revoked,[]);
+});
+test('late positive duration property before its queued metadata event permits genuine playing recovery',t=>{
+ const h=harness();t.after(h.cleanup);const original=h.audio;h.emit('loadedmetadata',{duration:0,readyState:1});h.emit('playing',{duration:0,readyState:4,paused:false});assert.doesNotMatch(text(h.tree),/正在播放|正在回听/);
+ h.emit('playing',{duration:6,readyState:4,paused:false});assert.match(text(h.tree),/正在播放|正在回听/);assert.equal(nodes(h.tree,node=>node.props?.role==='alert').length,0);assert.equal(h.audio,original);assert.equal(h.audio.props.src,'blob:history-original');assert.deepEqual(h.created,[]);assert.deepEqual(h.revoked,[]);
 });
 test('unknown metadata duration remains an explained reading state and is never called real playing',t=>{
  const h=harness();t.after(h.cleanup);h.emit('loadstart');h.emit('loadedmetadata',{duration:NaN,readyState:1});assert.match(text(h.tree),/读取|时长|加载/);assert.doesNotMatch(text(h.tree),/正在播放|正在回听/);assert.equal(h.audio.playCalls,0);
@@ -103,6 +113,7 @@ test('a first media error survives late playback, zero metadata/end and a differ
  const h=harness();t.after(h.cleanup);h.emit('error',{error:{code:3}});const original=h.audio,first=text(h.tree);
  for(const [name,values] of [['playing',{paused:false}],['pause',{paused:true}],['waiting',{}],['ended',{ended:true,currentTime:6,duration:6}]]){h.emit(name,values);assert.equal(text(h.tree),first);}
  h.emit('durationchange',{error:null,duration:0,readyState:4});assert.equal(text(h.tree),first);h.emit('ended',{duration:0,currentTime:0,ended:true});assert.equal(text(h.tree),first);h.emit('error',{error:{code:2}});assert.equal(text(h.tree),first);
+ h.emit('playing',{error:null,duration:0,readyState:4,paused:false});assert.equal(text(h.tree),first,'The recorded first error takes precedence over the finite-zero guard');
  h.emit('durationchange',{error:null,duration:6,readyState:4});assert.equal(text(h.tree),first);assert.equal(h.audio,original);h.retry();h.render();assert.notEqual(h.audio,original);assert.doesNotMatch(text(h.tree),/媒体错误 3/);assert.deepEqual(h.revoked,[]);
 });
 test('optional history download exposes the exact existing URL and filename without fetching or creating bytes',t=>{

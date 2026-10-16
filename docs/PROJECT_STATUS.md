@@ -361,3 +361,7 @@ PR #7已合并，GitHub main发布基线为`c3f7f460b6140f669f5d0c273d3f5f2666d0
 
 This independent candidate starts from frozen r17 and addresses recording URL ownership, shared playback states, stale asynchronous reads, and bounded native diagnosis. Source details and scope limits: [recording player r18](RECORDING-PLAYER-R18.md). CJS development checks passed 841/841 at source completion. Build and native acceptance remain separate evidence gates; the original r17 independent QA failure remains valid. No push, merge, deployment, upload, or release is authorized by this entry.
 
+# CT r19 isolated zero-duration correction — 2026-10-16
+
+This follow-up candidate preserves the r18 checkout and fixes its observed zero-duration `playing` state transition. See [r19 scope and original-file findings](RECORDING-PLAYER-R19.md). It cannot restore the historical recording's missing duration/content. Source tests, builds, native observations, and independent QA are separate gates; no release is authorized.
+

@@ -66,7 +66,7 @@ export function RecordingPlayer({src,autoPlay=false,className,label='回听录�
   const raw=audio.error?.code,code=typeof raw==='number'&&Number.isInteger(raw)&&raw>0?raw:null;
   update('error',mediaMessage(code),code);
  };
- const playing=(event:SyntheticEvent<HTMLAudioElement>)=>{const audio=current(event);if(!audio)return;recordingMediaTrace('playing',src,audio);if(audio.error||lease.phase==='error')return;clearWait();update('playing','正在回听录音。');};
+ const playing=(event:SyntheticEvent<HTMLAudioElement>)=>{const audio=current(event);if(!audio)return;recordingMediaTrace('playing',src,audio);if(audio.error||lease.phase==='error')return;clearWait();if(audio.readyState>=1&&Number.isFinite(audio.duration)&&audio.duration===0){update('unavailable','当前读取到的音频时长为 0，暂时无法播放。原录音保留，可重新读取。');return;}update('playing','正在回听录音。');};
  const paused=(event:SyntheticEvent<HTMLAudioElement>)=>{
   const audio=current(event);if(!audio)return;
   recordingMediaTrace('pause',src,audio);
