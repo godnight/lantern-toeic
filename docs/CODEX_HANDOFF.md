@@ -1,3 +1,9 @@
+# 当前接续：账号审查修订（2026-10-16）
+
+工作区 `vocab-work/auth-local-https-20261016/site`，分支 `fix/auth-review-20261016`，从冻结1012096后的HTTPS补件7660d8b接续。已修AUTH-01原子限流准入、旧标签页/BFCache服务端身份复核及认证结果不确定时的失效；追加0005迁移，不改学习归属。开发618/618、构建后mjs40/40、类型/构建通过。传输诊断将截断缩到本机Miniflare HTTPS入口，Node HTTPS对照完整，未改产品读体。完整变更、负控、命令与边界见 [修订回执](testing/AUTH-REVIEW-REVISION-20261016.md) 和 [本地HTTPS手册](testing/AUTH-LOCAL-HTTPS-RUNBOOK.md)。缺可信localhost TLS，真实浏览器及实际启停仍BLOCKED，待独立复测。保留QA10977/PID88408、冻结原码及媒体候选；未push/merge、部署、短信或迁移用户数据。
+
+---
+
 # 当前接续：统一身份与用户名密码本地实现（2026-10-16）
 
 独立 worktree `vocab-work/multiuser-auth-20261016/site`、分支 `feat/multiuser-auth-20261016`，精确基于公共本地分支 `6294c8902b5fe0a2ac881259ba9926eda0d8fbc4`。已写真实用户名密码注册/登录、稳定产品用户 ID、D1 会话与私有路由授权；未来 +86 手机号绑定同一账号。新账号不领取访客或旧 Sites 数据。默认认证开关关闭，未真实短信联调、未公开上线。

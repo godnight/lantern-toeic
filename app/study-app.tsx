@@ -9,6 +9,7 @@ import {Progress} from '@/components/ui/progress';
 import {Toaster} from '@/components/ui/sonner';
 import {toast} from 'sonner';
 import {useStudy} from '@/lib/use-study';
+import {useProductSession} from '@/lib/use-product-session';
 import {syncRecovery} from '@/lib/account-boundary';
 import {stopLessonAudio} from '@/lib/lesson-audio';
 import {FirstVisit,AccountCenter,SaveAndSync,AboutProject} from './learn/account-center';
@@ -41,7 +42,8 @@ const ONLINE_SITE_URL='https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site
 function saveFile(name:string,text:string,type='application/json'){const u=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);}
 function ChoiceSelect({value,onChange,items,label}:{value:string;onChange:(v:string)=>void;items:{value:string;label:string}[];label:string}){return <Select value={value} onValueChange={onChange}><SelectTrigger className="form-select" aria-label={label}><SelectValue/></SelectTrigger><SelectContent>{items.map(x=><SelectItem key={x.value} value={x.value}>{x.label}</SelectItem>)}</SelectContent></Select>}
 export default function StudyApp({owner,nativeMode=false}:{owner:string|null;nativeMode?:boolean}){
- return <><SpeakingRecoveryGuard/><StudyWorkspace key={JSON.stringify([nativeMode,owner])} owner={owner} nativeMode={nativeMode}/></>;
+ const session=useProductSession(owner,nativeMode);
+ return <><SpeakingRecoveryGuard/>{session.status==='ready'?<StudyWorkspace key={JSON.stringify([nativeMode,owner])} owner={owner} nativeMode={nativeMode}/>:<main className="workspace"><div className="page-content"><section className="panel" aria-live="polite" aria-busy={session.status==='checking'}><h1>核对账号状态</h1><p>{session.status==='checking'?'正在向服务器核对身份，原账号学习视图已暂停。':session.status==='redirecting'?'账号状态已变化，正在重新打开对应的学习分区。':'暂时无法确认当前身份，原账号学习视图保持暂停。不会转为访客或清空原记录。'}</p><p className="small muted">已保存内容留在原分区。未保存内容仅按已有草稿和录音恢复机制保留；此处不会迁移或上传数据。</p><div className="button-row">{session.status==='error'&&<button className="button primary" onClick={session.recheck}>重新核对账号</button>}<a className="button secondary" href="/">重新打开学习页</a></div></section></div></main>}</>;
 }
 export function SpeakingRecoveryGuard(){
  useEffect(()=>{const protect=(event:BeforeUnloadEvent)=>{if(hasSpeakingRecovery()){event.preventDefault();event.returnValue='';}};window.addEventListener('beforeunload',protect);return()=>window.removeEventListener('beforeunload',protect);},[]);

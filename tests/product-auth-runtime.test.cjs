@@ -180,4 +180,49 @@ test('locked workerd runtime executes production-cost scrypt and real D1 auth li
   assert.match(logoutResponse.headers.get('set-cookie'), /Max-Age=0$/);
   assert.equal((await dispatch('/session', undefined, loggedInCookie)).status, 401, 'logout invalidates the server-side session');
   assert.equal((await db.prepare('SELECT COUNT(*) AS count FROM auth_sessions').first()).count, 0);
+
+  // Only this ephemeral test D1 is reset. Existing synthetic account/credential
+  // rows stay in place; no app mock, KDF replacement or credential capture is used.
+  const windowMs = 15 * 60 * 1000;
+  const seedGlobalBudget = async (count) => {
+    const windowStart = Math.floor(Date.now() / windowMs) * windowMs;
+    await db.batch([
+      db.prepare('DELETE FROM auth_rate_limits'),
+      db.prepare("INSERT INTO auth_rate_limits(scope,window_start,count,admission_id) VALUES('global:credentials',?,?,'')").bind(windowStart, count),
+    ]);
+    return windowStart;
+  };
+  const unknownLogin = async (username) => {
+    const response = await dispatch('/login', { username, password });
+    const { code } = await response.json();
+    return { status: response.status, code };
+  };
+
+  const saturatedWindow = await seedGlobalBudget(100);
+  const saturatedStart = performance.now();
+  const saturatedResults = await Promise.all(Array.from({ length: 1000 }, (_, index) => unknownLogin(`saturated_${index}`)));
+  for (const outcome of saturatedResults) {
+    assert.deepEqual(outcome, { status: 429, code: 'too-many-attempts' }, 'global denial occurs before the real KDF; auth-busy is not admission denial');
+  }
+  assert.equal(Math.floor(Date.now() / windowMs) * windowMs, saturatedWindow, 'runtime test must not straddle an admission window boundary');
+  const saturatedRows = (await db.prepare('SELECT scope,count FROM auth_rate_limits WHERE window_start=? ORDER BY scope').bind(saturatedWindow).all()).results;
+  assert.deepEqual(saturatedRows, [{ scope: 'global:credentials', count: 100 }], '1000 denied distinct valid usernames allocate zero username rows and never increment the saturated global bucket');
+  t.diagnostic(`Real workerd + D1 saturated admission: 1000 distinct valid unknown usernames, 1000 too-many-attempts, 0 auth-busy, 0 username rows; global count stays 100; ${Math.round(performance.now() - saturatedStart)} ms wall time`);
+
+  const lastSlotWindow = await seedGlobalBudget(99);
+  const lastSlotStart = performance.now();
+  const lastSlotResults = await Promise.all(Array.from({ length: 100 }, (_, index) => unknownLogin(`last_slot_${index}`)));
+  assert.equal(lastSlotResults.filter(({ status, code }) => status === 401 && code === 'invalid-credentials').length, 1, 'exactly one request receives the last slot and completes real unknown-user KDF verification');
+  assert.equal(lastSlotResults.filter(({ status, code }) => status === 429 && code === 'too-many-attempts').length, 99, 'all other cross-request competitors are rejected by shared D1 admission');
+  assert.equal(lastSlotResults.filter(({ code }) => code === 'auth-busy').length, 0, 'KDF busy responses cannot stand in for atomic admission evidence');
+  assert.equal(Math.floor(Date.now() / windowMs) * windowMs, lastSlotWindow, 'runtime test must not straddle an admission window boundary');
+  const lastSlotRows = (await db.prepare('SELECT scope,count FROM auth_rate_limits WHERE window_start=? ORDER BY scope').bind(lastSlotWindow).all()).results;
+  assert.equal(lastSlotRows.length, 2, 'only the admitted request allocates a username row');
+  assert.deepEqual(lastSlotRows[0], { scope: 'global:credentials', count: 100 });
+  assert.match(lastSlotRows[1].scope, /^login:username:[0-9a-f]{64}$/);
+  assert.equal(lastSlotRows[1].count, 1);
+  assert.equal((await db.prepare('SELECT COUNT(*) AS count FROM auth_users').first()).count, 1, 'unknown logins create no account');
+  assert.equal((await db.prepare('SELECT COUNT(*) AS count FROM auth_password_credentials').first()).count, 1, 'unknown logins create no credential');
+  assert.equal((await db.prepare('SELECT COUNT(*) AS count FROM auth_sessions').first()).count, 0, 'unknown logins create no session');
+  t.diagnostic(`Real workerd cross-request last-slot race: 100 requests, 1 invalid-credentials after real KDF, 99 too-many-attempts, 0 auth-busy; exactly 1 username row and global count 100; ${Math.round(performance.now() - lastSlotStart)} ms wall time. This is D1 admission evidence, not CPU/isolate parallelism or load-capacity evidence.`);
 });

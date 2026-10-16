@@ -159,7 +159,7 @@ test('atomic concurrent per-username rate limiting admits at most five attempts 
   const responses = await Promise.all(Array.from({length: 10}, (_, i) => e.call('login', 'POST', {body: {username: i % 2 ? 'Alice' : 'alice', password: 'Wrong synthetic password 53!'}})));
   assert.equal(responses.filter(response => response.status === 401).length, 1, 'Only the fifth attempt can consume the last username slot');
   assert.equal(responses.filter(response => response.status === 429).length, 9);
-  assert.equal(e.rows('auth_rate_limits').find(row => row.scope.startsWith('login:username:')).count, 14);
+  assert.equal(e.rows('auth_rate_limits').find(row => row.scope.startsWith('login:username:')).count, 5);
   for (const response of responses.filter(response => response.status === 429)) assert.ok(Number(response.headers.get('retry-after')) > 0);
   assert.equal(e.rows('auth_users').length, 0);
 });
@@ -171,7 +171,7 @@ test('the global credential bucket is atomic across different usernames and call
   const responses = await Promise.all(Array.from({length: 10}, (_, i) => e.call('login', 'POST', {body: {username: 'synthetic_' + i, password: PASSWORD}, headers: {'x-forwarded-for': '192.0.2.' + i}})));
   assert.equal(responses.filter(response => response.status === 401).length, 1, 'Only the last slot of the 100-attempt budget is available');
   assert.equal(responses.filter(response => response.status === 429).length, 9);
-  assert.equal(e.rows('auth_rate_limits').find(row => row.scope === 'global:credentials').count, 109);
+  assert.equal(e.rows('auth_rate_limits').find(row => row.scope === 'global:credentials').count, 100);
 });
 
 test('a real strong KDF in flight gives another account immediate 429 without queuing or minting a session', async t => {

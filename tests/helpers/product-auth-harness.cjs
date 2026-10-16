@@ -19,7 +19,7 @@ function environment(options = {}) {
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec('PRAGMA foreign_keys = ON');
   for (const file of fs.readdirSync(path.join(root, 'drizzle')).filter(name => name.endsWith('.sql')).sort()) {
-    if (options.withoutAuth && file === '0004_product_auth.sql') continue;
+    if (options.withoutAuth && /^000[45]_/.test(file)) continue;
     sqlite.exec(fs.readFileSync(path.join(root, 'drizzle', file), 'utf8'));
   }
   const queries = [], objects = new Map(), moduleCache = new Map();
@@ -75,7 +75,10 @@ function environment(options = {}) {
       assert.ok(target, 'Resolve application import ' + name + ' from ' + file);
       return load(target);
     }
-    const code = ts.transpileModule(fs.readFileSync(path.join(root, file), 'utf8'), {
+    // Test-only source override supports read-only frozen-commit negative
+    // controls. The default always loads the real working-tree application.
+    const source = options.sourceOverrides?.[file] ?? fs.readFileSync(path.join(root, file), 'utf8');
+    const code = ts.transpileModule(source, {
       compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true, resolveJsonModule: true},
     }).outputText;
     vm.runInNewContext(code, {exports, require: resolve, Date, Intl, Map, Set, Error, SyntaxError, JSON,

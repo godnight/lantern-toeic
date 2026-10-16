@@ -1,0 +1,2 @@
+# Preserve the exact frozen negative-control bytes even with core.autocrlf=true.
+tests/fixtures/auth-service-1012096.ts.txt -text

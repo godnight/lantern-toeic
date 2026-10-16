@@ -131,6 +131,7 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
   Object.assign(imports,require('./helpers/phase2-shell-fixture.cjs').workflowShellFixture(h.react,load('lib/practice-selection.ts',{'./study-model':h.model},h.browser)));
   imports['@/public/build-identity.json']={default:JSON.parse(fs.readFileSync(root+'/public/build-identity.json','utf8'))};
   imports['@/lib/account-boundary']=load('lib/account-boundary.ts');
+  imports['@/lib/use-product-session']={useProductSession:()=>({status:'ready',recheck(){}})};
  imports['@/lib/lesson-audio']={stopLessonAudio(){}};
  imports['./learn/account-center']={FirstVisit:'FirstVisit',AccountCenter:'AccountCenter',SaveAndSync:'SaveAndSync',AboutProject:'AboutProject'};
  const app = load('app/study-app.tsx',imports,h.browser);

@@ -60,18 +60,35 @@ async function readCredentials(request:Request):Promise<{username:unknown;passwo
 /** Shared D1 atomic buckets: no in-process counters or untrusted client IPs. */
 async function throttle(db:D1Database,action:'login'|'register',username:string){
  const now=Date.now(),windowMs=15*60*1000,windowStart=Math.floor(now/windowMs)*windowMs;
- await db.prepare('DELETE FROM auth_rate_limits WHERE window_start < ?').bind(now-24*60*60*1000).run();
- // Reject exhausted usernames before spending the shared CPU safety budget.
- const buckets=[{scope:`${action}:username:${digest(username)}`,limit:5},{scope:'global:credentials',limit:100}];
- if(action==='register')buckets.push({scope:'global:register',limit:20});
- for(const bucket of buckets){
-  const row=await db.prepare(`INSERT INTO auth_rate_limits(scope,window_start,count) VALUES(?,?,1)
-   ON CONFLICT(scope,window_start) DO UPDATE SET count=count+1 RETURNING count`).bind(bucket.scope,windowStart).first<{count:number}>();
-  if(!row||row.count>bucket.limit){
-   const response=authJson({code:'too-many-attempts',error:'尝试次数过多，请稍后再试'},429);
-   response.headers.set('Retry-After',String(Math.max(1,Math.ceil((windowStart+windowMs-now)/1000))));return response;
-  }
+ const scope=`${action}:username:${digest(username)}`,ticket=randomUUID();
+ const available=`COALESCE((SELECT count FROM auth_rate_limits WHERE scope='global:credentials' AND window_start=?),0)<100
+  AND (?='login' OR COALESCE((SELECT count FROM auth_rate_limits WHERE scope='global:register' AND window_start=?),0)<20)`;
+ // The username row is allocated/updated only if BOTH shared budgets admit it.
+ // Every write below is in the same D1 transaction. A random ticket associates
+ // the shared increments with this exact accepted update, with no request table
+ // and no dependency on connection-local changes() or JavaScript read/then/write.
+ const statements=[
+  db.prepare(`DELETE FROM auth_rate_limits WHERE rowid IN
+   (SELECT rowid FROM auth_rate_limits WHERE window_start < ? ORDER BY window_start LIMIT 128)`).bind(now-24*60*60*1000),
+  db.prepare(`INSERT INTO auth_rate_limits(scope,window_start,count,admission_id)
+   SELECT ?,?,1,? WHERE ${available}
+   ON CONFLICT(scope,window_start) DO UPDATE SET count=count+1,admission_id=excluded.admission_id
+   WHERE count<5 AND ${available}`).bind(scope,windowStart,ticket,windowStart,action,windowStart,windowStart,action,windowStart),
+  db.prepare(`INSERT INTO auth_rate_limits(scope,window_start,count,admission_id)
+   SELECT 'global:credentials',?,1,'' WHERE EXISTS
+   (SELECT 1 FROM auth_rate_limits WHERE scope=? AND window_start=? AND admission_id=?)
+   ON CONFLICT(scope,window_start) DO UPDATE SET count=count+1 WHERE count<100`).bind(windowStart,scope,windowStart,ticket)
+ ];
+ if(action==='register')statements.push(db.prepare(`INSERT INTO auth_rate_limits(scope,window_start,count,admission_id)
+  SELECT 'global:register',?,1,'' WHERE EXISTS
+  (SELECT 1 FROM auth_rate_limits WHERE scope=? AND window_start=? AND admission_id=?)
+  ON CONFLICT(scope,window_start) DO UPDATE SET count=count+1 WHERE count<20`).bind(windowStart,scope,windowStart,ticket));
+ const result=await db.batch(statements);
+ if(!result[1].meta.changes){
+  const response=authJson({code:'too-many-attempts',error:'尝试次数过多，请稍后再试'},429);
+  response.headers.set('Retry-After',String(Math.max(1,Math.ceil((windowStart+windowMs-now)/1000))));return response;
  }
+ if(result[2].meta.changes!==1||(action==='register'&&result[3].meta.changes!==1))throw new Error('Auth admission transaction failed');
  return null;
 }
 export async function credentialAction(request:Request,action:'login'|'register',env:AuthEnvironment):Promise<Response>{
@@ -119,7 +136,8 @@ export async function credentialAction(request:Request,action:'login'|'register'
  }
 }
 export async function sessionAction(request:Request,action:'read'|'logout',env:AuthEnvironment):Promise<Response>{
- const config=authConfiguration(env);if(!config)return unavailable();
+ const config=authConfiguration(env);
+ if(!config)return action==='read'?authJson({code:'auth-disabled',error:'账号服务尚未配置；可继续原访客本机学习',capabilities:{passwordLogin:false,phoneLogin:false,passwordRecovery:false}},503):unavailable();
  if(new URL(request.url).origin!==config.origin)return authJson({code:'invalid-origin',error:'请求来源不匹配'},403);
  if(action==='logout'&&!sameOriginMutation(request,config.origin))return authJson({code:'invalid-origin',error:'请求来源不匹配'},403);
  try{

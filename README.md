@@ -1,3 +1,9 @@
+# 当前修订：账号独立审查回应（2026-10-16）
+
+独立分支 `fix/auth-review-20261016`、目录 `vocab-work/auth-local-https-20261016/site` 在 HTTPS 补件7660d8b之后修复 AUTH-01：D1 单事务按共享预算准入，满额不再分配用户名桶；旧标签页/页面恢复先暂停原工作区并向服务端复核身份，认证请求结果不确定也失效重核。开发回归618/618、构建后mjs40/40、类型与构建通过。独立传输对照在极小 Worker 复现本机 Miniflare HTTPS 截断，未向产品添加猜测性读体补丁。详见 [修订证据与复现](docs/testing/AUTH-REVIEW-REVISION-20261016.md)。冻结1012096及公共基线未动；真实浏览器仍因缺可信TLS而BLOCKED，未真实短信联调、未公开上线。
+
+---
+
 # 本地账号页 HTTPS 运行补件（2026-10-16）
 
 独立目录 `vocab-work/auth-local-https-20261016/site` 从冻结认证提交1012096接续。启动配置、隔离D1初始化和完整命令见 `docs/testing/AUTH-LOCAL-HTTPS-RUNBOOK.md`。当前机器缺可信localhost TLS，严格预检拒绝，真实浏览器账号页及停服验收仍BLOCKED；未改信任库、Secure/CSRF/origin或冻结候选。QA与开发用9443/9444及独立浏览器profile，不触碰QA保留的10977/PID88408。

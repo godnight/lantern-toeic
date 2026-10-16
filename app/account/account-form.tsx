@@ -2,6 +2,7 @@
 
 import {useEffect,useRef,useState} from 'react';
 import type {FormEvent} from 'react';
+import {broadcastProductSessionChange,useProductSession} from '@/lib/use-product-session';
 
 type User = {id:string;username:string};
 type Session = {status:'loading'|'guest'|'unavailable'|'error'|'native'} | {status:'authenticated';user:User};
@@ -29,6 +30,7 @@ export default function AccountForm() {
   const [switching,setSwitching]=useState(false);
   const [check,setCheck]=useState(0);
   const requestPending=useRef(false);
+  const sessionGuard=useProductSession(session.status==='authenticated'?session.user.id:null,session.status==='native');
 
   useEffect(()=>{
     if(window.__LANTERN_HARMONY__||window.location.origin==='https://lantern.local'){
@@ -62,7 +64,7 @@ export default function AccountForm() {
 
   async function submit(event:FormEvent<HTMLFormElement>){
     event.preventDefault();
-    if(requestPending.current||busy||(session.status!=='guest'&&!(session.status==='authenticated'&&switching)))return;
+    if(requestPending.current||busy||sessionGuard.status!=='ready'||(session.status!=='guest'&&!(session.status==='authenticated'&&switching)))return;
     setError('');
     if(/[^\x00-\x7f]/.test(username)||!/^[a-zA-Z0-9_]{3,32}$/.test(username.trim())){
       setError('用户名须为 3–32 个英文字母、数字或下划线，首尾空白会去除，大小写不区分。');return;
@@ -77,28 +79,37 @@ export default function AccountForm() {
         setError(response.status===429?'尝试过于频繁，请稍后再试。':response.status===503?'账号服务暂不可用，当前身份没有切换。':response.status===403?'请求未通过安全校验，请重新核对登录状态后再试。':mode==='login'?'登录失败，请检查用户名和密码，或稍后再试。':'未能注册，请检查用户名和密码要求，或稍后再试。');return;
       }
       if(!responseUser(await response.json()))throw new Error('Invalid response');
+      broadcastProductSessionChange();
       // Full navigation drops the old owner's in-memory views and requests.
       window.location.assign('/');
     }catch{
       setError('请求结果未能确认。请重新核对登录状态，确认后再继续；此页不会假定已成功。');
+      // The mutation may have committed (and Set-Cookie may have arrived) even
+      // when fetching/parsing its response fails. Invalidate, never infer success.
+      broadcastProductSessionChange();
+      sessionGuard.recheck();
     }finally{
       setPassword('');setConfirmation('');requestPending.current=false;setBusy(false);
     }
   }
 
   async function logout(){
-    if(requestPending.current||busy||session.status!=='authenticated')return;
+    if(requestPending.current||busy||sessionGuard.status!=='ready'||session.status!=='authenticated')return;
     requestPending.current=true;setBusy(true);setError('');
     try{
       const response=await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:'{}'});
-      if(response.status!==200)throw new Error('Logout unconfirmed');
+      if(response.status!==200){setError('退出未获服务器确认，仍保留当前账号视图。请检查网络并重新核对登录状态。');return;}
+      broadcastProductSessionChange();
       window.location.assign('/');
     }catch{
-      setError('退出未获服务器确认，仍保留当前账号视图。请检查网络并重新核对登录状态。');
+      setError('退出结果未能确认。账号操作已暂停并重新核对服务器会话；此页不会假定已退出。');
+      broadcastProductSessionChange();
+      sessionGuard.recheck();
     }finally{requestPending.current=false;setBusy(false);}
   }
 
   const available=session.status==='guest'||session.status==='authenticated';
+  if(sessionGuard.status!=='ready')return <section className="panel" aria-live="polite" aria-busy={sessionGuard.status==='checking'}><h2>核对账号状态</h2><p>{sessionGuard.status==='checking'?'正在重新核对服务器会话，账号操作已暂停。':sessionGuard.status==='redirecting'?'会话已变化，正在重新打开学习页。':'当前会话无法确认，账号操作保持暂停，请重试。'}</p>{error&&<p role="alert" className="bad">{error}</p>}<div className="button-row">{sessionGuard.status==='error'&&<button className="button primary" onClick={sessionGuard.recheck}>重新核对账号</button>}<a className="button secondary" href="/">返回学习</a></div></section>;
   return <div className="workspace-account" aria-busy={busy||session.status==='loading'} style={{display:'grid',gap:20}}>
     <section className="panel" aria-labelledby="account-session-title" style={{display:'grid',gap:16}}>
       <h2 id="account-session-title">当前账号状态</h2>

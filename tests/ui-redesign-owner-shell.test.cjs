@@ -83,6 +83,7 @@ imports['@/release-manifest.json']={default:JSON.parse(fs.readFileSync(path.join
 Object.assign(imports,require('./helpers/phase2-shell-fixture.cjs').workflowShellFixture(hooks,load('lib/practice-selection.ts',{'./study-model':model})));
 imports['@/public/build-identity.json']={default:JSON.parse(fs.readFileSync(path.join(root,'public/build-identity.json'),'utf8'))};
 imports['@/lib/account-boundary']=load('lib/account-boundary.ts');
+imports['@/lib/use-product-session']={useProductSession:()=>({status:'ready',recheck(){}})};
  imports['@/lib/lesson-audio']={stopLessonAudio(){}};
  imports['./learn/account-center']={FirstVisit:'FirstVisit',AccountCenter:'AccountCenter',SaveAndSync:'SaveAndSync',AboutProject:'AboutProject'};
  const app=load('app/study-app.tsx',imports,{window,document,HTMLElement:Element,navigator:{},requestAnimationFrame:fn=>frame.push(fn),setInterval:()=>1,clearInterval(){}}).StudyWorkspace;

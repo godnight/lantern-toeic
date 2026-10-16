@@ -24,7 +24,7 @@ function accountUi(responses=[],native=false,file='app/account/account-form.tsx'
   useEffect(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps)){const previous=slots[i];slots[i]={deps};effects.push(()=>{previous?.cleanup?.();slots[i].cleanup=fn();});}}
  };
  const jsx=(type,props)=>({type,props});
- const imports={react,'react/jsx-runtime':{jsx,jsxs:jsx},'@/lib/account-boundary':boundary,'@/content/source-index.json':{default:{entries:[]}}};
+ const imports={react,'react/jsx-runtime':{jsx,jsxs:jsx},'@/lib/account-boundary':boundary,'@/content/source-index.json':{default:{entries:[]}},'@/lib/use-product-session':{useProductSession:()=>({status:'ready',recheck(){}}),broadcastProductSessionChange(){}}};
  const exports={};
  vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,{
   exports,require(name){assert.ok(name in imports,'Unexpected client import: '+name);return imports[name];},AbortController,
