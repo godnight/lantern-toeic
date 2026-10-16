@@ -1,3 +1,11 @@
+# 当前接续：统一身份与用户名密码本地实现（2026-10-16）
+
+独立 worktree `vocab-work/multiuser-auth-20261016/site`、分支 `feat/multiuser-auth-20261016`，精确基于公共本地分支 `6294c8902b5fe0a2ac881259ba9926eda0d8fbc4`。已写真实用户名密码注册/登录、稳定产品用户 ID、D1 会话与私有路由授权；未来 +86 手机号绑定同一账号。新账号不领取访客或旧 Sites 数据。默认认证开关关闭，未真实短信联调、未公开上线。
+
+详见 `docs/testing/PRODUCT-AUTH-DEVELOPMENT-20261016.md` 和 `docs/rfcs/0007-product-password-session.md`。仅本地源码/纯测试，无 push/merge/生产权限或设备操作；没有合入媒体修复。此分支不直接覆盖旧个人站，旧 Sites 身份头不再认证。原生、可信密码恢复、真实短信、迁移与公共发布门槛仍另验；下面均为历史记录。
+
+---
+
 # 当前接续：公开共学本地入口候选（2026-10-15）
 
 隔离工作区`vocab-work/public-local-20261015/site`，分支`feat/public-local-20261015`，从冻结CT-r3 `30257b3a8acdf26258d4310a22ef480e8c9e4f6a`接续。版本0.3.6/20018；CT原工作区只读留小测。已接访客首配、按域保存/同步、账号与数据能力边界、来源/参与和备份说明，详见`docs/testing/PUBLIC-LOCAL-DEVELOPMENT.md`与外层`DELIVERY-PUBLIC-LOCAL-r3.json`。当前候选未独立QA、未发布；真实手机号/产品会话/迁移写入/云删除和公开权利仍有门槛，不称公开多用户完成。

@@ -349,7 +349,7 @@ test('uploading an offline recording retains the date the practice occurred', as
   const route=load('app/api/recordings/route.ts',{
     'cloudflare:workers':{env:{BUCKET:{put:async()=>{}}}},
     'drizzle-orm':{eq(){},and(){}},
-    '@/db':{getDb:()=>({insert:()=>({values:row=>({onConflictDoNothing:async()=>{stored=row;}})})})},
+    '@/db':{getDb:()=>({select:()=>({from:()=>({where:async()=>stored?[stored]:[]})}),insert:()=>({values:row=>({onConflictDoNothing:async()=>{stored=row;}})})})},
     '@/db/schema':{recordings:{}},
     '@/lib/server-auth':auth,
     '@/content/speaking.json':{default:prompts}

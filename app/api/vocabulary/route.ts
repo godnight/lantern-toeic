@@ -3,13 +3,13 @@ import {sql} from 'drizzle-orm';
 import {userId,safeMutation,privateJson} from '@/lib/server-auth';
 import {parseVocabularyBackup} from '@/lib/vocabulary-model';
 
-export async function GET(){
- const owner=await userId();if(!owner)return privateJson({error:'请登录后同步'},401);
+export async function GET(request?:Request){
+ const owner=await userId(request);if(!owner)return privateJson({error:'请登录后同步'},401);
  try{const rows=await getDb().all<{body:string}>(sql`SELECT body FROM vocabulary_events WHERE user_id = ${owner}`);return privateJson({owner,kind:'lantern-vocabulary',schemaVersion:1,events:rows.map(row=>JSON.parse(row.body))});}
  catch{return privateJson({error:'词库同步暂时不可用，本机记录会保留'},503);}
 }
 export async function POST(request:Request){
- const owner=await userId();if(!owner)return privateJson({error:'请登录后同步'},401);
+ const owner=await userId(request);if(!owner)return privateJson({error:'请登录后同步'},401);
  if(request.headers.get('x-lantern-owner')!==owner)return privateJson({error:'账号已切换，请刷新'},409);
  if(!safeMutation(request))return privateJson({error:'请求来源不匹配'},403);
  const raw=await request.text();if(raw.length>100000)return privateJson({error:'请求过大'},413);

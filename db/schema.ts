@@ -1,4 +1,4 @@
-import {integer, sqliteTable, text, primaryKey, uniqueIndex} from 'drizzle-orm/sqlite-core';
+import {integer, sqliteTable, text, primaryKey, uniqueIndex, index} from 'drizzle-orm/sqlite-core';
 export const profiles=sqliteTable('profiles',{userId:text('user_id').primaryKey(),body:text('body').notNull(),updatedAt:text('updated_at').notNull()});
 export const attempts=sqliteTable('attempts',{id:text('id').primaryKey(),userId:text('user_id').notNull(),qid:text('qid').notNull(),choice:integer('choice').notNull(),correct:integer('correct',{mode:'boolean'}).notNull(),createdAt:text('created_at').notNull(),seconds:integer('seconds').notNull(),mode:text('mode').notNull()});
 export const checkins=sqliteTable('checkins',{id:text('id').primaryKey(),userId:text('user_id').notNull(),body:text('body').notNull(),createdAt:text('created_at').notNull()});
@@ -8,3 +8,9 @@ export const questionMarks=sqliteTable('question_marks',mutableColumns(),table=>
 export const resourceTasks=sqliteTable('resource_tasks',mutableColumns(),table=>[primaryKey({columns:[table.userId,table.entityId]})]);
 export const vocabularyEvents=sqliteTable('vocabulary_events',{userId:text('user_id').notNull(),eventId:text('event_id').notNull(),body:text('body').notNull()},table=>[primaryKey({columns:[table.userId,table.eventId]})]);
 export const examLibrary=sqliteTable('exam_library',{id:text('id').primaryKey(),userId:text('user_id').notNull(),objectKey:text('object_key').notNull(),manifest:text('manifest').notNull(),bytes:integer('bytes').notNull(),sha256:text('sha256').notNull(),state:text('state').notNull(),createdAt:text('created_at').notNull()},table=>[uniqueIndex('exam_library_owner_sha').on(table.userId,table.sha256)]);
+// Product identity is independent of mutable username/phone credentials. No
+// migration or ownership reassignment from legacy tables is performed here.
+export const authUsers=sqliteTable('auth_users',{id:text('id').primaryKey(),username:text('username').notNull().unique(),createdAt:integer('created_at').notNull()});
+export const authPasswordCredentials=sqliteTable('auth_password_credentials',{userId:text('user_id').primaryKey().references(()=>authUsers.id),passwordHash:text('password_hash').notNull()});
+export const authSessions=sqliteTable('auth_sessions',{tokenHash:text('token_hash').primaryKey(),userId:text('user_id').notNull().references(()=>authUsers.id),createdAt:integer('created_at').notNull(),expiresAt:integer('expires_at').notNull()},table=>[index('auth_sessions_user').on(table.userId),index('auth_sessions_expiry').on(table.expiresAt)]);
+export const authRateLimits=sqliteTable('auth_rate_limits',{scope:text('scope').notNull(),windowStart:integer('window_start').notNull(),count:integer('count').notNull()},table=>[primaryKey({columns:[table.scope,table.windowStart]}),index('auth_rate_limits_expiry').on(table.windowStart)]);

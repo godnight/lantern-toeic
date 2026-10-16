@@ -2,13 +2,17 @@
 export type IdentityView =
  | {status:'unknown';generation:number}
  | {status:'guest';namespace:'existing-device';generation:number}
+ | {status:'product-session';maskedLabel:string;generation:number}
  | {status:'legacy-session';maskedLabel:string;generation:number};
 export const ACCOUNT_CAPABILITIES={phoneLogin:false,productSession:false,claimLocalData:false,deleteCloudData:false,clearDeviceData:false} as const;
 export function identityView(ready:boolean,owner:string|null,nativeMode:boolean,generation=0):IdentityView {
  if(!ready)return {status:'unknown',generation};
  // Native has no product-session transport yet. Passing a UID cannot enable it.
  if(nativeMode||!owner)return {status:'guest',namespace:'existing-device',generation};
+ // This is only a label for the owner already supplied by the server, never an
+ // authentication check. Native callers cannot enable a product session.
  const maskedLabel=owner.length>5?owner.slice(0,2)+'…'+owner.slice(-2):'已验证的站点身份';
+ if(/^usr_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(owner))return {status:'product-session',maskedLabel,generation};
  return {status:'legacy-session',maskedLabel,generation};
 }
 export type RecoveryAction={kind:'retry'|'login'|'permission'|'identity'|'conflict'|'inspect';label:string;detail:string};
@@ -23,7 +27,7 @@ export function syncRecovery(issue:{status?:string;httpStatus?:number;reason?:st
  return {kind:'retry',label:'重新尝试',detail:'在原记录范围重试，使用原事件标识。'};
 }
 export const MIGRATION_CONTRACT={version:'preview-only-v1',writesEnabled:false,sourceScopes:['web-owner','web-local','harmony-device'],rules:[
- '新手机号账号不自动接收旧站或此设备记录。',
+ '新账号不自动接收旧站或此设备记录；用户名和手机号共用同一稳定身份。',
  '旧云数据需证明旧、新身份；本机记录需明确选择。',
  '先按领域预览和备份，保留原ID、发生时间、媒体摘要和迁移ID。',
  '重复迁移不新增事实；冲突停止该领域，失败或取消不删源。',
