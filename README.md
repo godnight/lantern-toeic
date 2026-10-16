@@ -1,3 +1,9 @@
+# 本地账号页 HTTPS 运行补件（2026-10-16）
+
+独立目录 `vocab-work/auth-local-https-20261016/site` 从冻结认证提交1012096接续。启动配置、隔离D1初始化和完整命令见 `docs/testing/AUTH-LOCAL-HTTPS-RUNBOOK.md`。当前机器缺可信localhost TLS，严格预检拒绝，真实浏览器账号页及停服验收仍BLOCKED；未改信任库、Secure/CSRF/origin或冻结候选。QA与开发用9443/9444及独立浏览器profile，不触碰QA保留的10977/PID88408。
+
+---
+
 # 当前接续：统一身份与用户名密码本地实现（2026-10-16）
 
 独立 worktree `vocab-work/multiuser-auth-20261016/site`、分支 `feat/multiuser-auth-20261016`，精确基于公共本地分支 `6294c8902b5fe0a2ac881259ba9926eda0d8fbc4`。已写真实用户名密码注册/登录、稳定产品用户 ID、D1 会话与私有路由授权；未来 +86 手机号绑定同一账号。新账号不领取访客或旧 Sites 数据。默认认证开关关闭，未真实短信联调、未公开上线。

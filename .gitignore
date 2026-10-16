@@ -47,5 +47,6 @@ next-env.d.ts
 
 # Generated diagnostic reports (may contain environment metadata)
 /reports/
+/.auth-local/
 /release-assets/
 __pycache__/
