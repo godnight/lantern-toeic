@@ -30,22 +30,24 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
   const player=++playbackSequence;
   let disposed=false,generation=0,baseline=0,hasBaseline=false,validated=false,requested:number|null=null;
   let cleanupRequest=()=>{},needsReload=false,preparing=false,preparedSource='';
-  let pendingEnded=()=>{},confirmedDuration:number|null=null;
+  let pendingEnded=()=>{},acceptedDuration:number|null=null,ensureDuration=()=>false;
   let diagnostic: (event:string,reason?:string,cause?:unknown)=>void=()=>{};
   const source=()=>audio.currentSrc||audio.src||'';
   let expectedSource='',expectedDeclaredSource='';
-  const finitePosition=()=>Number.isFinite(audio.currentTime)?Math.max(0,audio.currentTime):null;
+  const finitePosition=()=>{const actual=audio.currentTime;return Number.isFinite(actual)?Math.max(0,actual):null;};
   const sourceMatches=()=>!!expectedSource&&(audio.src||'')===expectedDeclaredSource&&source()===expectedSource;
-  const confirmedDurationMatches=()=>confirmedDuration!==null&&Number.isFinite(confirmedDuration)&&confirmedDuration>0&&Number.isFinite(audio.duration)&&audio.duration>0&&Math.abs(audio.duration-confirmedDuration)<=.01;
   const sample=()=>{
-    if(requested!==null||!validated||audio.seeking||!sourceMatches()||!confirmedDurationMatches())return baseline;
-    const actual=finitePosition();if(actual!==null&&actual>=baseline-.25){baseline=Math.max(baseline,actual);hasBaseline=true;}
+    const token=generation;
+    if(requested!==null||!validated||audio.seeking||!sourceMatches()||!ensureDuration())return baseline;
+    const trusted=baseline,duration=acceptedDuration,actual=finitePosition();
+    if(token!==generation||requested!==null||!validated||baseline!==trusted||acceptedDuration!==duration)return baseline;
+    if(actual!==null&&actual>=baseline-.25){baseline=Math.max(baseline,actual);hasBaseline=true;}
     return baseline;
   };
-  const stopped=()=>{generation++;cleanupRequest();cleanupRequest=()=>{};validated=false;confirmedDuration=null;preparing=false;if(active===playback)active=null;if(!disposed)changed(false);};
+  const stopped=()=>{generation++;cleanupRequest();cleanupRequest=()=>{};validated=false;acceptedDuration=null;ensureDuration=()=>false;preparing=false;if(active===playback)active=null;if(!disposed)changed(false);};
   const error=(reason:string,cause?:unknown)=>{if(disposed)return;diagnostic('rejected',reason,cause);stopped();audio.pause();failed();};
-  const paused=()=>{if(audio.paused&&active===playback&&!preparing){if(audio.ended&&requested!==null){pendingEnded();return;}if(requested===null&&!confirmedDurationMatches()){error('confirmed-position');return;}diagnostic('pause');sample();stopped();}};
-  const ended=()=>{if(audio.ended&&active===playback){if(requested!==null){pendingEnded();return;}if(!confirmedDurationMatches()){error('confirmed-position');return;}diagnostic('ended');sample();stopped();}};
+  const paused=()=>{const token=generation;if(audio.paused&&active===playback&&!preparing){if(audio.ended&&requested!==null){pendingEnded();return;}if(requested===null&&!ensureDuration()){if(token===generation)error('confirmed-position');return;}if(token!==generation)return;diagnostic('pause');sample();if(token===generation)stopped();}};
+  const ended=()=>{const token=generation;if(audio.ended&&active===playback){if(requested!==null){pendingEnded();return;}if(!ensureDuration()){if(token===generation)error('confirmed-position');return;}if(token!==generation)return;diagnostic('ended');sample();if(token===generation)stopped();}};
   const mediaError=()=>{if(active===playback)error('media-error',audio.error);};
   const begin=(rate:number,positionSeconds:number,restoring:boolean)=>{
     if(disposed)return;
@@ -53,11 +55,11 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
     const token=++generation;cleanupRequest();
     const target=Number.isFinite(positionSeconds)?Math.max(0,positionSeconds):0;
     if(restoring&&!hasBaseline){baseline=target;hasBaseline=true;}
-    requested=target;validated=false;confirmedDuration=null;expectedDeclaredSource=audio.src||'';expectedSource=expectedDeclaredSource||source();
+    requested=target;validated=false;acceptedDuration=null;ensureDuration=()=>false;expectedDeclaredSource=audio.src||'';expectedSource=expectedDeclaredSource||source();
     const reload=needsReload||preparedSource!==expectedSource||audio.readyState===0;needsReload=false;preparing=true;
     let stage='metadata',targetPosition=target,started=false,seekAssigned=false,seekComplete=false,seekEventSeen=false,playingSeen=false,startedAt=0,highestStartup:number|null=null;
     let windowAt:number|null=null,lastAdvanceAt:number|null=null,playingAt:number|null=null,windowPosition=0,lastProgress:number|null=null,advances=0,interrupted=false;
-    let metadataDuration:number|null=null;
+    let metadataDuration:number|null=null,maximumDuration:number|null=null;
     let confirmedPosition:number|null=null,confirmedAt:number|null=null;
     let preparedPosition:number|null=null,preparedDuration:number|null=null,firstProgressPosition:number|null=null,firstProgressElapsed:number|null=null,diagnosticCount=0;
     const events:Record<string,number>={};
@@ -81,7 +83,35 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
     };
     const fail=(reason:string,cause?:unknown)=>{if(valid())error(reason,cause);};
     const finiteDuration=(value:number|null):value is number=>value!==null&&Number.isFinite(value)&&value>0;
-    const durationMatches=()=>finiteDuration(metadataDuration)&&finiteDuration(audio.duration)&&Math.abs(audio.duration-metadataDuration)<=.01;
+    // Duration is observed at every consumer: a queued durationchange is not a prerequisite.
+    // No metadata observation is a seek, progress advance, checkpoint or confirmation.
+    const durationState=(): 'valid'|'pending'|'invalid'=>{
+      if(!valid()||!metadataSeen||!finiteDuration(metadataDuration))return 'invalid';
+      const previous=acceptedDuration,request=requested,trusted=baseline,wasValidated=validated;
+      const progressAtRead=lastProgress,advanceAtRead=lastAdvanceAt,highestAtRead=highestStartup;
+      const confirmedAtRead=confirmedPosition,confirmedTimeAtRead=confirmedAt;
+      const duration=audio.duration,actual=audio.currentTime,effectiveRate=audio.playbackRate;
+      const ready=audio.readyState>0&&!audio.error,seeking=audio.seeking,paused=audio.paused,sameSource=sourceMatches(),observedAt=clock();
+      if(!valid()||requested!==request||validated!==wasValidated||acceptedDuration!==previous||baseline!==trusted||lastProgress!==progressAtRead||lastAdvanceAt!==advanceAtRead||highestStartup!==highestAtRead||confirmedPosition!==confirmedAtRead||confirmedAt!==confirmedTimeAtRead)return 'invalid';
+      if(!sameSource||!ready||!finiteDuration(previous)||!finiteDuration(duration)||!Number.isFinite(rate)||rate<=0)return 'invalid';
+      if(duration===previous)return seeking?(started?'invalid':'pending'):'valid';
+      const extent=Math.min(previous,duration);
+      if(targetPosition<0||targetPosition>extent)return 'invalid';
+      // Finite compatible metadata may arrive while the one requested paused seek is
+      // unsettled. Keep D0/target fixed and wait for its genuine seeked, under the same deadline.
+      if(!started&&(!seekComplete||seeking)){maximumDuration=Math.max(maximumDuration??metadataDuration,duration);return 'pending';}
+      if(!Number.isFinite(actual)||actual<0||actual>duration)return 'invalid';
+      if(!started){if(!paused||Math.abs(actual-targetPosition)>1)return 'invalid';}
+      else{
+        const pending=request!==null,lastPosition=pending?(lastProgress??preparedPosition):confirmedPosition,lastAt=pending?(lastAdvanceAt??startedAt):confirmedAt;
+        const history=[targetPosition,preparedPosition,firstProgressPosition,windowAt===null?null:windowPosition,lastProgress,highestStartup,lastPosition,...(pending?[]:[trusted])].filter((point):point is number=>point!==null);
+        const elapsed=lastAt===null?NaN:(observedAt-lastAt)/1000;
+        if(seeking||!Number.isFinite(effectiveRate)||Math.abs(effectiveRate-rate)>.000001||lastPosition===null||!Number.isFinite(elapsed)||elapsed<0||history.some(point=>!Number.isFinite(point)||point<0||point>extent)||actual<lastPosition-1||actual>lastPosition+1+elapsed*rate||actual<(pending?targetPosition:trusted)-1||(pending&&(actual>targetPosition+1+Math.max(0,observedAt-startedAt)/1000*rate||(highestStartup!==null&&actual<highestStartup-1))))return 'invalid';
+      }
+      acceptedDuration=duration;maximumDuration=Math.max(maximumDuration??metadataDuration,duration);return 'valid';
+    };
+    ensureDuration=()=>durationState()==='valid';
+    const durationMatches=ensureDuration;
     const nearTarget=()=>{const actual=finitePosition();return actual!==null&&Math.abs(actual-targetPosition)<=1;};
     const validStartPosition=()=>{
       const actual=finitePosition(),elapsed=Math.max(0,clock()-startedAt)/1000;
@@ -93,23 +123,9 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
       if(requested===null||!valid()||!seekComplete||!playingSeen||windowAt===null||lastAdvanceAt!==observedAt||advances<3||observedAt-windowAt<750||audio.paused||audio.seeking||!sourceMatches())return;
       if(lastProgress===null||actual!==lastProgress||actual-windowPosition<Math.max(.05,rate*.5))return;
       if(!validStartPosition()){fail('startup-position');return;}
-      requested=null;baseline=actual;hasBaseline=true;validated=true;confirmedDuration=metadataDuration;confirmedPosition=actual;confirmedAt=observedAt;stage='playing';
+      if(!valid()||requested===null||lastProgress!==actual||lastAdvanceAt!==observedAt||advances<3||windowAt===null||observedAt-windowAt<750)return;
+      requested=null;baseline=actual;hasBaseline=true;validated=true;confirmedPosition=actual;confirmedAt=observedAt;stage='playing';
       clearTimeout(timeout);diagnostic('confirmed');confirmed?.();
-    };
-    // Preparation proof stays immutable. Only a current, explicitly observed metadata
-    // revision may replace the confirmed duration; it cannot certify playback progress.
-    const refineConfirmedDuration=()=>{
-      if(!valid()||requested!==null||!validated||!started)return;
-      const previous=confirmedDuration,trusted=baseline,lastPosition=confirmedPosition,lastAt=confirmedAt;
-      const duration=audio.duration,actual=audio.currentTime,observedAt=clock(),effectiveRate=audio.playbackRate;
-      const ready=audio.readyState>0&&!audio.error&&!audio.seeking,sameSource=sourceMatches();
-      // A native getter/callback can synchronously stop or replace this request.
-      if(!valid()||requested!==null||!validated||confirmedDuration!==previous||baseline!==trusted)return;
-      const extent=finiteDuration(previous)&&finiteDuration(duration)?Math.min(previous,duration):NaN;
-      const points=[targetPosition,preparedPosition,firstProgressPosition,windowPosition,lastProgress,highestStartup,lastPosition,trusted];
-      const elapsed=lastAt===null?NaN:(observedAt-lastAt)/1000;
-      if(!sameSource||!ready||!finiteDuration(previous)||!finiteDuration(duration)||!Number.isFinite(rate)||rate<=0||!Number.isFinite(effectiveRate)||Math.abs(effectiveRate-rate)>.000001||!Number.isFinite(elapsed)||elapsed<0||lastPosition===null||points.some(point=>point===null||!Number.isFinite(point)||point<0||point>extent)||!Number.isFinite(actual)||actual<0||actual>duration||actual<trusted-1||actual<lastPosition-1||actual>lastPosition+1+elapsed*rate){fail('confirmed-position');return;}
-      confirmedDuration=duration;
     };
     const playing=()=>{if(!valid()||!started||requested===null)return;diagnostic('playing');playingSeen=true;if(playingAt===null)playingAt=clock();if(!validStartPosition()||!sourceMatches()){fail('playing-position');return;}};
     const progress=()=>{
@@ -128,9 +144,10 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
         lastProgress=actual;lastAdvanceAt=observedAt;advances++;
         accept(actual,observedAt);return;
       }
-      const previous=confirmedDuration,trusted=baseline;
+      if(!durationMatches()){fail('confirmed-position');return;}
+      const previous=acceptedDuration,trusted=baseline;
       const actual=audio.currentTime,duration=audio.duration,sameSource=sourceMatches(),observedAt=clock(),elapsed=confirmedAt===null?NaN:(observedAt-confirmedAt)/1000;
-      if(!valid()||requested!==null||!validated||confirmedDuration!==previous||baseline!==trusted)return;
+      if(!valid()||requested!==null||!validated||acceptedDuration!==previous||baseline!==trusted)return;
       if(!finiteDuration(previous)||!finiteDuration(duration)||Math.abs(duration-previous)>.01||!Number.isFinite(actual)||actual<0||!sameSource||actual<trusted-1||confirmedPosition===null||!Number.isFinite(elapsed)||elapsed<0||actual>confirmedPosition+1+elapsed*rate||actual>previous){fail('confirmed-position');return;}
       baseline=Math.max(baseline,actual);
       if(actual>confirmedPosition+.001){confirmedPosition=actual;confirmedAt=observedAt;}
@@ -155,21 +172,22 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
     const onSeeking=()=>{if(valid()&&started&&audio.seeking)fail('progress-position');};
     const onSeeked=()=>{if(!valid()||!seekAssigned||started)return;seekEventSeen=true;diagnostic('seeked');seeked();};
     const ready=()=>{
-      if(!valid()||requested===null)return;
+      if(!valid()||requested===null||started)return;
       if((audio.src||'')!==expectedDeclaredSource){fail('source-changed');return;}
-      if(metadataDuration!==null&&!durationMatches()){fail('startup-position');return;}
-      if(seekAssigned||started)return;
-      if(!metadataSeen||audio.readyState===0||!finiteDuration(audio.duration))return;
+      if(seekAssigned){if(durationState()==='invalid')fail('startup-position');return;}
+      const duration=audio.duration;
+      if(!metadataSeen||audio.readyState===0||!finiteDuration(duration))return;
       if(!sourceMatches()){fail('metadata-source');return;}
       if(!audio.paused){fail('preparation-not-paused');return;}
       if(audio.seeking)return;
-      preparedSource=expectedSource;metadataDuration=audio.duration;
+      if(!valid())return;
+      preparedSource=expectedSource;metadataDuration=duration;acceptedDuration=duration;maximumDuration=duration;
       if(target===0){
         targetPosition=0;
         if(!audio.seeking&&Math.abs(finitePosition()??Infinity)<.025){seekComplete=true;start();return;}
       }else{
         // A Continue request never turns an ended track into a restart.
-        targetPosition=Math.min(target,Math.max(0,audio.duration-.01));
+        targetPosition=Math.min(target,Math.max(0,metadataDuration-.01));
       }
       // An empty seekable range is observed, not a permanent prerequisite for a paused seek.
       // A setter echo is never proof: only a real seeked, same source and settled position may play.
@@ -177,10 +195,10 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
       if(preparePoll!==undefined){clearTimeout(preparePoll);preparePoll=undefined;}
       try{audio.currentTime=targetPosition;}catch(cause){fail('seek-threw',cause);}
     };
-    const metadata=()=>{if(!valid()||requested===null)return;metadataSeen=true;diagnostic('loadedmetadata');ready();};
+    const metadata=()=>{if(!valid()||requested===null||started)return;metadataSeen=true;diagnostic('loadedmetadata');ready();};
     const available=(event:Event)=>{
       if(!valid())return;diagnostic(event.type);if(!valid())return;
-      if(requested===null){if(!sourceMatches()){fail('source-changed');return;}if(event.type==='durationchange')refineConfirmedDuration();return;}
+      if(started){if(!durationMatches())fail(requested===null?'confirmed-position':'startup-position');return;}
       ready();
     };
     const wait=(event:Event)=>{if(!valid()||!started)return;if(playingAt!==null)interrupted=true;diagnostic(event.type);if(requested!==null){playingSeen=false;windowAt=null;lastAdvanceAt=null;lastProgress=null;advances=0;}};
@@ -190,10 +208,14 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
     const timeout=setTimeout(()=>fail('confirmation-timeout'),10000);
     pendingEnded=()=>{
       if(!valid())return;
+      if(!durationMatches()){fail('ended-before-confirmation');return;}
+      const durationAtRead=acceptedDuration,maximumAtRead=maximumDuration;
       const actual=finitePosition(),duration=audio.duration,elapsed=playingAt===null?0:Math.max(0,clock()-playingAt);
-      const remaining=preparedPosition===null||!Number.isFinite(preparedPosition)||!finiteDuration(preparedDuration)?Infinity:preparedDuration-preparedPosition;
+      const remaining=preparedPosition===null||!Number.isFinite(preparedPosition)||!finiteDuration(maximumDuration)?Infinity:maximumDuration-preparedPosition;
+      const minimumRemaining=preparedPosition===null||!finiteDuration(preparedDuration)||!finiteDuration(acceptedDuration)?Infinity:Math.min(preparedDuration,acceptedDuration)-preparedPosition;
       const expectedMs=Number.isFinite(rate)&&rate>0?remaining/rate*1000:Infinity;
-      const tailMs=firstProgressPosition===null||!finiteDuration(preparedDuration)||!Number.isFinite(rate)||rate<=0?Infinity:(preparedDuration-firstProgressPosition)/rate*1000;
+      const minimumExpectedMs=Number.isFinite(rate)&&rate>0?minimumRemaining/rate*1000:Infinity;
+      const tailMs=firstProgressPosition===null||!finiteDuration(maximumDuration)||!Number.isFinite(rate)||rate<=0?Infinity:(maximumDuration-firstProgressPosition)/rate*1000;
       const observedTailMs=firstProgressElapsed===null?0:clock()-startedAt-firstProgressElapsed;
       const firstPlayedMs=firstProgressElapsed===null||playingAt===null?Infinity:startedAt+firstProgressElapsed-playingAt;
       const lastAdvanceGap=lastAdvanceAt===null?Infinity:clock()-lastAdvanceAt;
@@ -201,10 +223,14 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
       // A first-point jump, instant ended, interrupted startup or a long-track ended is not proof.
       // The first advance must be timely and precede the final fifth of the remainder.
       // A stationary first segment followed by one near-end jump cannot prove a short clip.
-      if(!started||!seekComplete||!playingSeen||interrupted||audio.seeking||!sourceMatches()||!durationMatches()||!finiteDuration(preparedDuration)||!finiteDuration(duration)||Math.abs(duration-preparedDuration)>.01||actual===null||preparedPosition===null||!Number.isFinite(remaining)||remaining<=.02||!Number.isFinite(expectedMs)||expectedMs<=0||expectedMs>1500||!Number.isFinite(elapsed)||!Number.isFinite(tailMs)||tailMs<=0||!Number.isFinite(observedTailMs)||observedTailMs<tailMs*.8||!Number.isFinite(firstPlayedMs)||firstPlayedMs<0||firstPlayedMs>Math.min(500,expectedMs*.8)||!Number.isFinite(lastAdvanceGap)||lastAdvanceGap<0||lastAdvanceGap>500||firstProgressPosition===null||firstProgressElapsed===null||firstProgressPosition<=preparedPosition+.001||firstProgressPosition>preparedPosition+remaining*.8||actual<=firstProgressPosition+.001||actual<duration-.05||actual>duration+.05||elapsed<expectedMs*.8||!validStartPosition()){
+      if(!started||!seekComplete||!playingSeen||interrupted||audio.seeking||!sourceMatches()||!durationMatches()||!finiteDuration(preparedDuration)||!finiteDuration(duration)||actual===null||preparedPosition===null||!Number.isFinite(remaining)||remaining<=.02||!Number.isFinite(minimumRemaining)||minimumRemaining<=.02||!Number.isFinite(expectedMs)||expectedMs<=0||expectedMs>1500||!Number.isFinite(minimumExpectedMs)||minimumExpectedMs<=0||minimumExpectedMs>1500||!Number.isFinite(elapsed)||!Number.isFinite(tailMs)||tailMs<=0||!Number.isFinite(observedTailMs)||observedTailMs<tailMs*.8||!Number.isFinite(firstPlayedMs)||firstPlayedMs<0||firstPlayedMs>Math.min(500,minimumExpectedMs*.8)||!Number.isFinite(lastAdvanceGap)||lastAdvanceGap<0||lastAdvanceGap>500||firstProgressPosition===null||firstProgressElapsed===null||firstProgressPosition<=preparedPosition+.001||firstProgressPosition>preparedPosition+minimumRemaining*.8||actual<=firstProgressPosition+.001||actual<duration-.05||actual>duration+.05||elapsed<expectedMs*.8||!validStartPosition()){
         fail('ended-before-confirmation');return;
       }
-      requested=null;baseline=actual;hasBaseline=true;validated=true;confirmedDuration=metadataDuration;stage='playing';clearTimeout(timeout);diagnostic('confirmed-short-end');confirmed?.();if(!valid())return;diagnostic('ended');stopped();
+      if(!valid()||requested===null)return;
+      // A short-ending proof cannot mix endpoint/timing fields from different
+      // native metadata snapshots, even if the last getter returns to the old value.
+      if(acceptedDuration!==durationAtRead||maximumDuration!==maximumAtRead){fail('ended-before-confirmation');return;}
+      requested=null;baseline=actual;hasBaseline=true;validated=true;stage='playing';clearTimeout(timeout);diagnostic('confirmed-short-end');confirmed?.();if(!valid())return;diagnostic('ended');stopped();
     };
     audio.addEventListener('loadedmetadata',metadata);
     audio.addEventListener('canplay',available);audio.addEventListener('progress',available);audio.addEventListener('durationchange',available);

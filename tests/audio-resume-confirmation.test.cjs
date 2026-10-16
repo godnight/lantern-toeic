@@ -155,20 +155,20 @@ test('nonfinite or nonpositive initial metadata cannot seek or play',()=>{
   const h=fixture();h.player.resume(1,8);h.audio.metadata({duration});assert.equal(h.audio.targets.length,0);assert.equal(h.audio.plays,0);h.run(10000);assert.equal(h.errors,1);assert.equal(h.confirmations,0);assert.equal(h.player.position(),8);h.player.dispose();
  }
 });
-test('duration mutation between metadata and genuine seeked rejects before play even without durationchange',()=>{
- for(const duration of [NaN,Infinity,-Infinity,0,-1,12.5]){
+test('invalid duration between metadata and genuine seeked rejects before play even without durationchange',()=>{
+ for(const duration of [NaN,Infinity,-Infinity,0,-1]){
   const h=fixture();h.player.resume(1,8);h.audio.metadata({duration:12});h.audio.duration=duration;h.audio.seek(8);assert.equal(h.audio.plays,0,String(duration));assert.equal(h.errors,1);assert.equal(h.confirmations,0);assert.equal(h.player.position(),8);h.player.dispose();
  }
 });
 test('durationchange during paused seek is rejected and restored metadata cannot revive the request',()=>{
  const h=fixture();h.player.resume(1,8);h.audio.metadata({duration:12});h.audio.duration=NaN;h.audio.dispatchEvent(new Event('durationchange'));h.audio.metadata({duration:12});h.audio.seek(8);h.sustain(8);assert.equal(h.audio.plays,0);assert.equal(h.confirmations,0);assert.equal(h.errors,1);assert.equal(h.player.position(),8);h.player.dispose();
 });
-test('duration mutation after play but before sustained acceptance fails closed',()=>{
- for(const duration of [NaN,Infinity,0,34]){
+test('invalid duration after play but before sustained acceptance fails closed',()=>{
+ for(const duration of [NaN,Infinity,0]){
   const h=fixture().begin();h.audio.seek(8.681);h.audio.playing();h.audio.progress(8.681);h.advance(250);h.audio.progress(8.931);h.audio.duration=duration;h.advance(250);h.audio.progress(9.181);assert.equal(h.errors,1);assert.equal(h.confirmations,0);assert.equal(h.player.position(),8.681);h.player.dispose();
  }
 });
-test('short-end requires finite unchanged metadata, prepared and ending durations',()=>{
+test('short-end requires finite accepted metadata and a real endpoint within the original tail proof',()=>{
  for(const duration of [NaN,Infinity,-Infinity,0,1.2]){
   const h=fixture();h.player.play(1);h.audio.metadata({duration:1});h.audio.playing(0);h.advance(500);h.audio.progress(.5);h.audio.duration=duration;h.advance(500);h.audio.raw=1;h.audio.ended=true;h.audio.paused=true;h.audio.dispatchEvent(new Event('pause'));h.audio.dispatchEvent(new Event('ended'));assert.equal(h.errors,1,String(duration));assert.equal(h.confirmations,0);assert.equal(h.player.position(),0);h.player.dispose();
  }
@@ -245,15 +245,15 @@ test('confirmed duration events cannot authorize invalid metadata, changed ident
   assert.equal(h.errors,1,mode);assert.equal(h.confirmations,1,mode);assert.equal(h.audio.paused,true,mode);assert.equal(h.player.position(),baseline,mode);assert.equal(h.audio.plays,1,mode);h.player.dispose();
  }
 });
-test('multiple explicit confirmed refinements preserve startup proof and never bless an unannounced mutation',()=>{
+test('multiple confirmed refinements preserve startup proof and never bless a truncation of trusted history',()=>{
  const h=fixture().begin(8,1);h.audio.seek(8);h.sustain(8,1);const baseline=h.player.position();
  for(const duration of [33.175510,33.16,34]){h.advance(100);h.audio.duration=duration;h.audio.dispatchEvent(new Event('durationchange'));assert.equal(h.errors,0);assert.equal(h.confirmations,1);assert.equal(h.logs.findLast(row=>row.event==='durationchange').preparedDuration,33.151519);}
  assert.equal(h.logs.filter(row=>row.event==='confirmed').length,1);assert.equal(h.logs.findLast(row=>row.event==='durationchange').baseline,baseline);
- h.audio.duration=34.02;h.advance(250);h.audio.progress(baseline+.25);assert.equal(h.errors,1);assert.equal(h.player.position(),baseline);h.player.dispose();
+ h.audio.duration=baseline-.1;h.advance(250);h.audio.progress(baseline+.25);assert.equal(h.errors,1);assert.equal(h.player.position(),baseline);h.player.dispose();
 });
-test('late loadedmetadata after confirmation cannot replace immutable preparation proof',()=>{
+test('late loadedmetadata cannot replace preparation proof and queued finite refinement is validated by progress',()=>{
  const h=fixture().begin();h.audio.seek(8.681);h.sustain();const baseline=h.player.position();h.audio.duration=33.175510;h.audio.dispatchEvent(new Event('loadedmetadata'));assert.equal(h.confirmations,1);
- h.advance(250);h.audio.progress(baseline+.25);assert.equal(h.errors,1);assert.equal(h.player.position(),baseline);h.player.dispose();
+ h.advance(250);h.audio.progress(baseline+.25);assert.equal(h.errors,0);assert.equal(h.player.position(),baseline+.25);assert.equal(h.logs.find(row=>row.event==='confirmed').preparedDuration,33.151519);h.player.dispose();
 });
 test('a duration getter that stops or replaces its request cannot commit or fail into the new generation',()=>{
  for(const action of ['stop','resume']){
@@ -291,4 +291,97 @@ test('an accepted duration event leaves capture pending until the next explicit 
   const h=fixture().begin(8,1);h.audio.seek(8);h.sustain(8,1);const baseline=h.player.position();h.advance(250);h.audio.raw=baseline+.25;h.audio.duration=33.175510;h.audio.dispatchEvent(new Event('durationchange'));h.audio.dispatchEvent(new Event('canplay'));
   assert.equal(h.logs.at(-1).baseline,baseline);h.player[action]();assert.equal(h.player.position(),baseline+.25);assert.equal(h.errors,0);assert.equal(h.confirmations,1);h.player.dispose();
  }
+});
+
+test('r16 native preconfirmation duration refinement keeps its genuine paused seek and waits for the unchanged progress gate',()=>{
+ const h=fixture().begin(30.735,.7);h.audio.seek(30.735);h.advance(21.9);h.audio.playing();h.advance(266.9);h.audio.progress(30.751254);
+ h.advance(183.9);h.audio.raw=30.828672;h.audio.duration=33.175510;h.audio.dispatchEvent(new Event('durationchange'));
+ assert.equal(h.errors,0);assert.equal(h.confirmations,0);assert.equal(h.player.position(),30.735);assert.equal(h.audio.plays,1);assert.deepEqual(h.audio.targets,[30.735]);
+ h.audio.dispatchEvent(new Event('canplay'));assert.equal(h.logs.at(-1).baseline,30.735);assert.equal(h.logs.at(-1).preparedDuration,33.151519);
+ // Later advancing points are synthetic; the native failed trace ends at472.8ms.
+ for(const [ms,position] of [[66.1,30.901254],[250,31.076254],[250,31.251254]]){h.advance(ms);h.audio.progress(position);}
+ assert.equal(h.confirmations,1);assert.equal(h.errors,0);assert.equal(h.player.pause(),31.251254);assert.equal(h.audio.plays,1);h.player.dispose();
+});
+test('preconfirmation refinement at every selected rate never promotes metadata current into an advance or saved point',()=>{
+ for(const rate of [.7,.85,1,1.15]){
+  const h=fixture().begin(8,rate);h.audio.seek(8);h.audio.playing();h.advance(250);h.audio.progress(8+.25*rate);
+  h.advance(150);h.audio.raw=8+.4*rate;h.audio.duration=33.175510;h.audio.dispatchEvent(new Event('durationchange'));assert.equal(h.errors,0);assert.equal(h.confirmations,0);assert.equal(h.player.position(),8);
+  for(let i=2;i<=4;i++){h.advance(i===2?100:250);h.audio.progress(8+i*.25*rate);if(i<4)assert.equal(h.confirmations,0);}
+  assert.equal(h.confirmations,1);assert.equal(h.errors,0);assert.equal(h.audio.plays,1);assert.deepEqual(h.audio.targets,[8]);h.player.dispose();
+ }
+});
+test('preconfirmation duration events reject a true jump, regression, truncation, wrong source or invalid media state',()=>{
+ const mutations={nan:a=>a.duration=NaN,infinity:a=>a.duration=Infinity,zero:a=>a.duration=0,truncated:a=>a.duration=8.1,jump:a=>a.raw=20,backward:a=>a.raw=6,declared:a=>a.src+='?changed',resolved:a=>a.currentSrc+='?changed',rate:a=>a.playbackRate=.85,seeking:a=>a.seeking=true,notReady:a=>a.readyState=0,error:a=>a.error={code:2}};
+ for(const [mode,mutate]of Object.entries(mutations)){
+  const h=fixture().begin(8,1);h.audio.seek(8);h.audio.playing();h.advance(250);h.audio.progress(8.25);h.advance(150);h.audio.raw=8.4;h.audio.duration=33.175510;mutate(h.audio);h.audio.dispatchEvent(new Event('durationchange'));
+  assert.equal(h.errors,1,mode);assert.equal(h.confirmations,0,mode);assert.equal(h.player.position(),8,mode);assert.equal(h.audio.paused,true,mode);h.player.dispose();
+ }
+});
+test('stationary metadata refinements cannot fill a progress window or extend the original deadline',()=>{
+ const h=fixture().begin(8,1);h.audio.seek(8);h.audio.playing();h.advance(250);h.audio.progress(8.1);
+ for(let i=0;i<16;i++){h.advance(250);h.audio.duration=i%2?33.151519:33.175510;h.audio.dispatchEvent(new Event('durationchange'));assert.equal(h.errors,0);assert.equal(h.confirmations,0);assert.equal(h.player.position(),8);}
+ h.run(5750);assert.equal(h.errors,1);assert.equal(h.confirmations,0);assert.equal(h.player.position(),8);h.player.dispose();
+});
+test('approved startup duration transfers into confirmation and cannot bless later truncation of trusted history',()=>{
+ const h=fixture().begin(8,1);h.audio.seek(8);h.audio.playing();h.audio.progress(8);h.advance(250);h.audio.progress(8.25);h.audio.duration=33.175510;h.audio.dispatchEvent(new Event('durationchange'));h.advance(250);h.audio.progress(8.5);h.advance(250);h.audio.progress(8.75);assert.equal(h.confirmations,1);
+ h.audio.duration=8.5;h.advance(250);h.audio.progress(9);assert.equal(h.errors,1);assert.equal(h.player.position(),8.75);h.player.dispose();
+});
+test('a valid short ending follows the accepted startup epoch while retaining its initial duration proof',()=>{
+ const h=fixture();h.player.play(1);h.audio.metadata({duration:1});h.audio.playing(0);h.advance(500);h.audio.progress(.5);h.audio.duration=1.023991;h.audio.dispatchEvent(new Event('durationchange'));assert.equal(h.errors,0);assert.equal(h.confirmations,0);h.advance(273.991);h.audio.progress(.773991);h.advance(250);h.audio.raw=1.023991;h.audio.ended=true;h.audio.paused=true;h.audio.dispatchEvent(new Event('ended'));
+ assert.equal(h.errors,0);assert.equal(h.confirmations,1);assert.equal(h.player.position(),1.023991);assert.equal(h.logs.find(row=>row.event==='confirmed-short-end').preparedDuration,1);h.player.dispose();
+});
+test('a duration shrink cannot turn an initially long or previously extended startup into a fake short ending',()=>{
+ for(const initial of [1,10]){
+  const h=fixture();h.player.play(1);h.audio.metadata({duration:initial});h.audio.playing(0);h.advance(250);h.audio.progress(.25);
+  if(initial===1){h.audio.duration=10;h.audio.dispatchEvent(new Event('durationchange'));assert.equal(h.errors,0);}
+  h.audio.duration=1;h.audio.dispatchEvent(new Event('durationchange'));assert.equal(h.errors,0);h.advance(750);h.audio.raw=1;h.audio.ended=true;h.audio.paused=true;h.audio.dispatchEvent(new Event('ended'));assert.equal(h.errors,1);assert.equal(h.confirmations,0);assert.equal(h.player.position(),0);h.player.dispose();
+ }
+});
+test('a compatible duration observed during the requested paused seek waits for genuine seeked without moving its target',()=>{
+ const h=fixture();h.player.resume(.7,8);h.audio.metadata({duration:12});h.audio.duration=12.5;h.audio.dispatchEvent(new Event('durationchange'));assert.equal(h.errors,0);assert.equal(h.audio.plays,0);assert.deepEqual(h.audio.targets,[8]);
+ h.audio.raw=8;h.audio.seeking=false;h.audio.dispatchEvent(new Event('canplay'));assert.equal(h.audio.plays,0);h.audio.seek(8);assert.equal(h.audio.plays,1);assert.equal(h.logs.find(row=>row.event==='play').preparedDuration,12);h.sustain(8,.7);assert.equal(h.confirmations,1);assert.equal(h.errors,0);h.player.dispose();
+});
+test('queued duration properties are validated by a genuine timeupdate before durationchange at every selected rate',()=>{
+ for(const rate of [.7,.85,1,1.15]){
+  const h=fixture().begin(8,rate);h.audio.seek(8);h.audio.playing();h.audio.progress(8);h.advance(250);h.audio.progress(8+.25*rate);h.audio.duration=34;h.advance(250);h.audio.progress(8+.5*rate);assert.equal(h.errors,0);assert.equal(h.confirmations,0);assert.equal(h.player.position(),8);
+  h.audio.dispatchEvent(new Event('durationchange'));h.advance(250);h.audio.progress(8+.75*rate);assert.equal(h.confirmations,1);assert.equal(h.errors,0);h.player.dispose();
+ }
+});
+test('confirmed sample pause and ending share validation when the duration property arrives before its event',()=>{
+ for(const action of ['position','pause','stop','ended','natural-pause']){
+  const h=fixture().begin(8,1);h.audio.seek(8);h.sustain(8,1);const baseline=h.player.position();h.audio.duration=33.175510;
+  if(action==='ended'||action==='natural-pause'){h.advance((h.audio.duration-baseline)*1000);h.audio.raw=h.audio.duration;h.audio.ended=true;h.audio.paused=true;h.audio.dispatchEvent(new Event(action==='ended'?'ended':'pause'));}else{h.advance(250);h.audio.raw=baseline+.25;h.player[action]();}
+  assert.equal(h.errors,0,action);assert.equal(h.confirmations,1,action);assert.equal(h.player.position(),h.audio.raw,action);h.player.dispose();
+ }
+});
+test('a sub-tolerance duration extension cannot be hidden by a later shrink to obtain short-tail eligibility',()=>{
+ const h=fixture();h.player.play(1);h.audio.metadata({duration:1.499});h.audio.playing(0);h.advance(250);h.audio.progress(.25);h.audio.duration=1.508;h.audio.dispatchEvent(new Event('durationchange'));assert.equal(h.errors,0);h.audio.duration=1;h.audio.dispatchEvent(new Event('durationchange'));h.advance(750);h.audio.raw=1;h.audio.ended=true;h.audio.paused=true;h.audio.dispatchEvent(new Event('ended'));assert.equal(h.errors,1);assert.equal(h.confirmations,0);assert.equal(h.player.position(),0);h.player.dispose();
+});
+test('a compatible long duration observed while seek is pending cannot disappear from short-tail history',()=>{
+ const h=fixture();h.player.resume(1,.1);h.audio.metadata({duration:1.1});h.audio.duration=10;h.audio.dispatchEvent(new Event('durationchange'));assert.equal(h.audio.plays,0);assert.equal(h.errors,0);h.audio.duration=1.1;h.audio.dispatchEvent(new Event('durationchange'));h.audio.seek(.1);h.audio.playing(.1);h.advance(500);h.audio.progress(.6);h.advance(500);h.audio.raw=1.1;h.audio.ended=true;h.audio.paused=true;h.audio.dispatchEvent(new Event('ended'));assert.equal(h.errors,1);assert.equal(h.confirmations,0);assert.equal(h.player.position(),.1);h.player.dispose();
+});
+test('confirmation rechecks the actual progress window after a reentrant native position getter',()=>{
+ const h=fixture().begin(8,1);h.audio.seek(8);h.audio.playing();h.audio.progress(8);h.advance(250);h.audio.progress(8.25);h.advance(250);h.audio.progress(8.5);let reads=0,reentered=false;
+ Object.defineProperty(h.audio,'currentTime',{configurable:true,get(){const value=this.raw;if(++reads===5){reentered=true;this.progress(8.8);}return value;},set(value){this.targets.push(value);this.seeking=true;}});
+ h.advance(250);h.audio.progress(8.75);assert.equal(reentered,true);assert.equal(h.confirmations,0);assert.equal(h.player.position(),8);h.sustain(8.8,1);assert.equal(h.confirmations,1);assert.equal(h.errors,0);h.player.dispose();
+});
+test('short-end cannot mix a new long metadata epoch with old local endpoint and timing fields',()=>{
+ const h=fixture();h.player.play(1);h.audio.metadata({duration:1});h.audio.playing(0);h.advance(500);h.audio.progress(.5);let reads=0;Object.defineProperty(h.audio,'duration',{configurable:true,get(){return ++reads===3?10:1;}});
+ h.advance(500);h.audio.raw=1;h.audio.ended=true;h.audio.paused=true;h.audio.dispatchEvent(new Event('ended'));assert.ok(reads>=3);assert.equal(h.errors,1);assert.equal(h.confirmations,0);assert.equal(h.player.position(),0);h.player.dispose();
+});
+test('transitional genuine seeked may await a compatible epoch but truncating the fixed target fails immediately',()=>{
+ for(const mode of ['compatible','truncated']){
+  const h=fixture().begin(8,.7);h.audio.duration=mode==='compatible'?33.175510:7;
+  if(mode==='compatible'){h.audio.raw=8;h.audio.dispatchEvent(new Event('seeked'));h.audio.dispatchEvent(new Event('durationchange'));assert.equal(h.audio.plays,0);assert.equal(h.errors,0);h.audio.seeking=false;h.run(25);h.sustain(8,.7);assert.equal(h.confirmations,1);assert.equal(h.errors,0);}else{h.audio.dispatchEvent(new Event('durationchange'));assert.equal(h.errors,1);assert.equal(h.audio.plays,0);assert.equal(h.confirmations,0);assert.equal(h.player.position(),8);}
+  h.player.dispose();
+ }
+});
+test('a long epoch first observed by timeupdate stays in short-tail history after a queued shrink',()=>{
+ const h=fixture();h.player.play(1);h.audio.metadata({duration:1.1});h.audio.playing(0);h.audio.duration=10;h.advance(250);h.audio.progress(.25);assert.equal(h.errors,0);h.advance(250);h.audio.progress(.5);h.audio.duration=1.1;h.advance(500);h.audio.raw=1.1;h.audio.ended=true;h.audio.paused=true;h.audio.dispatchEvent(new Event('ended'));assert.equal(h.errors,1);assert.equal(h.confirmations,0);assert.equal(h.player.position(),0);h.player.dispose();
+});
+test('a shortened tail keeps its stricter first-advance timing even after the original larger span has elapsed',()=>{
+ const h=fixture();h.player.play(1);h.audio.metadata({duration:1.4});h.audio.playing(0);h.advance(500);h.audio.progress(.3);h.audio.duration=.5;h.audio.dispatchEvent(new Event('durationchange'));assert.equal(h.errors,0);h.advance(500);h.audio.progress(.4);h.advance(400);h.audio.raw=.5;h.audio.ended=true;h.audio.paused=true;h.audio.dispatchEvent(new Event('ended'));assert.equal(h.errors,1);assert.equal(h.confirmations,0);assert.equal(h.player.position(),0);h.player.dispose();
+});
+test('exactly 750ms with only two genuine advances cannot borrow a third advance from metadata',()=>{
+ const h=fixture().begin(8,1);h.audio.seek(8);h.audio.playing();h.audio.progress(8);h.advance(375);h.audio.progress(8.375);h.audio.duration=33.175510;h.audio.dispatchEvent(new Event('durationchange'));h.advance(375);h.audio.progress(8.75);assert.equal(h.errors,0);assert.equal(h.confirmations,0);assert.equal(h.player.position(),8);h.advance(250);h.audio.progress(9);assert.equal(h.confirmations,1);assert.equal(h.errors,0);h.player.dispose();
 });
