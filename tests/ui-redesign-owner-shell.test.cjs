@@ -12,7 +12,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 function load(file, imports = {}, globals = {}) {
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(path.join(root, file), 'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-  vm.runInNewContext(code, {exports,require(name){if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};assert.ok(name in imports, 'Unexpected import: '+name);return imports[name];},Date,Map,Set,structuredClone,crypto:webcrypto,Blob,URL,AbortController,...globals}, {filename:file});
+  vm.runInNewContext(code, {exports,require(name){if(name==='@/lib/recording-capture-diagnostics')return {createRecordingCaptureTrace:()=>()=>{}};if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};assert.ok(name in imports, 'Unexpected import: '+name);return imports[name];},Date,Map,Set,structuredClone,crypto:webcrypto,Blob,URL,AbortController,...globals}, {filename:file});
   return exports;
 }
 const model = load('lib/study-model.ts');
@@ -48,7 +48,7 @@ const observedFiles={};
 function load(file,imports={},globals={}) {
  const source=fs.readFileSync(path.join(root,file),'utf8');observedFiles[file]=crypto.createHash('sha256').update(source).digest('hex');
  const exports={},code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
- vm.runInNewContext(code,{exports,require:name=>{if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};if(!(name in imports))throw Error(name);return imports[name];},Date,Intl,Set,Map,URLSearchParams,Blob,URL,...globals});return exports;
+ vm.runInNewContext(code,{exports,require:name=>{if(name==='@/lib/recording-capture-diagnostics')return {createRecordingCaptureTrace:()=>()=>{}};if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};if(!(name in imports))throw Error(name);return imports[name];},Date,Intl,Set,Map,URLSearchParams,Blob,URL,...globals});return exports;
 }
 const model=load('lib/study-model.ts'),data=structuredClone(model.EMPTY_DATA);
 const jsx=(type,props)=>({type,props}),proxy=new Proxy({},{get:(_,key)=>String(key)});

@@ -16,6 +16,7 @@ function load(file, imports = {}, globals = {}) {
   }).outputText;
   vm.runInNewContext(code, {
     exports, require(name) {
+      if (name === '@/lib/recording-capture-diagnostics') return {createRecordingCaptureTrace:()=>()=>{}};
       if (name === '@/lib/recording-media-diagnostics') return {recordingMediaTrace(){}};
       if (name === '@/lib/use-dialog-viewport') return load('lib/use-dialog-viewport.ts', {react: imports.react}, globals);
       if (!(name in imports)) throw new Error('Unexpected import: ' + name);

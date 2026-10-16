@@ -354,6 +354,100 @@ class RecordingPlaybackDiagnostics {
 
 const recordingPlaybackDiagnostics: RecordingPlaybackDiagnostics = new RecordingPlaybackDiagnostics();
 
+const CAPTURE_CONSOLE_PREFIX: string = 'Recording capture ';
+const CAPTURE_CONSOLE_LIMIT: number = 128;
+const CAPTURE_EVENTS: string[] = ['permission-request', 'stream-acquired', 'recorder-created', 'start',
+  'chunk', 'stop-request', 'track-release', 'stopped', 'save-start', 'save-ok', 'save-error',
+  'permission-error', 'start-error', 'recorder-error', 'budget'];
+const CAPTURE_KEYS: string[] = ['attempt', 'event', 'chunkCount', 'zeroChunks', 'totalBytes',
+  'lastChunkBytes', 'elapsedMs', 'mimeKind', 'activeTracks'];
+const CAPTURE_MIME_KINDS: string[] = ['webm-opus', 'webm', 'mp4', 'other', 'unknown'];
+
+class NativeCaptureData {
+  attempt: number = 0;
+  event: string = '';
+  chunkCount: number = 0;
+  zeroChunks: number = 0;
+  totalBytes: number = 0;
+  lastChunkBytes: number = 0;
+  elapsedMs: number = 0;
+  mimeKind: string = 'unknown';
+  activeTracks: number = 0;
+}
+
+class NativeCaptureLog {
+  v: number = 1;
+  seq: number = 0;
+  uptimeMs: number = -1;
+  wallMs: number = 0;
+  data: NativeCaptureData = new NativeCaptureData();
+}
+
+function captureInteger(value: number): boolean {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+}
+
+class NativeCaptureDiagnostics {
+  private count: number = 0;
+  private limitReported: boolean = false;
+
+  forward(message: string): boolean {
+    try {
+      if (message.length > 2048 || !message.startsWith(CAPTURE_CONSOLE_PREFIX)) return false;
+      const input = JSON.parse(message.substring(CAPTURE_CONSOLE_PREFIX.length)) as NativeCaptureData;
+      if (input === null || typeof input !== 'object' || Array.isArray(input)) return false;
+      const keys: string[] = Object.keys(input);
+      if (keys.length !== CAPTURE_KEYS.length || keys.some((key: string) => !CAPTURE_KEYS.includes(key))) return false;
+      if (!CAPTURE_EVENTS.includes(input.event) || !CAPTURE_MIME_KINDS.includes(input.mimeKind) ||
+        !captureInteger(input.attempt) || input.attempt > 64 ||
+        !captureInteger(input.chunkCount) || !captureInteger(input.zeroChunks) ||
+        !captureInteger(input.totalBytes) || !captureInteger(input.lastChunkBytes) ||
+        !captureInteger(input.activeTracks) || typeof input.elapsedMs !== 'number' ||
+        !Number.isFinite(input.elapsedMs) || input.elapsedMs < 0) return false;
+      if (input.event === 'budget' && (input.attempt !== 0 || input.chunkCount !== 0 || input.zeroChunks !== 0 ||
+        input.totalBytes !== 0 || input.lastChunkBytes !== 0 || input.elapsedMs !== 0 ||
+        input.mimeKind !== 'unknown' || input.activeTracks !== 0)) return false;
+      if (input.event === 'budget' || this.count >= CAPTURE_CONSOLE_LIMIT) {
+        if (!this.limitReported) {
+          this.limitReported = true;
+          this.write('v=1 phase=limit messages=128');
+        }
+        return true;
+      }
+      // Rebuild only the fixed validated counters and enums; never forward arbitrary strings.
+      const output: NativeCaptureData = new NativeCaptureData();
+      output.attempt = input.attempt;
+      output.event = input.event;
+      output.chunkCount = input.chunkCount;
+      output.zeroChunks = input.zeroChunks;
+      output.totalBytes = input.totalBytes;
+      output.lastChunkBytes = input.lastChunkBytes;
+      output.elapsedMs = input.elapsedMs;
+      output.mimeKind = input.mimeKind;
+      output.activeTracks = input.activeTracks;
+      const log: NativeCaptureLog = new NativeCaptureLog();
+      log.seq = ++this.count;
+      log.uptimeMs = mediaRangeUptime();
+      log.wallMs = Date.now();
+      log.data = output;
+      this.write(JSON.stringify(log));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private write(message: string): void {
+    try {
+      hilog.info(0x1001, 'LANTERN_CAPTURE', '%{public}s', message);
+    } catch {
+      // Diagnostic sink failures cannot change capture or trusted console routing.
+    }
+  }
+}
+
+const nativeCaptureDiagnostics: NativeCaptureDiagnostics = new NativeCaptureDiagnostics();
+
 function isAppUrl(value: string): boolean {
   return value === APP_ORIGIN || value.startsWith(APP_URL);
 }
@@ -471,6 +565,7 @@ struct Index {
     try {
       if (!this.pageReady || !this.isTrustedDocument()) return false;
       const text: string = message.getMessage();
+      if (nativeCaptureDiagnostics.forward(text)) return true;
       if (recordingPlaybackDiagnostics.forward(text)) return true;
       return bundledPlaybackDiagnostics.forward(text);
     } catch {

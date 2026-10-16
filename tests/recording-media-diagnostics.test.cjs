@@ -84,13 +84,13 @@ test('native log budget is bounded and only a fully neutral renderer budget mark
 test('native hilog sink failure never escapes the isolated diagnostic function',()=>{
  const h=nativeHarness();h.failSink();assert.doesNotThrow(()=>assert.equal(h.forward(nativeRow()),true));assert.equal(h.captured.length,0);
 });
-test('actual native console route requires trusted readiness and routes recording before bundled observations',()=>{
+test('actual native console route requires trusted readiness and routes capture then recording then bundled observations',()=>{
  const file=path.join(root,'harmony/entry/src/main/ets/pages/Index.ets'),source=fs.readFileSync(file,'utf8');
  const start=source.indexOf('private playbackConsole('),end=source.indexOf('  private invalidateBridge(',start);assert.ok(start>=0&&end>start);
- const body=source.slice(start,end).replace('private playbackConsole(','function playbackConsole('),calls=[];let recording=false,bundled=true;
- const sandbox={recordingPlaybackDiagnostics:{forward(text){calls.push(['recording',text]);return recording;}},bundledPlaybackDiagnostics:{forward(text){calls.push(['bundled',text]);return bundled;}}};
+ const body=source.slice(start,end).replace('private playbackConsole(','function playbackConsole('),calls=[];let capture=false,recording=false,bundled=true;
+ const sandbox={nativeCaptureDiagnostics:{forward(text){calls.push(['capture',text]);return capture;}},recordingPlaybackDiagnostics:{forward(text){calls.push(['recording',text]);return recording;}},bundledPlaybackDiagnostics:{forward(text){calls.push(['bundled',text]);return bundled;}}};
  vm.runInNewContext(ts.transpileModule(body+'\nglobalThis.__route=playbackConsole;',{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,sandbox,{filename:file+'#playbackConsole'});
  const context={pageReady:false,isTrustedDocument:()=>true},message={getMessage(){calls.push(['getMessage']);return 'synthetic schema-only observation';}};
  assert.equal(sandbox.__route.call(context,message),false);assert.deepEqual(calls,[]);context.pageReady=true;context.isTrustedDocument=()=>false;assert.equal(sandbox.__route.call(context,message),false);assert.deepEqual(calls,[]);
- context.isTrustedDocument=()=>true;recording=true;assert.equal(sandbox.__route.call(context,message),true);assert.deepEqual(calls.map(row=>row[0]),['getMessage','recording']);calls.length=0;recording=false;assert.equal(sandbox.__route.call(context,message),true);assert.deepEqual(calls.map(row=>row[0]),['getMessage','recording','bundled']);bundled=false;assert.equal(sandbox.__route.call(context,{getMessage(){throw Error('Failed native message');}}),false);
+ context.isTrustedDocument=()=>true;capture=true;assert.equal(sandbox.__route.call(context,message),true);assert.deepEqual(calls.map(row=>row[0]),['getMessage','capture']);calls.length=0;capture=false;recording=true;assert.equal(sandbox.__route.call(context,message),true);assert.deepEqual(calls.map(row=>row[0]),['getMessage','capture','recording']);calls.length=0;recording=false;assert.equal(sandbox.__route.call(context,message),true);assert.deepEqual(calls.map(row=>row[0]),['getMessage','capture','recording','bundled']);bundled=false;assert.equal(sandbox.__route.call(context,{getMessage(){throw Error('Failed native message');}}),false);
 });
