@@ -10,8 +10,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const {randomUUID} = require('node:crypto');
 
-assert.ok(process.env.LANTERN_REVIEW_ROOT, 'Set LANTERN_REVIEW_ROOT to the exact site under test.');
-const root = path.resolve(process.env.LANTERN_REVIEW_ROOT);
+const root=path.resolve(process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..'));
 const ts = require(path.join(root, 'node_modules/typescript'));
 const genericError = '备份暂时无法生成，当前记录未改。';
 const successMessage = '学习记录备份已生成，请确认文件已保存。';

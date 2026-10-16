@@ -1,3 +1,11 @@
+# 当前修订：请求体实际字节限额（2026-10-16）
+
+隔离源码 `vocab-work/request-body-limits-20261016/site`，分支 `fix/request-body-byte-limits-20261016`，基于F04 `67acbe94f6e4692bee52549e1e06484e5ea8f246`。Study／词卡／录音表单仅在鉴权后先按实际字节有界读取，再解析；不信Content-Length。超限413、读流失败503，合法格式／业务合同保留。录音采集／播放／元数据与R2/D1保存链不改，题包R2流不纳入本轮。
+
+见 [专项修复交接](testing/REQUEST-BODY-BYTE-LIMITS-20261016.md)，精确源码提交及原版RED／自测原件见项目根 `项目组/engineering/REQUEST-BODY-LIMITS-20261016/`。仅待独立QA回归，不关闭整个R-ROUTE-01或其他缺陷；没有新Web/HAP、真实数据／服务、设备、麦克风、证书信任、push／合入／部署。以下历史与F04成果保留。
+
+---
+
 # 当前修订：F04 日历日期一致性（2026-10-16）
 
 隔离源码候选 `vocab-work/f04-date-consistency-20261016/site`，分支 `fix/f04-study-calendar-date-20261016`，基于账号 `df567108fcb1fa25e95ea409c98b8908cc1db603`。API 与本机新写入使用既有严格日历日期判据；旧非法日期不修改、不删除，普通备份在下载前明确报错，两个导出入口共用处理。旧持久事件同 ID 原样确认保留，旧非法 pending 同步仍可能被 API 拒绝并保留待处理。

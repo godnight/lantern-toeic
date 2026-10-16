@@ -5,6 +5,7 @@ import {profiles,attempts,checkins,recordings,questionMarks,resourceTasks} from 
 import {mutableStudyUpsert} from '@/db/mutable-study';
 import {DEFAULT_PROFILE,DATA_SCHEMA_VERSION,validQuestionMark,validResourceTask,validStudyDate} from '@/lib/study-model';
 import {userId,safeMutation,privateJson} from '@/lib/server-auth';
+import {readBoundedRequestBody,RequestBodyTooLargeError} from '@/lib/request-body';
 import questions from '@/content/questions.json';
 import {resources} from '@/content/resources-v2';
 import examResources from '@/content/exams/catalogue.json';
@@ -21,8 +22,7 @@ const checkinPayload=(c:z.infer<typeof checkin>)=>JSON.stringify({id:c.id,date:c
 const eventConflict=()=>{const response=privateJson({code:'event-payload-conflict',error:'记录标识已用于不同内容，请保留备份并检查导入来源'},409);response.headers.set('X-Lantern-Conflict','event-payload');return response;};
 export async function GET(request?:Request){const uid=await userId(request);if(!uid)return privateJson({error:'请登录后同步',local:true},401);try{const db=getDb();const [p,a,c,r,m,t]=await Promise.all([db.select().from(profiles).where(eq(profiles.userId,uid)),db.select().from(attempts).where(eq(attempts.userId,uid)),db.select().from(checkins).where(eq(checkins.userId,uid)),db.select().from(recordings).where(eq(recordings.userId,uid)),db.select().from(questionMarks).where(eq(questionMarks.userId,uid)),db.select().from(resourceTasks).where(eq(resourceTasks.userId,uid))]);const storedProfile=p[0]?JSON.parse(p[0].body):DEFAULT_PROFILE;const {__lanternProfileOrigin,...visibleProfile}=storedProfile;return privateJson({owner:uid,schemaVersion:DATA_SCHEMA_VERSION,profile:visibleProfile,profileOrigin:__lanternProfileOrigin==='theme-only-v1'?'theme-only':p[0]?'saved':'missing',hasProfile:!!p[0],attempts:a.map(({userId:_,...rest})=>rest),checkins:c.map(x=>JSON.parse(x.body)),recordings:r.map(x=>({...JSON.parse(x.body),uploaded:true})),questionMarks:m.map(x=>JSON.parse(x.body)),resourceTasks:t.map(x=>JSON.parse(x.body))});}catch{return privateJson({error:'同步暂时不可用，本机记录会保留'},503);}}
 export async function POST(request:Request){const uid=await userId(request);if(!uid)return privateJson({error:'请登录后同步'},401);if(request.headers.get('x-lantern-owner')!==uid)return privateJson({error:'账号已切换，请刷新后重试'},409);if(!safeMutation(request))return privateJson({error:'请求来源不匹配'},403);try{
- if(Number(request.headers.get('content-length')||0)>200000)return privateJson({error:'请求过大'},413);
- const body=z.object({type:z.string(),data:z.unknown()}).parse(await request.json());const db=getDb();
+ const body=z.object({type:z.string(),data:z.unknown()}).parse(await new Response(await readBoundedRequestBody(request,200000)).json());const db=getDb();
  if(body.type==='profile'){const parsed=profile.parse(body.data);await db.insert(profiles).values({userId:uid,body:JSON.stringify(parsed),updatedAt:new Date().toISOString()}).onConflictDoUpdate({target:profiles.userId,set:{body:JSON.stringify(parsed),updatedAt:new Date().toISOString()}});return privateJson({ok:true});}
  if(body.type==='theme'){
   const parsed=z.object({theme:z.enum(['hollow','silk','paper','crystal'])}).strict().parse(body.data);const updatedAt=new Date().toISOString();
@@ -58,4 +58,4 @@ export async function POST(request:Request){const uid=await userId(request);if(!
   await db.run(mutableStudyUpsert('resourceTask',uid,task));return privateJson({ok:true});
  }
  return privateJson({error:'未知操作'},400);
- }catch(e){return privateJson({error:(e instanceof z.ZodError||e instanceof SyntaxError)?'记录格式无效':'同步暂时不可用'},(e instanceof z.ZodError||e instanceof SyntaxError)?400:503);}}
+ }catch(e){if(e instanceof RequestBodyTooLargeError)return privateJson({error:'请求过大'},413);return privateJson({error:(e instanceof z.ZodError||e instanceof SyntaxError)?'记录格式无效':'同步暂时不可用'},(e instanceof z.ZodError||e instanceof SyntaxError)?400:503);}}

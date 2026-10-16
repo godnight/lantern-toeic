@@ -98,7 +98,7 @@ test('API validates references, real dates and account ownership, and reads only
  const {sqlite,db}=database();let owner='alice';
  const api=load('app/api/study/route.ts',{
   'drizzle-orm':orm,zod:require('zod'),'@/db':{getDb:()=>db},'@/db/schema':schema,'@/db/mutable-study':statements,'@/lib/study-model':model,
-  '@/lib/server-auth':{userId:async()=>owner,safeMutation:req=>req.headers.get('origin')==='https://test.local',privateJson:(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}})},
+  '@/lib/request-body':load('lib/request-body.ts'),'@/lib/server-auth':{userId:async()=>owner,safeMutation:req=>req.headers.get('origin')==='https://test.local',privateJson:(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}})},
   '@/content/questions.json':{default:questions},'@/content/resources-v2':resources,'@/content/exams/catalogue.json':{default:exams}
  });
  const post=(type,data,expectedOwner=owner)=>api.POST(new Request('https://test.local/api/study',{method:'POST',headers:{origin:'https://test.local','Content-Type':'application/json','X-Lantern-Owner':expectedOwner},body:JSON.stringify({type,data})}));
