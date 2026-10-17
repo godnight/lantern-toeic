@@ -22,7 +22,7 @@ function environment(options = {}) {
     if (options.withoutAuth && /^000[45]_/.test(file)) continue;
     sqlite.exec(fs.readFileSync(path.join(root, 'drizzle', file), 'utf8'));
   }
-  const queries = [], objects = new Map(), moduleCache = new Map();
+  const queries = [], objects = new Map(), moduleCache = new Map(), hooks = {};
   const storage = {puts: 0, gets: 0, deletes: 0};
   function prepared(sql, params = []) {
     function execute(method) {
@@ -34,9 +34,15 @@ function environment(options = {}) {
       const result = stmt.run(...params);
       return {meta: {changes: Number(result.changes), last_row_id: Number(result.lastInsertRowid)}, success: true};
     }
+    async function dispatch(method) {
+      await hooks.beforeSql?.(sql, params, method);
+      const result = execute(method);
+      await hooks.afterSql?.(sql, params, method, result);
+      return result;
+    }
     return {bind: (...values) => prepared(sql, values),
-      first: async () => execute('first'), all: async () => execute('all'),
-      raw: async () => execute('raw'), run: async () => execute('run'),
+      first: () => dispatch('first'), all: () => dispatch('all'),
+      raw: () => dispatch('raw'), run: () => dispatch('run'),
       _batch: () => execute('run')};
   }
   const d1 = {prepare: sql => prepared(sql), async batch(statements) {
@@ -53,10 +59,11 @@ function environment(options = {}) {
       const bytes = Buffer.from(await new Response(body).arrayBuffer());
       if (options.sha256) assert.equal(sha(bytes), options.sha256, 'R2 checksum adapter validates bytes');
       objects.set(key, {bytes, httpMetadata: options.httpMetadata});
+      await storage.afterPut?.(key);
       return {size: bytes.length};
     },
-    async get(key) {storage.gets++;const object = objects.get(key);return object ? {size: object.bytes.length, body: new Response(object.bytes).body, httpMetadata: object.httpMetadata} : null;},
-    async delete(key) {storage.deletes++;objects.delete(key);},
+    async get(key) {storage.gets++;await storage.beforeGet?.(key);const object = objects.get(key);return object ? {size: object.bytes.length, body: new Response(object.bytes).body, httpMetadata: object.httpMetadata,arrayBuffer:async()=>new Uint8Array(object.bytes).buffer} : null;},
+    async delete(key) {storage.deletes++;await storage.beforeDelete?.(key);objects.delete(key);},
   };
   const env = {DB: d1, BUCKET: bucket, LANTERN_AUTH_ENABLED: 'true', LANTERN_AUTH_ORIGIN: ORIGIN, ...options.env};
   let ambientHeaders = new Headers();
@@ -122,7 +129,7 @@ function environment(options = {}) {
     form.set('audio', new File(['synthetic audio only'], 'synthetic.webm', {type: 'audio/webm'}));
     return {cookie: user.cookie, owner: user.id, body: form};
   }
-  return {sqlite, env, d1, objects, storage, queries, load, routes, request, call, register, librarySample, libraryInit, recordingInit,
+  return {sqlite, env, d1, objects, storage, hooks, queries, load, routes, request, call, register, librarySample, libraryInit, recordingInit,
     setAmbientHeaders(headers) {ambientHeaders = new Headers(headers);},
     rows(table) {assert.match(table, /^[a-z_]+$/);return plain(sqlite.prepare('SELECT * FROM ' + table).all());},
     close() {sqlite.close();}};

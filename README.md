@@ -1,3 +1,13 @@
+# 当前接续：账号开发分支与录音存储（2026-10-18）
+
+账号源码在独立目录 `vocab-work/account-validation-20261018/site`、分支 `fix/account-recording-storage-20261018`，继承 `2e6940d` 的 F04 日期和请求体限额，并接入不可变录音上传、并发获胜对象保全及未知提交结果保护。真实产品会话/Origin/owner 门禁保留；录音内容冲突使用 422，避免被当作账号变化。默认认证仍关闭，不覆盖个人 Sites 站。
+
+本轮修改后专项 137/137、Auth 72/72、真实本地 workerd D1/R2 录音 1/1、transport/local-profile 11/11、构建后测试 34/34，以及 typecheck/Web build 通过；测试范围存在重叠。原 706 全量结果属于 `2e6940d` 修改前基线。可信 HTTPS 浏览器 A/B 仍待验：用户已同意临时信任，但 Windows 导入挂起，已停止并核对无目标 Root 条目，未降低门槛。账号版没有新 HAP、公开启用或生产 owner 迁移。
+
+详细测试原件、个人版差异和剩余启用条件见 [最新接续记录](docs/testing/ACCOUNT-DEVELOPMENT-READY-20261018.md)。以下为按日期保留的历史修订，旧“当前”和旧待许可表述不覆盖本段。
+
+---
+
 # 当前修订：请求体实际字节限额（2026-10-16）
 
 隔离源码 `vocab-work/request-body-limits-20261016/site`，分支 `fix/request-body-byte-limits-20261016`，基于F04 `67acbe94f6e4692bee52549e1e06484e5ea8f246`。Study／词卡／录音表单仅在鉴权后先按实际字节有界读取，再解析；不信Content-Length。超限413、读流失败503，合法格式／业务合同保留。录音采集／播放／元数据与R2/D1保存链不改，题包R2流不纳入本轮。

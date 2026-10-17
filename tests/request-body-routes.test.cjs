@@ -126,7 +126,7 @@ async function accepted(e,route,probe,spec,alice,bob,before){
   assert.deepEqual(JSON.parse(row.body),spec.event);
  }else{
   const row=e.rows('recordings').find(row=>row.id===spec.meta.id);assert.ok(row);assert.equal(row.user_id,alice.id);
-  assert.equal(row.object_key,'recordings/'+alice.id+'/'+spec.meta.id);
+  assert.ok(row.object_key.startsWith('recordings/'+alice.id+'/'+spec.meta.id+'/'));
   assert.deepEqual(e.objects.get(row.object_key).bytes,spec.audio);
   assert.equal(JSON.parse(row.body).createdAt,stamp);assert.equal(e.storage.puts-before.puts,1);
  }

@@ -1,5 +1,7 @@
 # 账号页本地 HTTPS 运行手册
 
+> 2026-10-18 最新接续：用户已经同意本轮临时信任。两次 Windows 导入挂起，已停止并核对目标证书在 CurrentUser/LocalMachine Root 均不存在；本轮没有启动 TLS 页面。当前为环境阻碍，不再等待同意；不要重复导入或降低预检门槛。源码接续目录为 `vocab-work/account-validation-20261018/site`，本文件以下为历史启动规范。最新测试及剩余条件见 [账号接续](ACCOUNT-DEVELOPMENT-READY-20261018.md)。
+
 > 200响应头屏障修订的新独立目录是 `vocab-work/auth-response-barrier-20261016/site`、分支 `fix/auth-response-barrier-20261016`；若验该修订，请把下文Set-Location切到新目录再按同一严格约束执行，D1/R2状态不与旧目录共享。TLS创建/信任许可仍pending，本轮未创建材料或启动服务。见 [本轮交接](AUTH-RESPONSE-BARRIER-20261016.md)。
 
 > 启动补件冻结于 `7660d8b622eae9359b596e3eb8bf33c287066dda`。当前同一独立目录已接续到 `fix/auth-review-20261016`，追加0005迁移；本手册启动约束继续有效，最新修订/传输证据见 [审查回应](AUTH-REVIEW-REVISION-20261016.md)。下文原分支名为补件的历史身份，不要求回退源码。可信TLS与浏览器验收仍BLOCKED。

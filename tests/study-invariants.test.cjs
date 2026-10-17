@@ -284,6 +284,21 @@ test('missing local audio stays visible while a valid recording uploads', async 
   assert.equal(api.data.recordings.find(r=>r.id==='good-audio').uploaded,true);assert.notEqual(api.sync,'synced');
 });
 
+test('recording content conflict preserves the file and lets later records sync without a session failure',async()=>{
+ const storage=new Map(),audio=new Map();
+ const h=hookHarness(storage,{audio,handle:async(url,init)=>url==='/api/recordings'&&JSON.parse(init.body.get('meta')).id==='conflict-audio'?new Response('{}',{status:422}):undefined});
+ h.render();await flush();
+ for(const id of ['conflict-audio','healthy-audio']){audio.set('lantern-v1-alice:'+id,new Blob([id],{type:'audio/webm'}));storage.set('lantern-v1-alice:recording:'+id,JSON.stringify({id,title:id,promptId:'test',createdAt:'2026-09-07T10:00:00.000Z',duration:2,uploaded:false}));}
+ h.setOnline(true);await h.render().syncNow();const result=h.render();
+ assert.equal(h.requests.filter(r=>r.url==='/api/recordings').length,2);
+ assert.ok(result.data.recordings.find(r=>r.id==='healthy-audio').uploaded);
+ assert.equal(result.data.recordings.find(r=>r.id==='conflict-audio').uploaded,false);
+ assert.ok(result.issues.some(x=>x.id==='conflict-audio'&&x.httpStatus===422&&x.status==='blocked'));
+ assert.equal(result.issues.some(x=>x.kind==='session'),false);
+ assert.equal(await audio.get('lantern-v1-alice:conflict-audio').text(),'conflict-audio');
+ assert.ok(h.requests.some(r=>r.url==='/api/study'&&!r.body));
+});
+
 test('recording queued during remote refresh triggers another pass without another user event', async () => {
   let release,started;const entered=new Promise(resolve=>{started=resolve;});const waiting=new Promise(resolve=>{release=resolve;});let hold=true;
   const audio=new Map();const h=hookHarness(new Map(),{audio,handle:async(url,init)=>{if(!init?.method&&hold){hold=false;started();await waiting;}}});
@@ -333,7 +348,7 @@ test('very long Retry-After cannot overflow into a rapid timer', async () => {
 test('invalid recording metadata and malformed multipart are permanent input failures', async () => {
   const route=load('app/api/recordings/route.ts',{
     'cloudflare:workers':{env:{}},'drizzle-orm':{eq(){},and(){}},'@/db':{getDb(){throw Error('Storage must not be reached');}},'@/db/schema':{recordings:{}},
-    '@/lib/request-body':load('lib/request-body.ts'),'@/lib/server-auth':{userId:async()=>'alice',safeMutation:()=>true,privateJson:(body,status=200)=>({body,status})},'@/content/speaking.json':{default:[]}
+    '@/lib/recording-upload':load('lib/recording-upload.ts'),'@/lib/request-body':load('lib/request-body.ts'),'@/lib/server-auth':{userId:async()=>'alice',safeMutation:()=>true,privateJson:(body,status=200)=>({body,status})},'@/content/speaking.json':{default:[]}
   },{File,Response});
   const headers=new Headers({'x-lantern-owner':'alice'});
   for(const metadata of ['null','[1]','{bad json']){
@@ -342,24 +357,13 @@ test('invalid recording metadata and malformed multipart are permanent input fai
   assert.equal((await route.POST(new Request('https://test.local/api/recordings',{method:'POST',headers:{'x-lantern-owner':'alice','Content-Type':'multipart/form-data; boundary=missing'},body:'not a multipart body'}))).status,400);
 });
 
-test('uploading an offline recording retains the date the practice occurred', async () => {
-  let stored;
-  const prompts=JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8'));
-  const auth={userId:async()=>'alice',safeMutation:()=>true,privateJson:(body,status=200)=>({body,status})};
-  const route=load('app/api/recordings/route.ts',{
-    'cloudflare:workers':{env:{BUCKET:{put:async()=>{}}}},
-    'drizzle-orm':{eq(){},and(){}},
-    '@/db':{getDb:()=>({select:()=>({from:()=>({where:async()=>stored?[stored]:[]})}),insert:()=>({values:row=>({onConflictDoNothing:async()=>{stored=row;}})})})},
-    '@/db/schema':{recordings:{}},
-    '@/lib/request-body':load('lib/request-body.ts'),'@/lib/server-auth':auth,
-    '@/content/speaking.json':{default:prompts}
-  },{File,Response});
-  const meta={id:randomUUID(),promptId:prompts[0].id,duration:20,createdAt:'2026-09-01T12:00:00.000Z'};
-  const file=new File(['audio data'],'sample.webm',{type:'audio/webm'});
-  const form=new FormData();form.set('audio',file);form.set('meta',JSON.stringify(meta));
-  const result=await route.POST(new Request('https://test.local/api/recordings',{method:'POST',headers:{'x-lantern-owner':'alice'},body:form}));
+test('uploading an offline recording retains the date the practice occurred', async t => {
+  const {environment}=require('./helpers/account-recording-storage-harness.cjs');
+  const storage=await environment();t.after(()=>storage.close());
+  const meta={duration:20,createdAt:'2026-09-01T12:00:00.000Z'};
+  const result=await storage.upload('alice',randomUUID(),'audio data',meta);
   assert.equal(result.status,200);
-  assert.equal(JSON.parse(stored.body).createdAt,meta.createdAt,'Sync day must not replace original recording date');
+  assert.equal(JSON.parse(storage.rows()[0].body).createdAt,meta.createdAt,'Sync day must not replace original recording date');
 });
 
 test('an earlier recording save cannot mark the current recording as saved', async () => {

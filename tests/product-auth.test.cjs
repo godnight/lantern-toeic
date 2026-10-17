@@ -290,7 +290,7 @@ test('study event collisions and mutable records cannot overwrite or attach anot
 test('recordings cannot be downloaded by another account and uploads cannot choose a foreign owner', async t => {
   const e = environment();t.after(() => e.close());const alice = await e.register(), bob = await e.register('bob');
   const id = crypto.randomUUID();assert.equal((await e.call('recordings', 'POST', e.recordingInit(alice, id, {userId: bob.id}))).status, 200);
-  const row = e.rows('recordings')[0];assert.equal(row.user_id, alice.id);assert.equal(row.object_key, 'recordings/' + alice.id + '/' + id);
+  const row = e.rows('recordings')[0];assert.equal(row.user_id, alice.id);assert.ok(row.object_key.startsWith('recordings/' + alice.id + '/' + id + '/'));
   assert.equal((await e.call('recordings', 'GET', {cookie: alice.cookie, query: '?id=' + id})).status, 200);
   assert.equal((await e.call('recordings', 'GET', {cookie: bob.cookie, query: '?id=' + id, headers: {'x-oai-user-id': alice.id, 'x-lantern-owner': alice.id}})).status, 404);
   const bobId = crypto.randomUUID();assert.equal((await e.call('recordings', 'POST', e.recordingInit(bob, bobId, {userId: alice.id}))).status, 200);
@@ -312,12 +312,12 @@ test('an existing foreign recording ID is rejected before R2 and leaves its row 
 test('a foreign recording ID winner during upload preserves B and cleans only the losing A object', async t => {
   const e = environment();t.after(() => e.close());const alice = await e.register(), bob = await e.register('bob'), id = crypto.randomUUID();
   let entered, release;const gate = new Promise(resolve => {release = resolve;}), waiting = new Promise(resolve => {entered = resolve;});
-  e.storage.beforePut = async key => {if (key === 'recordings/' + alice.id + '/' + id) {entered();await gate;}};
+  e.storage.beforePut = async key => {if (key.startsWith('recordings/' + alice.id + '/' + id + '/')) {entered();await gate;}};
   const aliceUpload = e.call('recordings', 'POST', e.recordingInit(alice, id));await waiting;
   try {assert.equal((await e.call('recordings', 'POST', e.recordingInit(bob, id))).status, 200);} finally {release();}
   assert.equal((await aliceUpload).status, 422);
   const rows = e.rows('recordings');assert.equal(rows.length, 1);assert.equal(rows[0].user_id, bob.id);
-  assert.equal(e.objects.size, 1);assert.ok(e.objects.has('recordings/' + bob.id + '/' + id));assert.ok(!e.objects.has('recordings/' + alice.id + '/' + id));
+  assert.equal(e.objects.size, 1);assert.ok(e.objects.has(rows[0].object_key));assert.ok(rows[0].object_key.startsWith('recordings/' + bob.id + '/' + id + '/'));assert.ok(![...e.objects.keys()].some(key=>key.startsWith('recordings/' + alice.id + '/' + id + '/')));
   assert.equal((await e.call('recordings', 'GET', {cookie: bob.cookie, query: '?id=' + id})).status, 200);
   assert.equal((await e.call('recordings', 'GET', {cookie: alice.cookie, query: '?id=' + id})).status, 404);
 });
