@@ -123,7 +123,7 @@ async function answerGroup({reloadFirst=false}={}){
   const qid=active?.questionIds?.[active.cursor];if(qid)qids.push(qid);
   await dialog.getByRole('radio').first().click();await dialog.getByRole('button',{name:'确认答案',exact:true}).click();await dialog.locator('.answer-feedback').waitFor();count++;
   if(reloadFirst&&count===1){const facts=studyFacts(await readState());assert.equal(facts.attempts.length,1);await page.reload({waitUntil:'networkidle'});await page.getByRole('button',{name:'恢复这一组',exact:true}).click();await (await practiceDialog()).locator('.answer-feedback').waitFor();assert.equal(studyFacts(await readState()).attempts.length,1);}
-  const current=await practiceDialog();const complete=current.getByRole('button',{name:'完成本组',exact:true});if(await complete.count()){await complete.click();break;}await current.getByRole('button',{name:'下一题',exact:true}).click();
+  const current=await practiceDialog();const complete=current.getByRole('button',{name:'完成本组答题',exact:true});if(await complete.count()){await complete.click();break;}await current.getByRole('button',{name:'下一题',exact:true}).click();
  }
  await page.getByRole('button',{name:'记录时间与收获',exact:true}).waitFor();return{count,qids};
 }
