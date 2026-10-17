@@ -40,10 +40,11 @@ export async function storeRecordingUpload(store:RecordingUploadStore,owner:stri
  }catch{await remove();return 503;}
  // insert may commit and lose its acknowledgement. Always read the winner,
  // including after an exception; never delete on an unknown database outcome.
- try{await store.insert(row);}catch{/* resolve through the persisted row */}
+ let insertUncertain=false;
+ try{await store.insert(row);}catch{insertUncertain=true;/* resolve through the persisted row */}
  let winner:RecordingRow|undefined;
  try{winner=await store.read();}catch{return 503;}
- if(!winner){await remove();return 503;}
+ if(!winner){if(!insertUncertain)await remove();return 503;}
  if(winner.objectKey!==key)await remove();
  return matches(winner);
 }

@@ -36,8 +36,8 @@ test('R2 failures before commit and after commit with lost ACK leave no row and 
 test('R2 readback mismatch cannot create or acknowledge a recording',async t=>{
  const e=fixture(t);e.hooks.afterPut=key=>{e.objects.get(key).bytes=Buffer.from('corrupted');};assert.equal(await status(e.upload('alice',id)),503);assert.equal(e.rows().length,0);assert.equal(e.objects.size,0);
 });
-test('D1 insert failure before commit cleans only this unreferenced object and retry succeeds',async t=>{
- const e=fixture(t);e.hooks.beforeSql=sql=>{if(/^insert/i.test(sql))throw Error('D1 rejected');};assert.equal(await status(e.upload('alice',id)),503);assert.equal(e.rows().length,0);assert.equal(e.objects.size,0);delete e.hooks.beforeSql;assert.equal(await status(e.upload('alice',id)),200);
+test('D1 insert failure with an uncertain outcome retains its private object and retry succeeds',async t=>{
+ const e=fixture(t);e.hooks.beforeSql=sql=>{if(/^insert/i.test(sql))throw Error('D1 rejected');};assert.equal(await status(e.upload('alice',id)),503);assert.equal(e.rows().length,0);assert.equal(e.objects.size,1);assert.equal(e.calls.delete.length,0);delete e.hooks.beforeSql;assert.equal(await status(e.upload('alice',id)),200);
 });
 test('D1 committed but lost ACK is resolved by winner readback without deleting its object',async t=>{
  const e=fixture(t);e.hooks.afterSql=sql=>{if(/^insert/i.test(sql))throw Error('Lost insert ACK');};assert.equal(await status(e.upload('alice',id)),200);assert.equal(e.rows().length,1);assert.equal(e.objects.size,1);assert.equal(e.calls.delete.length,0);assert.equal(await status(e.upload('alice',id)),200);
@@ -45,6 +45,16 @@ test('D1 committed but lost ACK is resolved by winner readback without deleting 
 test('unknown insert outcome and failed readback preserve a possibly committed winner; next retry resolves it',async t=>{
  const e=fixture(t);let inserted=false;e.hooks.afterSql=sql=>{if(/^insert/i.test(sql)){inserted=true;throw Error('Lost ACK');}};e.hooks.beforeSql=sql=>{if(inserted&&/^select/i.test(sql))throw Error('Read unavailable');};
  assert.equal(await status(e.upload('alice',id)),503);assert.equal(e.rows().length,1);assert.equal(e.objects.size,1);assert.equal(e.calls.delete.length,0);delete e.hooks.beforeSql;delete e.hooks.afterSql;assert.equal(await status(e.upload('alice',id)),200);assert.equal(e.calls.put.length,1);
+});
+test('lost insert ACK and temporarily absent readback cannot delete an already committed recording',async t=>{
+ const e=fixture(t);let inserted=false;
+ e.hooks.afterSql=(sql,params,method,result)=>{
+  if(/^insert/i.test(sql)){inserted=true;throw Error('Lost ACK');}
+  if(inserted&&/^select/i.test(sql)&&Array.isArray(result))result.length=0;
+  if(inserted&&/^select/i.test(sql)&&Array.isArray(result?.results))result.results.length=0;
+ };
+ assert.equal(await status(e.upload('alice',id)),503);assert.equal(e.rows().length,1);assert.equal(e.objects.size,1);assert.equal(e.calls.delete.length,0);
+ delete e.hooks.afterSql;assert.equal(await (await e.get('alice',id)).text(),'fixture-a');assert.equal(await status(e.upload('alice',id)),200);assert.equal(e.calls.put.length,1);
 });
 for(const mode of ['same-owner-same-content','same-owner-different-content','cross-owner'])test('concurrent '+mode+' preserves the committed winner and cleans only the loser key',async t=>{
  const e=fixture(t),g=gate();let blocked=true;e.hooks.beforePut=async()=>{if(blocked){blocked=false;g.enter();await g.wait;}};

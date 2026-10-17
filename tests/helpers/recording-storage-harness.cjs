@@ -15,7 +15,7 @@ function environment(){
    await hooks.beforeSql?.(sql,params,method);
    const stmt=sqlite.prepare(sql);
    const result=method==='raw'?stmt.all(...params).map(row=>Object.values(row)):method==='all'?{results:stmt.all(...params),success:true}:method==='first'?stmt.get(...params)||null:{meta:{changes:Number(stmt.run(...params).changes)},success:true};
-   await hooks.afterSql?.(sql,params,method);
+   await hooks.afterSql?.(sql,params,method,result);
    return result;
   }
   return {bind:(...values)=>prepare(sql,values),run:()=>execute('run'),raw:()=>execute('raw'),all:()=>execute('all'),first:()=>execute('first')};
