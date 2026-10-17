@@ -289,6 +289,24 @@ test('missing local audio stays visible while a valid recording uploads', async 
   assert.equal(api.data.recordings.find(r=>r.id==='good-audio').uploaded,true);assert.notEqual(api.sync,'synced');
 });
 
+test('real recording content conflict blocks only that item while other uploads and account refresh continue', async t => {
+  const {environment}=require('./helpers/recording-storage-harness.cjs');const server=environment();t.after(()=>server.close());
+  const conflict=randomUUID(),good=randomUUID();await server.upload('alice',conflict,'server-original');
+  const storage=new Map(),audio=new Map([['lantern-v1-alice:'+conflict,new Blob(['local-different'],{type:'audio/webm'})],['lantern-v1-alice:'+good,new Blob(['new-audio'],{type:'audio/webm'})]]);
+  const h=hookHarness(storage,{audio,handle:async(url,init)=>{
+    if(url==='/api/recordings'&&init?.method==='POST'){
+      const meta=JSON.parse(init.body.get('meta'));return server.upload('alice',meta.id,await init.body.get('audio').text(),meta);
+    }
+  }});h.render();await flush();
+  for(const id of [conflict,good])storage.set('lantern-v1-alice:recording:'+id,JSON.stringify({id,title:id,promptId:server.prompt.id,createdAt:'2026-01-01T00:00:00.000Z',duration:4,note:'fixture',uploaded:false}));
+  h.setOnline(true);await h.render().syncNow();const api=h.render();
+  assert.ok(api.issues.some(x=>x.id===conflict&&x.kind==='recording'&&x.status==='blocked'));
+  assert.equal(api.issues.some(x=>x.kind==='session'||x.status==='auth'),false);
+  assert.equal(api.data.recordings.find(r=>r.id===good).uploaded,true);assert.equal(api.data.recordings.find(r=>r.id===conflict).uploaded,false);
+  assert.equal(await audio.get('lantern-v1-alice:'+conflict).text(),'local-different');assert.equal(await (await server.get('alice',conflict)).text(),'server-original');
+  assert.ok(h.requests.some(r=>r.url==='/api/study'&&!r.method));
+});
+
 test('recording queued during remote refresh triggers another pass without another user event', async () => {
   let release,started;const entered=new Promise(resolve=>{started=resolve;});const waiting=new Promise(resolve=>{release=resolve;});let hold=true;
   const audio=new Map();const h=hookHarness(new Map(),{audio,handle:async(url,init)=>{if(!init?.method&&hold){hold=false;started();await waiting;}}});

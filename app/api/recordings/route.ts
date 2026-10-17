@@ -14,7 +14,7 @@ export async function POST(request:Request){const uid=await userId();if(!uid)ret
   object:async key=>{const object=await bucket.get(key);return object?{bytes:await object.arrayBuffer(),mime:object.httpMetadata?.contentType||''}:null;},
   remove:key=>bucket.delete(key),
  },uid,safe,await file.arrayBuffer());
- if(status===409)return privateJson({error:'录音标识已用于不同内容，请保留本机原件'},409);
+ if(status===409)return privateJson({error:'录音标识已用于不同内容，请保留本机原件'},422);
  if(status===503)return privateJson({error:'上传未完成，本机录音仍保留'},503);
  return privateJson({ok:true});}catch(e){return privateJson({error:e instanceof SyntaxError?'录音元数据格式无效':'上传未完成，本机录音仍保留'},e instanceof SyntaxError?400:503);}}
 export async function GET(request:Request){const uid=await userId();if(!uid)return privateJson({error:'请登录'},401);try{const id=new URL(request.url).searchParams.get('id')||'';const [r]=await getDb().select().from(recordings).where(and(eq(recordings.id,id),eq(recordings.userId,uid)));if(!r)return privateJson({error:'未找到录音'},404);const object=await env.BUCKET?.get(r.objectKey);if(!object)return privateJson({error:'录音暂不可用'},404);return new Response(object.body,{headers:{'Content-Type':object.httpMetadata?.contentType||'audio/webm','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});}catch{return privateJson({error:'录音暂不可用'},503);}}
