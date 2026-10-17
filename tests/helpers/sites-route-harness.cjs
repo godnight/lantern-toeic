@@ -53,7 +53,7 @@ function environment(options = {}) {
       objects.set(key, {bytes, httpMetadata: options.httpMetadata});
       return {size: bytes.length};
     },
-    async get(key) {storage.gets++;const object = objects.get(key);return object ? {size: object.bytes.length, body: new Response(object.bytes).body, httpMetadata: object.httpMetadata} : null;},
+    async get(key) {storage.gets++;const object = objects.get(key);return object ? {size: object.bytes.length, body: new Response(object.bytes).body, arrayBuffer: async () => new Response(object.bytes).arrayBuffer(), httpMetadata: object.httpMetadata} : null;},
     async delete(key) {storage.deletes++;objects.delete(key);},
   };
   const env = {DB: d1, BUCKET: bucket, LANTERN_AUTH_ENABLED: 'true', LANTERN_AUTH_ORIGIN: ORIGIN, ...options.env};

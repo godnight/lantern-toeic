@@ -15,6 +15,7 @@ function load(file, imports = {}, globals = {}) {
   vm.runInNewContext(code, { exports, require: n => {
     if (n === '@/lib/recording-capture-diagnostics') return {createRecordingCaptureTrace:()=>()=>{}};
     if (n === '@/lib/recording-media-diagnostics') return {recordingMediaTrace(){}};
+    if (n === '@/lib/recording-upload') return load('lib/recording-upload.ts', {}, {crypto:require('node:crypto').webcrypto});
     if (n === '@/lib/use-dialog-viewport') return load('lib/use-dialog-viewport.ts', {react: imports.react}, globals);
     if (!(n in imports)) throw new Error('Unexpected import: ' + n);
     return imports[n];
@@ -345,24 +346,13 @@ test('invalid recording metadata and malformed multipart are permanent input fai
   assert.equal((await route.POST(new Request('https://test.local/api/recordings',{method:'POST',headers:{'x-lantern-owner':'alice','Content-Type':'multipart/form-data; boundary=missing'},body:'not a multipart body'}))).status,400);
 });
 
-test('uploading an offline recording retains the date the practice occurred', async () => {
-  let stored;
-  const prompts=JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8'));
-  const auth={userId:async()=>'alice',safeMutation:()=>true,privateJson:(body,status=200)=>({body,status})};
-  const route=load('app/api/recordings/route.ts',{
-    'cloudflare:workers':{env:{BUCKET:{put:async()=>{}}}},
-    'drizzle-orm':{eq(){},and(){}},
-    '@/db':{getDb:()=>({insert:()=>({values:row=>({onConflictDoNothing:async()=>{stored=row;}})})})},
-    '@/db/schema':{recordings:{}},
-    '@/lib/request-body':load('lib/request-body.ts'),'@/lib/server-auth':auth,
-    '@/content/speaking.json':{default:prompts}
-  },{File,Response});
-  const meta={id:randomUUID(),promptId:prompts[0].id,duration:20,createdAt:'2026-09-01T12:00:00.000Z'};
-  const file=new File(['audio data'],'sample.webm',{type:'audio/webm'});
-  const form=new FormData();form.set('audio',file);form.set('meta',JSON.stringify(meta));
-  const result=await route.POST(new Request('https://test.local/api/recordings',{method:'POST',headers:{'x-lantern-owner':'alice'},body:form}));
+test('uploading an offline recording retains the date the practice occurred', async t => {
+  const {environment}=require('./helpers/recording-storage-harness.cjs');
+  const storage=environment();t.after(()=>storage.close());
+  const meta={duration:20,createdAt:'2026-09-01T12:00:00.000Z'};
+  const result=await storage.upload('alice',randomUUID(),'audio data',meta);
   assert.equal(result.status,200);
-  assert.equal(JSON.parse(stored.body).createdAt,meta.createdAt,'Sync day must not replace original recording date');
+  assert.equal(JSON.parse(storage.rows()[0].body).createdAt,meta.createdAt,'Sync day must not replace original recording date');
 });
 
 test('an earlier recording save cannot mark the current recording as saved', async () => {
