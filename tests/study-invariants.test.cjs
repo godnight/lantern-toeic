@@ -336,13 +336,13 @@ test('very long Retry-After cannot overflow into a rapid timer', async () => {
 test('invalid recording metadata and malformed multipart are permanent input failures', async () => {
   const route=load('app/api/recordings/route.ts',{
     'cloudflare:workers':{env:{}},'drizzle-orm':{eq(){},and(){}},'@/db':{getDb(){throw Error('Storage must not be reached');}},'@/db/schema':{recordings:{}},
-    '@/lib/server-auth':{userId:async()=>'alice',safeMutation:()=>true,privateJson:(body,status=200)=>({body,status})},'@/content/speaking.json':{default:[]}
+    '@/lib/request-body':load('lib/request-body.ts'),'@/lib/server-auth':{userId:async()=>'alice',safeMutation:()=>true,privateJson:(body,status=200)=>({body,status})},'@/content/speaking.json':{default:[]}
   },{File,Response});
   const headers=new Headers({'x-lantern-owner':'alice'});
   for(const metadata of ['null','[1]','{bad json']){
-    const result=await route.POST({headers,formData:async()=>({get:()=>metadata})});assert.equal(result.status,400);
+    const form=new FormData();form.set('meta',metadata);const result=await route.POST(new Request('https://test.local/api/recordings',{method:'POST',headers,body:form}));assert.equal(result.status,400);
   }
-  assert.equal((await route.POST({headers,formData:async()=>{throw new TypeError('bad multipart');}})).status,400);
+  assert.equal((await route.POST(new Request('https://test.local/api/recordings',{method:'POST',headers:{'x-lantern-owner':'alice','Content-Type':'multipart/form-data; boundary=missing'},body:'not a multipart body'}))).status,400);
 });
 
 test('uploading an offline recording retains the date the practice occurred', async () => {
@@ -354,12 +354,13 @@ test('uploading an offline recording retains the date the practice occurred', as
     'drizzle-orm':{eq(){},and(){}},
     '@/db':{getDb:()=>({insert:()=>({values:row=>({onConflictDoNothing:async()=>{stored=row;}})})})},
     '@/db/schema':{recordings:{}},
-    '@/lib/server-auth':auth,
+    '@/lib/request-body':load('lib/request-body.ts'),'@/lib/server-auth':auth,
     '@/content/speaking.json':{default:prompts}
   },{File,Response});
   const meta={id:randomUUID(),promptId:prompts[0].id,duration:20,createdAt:'2026-09-01T12:00:00.000Z'};
   const file=new File(['audio data'],'sample.webm',{type:'audio/webm'});
-  const result=await route.POST({headers:new Headers({'x-lantern-owner':'alice'}),formData:async()=>({get:key=>key==='audio'?file:JSON.stringify(meta)})});
+  const form=new FormData();form.set('audio',file);form.set('meta',JSON.stringify(meta));
+  const result=await route.POST(new Request('https://test.local/api/recordings',{method:'POST',headers:{'x-lantern-owner':'alice'},body:form}));
   assert.equal(result.status,200);
   assert.equal(JSON.parse(stored.body).createdAt,meta.createdAt,'Sync day must not replace original recording date');
 });

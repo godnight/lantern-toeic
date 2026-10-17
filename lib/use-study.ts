@@ -1,7 +1,7 @@
 'use client';
 import {useState,useEffect,useRef,useCallback} from 'react';
 import {toast} from 'sonner';
-import {createId,EMPTY_DATA,migrateStudyData,mergeData,mergeMutableRecords,validQuestionMark,validResourceTask,compareMutableRecords,uniqueById,type StudyData,type Profile,type Theme,type Attempt,type Checkin,type Recording,type QuestionMark,type ResourceTask} from './study-model';
+import {createId,EMPTY_DATA,migrateStudyData,mergeData,mergeMutableRecords,validQuestionMark,validResourceTask,validStudyDate,compareMutableRecords,uniqueById,type StudyData,type Profile,type Theme,type Attempt,type Checkin,type Recording,type QuestionMark,type ResourceTask} from './study-model';
 import {restoreStudyBackup} from './study-backup';
 type Op={id:string;owner:string|null;type:'profile'|'theme'|'attempt'|'checkin'|'questionMark'|'resourceTask';data:Profile|{theme:Theme}|Attempt|Checkin|QuestionMark|ResourceTask};
 function openAudioDB():Promise<IDBDatabase>{return new Promise((resolve,reject)=>{const r=indexedDB.open('lantern-audio',1);r.onupgradeneeded=()=>r.result.createObjectStore('audio');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
@@ -226,7 +226,7 @@ export function useStudy(owner:string|null){
  },[key,syncNow,persist,blockReads]);
  const retryIssue=(issue:SyncIssue)=>{if(activeKey.current!==key)return;if(readOnly.current){void syncNow();return;}if(!editableSnapshot())return;try{localStorage.removeItem(key+':sync:'+issue.kind+':'+issue.id);setIssues(syncIssues(key));void syncNow();}catch{toast.error('本机存储不可用，请保留记录后重试');}};
  const enqueue=(type:Op['type'],value:Op['data'],d:StudyData):boolean=>{if(activeKey.current!==key||readOnly.current||!editableSnapshot())return false;const op:Op={id:createId(),owner,type,data:value};try{localStorage.setItem(key+':op:'+op.id,JSON.stringify(op));if(type==='profile'||type==='theme')localStorage.setItem(key+':profile',JSON.stringify(d.profile));}catch{setSync('blocked');toast.error('本机存储不可用，保存未完成；请保留记录后重试');return false;}if(!persist(d))return false;setSync('pending');void syncNow();return true;};
- const saveProfile=(p:Profile)=>enqueue('profile',p,{...current.current,profile:p});
+ const saveProfile=(p:Profile)=>{if(p.examDate!==''&&!validStudyDate(p.examDate)){toast.error('考试日期无效，偏好未保存；原记录未修改。');return false;}return enqueue('profile',p,{...current.current,profile:p});};
  const saveTheme=(theme:Theme)=>{
   if(activeKey.current!==key||readOnly.current)return false;
   // Another tab may have saved settings before its storage event reaches us.
@@ -257,6 +257,8 @@ export function useStudy(owner:string|null){
   try{
    const prior=readCheckin(c.id);
    if(prior){if(immutablePayload('checkin',prior)===payload)return true;toast.error('打卡事件标识已用于不同内容，请保留记录后重试');return false;}
+   // Retain immutable historical facts; validate the calendar before new writes.
+   if(!validStudyDate(c.date)){toast.error('学习日期无效，记录未保存；原记录未修改。');return false;}
    const latest=editableSnapshot();if(!latest)return false;
    return enqueue('checkin',JSON.parse(payload),{...latest,checkins:[...latest.checkins,JSON.parse(payload)]});
   }catch{return false;}

@@ -132,7 +132,7 @@ function apiFixture() {
   const db = { async run(statement) { const q = dialect.sqlToQuery(statement); queries.push(q); return sqlite.prepare(q.sql).run(...q.params); }, async all(statement) { const q = dialect.sqlToQuery(statement); queries.push(q); return sqlite.prepare(q.sql).all(...q.params); } };
   const api = load('app/api/vocabulary/route.ts', {
     '@/db': { getDb: () => db }, 'drizzle-orm': orm, '@/lib/vocabulary-model': model,
-    '@/lib/server-auth': { userId: async () => owner, safeMutation: req => req.headers.get('origin') === 'https://test.local', privateJson: (body, status = 200) => Response.json(body, { status, headers: { 'cache-control': 'private, no-store' } }) },
+    '@/lib/request-body':load('lib/request-body.ts'),'@/lib/server-auth': { userId: async () => owner, safeMutation: req => req.headers.get('origin') === 'https://test.local', privateJson: (body, status = 200) => Response.json(body, { status, headers: { 'cache-control': 'private, no-store' } }) },
   });
   const post = (events, expectedOwner = owner, origin = 'https://test.local') => api.POST(new Request('https://test.local/api/vocabulary', { method: 'POST', headers: { origin, 'content-type': 'application/json', 'x-lantern-owner': expectedOwner ?? '' }, body: JSON.stringify(backup(events)) }));
   return { api, post, queries, sqlite, setOwner(value) { owner = value; } };

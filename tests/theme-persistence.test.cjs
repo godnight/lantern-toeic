@@ -148,7 +148,7 @@ test('profile API persists the four theme IDs, rejects arbitrary themes and does
     const api = load('app/api/study/route.ts', {
       'drizzle-orm': orm, zod: fromRepo('zod'), '@/db': {getDb: () => db}, '@/db/schema': schema,
       '@/db/mutable-study': statements, '@/lib/study-model': model,
-      '@/lib/server-auth': {
+      '@/lib/request-body':load('lib/request-body.ts'),'@/lib/server-auth': {
         userId: async () => 'theme-qa-alice',
         safeMutation: request => request.headers.get('origin') === 'https://test.local',
         privateJson: (body, status = 200) => Response.json(body, {status}),
@@ -196,7 +196,7 @@ test('theme-only API atomically preserves existing settings, isolates users and 
   const db=drizzle(async(query,params,method)=>{const stmt=sqlite.prepare(query);if(method==='run'){stmt.run(...params);return {rows:[]};}const rows=stmt.all(...params).map(row=>Object.values(row));return {rows:method==='get'?rows[0]:rows};});
   const api=load('app/api/study/route.ts',{
    'drizzle-orm':orm,zod:fromRepo('zod'),'@/db':{getDb:()=>db},'@/db/schema':schema,'@/db/mutable-study':statements,'@/lib/study-model':model,
-   '@/lib/server-auth':{userId:async()=>owner,safeMutation:r=>r.headers.get('origin')==='https://test.local',privateJson:(body,status=200)=>Response.json(body,{status})},
+   '@/lib/request-body':load('lib/request-body.ts'),'@/lib/server-auth':{userId:async()=>owner,safeMutation:r=>r.headers.get('origin')==='https://test.local',privateJson:(body,status=200)=>Response.json(body,{status})},
    '@/content/questions.json':{default:JSON.parse(fs.readFileSync(path.join(root,'content/questions.json'),'utf8'))},'@/content/resources-v2':load('content/resources-v2.ts'),
    '@/content/exams/catalogue.json':{default:JSON.parse(fs.readFileSync(path.join(root,'content/exams/catalogue.json'),'utf8'))}
   });
