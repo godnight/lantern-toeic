@@ -19,6 +19,7 @@ const mediaMessage=(code:number|null)=>mediaMessages[code??0]||'音频加载或�
 export function RecordingPlayer({src,autoPlay=false,className,label='回听录音',onRetry,downloadName}:{src:string;autoPlay?:boolean;className?:string;label?:string;onRetry?:()=>Promise<void>|void;downloadName?:string}){
  const audioRef=useRef<HTMLAudioElement|null>(null),sequence=useRef(0),owner=useRef<Lease|null>(null);
  const [attempt,setAttempt]=useState(0);
+ const [rate,setRate]=useState(1);
  if(!owner.current||owner.current.src!==src||owner.current.attempt!==attempt)owner.current={src,attempt,id:++sequence.current,live:true,phase:'reading',retrying:false,timer:null,audio:null};
  const lease=owner.current;
  const initial=():View=>({lease,phase:'reading',message:'正在读取录音音频信息…',code:null,retrying:false});
@@ -54,6 +55,7 @@ export function RecordingPlayer({src,autoPlay=false,className,label='回听录�
   if(audio.error){failure(event);return;}
   if(lease.phase==='error')return;
   if(audio.readyState<1)return;
+  audio.playbackRate=rate;
   clearWait();
   if(Number.isFinite(audio.duration)&&audio.duration===0){update('unavailable','当前读取到的音频时长为 0，暂时无法播放。原录音保留，可重新读取。');return;}
   const known=Number.isFinite(audio.duration)&&audio.duration>0;
@@ -95,7 +97,8 @@ export function RecordingPlayer({src,autoPlay=false,className,label='回听录�
  const issue=view.phase==='error'||view.phase==='unavailable';
  return <div className="recording-playback">
   <audio key={lease.id} ref={audioRef} controls autoPlay={autoPlay} src={src} className={className} aria-label={label}
-   onLoadStart={observe} onPlay={observe} onTimeUpdate={observe} onLoadedMetadata={metadata} onDurationChange={metadata} onCanPlay={metadata} onPlaying={playing} onPause={paused} onEnded={ended} onError={failure} onWaiting={waiting} onStalled={waiting}/>
+   onLoadStart={observe} onPlay={observe} onTimeUpdate={observe} onRateChange={observe} onLoadedMetadata={metadata} onDurationChange={metadata} onCanPlay={metadata} onPlaying={playing} onPause={paused} onEnded={ended} onError={failure} onWaiting={waiting} onStalled={waiting}/>
+  <label className="recording-speed">回听速度 <select aria-label="录音回听速度" value={rate} onChange={event=>{const next=Number(event.target.value);if(![.75,1,1.25,1.5].includes(next))return;setRate(next);if(audioRef.current)audioRef.current.playbackRate=next;}}>{[.75,1,1.25,1.5].map(value=><option key={value} value={value}>{value}×</option>)}</select></label>
   <p className="small muted" role="status">{issue?'原录音与练习时间保留。':view.message}</p>
   {downloadName&&<a href={src} download={downloadName} className="button secondary">下载原始录音</a>}
   {issue&&<div className="workspace-save-error" role="alert"><b>录音音频暂时无法播放</b><p>{view.message}</p><button type="button" className="button secondary" disabled={view.retrying} onClick={retry}>{view.retrying?'读取中…':'重新读取音频'}</button></div>}

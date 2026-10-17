@@ -40,7 +40,8 @@ function captureMimeKind(value: unknown): string {
 }
 
 /** Diagnostics never control capture, inspect storage, or expose media content. */
-export function createRecordingCaptureTrace(): (event: string, fields: CaptureFields) => void {
+export function createRecordingCaptureTrace(enabled=false): (event: string, fields: CaptureFields) => void {
+  if(!enabled)return()=>{};
   const attempt = captureAttempts < captureAttemptLimit ? ++captureAttempts : 0;
   return (event, fields) => {
     try {

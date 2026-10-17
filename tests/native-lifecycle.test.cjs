@@ -16,7 +16,8 @@ function load(file, imports = {}, globals = {}) {
   }).outputText;
   vm.runInNewContext(code, {
     exports, require(name) {
-      if (name === '@/lib/recording-capture-diagnostics') return {createRecordingCaptureTrace:()=>()=>{}};
+      if (name === '@/lib/pcm-recorder') return {createRecordingCapture:stream=>new globals.MediaRecorder(stream),captureDuration:(_rec,seconds)=>seconds,captureWarning:()=>''};
+    if (name === '@/lib/recording-capture-diagnostics') return {createRecordingCaptureTrace:()=>()=>{}};
       if (name === '@/lib/recording-media-diagnostics') return {recordingMediaTrace(){}};
       if (name === '@/lib/use-dialog-viewport') return load('lib/use-dialog-viewport.ts', {react: imports.react}, globals);
       if (!(name in imports)) throw new Error('Unexpected import: ' + name);
@@ -120,7 +121,7 @@ function speakingHarness({ manualPermissions = false } = {}) {
     if (!manualPermissions) request.resolve(request.stream);
     return request.promise;
   } } };
-  Object.assign(host.window, { MediaRecorder: Recorder, confirm() { confirmCalls++; return confirmation; } });
+  Object.assign(host.window, { MediaRecorder: Recorder, AudioContext: Recorder, confirm() { confirmCalls++; return confirmation; } });
   const jsx = (type, props) => ({ type, props });
   const stub = new Proxy({}, { get: (_, name) => String(name) });
   const Room = load('app/learn/speaking.tsx', {'@/lib/lesson-audio':{stopLessonAudio(){}},

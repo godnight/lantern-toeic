@@ -14,6 +14,7 @@ function load(file, imports, globals = {}) {
     compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX}
   }).outputText;
   vm.runInNewContext(code, {exports, require: name => {
+    if (name === '@/lib/pcm-recorder') return {createRecordingCapture:stream=>new globals.MediaRecorder(stream),captureDuration:(_rec,seconds)=>seconds,captureWarning:()=>''};
     if (name === '@/lib/recording-capture-diagnostics') return {createRecordingCaptureTrace:()=>()=>{}};
     if (name === '@/lib/recording-media-diagnostics') return {recordingMediaTrace(){}};
     if (name === '@/release-manifest.json') return {default:JSON.parse(fs.readFileSync(root + '/release-manifest.json','utf8'))};

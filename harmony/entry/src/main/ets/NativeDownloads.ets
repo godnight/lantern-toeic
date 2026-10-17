@@ -14,6 +14,7 @@ function allowedBlob(name: string, mime: string): boolean {
   if (name === 'lantern-weekly-review.md') return type === 'text/markdown';
   if (name === 'speaking-recording.m4a') return type === 'audio/mp4';
   if (name === 'speaking-recording.webm') return type === 'audio/webm';
+  if (name === 'speaking-recording.wav') return type === 'audio/wav';
   return false;
 }
 

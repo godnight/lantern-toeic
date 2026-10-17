@@ -51,6 +51,11 @@ function harness(initial={}){
 test('shared history/current player consumes the supplied URL and defaults to manual playback',t=>{
  const h=harness();t.after(h.cleanup);assert.equal(h.audio.props.controls,true);assert.equal(h.audio.props.src,'blob:history-original');assert.notEqual(h.audio.props.autoPlay,true);assert.equal(h.audio.playCalls,0);assert.deepEqual(h.created,[]);assert.deepEqual(h.revoked,[]);
 });
+test('explicit playback speeds update the existing audio element and survive its metadata readiness',t=>{
+ const h=harness();t.after(h.cleanup);const original=h.audio;let select=nodes(h.tree,n=>n.type==='select'&&n.props['aria-label']==='录音回听速度')[0];assert.ok(select);
+ for(const rate of [.75,1.25,1.5,1]){select.props.onChange({target:{value:String(rate)}});h.render();h.emit('loadedmetadata',{duration:6,readyState:1});assert.equal(h.audio,original);assert.equal(h.audio.playbackRate,rate);select=nodes(h.tree,n=>n.type==='select')[0];assert.equal(select.props.value,rate);}
+ select.props.onChange({target:{value:'99'}});h.render();assert.equal(h.audio.playbackRate,1);assert.equal(h.audio.playCalls,0);assert.deepEqual(h.revoked,[]);
+});
 test('history may request autoplay while current-clip class and accessible label are retained',t=>{
  const h=harness({autoPlay:true,className:'speaking-audio',label:'当前录音回听'});t.after(h.cleanup);assert.equal(h.audio.props.autoPlay,true);assert.equal(h.audio.props.className,'speaking-audio');assert.equal(h.audio.props['aria-label'],'当前录音回听');
 });

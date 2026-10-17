@@ -12,6 +12,7 @@ import {SpeechPlayer} from './practice';
 import {RecordingPlayer} from './recording-player';
 import {recordingMediaTrace} from '@/lib/recording-media-diagnostics';
 import {createRecordingCaptureTrace} from '@/lib/recording-capture-diagnostics';
+import {createRecordingCapture,captureDuration,captureWarning,type RecordingCapture} from '@/lib/pcm-recorder';
 import type {SpeakingRecovery} from '@/lib/speaking-recovery';
 import {useDialogViewport} from '@/lib/use-dialog-viewport';
 
@@ -57,6 +58,7 @@ export function SpeakingRecordingHistory({recordings,timezone,nativeMode=false,o
   <div className="speaking-section-heading"><h2 id="speaking-history-title">我的口语录音</h2><span>{recordings.length} 段</span></div>
   {recordings.length?<div className="speaking-recording-list">{recordings.slice().reverse().map(recording=><article className="speaking-recording-item" key={recording.id}>
    <div className="speaking-recording-row"><span className="speaking-recording-icon" aria-hidden="true"><Headphones size={20}/></span><div><h3>{recording.title}</h3><p><time dateTime={recording.createdAt}>{recordingTime(recording.createdAt,timezone)}</time> · {recording.duration} 秒 · {nativeMode?'本机录音':recording.uploaded?'已同步':'本机录音'}</p></div><button type="button" className="button secondary" disabled={loading!==null} onClick={()=>void play(recording)} aria-label={`回听${recording.title}`}>{loading===recording.id?'读取中…':'回听'}<Play size={16}/></button></div>
+   {recording.note?.startsWith('录音完整性提示：')&&<p className="speaking-notice error" role="alert">{recording.note}</p>}
    {failed===recording.id&&<div className="speaking-notice error" role="alert"><strong>这段录音暂时无法读取</strong><p>本机音频未能读取，也可能没有已确认的云端副本。原记录与练习时间保留。</p><button type="button" className="button secondary" disabled={loading!==null} onClick={()=>void play(recording)}>重新读取<RotateCcw size={16}/></button></div>}
   </article>)}</div>:<div className="speaking-history-empty"><Mic size={24} aria-hidden="true"/><h3>还没有录音</h3><p>先完成一次专项练习，留住自己的起点。</p></div>}
   {loading&&<p className="speaking-reading-status" role="status">正在读取这段录音，原记录保持。</p>}
@@ -67,7 +69,8 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
  const dialogViewport=useDialogViewport();
  const [phase,setPhase]=useState<SpeakingPhase>(recovery?'done':'ready');const [seconds,setSeconds]=useState(prompt.prepSeconds);
  const [url,setUrl]=useState('');const [saved,setSaved]=useState(false);const [busy,setBusy]=useState(false);const [saving,setSaving]=useState(false);const [saveError,setSaveError]=useState(false);const [accessError,setAccessError]=useState('');const [self,setSelf]=useState<string[]>([]);const [discardOpen,setDiscardOpen]=useState(false);const [returnNotice,setReturnNotice]=useState('');
- const recorder=useRef<MediaRecorder|null>(null);const stream=useRef<MediaStream|null>(null);const chunks=useRef<Blob[]>([]);const started=useRef(0);const stoppedAt=useRef(0);const last=useRef<{meta:Recording;blob:Blob}|null>(null);const objectURL=useRef('');const mounted=useRef(true);const beginning=useRef(false);const requestGeneration=useRef(0);const deadline=useRef(0);const currentPhase=useRef(phase);const savingNow=useRef(false);const acquiring=useRef(false);const exitRequested=useRef(false);currentPhase.current=phase;
+ const recorder=useRef<RecordingCapture|null>(null);const stream=useRef<MediaStream|null>(null);const chunks=useRef<Blob[]>([]);const started=useRef(0);const stoppedAt=useRef(0);const last=useRef<{meta:Recording;blob:Blob}|null>(null);const objectURL=useRef('');const mounted=useRef(true);const beginning=useRef(false);const requestGeneration=useRef(0);const deadline=useRef(0);const currentPhase=useRef(phase);const savingNow=useRef(false);const acquiring=useRef(false);const exitRequested=useRef(false);currentPhase.current=phase;
+ const [captureIssue,setCaptureIssue]=useState(recovery?.meta.note?.startsWith('录音完整性提示：')?recovery.meta.note.slice(8):'');
  const stopMeta=useRef<Recording|null>(null);
  const captureTrace=useRef<ReturnType<typeof createRecordingCaptureTrace>|null>(null);
  const captureCounts=useRef<CaptureCounts>({chunkCount:0,zeroChunks:0,totalBytes:0,lastChunkBytes:0,startedAt:0,stoppedAt:0});
@@ -92,16 +95,17 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
   if(!stream.current||beginning.current||recorder.current?.state==='recording'||document.hidden||!isNativeForeground())return;
   beginning.current=true;
   try{
-   const mime=['audio/webm;codecs=opus','audio/mp4','audio/webm'].find(type=>MediaRecorder.isTypeSupported(type));const recording=new MediaRecorder(stream.current,mime?{mimeType:mime}:undefined);recorder.current=recording;chunks.current=[];stoppedAt.current=0;stopMeta.current=null;
+   const recording=createRecordingCapture(stream.current,nativeMode,prompt.answerSeconds+1);recorder.current=recording;chunks.current=[];stoppedAt.current=0;stopMeta.current=null;
    const captureState=captureCounts.current,trace=captureTrace.current;observeCapture('recorder-created','',captureState,trace);
-   recording.ondataavailable=event=>{const size=event.data.size;captureState.chunkCount++;captureState.lastChunkBytes=size;captureState.totalBytes+=size;if(!size)captureState.zeroChunks++;observeCapture('chunk','',captureState,trace);if(size)chunks.current.push(event.data);};
+   recording.ondataavailable=(event:{data:Blob})=>{const size=event.data.size;captureState.chunkCount++;captureState.lastChunkBytes=size;captureState.totalBytes+=size;if(!size)captureState.zeroChunks++;observeCapture('chunk','',captureState,trace);if(size)chunks.current.push(event.data);};
    recording.onstop=async()=>{
     beginning.current=false;releaseMicrophone();const blob=new Blob(chunks.current,{type:recording.mimeType||'audio/webm'});
     if(!captureState.stoppedAt)captureState.stoppedAt=stoppedAt.current||Date.now();observeCapture('stopped',blob.type,captureState,trace);
-    const meta:Recording={...recordingMeta(),mime:blob.type};
+    const issue=captureWarning(recording);const originalMeta=recordingMeta();
+    const meta:Recording={...originalMeta,mime:blob.type,duration:Math.round(captureDuration(recording,originalMeta.duration)*1000)/1000,...(issue?{note:'录音完整性提示：'+issue}:{})};
     if(!mounted.current){if(blob.size)onRetain?.({prompt,meta,blob});else onRelease?.(meta.id);return;}
     if(!blob.size){setAccessError('没有收到录音，请检查麦克风后重新准备。');toast.error('没有收到录音，请检查麦克风');changePhase('ready');return;}
-    if(objectURL.current){recordingMediaTrace('url-released',objectURL.current);URL.revokeObjectURL(objectURL.current);}objectURL.current=URL.createObjectURL(blob);recordingMediaTrace('source-ready',objectURL.current);setUrl(objectURL.current);changePhase('done');
+    setCaptureIssue(issue);if(objectURL.current){recordingMediaTrace('url-released',objectURL.current);URL.revokeObjectURL(objectURL.current);}objectURL.current=URL.createObjectURL(blob);recordingMediaTrace('source-ready',objectURL.current);setUrl(objectURL.current);changePhase('done');
     last.current={meta,blob};onRetain?.({prompt,meta,blob});await persist(meta,blob);
    };
    recording.onerror=()=>{
@@ -123,13 +127,13 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
   if(acquiring.current||busy||savingNow.current||!['ready','done'].includes(currentPhase.current)||document.hidden||!isNativeForeground())return;
   // Downloading does not authorize replacing an unsaved Blob with a fresh clip.
   if(currentPhase.current==='done'&&!saved)return;
-  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){const message=nativeMode?'当前系统未提供录音能力，请更新系统后重试，或先使用网页版。':'当前浏览器不支持录音，请在支持录音的 Safari 或 Chrome 中打开。';setAccessError(message);toast.error(message);return;}
+  if(!navigator.mediaDevices?.getUserMedia||!(nativeMode?window.AudioContext:window.MediaRecorder)){const message=nativeMode?'当前系统未提供录音能力，请更新系统后重试，或先使用网页版。':'当前浏览器不支持录音，请在支持录音的 Safari 或 Chrome 中打开。';setAccessError(message);toast.error(message);return;}
   acquiring.current=true;setBusy(true);setAccessError('');setReturnNotice('');exitRequested.current=false;const generation=++requestGeneration.current;
   captureTrace.current=createRecordingCaptureTrace();captureCounts.current={chunkCount:0,zeroChunks:0,totalBytes:0,lastChunkBytes:0,startedAt:0,stoppedAt:0};observeCapture('permission-request');
   try{
    const acquired=await navigator.mediaDevices.getUserMedia({audio:true});
    if(!mounted.current||generation!==requestGeneration.current||document.hidden||!isNativeForeground()){acquired.getTracks().forEach(track=>track.stop());return;}
-   stream.current=acquired;beginning.current=false;setSelf([]);setSaved(false);setSaveError(false);deadline.current=Date.now()+prompt.prepSeconds*1000;changePhase('prep');setSeconds(prompt.prepSeconds);
+   stream.current=acquired;beginning.current=false;setSelf([]);setSaved(false);setSaveError(false);setCaptureIssue('');deadline.current=Date.now()+prompt.prepSeconds*1000;changePhase('prep');setSeconds(prompt.prepSeconds);
    observeCapture('stream-acquired');
   }catch{if(mounted.current&&generation===requestGeneration.current){observeCapture('permission-error');const message=nativeMode?'请在手机设置中允许微光托业使用麦克风，再重新准备。':'请在浏览器设置中允许使用麦克风，再重新准备。';setAccessError(message);toast.error(message);}}
   finally{if(mounted.current&&generation===requestGeneration.current){acquiring.current=false;setBusy(false);}}
@@ -173,7 +177,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
  useEffect(()=>{if(seconds>0)return;if(phase==='prep')begin();if(phase==='recording')stop();},[seconds,phase]);
  const taskLabel=TASK_LABELS[prompt.type]?.label||'口语专项';
  const phaseLabel=phase==='recording'?'正在录音':phase==='prep'?'准备中':phase==='processing'?'整理录音':phase==='done'?saving?'保存中':saved?'已保存':'待保存':'录音前';
- const downloadName=`speaking-recording.${last.current?.meta.mime.includes('mp4')?'m4a':'webm'}`;
+ const downloadName=`speaking-recording.${last.current?.meta.mime.includes('wav')?'wav':last.current?.meta.mime.includes('mp4')?'m4a':'webm'}`;
  const retrySave=()=>last.current?persist(last.current.meta,last.current.blob):Promise.resolve();
  const download=<a href={url} download={downloadName} className="button secondary speaking-download"><Download size={17}/>下载保留录音</a>;
  return <>
@@ -198,12 +202,13 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
      {phase==='processing'&&<div className="speaking-notice" role="status"><strong>正在整理已录内容</strong><p>整理完成后会尝试本机保存，请留在本页。</p></div>}
      {phase==='done'&&<>
       <RecordingPlayer src={url} className="speaking-audio" label="回听本次录音"/>
+      {captureIssue&&<div className="speaking-notice error" role="alert"><strong>这次录音可能不完整</strong><p>{captureIssue} 原始音频副本保留，未把缺失时间补成录音。</p>{download}</div>}
       <div className={'speaking-notice '+(saveError?'error':saved?'success':'')} role={saveError?'alert':'status'}><strong>{saved?'录音已保存在本机':saveError?'录音尚未保存':'正在保存录音…'}</strong><p>{saved?(nativeMode?'保存在这台设备。':'本机副本已保留，联网后同步。'):saveError?'这段音频仍在当前页面，可回听、重试或下载保留。离开后可能无法找回。':'可以先回听。保存成功后，才能再录或记录收获。'}</p></div>
       {saveError&&<div className="speaking-action-stack"><button type="button" className="button primary" disabled={saving} onClick={retrySave}><RotateCcw size={17}/>重试保存</button>{download}<button type="button" className="button secondary speaking-danger" onClick={()=>setDiscardOpen(true)}>放弃并离开</button></div>}
       <dl className="speaking-recording-meta"><div><dt>练习开始</dt><dd>{last.current?recordingTime(last.current.meta.createdAt,timezone):'—'}</dd></div><div><dt>录音长度</dt><dd>{last.current?.meta.duration??0} 秒</dd></div></dl>
       <div className="speaking-reflect"><h3>回听，只改一个地方</h3><p className="speaking-secondary">按真实感受自评，不产生自动分数。</p><fieldset className="speaking-self-checks"><legend>这一次我留意了</legend>{prompt.guide.map((guide,index)=><label key={guide} htmlFor={`speaking-self-${index}`}><Checkbox id={`speaking-self-${index}`} checked={self.includes(guide)} onCheckedChange={checked=>setSelf(items=>checked?[...items,guide]:items.filter(item=>item!==guide))}/><span>{guide}</span></label>)}</fieldset>
        <details className="speaking-sample"><summary>看看一种表达方式</summary><p lang="en">{prompt.sampleAnswer}</p><SpeechPlayer text={prompt.sampleAnswer} label="听示范表达"/></details>
-       <div className="speaking-final-actions"><button type="button" className="button secondary" disabled={!saved||busy} onClick={start}><RotateCcw size={17}/>{busy?'等待麦克风…':'再说一次'}</button><button type="button" className="button primary" disabled={!saved||busy} onClick={()=>{if(!busy)onFinish(Math.max(1,Math.ceil(((last.current?.meta.duration||0)+prompt.prepSeconds)/60)));}}><CheckCircle2 size={17}/>记录收获</button></div><p className="speaking-caption">自评只用于本轮回听；学习时间与手记在下一步单独确认。</p>
+       <div className="speaking-final-actions"><button type="button" className="button secondary" disabled={!saved||busy} onClick={start}><RotateCcw size={17}/>{busy?'等待麦克风…':'再说一次'}</button><button type="button" className="button primary" disabled={!saved||busy||!!captureIssue} onClick={()=>{if(!busy&&!captureIssue)onFinish(Math.max(1,Math.ceil(((last.current?.meta.duration||0)+prompt.prepSeconds)/60)));}}><CheckCircle2 size={17}/>记录收获</button></div><p className="speaking-caption">自评只用于本轮回听；学习时间与手记在下一步单独确认。</p>
       </div>
      </>}
     </section></div>

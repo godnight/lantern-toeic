@@ -14,8 +14,9 @@ function harness(){
  const source=path.join(root,'lib/recording-capture-diagnostics.ts'),exports={},lines=[];let sink=line=>lines.push(line);
  const code=ts.transpileModule(fs.readFileSync(source,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
  vm.runInNewContext(code,{exports,console:{info:line=>sink(line)},Map,Set,JSON,Number,Math},{filename:source});
- return {create:exports.createRecordingCaptureTrace,lines,setSink(fn){sink=fn;},rows:()=>lines.map(line=>{assert.equal(line.startsWith('Recording capture '),true);const row=JSON.parse(line.slice('Recording capture '.length));assert.deepEqual(Object.keys(row).sort(),keys);return row;})};
+ return {create:(enabled=true)=>exports.createRecordingCaptureTrace(enabled),lines,setSink(fn){sink=fn;},rows:()=>lines.map(line=>{assert.equal(line.startsWith('Recording capture '),true);const row=JSON.parse(line.slice('Recording capture '.length));assert.deepEqual(Object.keys(row).sort(),keys);return row;})};
 }
+test('capture diagnostics are silent unless a test explicitly enables them',()=>{const h=harness(),trace=h.create(false);trace('chunk',fields());assert.equal(h.lines.length,0);});
 test('capture helper emits only nine bounded fields and never raw MIME, recording IDs, URLs or content',()=>{
  const h=harness(),trace=h.create(),input={...fields(),mime:'audio/webm;codecs=opus;SECRET-private=recording-id',recordingId:'SECRET-id',url:'blob:SECRET-url',audio:'SECRET-content'};trace('chunk',input);const [row]=h.rows();
  assert.deepEqual(row,{attempt:1,event:'chunk',chunkCount:3,zeroChunks:1,totalBytes:8,lastChunkBytes:3,elapsedMs:6000,mimeKind:'webm-opus',activeTracks:1});assert.doesNotMatch(h.lines[0],/SECRET|recording-id|blob:|codecs|audio\/|content|url/);
