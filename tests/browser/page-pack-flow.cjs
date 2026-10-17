@@ -79,14 +79,14 @@ async function eventually(check, message) {
   throw new Error(message+(last?': '+last.message:''));
 }
 
-module.exports = async function pagePackFlow({page,step,click,importViaUI,preflight,idle,enter,currentAttempt,screenshot,layout,fixtureDir}) {
+module.exports = async function pagePackFlow({page,step,click,importViaUI,preflight,idle,enter,currentAttempt,screenshot,layout,resultSummary,fixtureDir}) {
   assert.equal(new URL(page.url()).origin,'http://127.0.0.1:4175','Only the owned full-exam QA preview may run this module');
   let fixture,attemptId;
   const activeArticle=number=>page.getByRole('article',{name:`第 ${number} 题`,exact:true});
   async function select(number) {
     const details=page.locator('.mock-answer-card details');
     if(await details.getAttribute('open')===null)await details.locator('summary').click();
-    await page.getByRole('button',{name:new RegExp(`^第 ${number} 题，(?:已答|未答)$`)}).click();
+    await page.getByRole('button',{name:new RegExp(`^第 ${number} 题，(?:已保存|未答)$`)}).click();
     await activeArticle(number).waitFor({state:'visible'});await idle();
   }
   async function images(number, expectedPages) {
@@ -139,13 +139,13 @@ module.exports = async function pagePackFlow({page,step,click,importViaUI,prefli
       await screenshot(`page-pack-${label}-${width}-${name}`);corners.push({name,...corner});
     }
     // Close via the dialog's visible native control; no DOM removal or synthetic events.
-    await dialog.getByRole('button',{name:'Close',exact:true}).click();await dialog.waitFor({state:'hidden'});
+    await dialog.getByRole('button',{name:'关闭',exact:true}).click();await dialog.waitFor({state:'hidden'});
     await activeArticle(number).waitFor({state:'visible'});return {width,...dimensions,corners};
   }
 
   await step('PDF page pack: original synthetic JPEG/WAV package imported and decoded',async()=>{
     fixture=await readFixture(fixtureDir);
-    if(await page.getByRole('button',{name:'退出模考',exact:true}).count())await click('退出模考');
+    if(await page.getByRole('button',{name:'返回学习',exact:true}).count())await click('返回学习');
     await enter();assert.equal(await page.getByRole('heading',{name:TITLE,exact:true}).count(),0,'Synthetic page package already exists; use a fresh QA context');
     await importViaUI('导入题包 JSON',fixture.file);await page.getByRole('heading',{name:TITLE,exact:true}).waitFor({state:'visible'});
     const media=await preflight(TITLE);
@@ -187,7 +187,7 @@ module.exports = async function pagePackFlow({page,step,click,importViaUI,prefli
     }
     assert.equal(await page.getByRole('button',{name:/^第 (?:1|32) 题，/}).count(),0,'LC answer card must remain locked');
     await click('提交整卷');await page.getByRole('dialog').waitFor({state:'visible'});await click('确认交卷');
-    await page.getByRole('heading',{name:'正确 2/200 · 漏答 198',exact:true}).waitFor({state:'visible'});
+    await resultSummary(2,198);
     await page.getByRole('region',{name:'交卷后解析',exact:true}).waitFor({state:'visible'});
     const submitted=await currentAttempt(a=>a.id===attemptId && a.status==='submitted');
     assert.equal(submitted.attempt.submittedReason,'manual');assert.equal(submitted.result.correct,2);assert.equal(submitted.result.unanswered,198);

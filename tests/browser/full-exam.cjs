@@ -179,7 +179,7 @@ async function eventually(check, message, timeout = 15000) {
 async function visible(locator) { await locator.waitFor({state:'visible', timeout:15000}); return locator; }
 async function enabled(locator) { await visible(locator); await eventually(() => locator.isEnabled(), 'Control never enabled: ' + locator); return locator; }
 async function click(name) { await (await enabled(page.getByRole('button', {name, exact:true}))).click(); }
-async function idle() { await eventually(async () => !(await page.locator('.mock-status').textContent()).includes('正在处理'), 'Local transaction did not finish'); }
+async function idle() { await eventually(async () => await page.getByRole('region',{name:'完整听读模考',exact:true}).getAttribute('aria-busy')==='false', 'Local transaction did not finish'); }
 async function newPage(at = BASE_TIME) {
   page = await context.newPage(); page.setDefaultTimeout(15000);
   page.on('pageerror', error => report.pageErrors.push(String(error)));
@@ -200,10 +200,10 @@ async function freshContext() {
     return route.continue();
   });
 }
-async function enter(section = '训练之境') {
+async function enter(section = '练习') {
   // At 390px the app has a visible mobile nav, while its sidebar duplicate is hidden.
   await page.setViewportSize({width:390,height:844});
-  const nav = page.getByRole('navigation', {name:'主导航'});
+  const nav = page.getByRole('navigation', {name:'手机主导航',exact:true});
   await (await visible(nav.getByRole('button', {name:section,exact:true}))).click();
   await (await visible(page.getByRole('button', {name:/完整听读模考/}))).click();
   await visible(page.getByRole('button', {name:'导入题包 JSON',exact:true}));
@@ -243,6 +243,8 @@ async function layout(stage) {
   await page.setViewportSize({width:390,height:844}); return rows;
 }
 async function preflight(title, allowStart = true, expectedSeconds = 20) {
+  const localTab=page.getByRole('navigation',{name:'模考资料范围'}).getByRole('button',{name:/^本机题包/});
+  if(await localTab.count())await localTab.click();
   const card = page.locator('.mock-catalog article').filter({has:page.getByRole('heading',{name:title,exact:true})});
   await (await enabled(card.getByRole('button',{name:'音频预检与新考试',exact:true}))).click();
   const start = page.getByRole('button',{name:'开始新考试 · 立即计时',exact:true});
@@ -267,6 +269,11 @@ async function answer(number, choice) {
   await currentAttempt(a=>a.status!=='submitted' && a.answers[number]?.choice===choice);
   await eventually(()=>question.getByRole('radio').nth(choice).isChecked(),'Saved answer did not render selected');
 }
+async function resultSummary(correct,unanswered) {
+  await visible(page.getByRole('heading',{name:'这一次，已交卷并保存。',exact:true}));
+  assert.match(await page.locator('.mock-results').innerText(),new RegExp('正确 '+correct+' / 200'));
+  assert.match(await page.locator('.mock-result-metrics>div').filter({hasText:'整卷漏答'}).innerText(),new RegExp('整卷漏答\\s*'+unanswered+'\\s* / 200'));
+}
 async function downloadBackup(name) {
   const pending = page.waitForEvent('download'); await click('导出完整备份'); const download = await pending;
   assert.equal(download.suggestedFilename(),'lantern-exam-backup.json'); const file=path.join(OUT,name); await download.saveAs(file);
@@ -281,7 +288,7 @@ async function downloadBackup(name) {
   await freshContext();
   let firstId, originalFirst, backupFile;
   await step('fresh local context and train/resources entry',async()=>{
-    await newPage(); await enter('学习书库'); await click('退出模考'); await enter();
+    await newPage(); await enter('资料'); await click('返回学习'); await enter();
     const db=await state(); assert.equal(db.catalog.length,0); assert.equal(db.attempts.length,0);
     return {owner:OWNER,empty:true};
   });
@@ -333,7 +340,7 @@ async function downloadBackup(name) {
     await click('提交整卷'); await visible(page.getByRole('dialog')); await click('继续答题');
     assert.equal((await currentAttempt(a=>a.id===firstId)).attempt.status,'reading');
     await click('提交整卷'); await click('确认交卷');
-    await visible(page.getByRole('heading',{name:'正确 2/200 · 漏答 197',exact:true}));
+    await resultSummary(2,197);
     await visible(page.getByRole('region',{name:'交卷后解析',exact:true}));
     originalFirst=(await currentAttempt(a=>a.id===firstId)).attempt;
     const row=await currentAttempt(a=>a.id===firstId); assert.equal(row.result.firstAttempt,true); assert.equal(row.result.correct,2);
@@ -354,7 +361,7 @@ async function downloadBackup(name) {
     await preflight(packages[0].title); await click('开始新考试 · 立即计时');
     const row=await currentAttempt(a=>a.ordinal===2 && a.status==='listening'); await answer(1,0);
     const delta=row.attempt.readingDeadline-await page.evaluate(()=>Date.now())+1200; await page.clock.fastForward(delta);
-    await visible(page.getByRole('heading',{name:'正确 0/200 · 漏答 199',exact:true}));
+    await resultSummary(0,199);
     const retake=await currentAttempt(a=>a.ordinal===2 && a.status==='submitted');
     assert.equal(retake.attempt.submittedReason,'timeout'); assert.equal(retake.attempt.submittedAt,retake.attempt.readingDeadline); assert.equal(retake.result.firstAttempt,false); assert.equal(retake.result.elapsedMs,120*60*1000);
     assert.deepEqual((await currentAttempt(a=>a.id===firstId)).attempt,originalFirst);
@@ -395,9 +402,9 @@ async function downloadBackup(name) {
       window.__restoreQaPut=()=>{IDBObjectStore.prototype.put=original;delete window.__restoreQaPut;};
     },DB);
     try {
-      await click('退出模考');await visible(page.getByRole('button',{name:'中断标记未保存，仍退出（计时继续）',exact:true}));
+      await click('保存并退出');await page.getByRole('dialog').getByRole('button',{name:'保存并退出',exact:true}).click();await visible(page.getByRole('button',{name:'中断标记未保存，仍退出（计时继续）',exact:true}));
       const failed=(await currentAttempt(a=>a.id===before.id)).attempt;assert.deepEqual(failed.answers,before.answers);assert.equal(failed.listeningDeadline,before.listeningDeadline);
-      await screenshot('quota-exit-recovery');await click('中断标记未保存，仍退出（计时继续）');await visible(page.getByRole('navigation',{name:'主导航'}));
+      await screenshot('quota-exit-recovery');await click('中断标记未保存，仍退出（计时继续）');await click('确认未保存仍退出');await visible(page.getByRole('navigation',{name:'手机主导航',exact:true}));
     } finally {await page.evaluate(()=>window.__restoreQaPut?.());}
     await enter();await click('继续考试');await visible(page.getByRole('article',{name:'第 1 题',exact:true}));
     const restored=(await currentAttempt(a=>a.id===before.id)).attempt;assert.deepEqual(restored.answers,before.answers);assert.equal(restored.listeningDeadline,before.listeningDeadline);
@@ -405,7 +412,7 @@ async function downloadBackup(name) {
   });
   if(process.env.LANTERN_PAGE_PACK_QA_DIR) {
     await freshContext();await newPage();
-    await require('./page-pack-flow.cjs')({page,step,click,importViaUI,preflight,idle,enter,currentAttempt,screenshot,layout,fixtureDir:process.env.LANTERN_PAGE_PACK_QA_DIR});
+    await require('./page-pack-flow.cjs')({page,step,click,importViaUI,preflight,idle,enter,currentAttempt,screenshot,layout,resultSummary,fixtureDir:process.env.LANTERN_PAGE_PACK_QA_DIR});
   }
   await require('./listening-duration-flow.cjs')({getPage:()=>page,step,click,importViaUI,preflight,idle,enter,currentAttempt,
     screenshot,state,freshContext,newPage,eventually,visible,output:OUT,basePackage:packages[0]});
