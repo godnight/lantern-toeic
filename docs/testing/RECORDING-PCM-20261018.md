@@ -26,3 +26,11 @@
 ## 尚需独立验证
 
 真实 Harmony ArkWeb 中的合成采集、WAV 解码/导出、0.75×/1×/1.5× 回听及冷启动、系统音频资源释放，由独立诊断 bundle 验证。真实手机麦克风输入及用户可听性仍需实际设备验证；桌面合成通过不代替真机。#47 不能仅凭本候选单测或开发浏览器结果整体关闭。
+
+## 追加：完整 Speaking 页面与实际本机存储（2026-10-18）
+
+`node tests/browser/speaking-capture-flow.cjs` 在独立浏览器 context 执行实际 SpeakingRoom、RecordingPlayer 和 useStudy；可用 `LANTERN_SPEAKING_SOURCE_REPO` 指向只读集成源码。没有模拟 PCM 编码或学习存储，只有 getUserMedia 返回已知振荡器流；所有测试记录均为该 context 中的新合成数据。验证前后核对 11 个源码文件 SHA256 一致。
+
+7/7 场景通过：准备取消释放；手动结束后实际 WAV/元数据存入 IndexedDB/学习记录；UI 选择 1.5× 并回听到真实末尾；再次录音后模拟页面后台自动停存；保存失败保留 Blob、取消离开并下载、重试后下载与已存 Blob 的 SHA256 一致；明确放弃只释放未保存录音；关闭页面再新建页面，从原存储读回第一条录音，以 UI 选择的 0.75× 完整回听。测试不替 UI 写 playbackRate，原有录音的字节和元数据均保持。
+
+此次完整页面测试直接读取 `lantern-site` 集成源码。结果在独立工作目录 `vocab-work/recording-fix-20261018/speaking-flow/2026-10-17T17-24-13.499Z/report.json`，7/7、无页面错误、无外部/API 请求、无真实麦克风调用。该测试覆盖口语功能链，不是整版网站/原生 App 验收；浏览器后台事件为受控模拟。
