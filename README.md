@@ -1,72 +1,113 @@
 # LANTERN · 微光托业
 
-把每天的一小步，变成可复习、可积累、可分享的学习资源。
+**围绕 TOEIC 备考，把练习、理解与复习连起来。**
 
-[个人GitHub仓库](https://github.com/godnight/lantern-toeic) · [网页试用](https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site)（当前仅所有者可访问）
+微光是一个开源的托业学习项目，面向希望持续练习听力、阅读与口语的学习者，也欢迎开发者和内容贡献者一起改进。
+我们希望你不只知道选哪个答案，还能理解依据、积累表达，再回到练习中巩固。
 
-微光是面向 TOEIC 听读与口语的学习教练。目标、考试日期、每日时间与时区均可配置。预设为听读 >650、口语 ≥130、2026-12-20 听读考试、每日25分钟、每周启动4天；这只是首位学习者的可编辑起点。
+[学习者从这里开始](#给学习者) · [开发者快速开始](#给开发者) · [版本下载](https://github.com/godnight/lantern-toeic/releases) · [反馈问题](https://github.com/godnight/lantern-toeic/issues)
 
-## 当前考试与版本安排
+> 源码公开，产品仍在迭代；现有网站限制访问，尚不是人人可注册的正式服务。
 
-用户确认 2026-12-20 只参加听读，口语考后再准备；暂沿用听读 650+，先以每周约 8–10 小时和首次完整基线调整计划。见 [发布与学习计划](docs/RELEASE_PLAN.md) 和 [本次 v0.1.0 测试报告](docs/testing/TEST_EXECUTION_v0.1.0.md)。用户指定本次测试名为 v0.1.0，保留历史 v0.2.x，后续功能版从 v0.3.0 开始；版本名变化不回退源码，鸿蒙升级号递增。
+## 给学习者
 
-## 当前已经实现
+### 为什么使用微光
 
-- **今日旅程**：按时间预算和已记录的薄弱 Part 选择小组练习，保留一题起步的5分钟最低版。
-- **完整练习循环**：68道原创听读题，覆盖7个Part；提交后显示答案依据、中文解析、词汇、逐句回听与听写。
-- **口语专项**：现行5类练习，准备与作答计时、麦克风录音、回放、参考表达和自评清单。
-- **完整听读模考**：个人完整 200 题 JSON 题包导入、音频/图像预检、完整音轨听力计时与75分钟阅读、断点恢复、首次/复测与 Part 分析；旧题包听力仍为45分钟。题包及模考记录仅本机保存，见 [导入说明](docs/EXAM_IMPORT.md)。电脑可用[本地 PDF 原页打包工具](docs/EXAM_PAGE_PACKER.md)整理已有材料；没有预装官方整卷，也不做 OCR。私人材料已整理为 HAU 官方完整练习和 Vol.4 Test 1 / Test 2 两套出版题包，每套200题；两套出版包分别通过29项/35项实际浏览器检查，来源分类和限制见[材料核查](docs/research/OFFICIAL_EXAMS_2026-10-11.md)，鸿蒙结果见[题包验收](docs/testing/REAL_EXAM_PACKS_v0.3.1_2026-10-11.md)。本机题包库合计上限192 MiB，三份大包不能同时导入。
-- **托业场景词库**：240 个原创场景词与 55 个额外题内表达，双语搜索、生词本、词卡复习及独立 JSON 备份；鸿蒙内置离线发音。
-- **复习与记录**：首答和复练分别保存；错题与到期题优先；按1/3/7/14/30天逐步安排复习，立即重复不会抬高间隔等级。
-- **成长足迹**：真实学习时间、近7天启动、各Part首次正确率、卡点手记、可导出的周复盘。
-- **学习书库**：15个官方/免费英语材料入口，按技能筛选、5–15分钟步骤和材料打卡；原创学习包与个人记录独立导出。
-- **主题**：深蓝圣巢、绯红丝歌、晨光书页；4张重新生成的高清横竖版主题图，手绘遗迹、钟与丝线，未嵌入游戏角色、原画、音乐或标志。
+- **练完知道为什么。** 听读练习配合中文解析、答案依据与词汇；听力可继续逐句回听、听写，而不是只看对错。
+- **把练习变成积累。** 错题与到期题优先复习，首答和复练分开记录，生词本与词卡帮助巩固表达。
+- **从今天能做的一点开始。** 根据时间预算与已有 Part 表现安排少量练习，也保留 5 分钟起步方式。
+- **开放共建，而非封闭题库。** 代码与项目自有原创练习采用开放许可，欢迎改进题目、解析、音频和学习体验。
 
-## 运行形态
+### 可以怎样学习
 
-v0.3.1 已预发布，7个公开附件均实际下载校验，Sites版本10部署成功，见[发布核验](docs/releases/v0.3.1-published.md)。专用 HarmonyOS 7 / API 26 模拟器完成覆盖升级、完整题包导入与大文件备份验证。此前合成题包的独立短流程、原始截止续验，以及第91–94轮失败、修复和第95轮回归通过见[自动化报告](docs/testing/HARMONY_MOCK_AUTOMATION_2026-10-11.md)。私人签名新版尚未安装手机；新版真机、连续两小时前台、完整人耳听力及全新单命令长模式未验。
+1. **日常专项：** 从今日旅程或训练之境进入听读 Part 练习，作答后看解析，再做精听或复习。
+2. **词汇巩固：** 在托业场景词库搜索中英文、收藏生词，通过词卡自测。
+3. **整卷练习：** 导入自己有权使用的完整题包，完成计时听读模考并查看 Part 表现。项目不预装官方完整真题，见[题包导入说明](docs/EXAM_IMPORT.md)。
+4. **口语练习：** 按任务计时练习，参考表达与自评清单；录音回听目前存在待解决问题，见下方说明。
 
-| 形态 | 当前能力 | 边界 |
-|---|---|---|
-| 网页 / 鸿蒙PWA | 私有网站身份、D1学习记录、R2录音、本机离线队列、恢复联网同步；内置鸿蒙添加桌面指引 | 首次打开需要网络；当前使用同一ChatGPT账号同步；手机号登录尚待真实认证服务；麦克风与系统朗读需设备支持 |
-| HarmonyOS原生工程 | ArkTS / ArkUI / ArkWeb共享React界面；SDK构建、开发签名、Pura X Max 安装，离线词库/备份及录音重启回听已验证 | 调试签名和单台真机验证；正式发行、其他机型、原生账号同步和手机号登录尚未完成 |
+主题提供深色、绯红与亮色选择。学习记录可按相应功能导出；普通学习记录备份不包含录音文件。
 
-鸿蒙原生接入位于 `harmony/`，使用ArkTS / ArkUI / ArkWeb复用共享网页资源，目标HarmonyOS 5及更新版本；它是唯一主动维护的原生目标。已完成 SDK 编译、开发签名及 Pura X Max / HarmonyOS 7 的离线词库、折叠外屏和真实录音验证，详见 [真机报告及边界](docs/testing/HARMONY_PHONE_QA_2026-10-11.md)、[编译记录](docs/testing/HARMONY_OFFLINE_BUILD.md) 与 [平台范围RFC](docs/rfcs/0001-harmony-only-platform.md)。
+### 如何体验
 
-鸿蒙系统浏览器可以将网页版添加到桌面。Web/PWA目前沿用站点的ChatGPT身份；手机号入口只有在真实短信供应商和服务端令牌校验完成后才会开放。原生工程不嵌入网页身份头、Cookie或服务密钥，当前记录仅保存在本机，并在安装说明中提供安全的在线同步版入口。
+| 方式 | 当前状态 |
+| --- | --- |
+| [网页 / PWA](https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site) | 目前仅站点所有者可访问，使用托管的 ChatGPT 身份。 |
+| [HarmonyOS 预发布包](https://github.com/godnight/lantern-toeic/releases/tag/v0.3.1) | 公开 HAP 为未签名开发产物，不是可直接安装的商店版；需对应开发工具链和签名。 |
+| 从源码运行与构建 | 适合开发者，见下方快速开始；克隆代码不会自动获得生产网站身份或云资源。 |
 
-## 开发
+当前维护 **Web/PWA 与 HarmonyOS**；不维护独立 Android/iOS 工程。
+鸿蒙内置练习和词库支持本机使用，原生学习记录目前不与网页账号自动同步。
 
-Node.js 22.13+。保留仓库已有的Vinext、Vite、Sites插件与绑定方式。
+### 使用前请了解
+
+- **录音尚未完成当前版本验收：** 鸿蒙模拟器录音内容过短、普通回听异常，由 [Issue #47](https://github.com/godnight/lantern-toeic/issues/47) 跟踪；旧版真机成功不代表新候选已修复。
+- **不是官方考试评分：** 原创题未经真人教师完整校审或统计标定；正确率不等于正式分数，口语无 AI 自动评分。
+- **声音仍有改进空间：** 现有语音为合成音，不是真人或官方音频；自然语音升级尚未发布。
+- **公开账号体系仍待完成：** 公众多用户访问、独立登录及 +86 手机号登录尚未上线。
+- **个人材料留在自己的设备：** 整卷题包与模考记录保存在当前浏览器/应用；请勿公开分享私人题包、录音或备份。
+
+## 给开发者
+
+### 快速开始
+
+需要 **Node.js 22.13+、npm 和 Bash**；Windows 可使用 Git Bash。首次安装需要访问 npm 源。
 
 ```bash
+git clone https://github.com/godnight/lantern-toeic.git
+cd lantern-toeic
 bash scripts/codex-setup.sh
 npm run build
 ```
 
-初始化只安装根目录依赖并执行核心检查；`mobile/`保留鸿蒙共享网页入口，没有独立运行依赖。Android/iOS工程、专用工作流和Capacitor已删除，旧源码可从Git历史追溯。Codex接续分支和环境设置见 [Codex交接说明](docs/CODEX_HANDOFF.md)。Web入口为 `app/page.tsx`，共享产品界面为 `app/study-app.tsx`。原生构建见 [原生工程说明](docs/NATIVE.md)。Windows 与 Linux 可执行 `npm run build`；Linux 的限时构建需 GNU `timeout`；生产身份与D1/R2接入仍需要对应运行平台。
+初始化会安装根目录锁定依赖并检查类型、内容、素材和学习行为；`mobile/` 无需另装依赖。Linux 构建还需 GNU `timeout`。
 
-## 内容与质量边界
+Web 使用 Vinext / Vite / Sites；生产身份与 D1/R2 需单独配置，构建成功不等于上线。环境与预览限制见 [Codex 交接说明](docs/CODEX_HANDOFF.md)。
 
-首批内容由AI辅助原创起草，完成答案/图文一致性检查；尚未经真人教师校审或题目统计标定。系统朗读不是官方或真人音频。起步包不是200题完整模拟，练习正确率不换算为正式分数，当前口语反馈不包含AI自动评分。
+准备鸿蒙共享网页资源：
 
-官方内容只存外链。后续版权资源取得许可后再接入，并与开放题库隔离。参见 [内容来源与审核规则](docs/CONTENT_SOURCES.md)。
+```bash
+npm --prefix harmony run sync:web
+npm --prefix harmony run check:web
+```
 
-## 长期维护
+HAP 编译与签名还需 DevEco / HarmonyOS SDK 等工具，见[鸿蒙构建说明](harmony/README.md)；其中历史验收不能替代当前版本测试。
 
-- [独立美术库](art/README.md)：[空洞骑士](art/themes/hollow-knight/README.md)、[丝之歌](art/themes/silksong/README.md)；原作参考与应用素材分别管理。
+### 实现架构
 
-- [产品路线图与业界参考](docs/PRODUCT_ROADMAP.md)
-- [项目维护手册](docs/MAINTENANCE.md)
-- [官方真题与样题资料集合](content/exams/README.md)
-- [本轮项目审查](docs/reviews/2026-09-08.md)
-- [固定团队与协作](docs/TEAM.md)
-- [项目状态与后续任务](docs/PROJECT_STATUS.md)
-- [架构与数据](docs/ARCHITECTURE.md)
-- [贡献规则](CONTRIBUTING.md)
+**一套 React 学习界面与数据模型，分别承载 Web 和鸿蒙本机体验。**
 
-代码采用MIT；本项目自有原创练习文本采用CC BY 4.0，详见 `LICENSE-CONTENT.md`。第三方依赖、商标及外部材料保留各自权利。项目为独立学习工具，与ETS、IIBC或Team Cherry无官方关联。
+| 层次 | 主要路径与职责 |
+| --- | --- |
+| 学习界面 | `app/study-app.tsx`、`app/learn/`：今日练习、听读、词库、口语、模考与复习。 |
+| 学习与存储模型 | `lib/`：学习规则、数据版本、本机存储和同步；`content/`：版本化练习内容。 |
+| Web 服务 | `app/api/`、`db/`、`drizzle/`：身份边界、API 与数据迁移；D1 保存学习数据，R2 保存录音。 |
+| 鸿蒙容器 | `mobile/` 构建共享静态界面，`harmony/` 通过 ArkTS / ArkUI / ArkWeb 承载并处理原生能力。 |
+| 验证与交付 | `tests/`、`scripts/`、`.github/workflows/`：行为回归、资源核对、构建与发布。 |
 
-## 跨端质量验证
+Web 只信任托管层提供的身份，原生当前采用本机存储；不要将网页会话、短信密钥或签名材料嵌入客户端。
+详细数据流、离线边界及同步规则见[架构与数据](docs/ARCHITECTURE.md)。
 
-[测试设计（40个历史场景）](docs/testing/TEST_DESIGN.md) · [v0.2.4执行报告](docs/testing/TEST_EXECUTION_v0.2.4.md)。结果按源码、浏览器、编译和真机分层；Core CI包含构建后HTML/UI检查。
+### 验证与贡献
+
+按改动风险执行对应检查，常用入口：
+
+```bash
+npm run typecheck
+npm run validate:content
+npm run test:study
+npm test
+```
+
+从具体学习问题提 Issue，通过小范围 PR 改进。题目要有答案依据与干扰项说明，文本、图片、音频分别记录来源和许可。
+不要提交私人数据或来源不明真题；PR 明确已验证及未验证的平台，不以单元测试代替真机验收。
+
+[贡献指南](CONTRIBUTING.md) · [维护流程](docs/MAINTENANCE.md) · [产品路线图](docs/PRODUCT_ROADMAP.md) · [认证方案](docs/rfcs/0002-phone-auth-and-online-data.md)
+
+路线图描述计划，不代表功能已经发布；GitHub 提交、Release 与网站部署也分别追踪。
+
+## 许可与声明
+
+- 软件代码采用 [MIT](LICENSE)。
+- 项目拥有权利的原创练习文本按 [CC BY 4.0](LICENSE-CONTENT.md) 提供，具体范围以该文件为准。
+- 第三方材料、图片、音频、依赖与商标保留各自权利；公开可查看不等于允许再分发。见[内容来源与审核规则](docs/CONTENT_SOURCES.md)。
+- 微光是独立学习工具，与 ETS、IIBC 或 Team Cherry 无官方关联。
