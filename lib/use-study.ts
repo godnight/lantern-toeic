@@ -28,6 +28,35 @@ function readSnapshot(key:string):StudyData{
 }
 export type SyncIssue={id:string;kind:'op'|'recording'|'session';status:'waiting'|'blocked'|'auth'|'missing';attempts:number;nextRetryAt:number;reason:string};
 function syncIssues(key:string):SyncIssue[]{const result:SyncIssue[]=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k?.startsWith(key+':sync:')){try{const item=JSON.parse(localStorage.getItem(k)||'');const complete=item.kind==='op'?localStorage.getItem(key+':ack:'+item.id):item.kind==='recording'?JSON.parse(localStorage.getItem(key+':recording:'+item.id)||'null')?.uploaded:false;if(!complete)result.push(item);}catch{}}}return result;}
+// Journal entries are kept so an acknowledged operation can still repair a
+// summary that lost a cross-tab race. Once the durable summary itself holds
+// the record (and the server acknowledged it, unless there is no server), the
+// entry cannot repair anything the summary would not already restore. Deleting
+// it bounds journal growth: readSnapshot replay then scales with pending work
+// instead of total history, and localStorage quota is not consumed forever.
+function readSummary(key:string):StudyData{return migrateStudyData(JSON.parse(localStorage.getItem(key)||'null')?.data);}
+function journalEntryRedundant(key:string,op:Op,summary:StudyData,owner:string|null):boolean{
+ if(!localStorage.getItem(key+':ack:'+op.id)&&owner!==null)return false;
+ if(!op?.data||typeof op.data!=='object')return false;
+ // Profile replay never reads the journal; durable state is the profile slot.
+ if(op.type==='profile')return true;
+ if(op.type==='attempt'||op.type==='checkin'){
+  const id=(op.data as {id?:unknown}).id;
+  if(typeof id!=='string')return false;
+  return (op.type==='attempt'?summary.attempts:summary.checkins).some(item=>item.id===id);
+ }
+ if(op.type==='questionMark'&&validQuestionMark(op.data)){const current=summary.questionMarks.find(m=>m.qid===(op.data as QuestionMark).qid);return !!current&&compareMutableRecords(current,op.data as QuestionMark)>=0;}
+ if(op.type==='resourceTask'&&validResourceTask(op.data)){const current=summary.resourceTasks.find(t=>t.id===(op.data as ResourceTask).id);return !!current&&compareMutableRecords(current,op.data as ResourceTask)>=0;}
+ return false;
+}
+function compactJournal(key:string,owner:string|null){
+ let summary:StudyData;try{summary=readSummary(key);}catch{return;}
+ for(const op of journal(key)){
+  // Keep the acknowledgement even after its operation is gone: it suppresses
+  // late failure states for work the server already accepted.
+  try{if(journalEntryRedundant(key,op,summary,owner)){localStorage.removeItem(key+':op:'+op.id);localStorage.removeItem(key+':sync:op:'+op.id);}}catch{}
+ }
+}
 export function useStudy(owner:string|null){
  const key='lantern-v1-'+(owner||'device');const generation=useRef(0);const activeKey=useRef(key);const syncing=useRef(false);const dirty=useRef(false);const readOnly=useRef(false);const retryTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const [data,setData]=useState<StudyData>(EMPTY_DATA);const current=useRef(data);const [ready,setReady]=useState(false);const [sync,setSync]=useState<'loading'|'synced'|'local'|'pending'|'blocked'>('loading');const [issues,setIssues]=useState<SyncIssue[]>([]);
@@ -37,6 +66,7 @@ export function useStudy(owner:string|null){
   try{readSnapshot(key);}catch{readOnly.current=true;setSync('blocked');toast.error('学习记录版本较新，请更新应用后继续');return;}
   const gen=generation.current;const valid=()=>gen===generation.current&&activeKey.current===key;
   if(retryTimer.current){clearTimeout(retryTimer.current);retryTimer.current=null;}
+  compactJournal(key,owner);
   if(!owner){setSync('local');return;}
   const stateKey=(kind:SyncIssue['kind'],id:string)=>key+':sync:'+kind+':'+id;
   const state=(kind:SyncIssue['kind'],id:string)=>{try{return JSON.parse(localStorage.getItem(stateKey(kind,id))||'null') as SyncIssue|null;}catch{return null;}};

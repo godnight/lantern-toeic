@@ -508,3 +508,41 @@ test('a late GET cannot roll back a newer profile already acknowledged by anothe
   assert.equal(first.timers.size, 0,
     'Profile freshness protection alone must not create a polling loop');
 });
+
+test('acknowledged journal entries compact once the durable summary holds their records', async () => {
+  const storage=new Map();const h=hookHarness(storage);const api=h.render('alice');await flush();
+  api.addAttempt(attempt('compact-me','2026-09-07T10:00:00.000Z'));
+  api.addCheckin({id:'compact-checkin',date:'2026-01-01',minutes:5,load:'轻',note:'',createdAt:'2026-01-01T10:00:00.000Z'});
+  h.setOnline(true);await h.render().syncNow();
+  const keys=()=>[...storage.keys()].filter(key=>key.includes(':op:'));
+  assert.ok(keys().length>0,'Uploaded operations are journaled until the next pass');
+  await h.render().syncNow();
+  assert.deepEqual(keys(),[],'Acknowledged operations already in the summary must not accumulate forever');
+  assert.ok([...storage.keys()].some(key=>key.includes(':ack:')),'Acknowledgements stay to suppress late failure states');
+  const reloaded=hookHarness(storage);reloaded.render('alice');await flush();
+  assert.equal(reloaded.render('alice').data.attempts.length,1);
+  assert.equal(reloaded.render('alice').data.checkins.length,1);
+});
+
+test('acknowledged journal entries survive compaction while the summary still lacks their records', async () => {
+  const op={id:'kept-op',owner:'alice',type:'attempt',data:attempt('kept','2026-09-07T10:00:00.000Z')};
+  const storage=new Map([
+    ['lantern-v1-alice',JSON.stringify({data:base()})],
+    ['lantern-v1-alice:op:kept-op',JSON.stringify(op)],
+    ['lantern-v1-alice:ack:kept-op','1']
+  ]);
+  const h=hookHarness(storage);h.render('alice');await flush();
+  h.setOnline(true);await h.render('alice').syncNow();
+  assert.ok(storage.has('lantern-v1-alice:op:kept-op'),'An acknowledged op still repairs a summary missing its record');
+  assert.equal(h.render('alice').data.attempts.length,1);
+});
+
+test('local-only mode compacts journaled operations once persisted and never invents an acknowledgement', async () => {
+  const storage=new Map();const h=hookHarness(storage);const api=h.render(null);await flush();
+  api.addAttempt(attempt('local-compact','2026-09-07T10:00:00.000Z'));await flush();
+  assert.equal([...storage.keys()].filter(key=>key.includes(':op:')).length,0,'Local summaries already carry the record');
+  assert.equal([...storage.keys()].filter(key=>key.includes(':ack:')).length,0,'Local mode has no server acknowledgements');
+  assert.equal(h.render(null).data.attempts.length,1);
+  const reloaded=hookHarness(storage);reloaded.render(null);await flush();
+  assert.equal(reloaded.render(null).data.attempts.length,1);
+});
