@@ -15,10 +15,15 @@ import {createRecordingCaptureTrace} from '@/lib/recording-capture-diagnostics';
 import {createRecordingCapture,captureDuration,captureWarning,type RecordingCapture} from '@/lib/pcm-recorder';
 import type {SpeakingRecovery} from '@/lib/speaking-recovery';
 import {useDialogViewport} from '@/lib/use-dialog-viewport';
+import {formatStudyDate} from '@/lib/study-format';
+import type {LocalAsrScope} from '@/lib/local-asr-session';
+import type {SpeakingFeedback} from '@/lib/speaking-feedback-contract';
+import {OfflineSpeakingFeedback} from './offline-speaking-feedback';
+import {getSpeakingSampleAudio} from '@/lib/speaking-audio-bindings';
 
 type SpeakingPhase='ready'|'prep'|'recording'|'processing'|'done';
 type CaptureCounts={chunkCount:number;zeroChunks:number;totalBytes:number;lastChunkBytes:number;startedAt:number;stoppedAt:number};
-type SpeakingRoomProps={nativeMode?:boolean;timezone?:string;prompt:Speaking;onClose:()=>void;onSave:(recording:Recording,blob:Blob)=>Promise<void>;onFinish:(minutes:number)=>void;recovery?:SpeakingRecovery;onRetain?:(clip:SpeakingRecovery)=>void;onRelease?:(id:string)=>void};
+type SpeakingRoomProps={feedbackScope?:LocalAsrScope;nativeMode?:boolean;timezone?:string;prompt:Speaking;onClose:()=>void;onSave:(recording:Recording,blob:Blob)=>Promise<void>;onFinish:(minutes:number)=>void;recovery?:SpeakingRecovery;onRetain?:(clip:SpeakingRecovery)=>void;onRelease?:(id:string)=>void};
 const TASK_LABELS:Record<string,{label:string;description:string}>={
  'read-aloud':{label:'朗读',description:'读清通知，找到长句中的停顿。'},
  'describe-picture':{label:'图片描述',description:'先说场景，再描述人物与动作。'},
@@ -28,7 +33,13 @@ const TASK_LABELS:Record<string,{label:string;description:string}>={
 };
 const clockText=(seconds:number)=>`${String(Math.floor(Math.max(0,seconds)/60)).padStart(2,'0')}:${String(Math.max(0,seconds)%60).padStart(2,'0')}`;
 function recordingTime(iso:string,timezone?:string){
- try{return new Intl.DateTimeFormat('zh-CN',{timeZone:timezone,month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(iso));}catch{return '发生时间暂不可读';}
+ try{return formatStudyDate(iso,timezone,{month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});}catch{return '发生时间暂不可读';}
+}
+
+/** Original sample text and the exact natural-audio binding; no recording is needed to render it. */
+export function SpeakingSample({prompt}:{prompt:Speaking}){
+ const audio=getSpeakingSampleAudio(prompt);
+ return <details className="speaking-sample"><summary>看看一种表达方式</summary><p lang="en">{prompt.sampleAnswer}</p>{audio?<SpeechPlayer {...audio} naturalOnly label="听示范表达" sourceLabel="原创口语示范"/>:<p className="word-footnote" role="status">示范自然音频尚未准备，仍可阅读原示范表达。</p>}</details>;
 }
 
 /** Existing prompts remain separate tasks; no complete-test or AI-score claim. */
@@ -65,12 +76,13 @@ export function SpeakingRecordingHistory({recordings,timezone,nativeMode=false,o
  </section>;
 }
 
-export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=false,timezone,recovery,onRetain,onRelease}:SpeakingRoomProps){
+export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=false,timezone,recovery,onRetain,onRelease,feedbackScope}:SpeakingRoomProps){
  const dialogViewport=useDialogViewport();
  const [phase,setPhase]=useState<SpeakingPhase>(recovery?'done':'ready');const [seconds,setSeconds]=useState(prompt.prepSeconds);
  const [url,setUrl]=useState('');const [saved,setSaved]=useState(false);const [busy,setBusy]=useState(false);const [saving,setSaving]=useState(false);const [saveError,setSaveError]=useState(false);const [accessError,setAccessError]=useState('');const [self,setSelf]=useState<string[]>([]);const [discardOpen,setDiscardOpen]=useState(false);const [returnNotice,setReturnNotice]=useState('');
  const recorder=useRef<RecordingCapture|null>(null);const stream=useRef<MediaStream|null>(null);const chunks=useRef<Blob[]>([]);const started=useRef(0);const stoppedAt=useRef(0);const last=useRef<{meta:Recording;blob:Blob}|null>(null);const objectURL=useRef('');const mounted=useRef(true);const beginning=useRef(false);const requestGeneration=useRef(0);const deadline=useRef(0);const currentPhase=useRef(phase);const savingNow=useRef(false);const acquiring=useRef(false);const exitRequested=useRef(false);currentPhase.current=phase;
- const [captureIssue,setCaptureIssue]=useState(recovery?.meta.note?.startsWith('录音完整性提示：')?recovery.meta.note.slice(8):'');
+ const [feedback,setFeedback]=useState<SpeakingFeedback|null>(null);const [previousFeedback,setPreviousFeedback]=useState<SpeakingFeedback|null>(null);
+  const [captureIssue,setCaptureIssue]=useState(recovery?.meta.note?.startsWith('录音完整性提示：')?recovery.meta.note.slice(8):'');
  const stopMeta=useRef<Recording|null>(null);
  const captureTrace=useRef<ReturnType<typeof createRecordingCaptureTrace>|null>(null);
  const captureCounts=useRef<CaptureCounts>({chunkCount:0,zeroChunks:0,totalBytes:0,lastChunkBytes:0,startedAt:0,stoppedAt:0});
@@ -133,7 +145,8 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
   try{
    const acquired=await navigator.mediaDevices.getUserMedia({audio:true});
    if(!mounted.current||generation!==requestGeneration.current||document.hidden||!isNativeForeground()){acquired.getTracks().forEach(track=>track.stop());return;}
-   stream.current=acquired;beginning.current=false;setSelf([]);setSaved(false);setSaveError(false);setCaptureIssue('');deadline.current=Date.now()+prompt.prepSeconds*1000;changePhase('prep');setSeconds(prompt.prepSeconds);
+   if(feedback?.status==='ready')setPreviousFeedback(feedback);setFeedback(null);
+    stream.current=acquired;beginning.current=false;setSelf([]);setSaved(false);setSaveError(false);setCaptureIssue('');deadline.current=Date.now()+prompt.prepSeconds*1000;changePhase('prep');setSeconds(prompt.prepSeconds);
    observeCapture('stream-acquired');
   }catch{if(mounted.current&&generation===requestGeneration.current){observeCapture('permission-error');const message=nativeMode?'请在手机设置中允许微光托业使用麦克风，再重新准备。':'请在浏览器设置中允许使用麦克风，再重新准备。';setAccessError(message);toast.error(message);}}
   finally{if(mounted.current&&generation===requestGeneration.current){acquiring.current=false;setBusy(false);}}
@@ -206,8 +219,9 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
       <div className={'speaking-notice '+(saveError?'error':saved?'success':'')} role={saveError?'alert':'status'}><strong>{saved?'录音已保存在本机':saveError?'录音尚未保存':'正在保存录音…'}</strong><p>{saved?(nativeMode?'保存在这台设备。':'本机副本已保留，联网后同步。'):saveError?'这段音频仍在当前页面，可回听、重试或下载保留。离开后可能无法找回。':'可以先回听。保存成功后，才能再录或记录收获。'}</p></div>
       {saveError&&<div className="speaking-action-stack"><button type="button" className="button primary" disabled={saving} onClick={retrySave}><RotateCcw size={17}/>重试保存</button>{download}<button type="button" className="button secondary speaking-danger" onClick={()=>setDiscardOpen(true)}>放弃并离开</button></div>}
       <dl className="speaking-recording-meta"><div><dt>练习开始</dt><dd>{last.current?recordingTime(last.current.meta.createdAt,timezone):'—'}</dd></div><div><dt>录音长度</dt><dd>{last.current?.meta.duration??0} 秒</dd></div></dl>
+      {last.current&&(feedbackScope?<OfflineSpeakingFeedback key={JSON.stringify([feedbackScope.ownerKey,feedbackScope.ownerGeneration,last.current.meta.id])} prompt={prompt} recordingId={last.current.meta.id} blob={last.current.blob} saved={saved} captureIssue={captureIssue} scope={feedbackScope} previousFeedback={previousFeedback} onFeedback={setFeedback}/>:<p className="speaking-caption" role="status">此设备暂不支持本地语音识别，录音可回听和保留。</p>)}
       <div className="speaking-reflect"><h3>回听，只改一个地方</h3><p className="speaking-secondary">按真实感受自评，不产生自动分数。</p><fieldset className="speaking-self-checks"><legend>这一次我留意了</legend>{prompt.guide.map((guide,index)=><label key={guide} htmlFor={`speaking-self-${index}`}><Checkbox id={`speaking-self-${index}`} checked={self.includes(guide)} onCheckedChange={checked=>setSelf(items=>checked?[...items,guide]:items.filter(item=>item!==guide))}/><span>{guide}</span></label>)}</fieldset>
-       <details className="speaking-sample"><summary>看看一种表达方式</summary><p lang="en">{prompt.sampleAnswer}</p><SpeechPlayer text={prompt.sampleAnswer} label="听示范表达"/></details>
+       <SpeakingSample prompt={prompt}/>
        <div className="speaking-final-actions"><button type="button" className="button secondary" disabled={!saved||busy} onClick={start}><RotateCcw size={17}/>{busy?'等待麦克风…':'再说一次'}</button><button type="button" className="button primary" disabled={!saved||busy||!!captureIssue} onClick={()=>{if(!busy&&!captureIssue)onFinish(Math.max(1,Math.ceil(((last.current?.meta.duration||0)+prompt.prepSeconds)/60)));}}><CheckCircle2 size={17}/>记录收获</button></div><p className="speaking-caption">自评只用于本轮回听；学习时间与手记在下一步单独确认。</p>
       </div>
      </>}

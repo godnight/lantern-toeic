@@ -5,7 +5,7 @@ import {workflowScopeKey,type WorkflowScope} from './learning-domain-repository'
 import {createPracticeWorkflow,practiceCatalogVersion,type PracticeLegacy,type PracticeProjection,type PracticeResult,type PracticeSession,type PracticeSettlementDraft,type PracticeStartOptions,type PracticeWorkflow} from './practice-workflow';
 import type {Attempt,Question} from './study-model';
 
-export type PracticeWorkflowHookOptions={owner:string|null;nativeMode:boolean;ready:boolean;timezone:string;questions:readonly Question[];attempts?:readonly Attempt[];legacy:PracticeLegacy};
+export type PracticeWorkflowHookOptions={owner:string|null;nativeMode:boolean;ready:boolean;timezone:string;questions:readonly Question[];compatibleQuestionCatalogs?:readonly (readonly Question[])[];attempts?:readonly Attempt[];legacy:PracticeLegacy};
 export type PracticeWorkflowController={
  scopeKey:string;ready:boolean;error:string;busy:boolean;session:PracticeSession|null;sessions:PracticeSession[];pendingSettlements:PracticeSession[];
  start:(queue:readonly Question[],options:PracticeStartOptions)=>Promise<PracticeResult>;
@@ -16,8 +16,8 @@ export type PracticeWorkflowController={
 };
 type Snapshot={key:string;ready:boolean;error:string;projection:PracticeProjection|null};
 export function usePracticeWorkflow(options:PracticeWorkflowHookOptions):PracticeWorkflowController {
- const scope:WorkflowScope=options.nativeMode?{kind:'harmony-device',partition:'existing-device'}:options.owner===null?{kind:'web-local',partition:'existing-device'}:{kind:'web-owner',ownerId:options.owner};
- const key=workflowScopeKey(scope),catalogVersion=practiceCatalogVersion(options.questions),latest=useRef(options);latest.current=options;
+ const scope:WorkflowScope=options.nativeMode?(options.owner?{kind:'harmony-owner',ownerId:options.owner}:{kind:'harmony-device',partition:'existing-device'}):options.owner===null?{kind:'web-local',partition:'existing-device'}:{kind:'web-owner',ownerId:options.owner};
+ const key=workflowScopeKey(scope),catalogVersion=practiceCatalogVersion(options.questions),compatibleCatalogVersions=(options.compatibleQuestionCatalogs??[]).map(practiceCatalogVersion).join('|'),latest=useRef(options);latest.current=options;
  const activeKey=useRef(key);activeKey.current=key;
  const generation=useRef(0),requestId=useRef(0),operationCount=useRef(0),operationTail=useRef<Promise<void>>(Promise.resolve()),readable=useRef(false);
  const service=useRef<{key:string;generation:number;value:PracticeWorkflow}|null>(null),notify=useRef<(()=>void)|null>(null);
@@ -35,7 +35,7 @@ export function usePracticeWorkflow(options:PracticeWorkflowHookOptions):Practic
   if(!options.ready){service.current=null;setSnapshot(previous=>({key,ready:false,error:'',projection:previous.key===key?previous.projection:null}));return;}
   const stillCurrent=()=>!cancelled&&generation.current===id&&activeKey.current===key&&latest.current.ready;
   setSnapshot(previous=>({key,ready:false,error:'',projection:previous.key===key?previous.projection:null}));
-  void createPracticeWorkflow({scope,questions:options.questions,timezone:options.timezone,isCurrent:stillCurrent,seenQuestionIds:()=>latest.current.attempts?.map(attempt=>attempt.qid)??[],legacy:{
+  void createPracticeWorkflow({scope,questions:options.questions,compatibleQuestionCatalogs:options.compatibleQuestionCatalogs,timezone:options.timezone,isCurrent:stillCurrent,seenQuestionIds:()=>latest.current.attempts?.map(attempt=>attempt.qid)??[],legacy:{
    addAttempt:attempt=>{if(!stillCurrent())throw Error('scope-changed');return latest.current.legacy.addAttempt(attempt);},
    addCheckin:checkin=>{if(!stillCurrent())throw Error('scope-changed');return latest.current.legacy.addCheckin(checkin);},
    readAttempt:attemptId=>{if(!stillCurrent())throw Error('scope-changed');return latest.current.legacy.readAttempt(attemptId);},
@@ -44,7 +44,7 @@ export function usePracticeWorkflow(options:PracticeWorkflowHookOptions):Practic
   return()=>{cancelled=true;const instance=service.current;if(instance?.generation===id){instance.value.close();service.current=null;}};
   // Each callback checks current identity again before touching the legacy journal.
   // eslint-disable-next-line react-hooks/exhaustive-deps
- },[key,options.ready,catalogVersion,options.timezone,initializationAttempt]);
+ },[key,options.ready,catalogVersion,compatibleCatalogVersions,options.timezone,initializationAttempt]);
  useEffect(()=>{void refreshSnapshot();},[options.attempts]);
  useEffect(()=>{
   let channel:BroadcastChannel|undefined;

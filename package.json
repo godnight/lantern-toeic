@@ -1,6 +1,6 @@
 {
   "name": "lantern-toeic",
-  "version": "0.3.7",
+  "version": "0.4.1",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -27,7 +27,9 @@
     "test:dictionary:browser": "node tests/browser/dictionary.cjs",
     "test:themes:browser": "node tests/browser/theme-browser.cjs",
     "test:themes:web:browser": "node tests/browser/theme-browser.cjs --web",
-    "test:continuous": "node --test tests/continuous-training.test.cjs tests/continuous-audio-ui.test.cjs tests/phase2-practice-workflow.test.cjs tests/lesson-audio.test.cjs tests/audio-resume-confirmation.test.cjs"
+    "test:continuous": "node --test tests/continuous-training.test.cjs tests/continuous-audio-ui.test.cjs tests/phase2-practice-workflow.test.cjs tests/lesson-audio.test.cjs tests/audio-resume-confirmation.test.cjs",
+    "test:auth": "node --test tests/auth-primitives.test.cjs tests/product-auth.test.cjs tests/auth-admission.test.cjs tests/product-auth-runtime.test.cjs tests/product-session-browser-guard.test.cjs",
+    "auth:local": "node scripts/auth-local.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

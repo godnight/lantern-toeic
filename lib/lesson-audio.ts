@@ -1,3 +1,24 @@
+import naturalManifest from '../content/natural-audio-manifest.json';
+import type {NaturalAudioSelector} from './natural-audio';
+import {naturalAudioCatalogRegistry as naturalAudioRegistry} from './natural-audio-catalog';
+export {naturalAudioCatalogRegistry as naturalAudioRegistry} from './natural-audio-catalog';
+let naturalPreparation:Promise<{status:'ready'|'failed'|'superseded';reason?:string}>|null=null;
+let localCandidateAudioAuthorized=false;
+/** Root explicitly opts this private candidate in; no publication approval is implied. */
+export function prepareProductLessonAudio(options:{allowLocalCandidate?:boolean}={}){
+  localCandidateAudioAuthorized=options.allowLocalCandidate===true;
+  if(naturalPreparation)return naturalPreparation;
+  if(naturalAudioRegistry.getSnapshot().phase==='ready')return Promise.resolve({status:'ready' as const});
+  const promise=naturalAudioRegistry.activate(naturalManifest,{allowLocalCandidate:localCandidateAudioAuthorized});
+  naturalPreparation=promise;
+  void promise.finally(()=>{if(naturalPreparation===promise)naturalPreparation=null;});
+  return promise;
+}
+export const subscribeProductLessonAudio=naturalAudioRegistry.subscribe;
+export const productLessonAudioState=naturalAudioRegistry.getSnapshot;
+export const naturalLessonDescriptor=(text:string,selector:NaturalAudioSelector={})=>naturalAudioRegistry.resolve(text,selector);
+export const retryProductLessonAudio=()=>prepareProductLessonAudio({allowLocalCandidate:localCandidateAudioAuthorized});
+
 type Clip = {text:string; file:string; sha256?:string};
 let bundledSources = new Map<string,string>();
 let bundledClips = new Map<string,string>();
@@ -17,8 +38,8 @@ export function installBundledLessonAudio(clips:Clip[]) {
   bundledClips = next;bundledSources=sources;
 }
 
-export function bundledLessonAudio(text:string) { return bundledClips.get(text) ?? null; }
-export function bundledLessonSource(text:string) {return bundledSources.get(text)??null;}
+export function bundledLessonAudio(text:string,selector:NaturalAudioSelector={}) {const natural=naturalAudioRegistry.resolve(text,selector);if(natural)return natural.url;if(naturalAudioRegistry.isBlocked(text)||naturalAudioRegistry.hasText(text)||Object.values(selector).some(Boolean))return null;return bundledClips.get(text)??null;}
+export function bundledLessonSource(text:string,selector:NaturalAudioSelector={}) {const natural=naturalAudioRegistry.resolve(text,selector);if(natural)return natural.sourceId;if(naturalAudioRegistry.isBlocked(text)||naturalAudioRegistry.hasText(text)||Object.values(selector).some(Boolean))return null;return bundledSources.get(text)??null;}
 /** Explicit user/navigation boundary: stop every old lesson/TTS/replay before another source. */
 export function stopLessonAudio(){
  active?.stop();

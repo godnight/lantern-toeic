@@ -1,15 +1,17 @@
 'use client';
 
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {ArrowRight,BookOpen,CalendarDays,Check,CheckCircle2,ChevronLeft,ChevronRight,Download,Plus,RefreshCw,Settings2,Upload} from 'lucide-react';
 import type {Theme} from '@/lib/study-model';
 import type {Word} from '@/lib/vocabulary-model';
 import {CATEGORIES} from '@/lib/vocabulary-model';
-import {getWorkflowCatalog,WORKFLOW_BOOKS,type WorkflowBookId} from '@/lib/workflow-catalog';
+import {getWorkflowBook,getCandidateLearningWord,CANDIDATE_CONTENT_PENDING,WORKFLOW_BOOKS,type WorkflowBookId} from '@/lib/workflow-catalog';
 import type {VocabularyWorkflowController} from '@/lib/use-vocabulary-workflow';
-import type {CandidateStatus,RawVocabularyRating,VocabularyPlanDraft,VocabularyProjection,VocabularyWorkflowResult} from '@/lib/vocabulary-workflow';
+import {vocabularyPlanMembers,type CandidateStatus,type RawVocabularyRating,type VocabularyPlanDraft,type VocabularyProjection,type VocabularyWorkflowResult} from '@/lib/vocabulary-workflow';
 import {InteractiveExample,type ExampleLookup} from './interactive-example';
 import {SpeechPlayer} from './practice';
+import {getWordAudioBindingForSnapshot,isPrivateWordAudioBlocked,PRIVATE_AUDIO_LABEL} from '@/lib/word-audio-bindings-v040';
+import {naturalAudioRegistry,subscribeProductLessonAudio,productLessonAudioState} from '@/lib/lesson-audio';
 import {ThemeScene} from './ui-theme';
 
 type Workflow=VocabularyWorkflowController;
@@ -20,8 +22,7 @@ const successful=(result:VocabularyWorkflowResult)=>result.status==='applied'||r
 
 /** Form validation uses the same stable catalog membership as the workflow. */
 export function evaluatePlanDraft(draft:VocabularyPlanDraft,projection:VocabularyProjection) {
-  const ids=new Set(getWorkflowCatalog(draft.bookId).map(word=>word.id));
-  for(const candidate of projection.candidates)if(candidate.kind==='new')ids.add(candidate.word.id);
+  const ids=new Set(vocabularyPlanMembers(draft.bookId,projection.candidates).map(word=>word.id));
   const learned=projection.learnedWordIds.filter(id=>ids.has(id)).length;
   const capacity=ids.size;
   const goalValid=Number.isSafeInteger(draft.goal)&&draft.goal>=learned&&draft.goal<=capacity;
@@ -110,7 +111,8 @@ export function CandidateAction({workflow,word,disabled=false}:{workflow:Workflo
   const pending=useRef(false),scope=useRef(workflow.scopeKey);scope.current=workflow.scopeKey;
   useEffect(()=>{setMessage('');setBusy(false);pending.current=false;},[workflow.scopeKey,word.id]);
   const presentation=candidatePresentation(workflow.candidateStatus(word));
-  const blocked=disabled||busy||!workflow.ready||!!workflow.error||!workflow.projection?.plan||presentation.disabled;
+  const contentBlocked=presentation.kind==='new'&&!getCandidateLearningWord(word);
+  const blocked=disabled||busy||!workflow.ready||!!workflow.error||!workflow.projection?.plan||presentation.disabled||contentBlocked;
   const add=async()=>{
     if(blocked||pending.current)return;
     const key=workflow.scopeKey;pending.current=true;setBusy(true);setMessage('');
@@ -124,30 +126,35 @@ export function CandidateAction({workflow,word,disabled=false}:{workflow:Workflo
     <button type="button" className="button secondary" disabled={blocked} onClick={()=>void add()} aria-label={`${presentation.label}：${word.word}`}>
       {presentation.disabled?<Check size={16}/>:<Plus size={16}/>} {busy?'正在保存…':presentation.label}
     </button>
+    {contentBlocked&&<small>{CANDIDATE_CONTENT_PENDING}</small>}
     {!workflow.projection?.plan&&workflow.ready&&!workflow.error&&<small>先保存一个单词计划，再安排此词。</small>}
     {message&&<p role="status">{message}</p>}
   </div>;
 }
 
-export function TodayVocabularyTask({workflow,onOpen,disabled=false,priority=false,theme}:{workflow:Workflow;onOpen:()=>void;disabled?:boolean;priority?:boolean;theme?:Theme}){
+export function TodayVocabularyTask({workflow,onOpen,onOpenStudy,disabled=false,priority=false,compact=false,theme}:{workflow:Workflow;onOpen:()=>void;onOpenStudy?:()=>void;disabled?:boolean;priority?:boolean;compact?:boolean;theme?:Theme}){
   const [busy,setBusy]=useState(false),[message,setMessage]=useState('');
   const pending=useRef(false),scope=useRef(workflow.scopeKey);scope.current=workflow.scopeKey;
   useEffect(()=>{setMessage('');setBusy(false);pending.current=false;},[workflow.scopeKey]);
   const projection=workflow.projection,plan=projection?.plan;
+  const active=workflow.activeSession?.status==='active'?workflow.activeSession:null;
+  const saved=active?.queue.filter(step=>!!step.receipt).length??0;
   const open=async()=>{
     if(disabled||pending.current||!workflow.ready||workflow.error)return;
-    if(!plan||workflow.activeSession?.status==='active'){onOpen();return;}
+    if(!plan){onOpen();return;}
+    if(workflow.activeSession?.status==='active'){(onOpenStudy||onOpen)();return;}
     const key=workflow.scopeKey;pending.current=true;setBusy(true);setMessage('');
-    try{const result=await workflow.startGroup('auto');if(scope.current!==key)return;if(successful(result))onOpen();else setMessage(resultMessage(result,''));}
+    try{const result=await workflow.startGroup('auto');if(scope.current!==key)return;if(successful(result))(onOpenStudy||onOpen)();else setMessage(resultMessage(result,''));}
     catch(error){if(scope.current===key)setMessage(error instanceof Error?error.message:'词组尚未准备好，请重试。');}
     finally{if(scope.current===key){pending.current=false;setBusy(false);}}
   };
-  return <section className={`phase2-today-vocabulary panel${priority?' workspace-vocabulary-priority workspace-priority':''}`} aria-label="今日单词任务">
-    {priority&&<VocabularyPriorityArt theme={theme}/>}
-    <div className="phase2-vocab-heading"><span className="phase2-vocab-eyebrow"><BookOpen size={16}/>单词计划</span><button type="button" className="text-button" disabled={disabled} onClick={onOpen}>查看计划<ArrowRight size={16}/></button></div>
+  return <section className={`phase2-today-vocabulary panel${priority?' workspace-vocabulary-priority workspace-priority':''}${compact?' v040-word-task':''}`} aria-label="今日单词任务">
+    {priority&&!compact&&<VocabularyPriorityArt theme={theme}/>}
+    <div className="phase2-vocab-heading"><span className="phase2-vocab-eyebrow"><BookOpen size={16}/>{compact&&active?'上次停在这里':'单词计划'}</span>{!compact&&<button type="button" className="text-button" disabled={disabled} onClick={onOpen}>查看计划<ArrowRight size={16}/></button>}</div>
     <WorkflowNotice workflow={workflow}/>
     {workflow.ready&&!workflow.error&&projection&&<>
-      <h2>{!plan?'给新词留一点时间':!projection.daily.isLearningDay?'今天是单词休息日':projection.daily.goalCompleted?'今日目标已完成':'先温习，再认识新词'}</h2>
+      <h2>{compact&&active?'继续当前词组':!plan?(compact?'建立你的单词计划':'给新词留一点时间'):!projection.daily.isLearningDay?'今天是单词休息日':projection.daily.goalCompleted?'今日目标已完成':'先温习，再认识新词'}</h2>
+      {compact&&active&&<div className="v040-word-task-progress"><p>当前词组共 {active.queue.length} 词 · 已保存 {saved} 词</p><progress aria-label="当前词组已保存词数" value={saved} max={Math.max(1,active.queue.length)}/></div>}
       {!plan?<p>按自己的节奏设置词书、总目标与每周学习日。</p>:<>
         <div className="phase2-today-counts"><span><b>{projection.daily.newRemaining}</b>待学新词</span><span><b>{projection.daily.reviewRemaining}</b>待复习</span><span><b>{projection.daily.newDone+projection.daily.reviewDone}</b>今日已完成</span></div>
         <p>{projection.daily.isLearningDay?'到期复习优先，每组最多 20 词。':'休息日不安排新词，到期复习和主动加练仍可进行。'}</p>
@@ -186,6 +193,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   </section>;
   if(!step)return <WorkflowNotice workflow={workflow}/>;
   const revealed=!!step.receipt;
+  const headwordAudio=getWordAudioBindingForSnapshot(step.word,'headword'),exampleAudio=getWordAudioBindingForSnapshot(step.word,'example'),audioHeld=isPrivateWordAudioBlocked(step.word);
   const intent=step.intent==='new'?'新词':step.intent==='reinforcement'?'巩固':step.intent==='manual-review'?'主动复习':'到期复习';
   return <section className="phase2-vocabulary-session" aria-label="单词学习">
     <div className="phase2-word-session-heading"><span>{intent} · {session.cursor+1} / {session.queue.length}</span><span>计入 {session.dayWindow.localDate} · {session.dayWindow.timezone}</span></div>
@@ -196,7 +204,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
         <p className="phase2-vocab-eyebrow">{CATEGORIES[step.word.category]||'补充词条'} · {intent}</p>
         <h2 className="phase2-current-word" lang="en">{step.word.word}</h2>
         {!!step.word.phonetics?.length&&<p className="word-phonetic" lang="en">{step.word.phonetics.join(' · ')}</p>}
-        <SpeechPlayer key={step.id} text={step.word.word} label="听单词发音" sourceLabel="单词学习"/>
+        {audioHeld?<p className="word-footnote">此词发音待核对，原学习记录保留。</p>:<SpeechPlayer key={step.id} text={step.word.word} {...(headwordAudio||{materialId:step.word.id,segmentId:'headword'})} label="听单词发音" sourceLabel={headwordAudio?PRIVATE_AUDIO_LABEL:'单词学习'}/>}
         <WorkflowNotice workflow={workflow}/>
         {!revealed?<>
           <p className="phase2-word-prompt">先在心里回想词义，再选择现在的熟悉程度。</p>
@@ -208,7 +216,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
           <div className="phase2-feedback-saved" role="status"><CheckCircle2 size={17}/>已保存：{RATING_NAMES[step.receipt!.rawRating]}</div>
           <div className="phase2-word-meaning"><p><span className="word-pos">{step.word.pos}</span>{step.word.meaning}</p>
             {step.word.collocation&&<p lang="en">{step.word.collocation}</p>}
-            {step.word.example&&<blockquote><InteractiveExample text={step.word.example} onLookup={onExampleLookup} disabled={overlayBlocked}/></blockquote>}
+            {step.word.example&&<><blockquote><InteractiveExample text={step.word.example} onLookup={onExampleLookup} disabled={overlayBlocked}/></blockquote>{!audioHeld&&<SpeechPlayer key={step.id+'-example'} text={step.word.example} {...(exampleAudio||{materialId:step.word.id,segmentId:'example'})} label="听例句发音" sourceLabel={exampleAudio?PRIVATE_AUDIO_LABEL:'单词学习'}/>}</>}
             {step.word.translation&&<p className="muted">{step.word.translation}</p>}
           </div>
           {step.word.example&&onExampleLookup&&<p className="example-lookup-hint">点例句中的英文词查词，关闭后继续当前词卡。</p>}
@@ -221,15 +229,65 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   </section>;
 }
 
-export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=false,onOpenSearch}:{workflow:Workflow;theme:Theme;onExampleLookup?:ExampleLookup;overlayBlocked?:boolean;onOpenSearch?:()=>void}){
+export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=false,onOpenSearch,entryView='study'}:{workflow:Workflow;theme:Theme;onExampleLookup?:ExampleLookup;overlayBlocked?:boolean;onOpenSearch?:()=>void;entryView?:'plan'|'study'}){
   const projection=workflow.projection,plan=projection?.plan;
   const [editing,setEditing]=useState(false),[draft,setDraft]=useState<VocabularyPlanDraft>({bookId:'scene',goal:WORKFLOW_BOOKS[0].capacity,dailyNew:15,weekdays:[1,2,3,4,5]});
   const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[completedHidden,setCompletedHidden]=useState('');
+  const [studyOpenRequest,setStudyOpenRequest]=useState(0);
   const [planView,setPlanView]=useState<'week'|'day'>('week'),[weekOffset,setWeekOffset]=useState(0),[selectedDate,setSelectedDate]=useState<string|null>(null);
+  const planRoot=useRef<HTMLDivElement>(null),lastStudyOpen=useRef('');
   const importInput=useRef<HTMLInputElement>(null),pending=useRef(false),scope=useRef(workflow.scopeKey),latest=useRef(workflow);scope.current=workflow.scopeKey;latest.current=workflow;
   useEffect(()=>{setEditing(false);setMessage('');setBusy(false);pending.current=false;setCompletedHidden('');},[workflow.scopeKey]);
   useEffect(()=>{setWeekOffset(0);setSelectedDate(null);},[workflow.scopeKey,projection?.daily.window.localDate]);
   const blocked=overlayBlocked||!workflow.ready||!!workflow.error||busy;
+  const activeSessionId=workflow.activeSession?.status==='active'?workflow.activeSession.id:null;
+  const lessonAudioPhase=useSyncExternalStore(subscribeProductLessonAudio,productLessonAudioState,productLessonAudioState).phase;
+  useEffect(()=>{
+    const session=workflow.activeSession;
+    if(session?.status!=='active')return;
+    const abort=new AbortController();
+    let lease:Awaited<ReturnType<typeof naturalAudioRegistry.pinSelectors>>|null=null;
+    // A fixed group has at most 20 words. Protect its existing cached slots
+    // without fetching audio, rewriting its snapshots, or reserving a whole book.
+    const items=session.queue.flatMap(step=>(['headword','example'] as const).flatMap(slot=>{
+      const audio=getWordAudioBindingForSnapshot(step.word,slot);
+      return audio?[{text:slot==='headword'?step.word.word:step.word.example,selector:{assetKey:audio.audioKey,materialId:audio.materialId,segmentId:audio.segmentId,voiceProfileId:audio.voiceProfileId,contextHash:audio.contextHash}}]:[];
+    }));
+    void naturalAudioRegistry.pinSelectors(items,{kind:'lesson',signal:abort.signal}).then(value=>{
+      if(abort.signal.aborted)value.release();else lease=value;
+    }).catch(()=>{/* Unavailable safe persistence remains explicit on playback. */});
+    return()=>{abort.abort();lease?.release();};
+  },[workflow.scopeKey,activeSessionId,lessonAudioPhase]);
+  const openPlan=()=>{planRoot.current?.focus({preventScroll:true});planRoot.current?.scrollIntoView({block:'start',behavior:'instant'});};
+  const openStudy=()=>{setCompletedHidden('');setStudyOpenRequest(value=>value+1);};
+  useEffect(()=>{if(entryView==='plan'&&studyOpenRequest===0&&!overlayBlocked&&!busy)openPlan();},[entryView,studyOpenRequest,overlayBlocked,busy]);
+  useEffect(()=>{
+    if(entryView==='plan'&&studyOpenRequest===0)return;
+    if(!activeSessionId||overlayBlocked||busy)return;
+    const token=JSON.stringify([workflow.scopeKey,activeSessionId,studyOpenRequest]);
+    if(lastStudyOpen.current===token)return;
+    const card=planRoot.current?.querySelector<HTMLElement>('.phase2-word-card');
+    if(!card)return;
+    lastStudyOpen.current=token;
+    card.focus({preventScroll:true});
+    card.scrollIntoView({block:'start',behavior:'instant'});
+    // This one resume positioning pass respects the actual fixed navigation,
+    // including its safe-area padding. Long answers keep natural reading scroll.
+    const controls=card.querySelector<HTMLElement>('.phase2-next-word,.phase2-rating-actions');
+    if(controls){
+      const viewport=window.visualViewport,viewportTop=viewport?.offsetTop??0;
+      const viewportBottom=viewportTop+(viewport?.height??window.innerHeight);
+      const navTop=[...document.querySelectorAll<HTMLElement>('.workspace-mobile-nav')]
+        .filter(nav=>nav.getClientRects().length>0&&getComputedStyle(nav).position==='fixed')
+        .map(nav=>nav.getBoundingClientRect()).filter(rect=>rect.bottom>viewportTop&&rect.top<viewportBottom)
+        .reduce((bottom,rect)=>Math.min(bottom,rect.top),viewportBottom);
+      const action=controls.getBoundingClientRect(),usableBottom=Math.min(viewportBottom,navTop)-8;
+      // Correct a control already entering the viewport, not an unseen action
+      // below a long answer. No ongoing listener can fight user scrolling.
+      if(action.top<viewportBottom&&action.bottom>usableBottom)
+        window.scrollBy({top:action.bottom-usableBottom,behavior:'instant'});
+    }
+  },[workflow.scopeKey,activeSessionId,studyOpenRequest,overlayBlocked,busy,entryView]);
   const estimate=projection?evaluatePlanDraft(draft,projection):null;
   const savedEstimate=projection&&plan?evaluatePlanDraft(plan,projection):null;
   const calendar=projection&&plan?planCalendarWeek(projection,weekOffset):[];
@@ -262,14 +320,15 @@ export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=fa
     finally{if(scope.current===key){pending.current=false;setBusy(false);}}
   };
   const showSession=workflow.activeSession&&(workflow.activeSession.status==='active'||completedHidden!==workflow.activeSession.id);
-  return <div className="phase2-vocabulary-plan">
+  return <div ref={planRoot} tabIndex={-1} className="phase2-vocabulary-plan">
     <header className="phase2-plan-heading"><div><span className="phase2-vocab-eyebrow">VOCABULARY · 每天一点，慢慢熟悉</span><h1>我的单词计划</h1></div><button type="button" className="button secondary" disabled={blocked} onClick={edit}><Settings2 size={17}/>{plan?'调整计划':'建立计划'}</button></header>
     <WorkflowNotice workflow={workflow}/>
     {workflow.ready&&!workflow.error&&projection&&<>
       {editing&&<section className="phase2-plan-editor panel" aria-labelledby="phase2-plan-editor-title"><h2 id="phase2-plan-editor-title">{plan?'调整接下来的安排':'从适合自己的节奏开始'}</h2>
         <form onSubmit={event=>{event.preventDefault();if(estimate?.valid)void run(()=>workflow.savePlan(draft,plan?.revision??null),'单词计划已保存；已完成的学习记录保留。',()=>setEditing(false));}}>
           <fieldset disabled={blocked}><legend className="sr-only">单词计划设置</legend>
-            <label className="phase2-plan-field">词书<select value={draft.bookId} onChange={event=>{const bookId=event.target.value as WorkflowBookId;const next={...draft,bookId};const view=evaluatePlanDraft({...next,goal:0},projection);setDraft({...next,goal:view.capacity});}}>{WORKFLOW_BOOKS.map(book=><option key={book.id} value={book.id}>{book.name} · {book.capacity} 词</option>)}</select></label>
+            <label className="phase2-plan-field">词书<select value={draft.bookId} onChange={event=>{const bookId=event.target.value as WorkflowBookId;const next={...draft,bookId};const view=evaluatePlanDraft({...next,goal:0},projection);setDraft({...next,goal:view.capacity});}}>{WORKFLOW_BOOKS.map(book=><option key={book.id} value={book.id}>{book.name} · {book.imported?`${book.memberCount} 成员／${book.capacity} 可练`:`${book.capacity} 词`}</option>)}</select></label>
+            {getWorkflowBook(draft.bookId).imported&&<p className="phase2-vocab-note" data-wordbook-coverage>{getWorkflowBook(draft.bookId).memberCount} 个词表成员 · {getWorkflowBook(draft.bookId).legacyPracticeCount} 个既有可练 · {getWorkflowBook(draft.bookId).privateCandidateCount} 个私有候选可练 · {getWorkflowBook(draft.bookId).pendingCount} 个待补教学内容。既有可练沿用原有内容；私有候选的文本经AI校阅，语音已自动校验、未口音标定。词表标签不代表ETS官方范围。</p>}
             <div className="phase2-plan-number-fields"><label className="phase2-plan-field">总覆盖目标<input type="number" inputMode="numeric" step="1" min={estimate?.learned??0} max={estimate?.capacity} value={Number.isNaN(draft.goal)?'':draft.goal} aria-invalid={!!estimate&&!Number.isSafeInteger(draft.goal)||!!estimate&&(draft.goal<estimate.learned||draft.goal>estimate.capacity)} onChange={event=>setDraft({...draft,goal:event.target.value===''?NaN:Number(event.target.value)})}/><small>真实已学 {estimate?.learned} · 可选 {estimate?.capacity}</small></label><label className="phase2-plan-field">每日新词量<input type="number" inputMode="numeric" step="1" min="1" max="1000" value={Number.isNaN(draft.dailyNew)?'':draft.dailyNew} onChange={event=>setDraft({...draft,dailyNew:event.target.value===''?NaN:Number(event.target.value)})}/><small>只安排新词，到期复习另计。</small></label></div>
             <fieldset className="phase2-weekday-field"><legend>每周学习日</legend><div className="phase2-weekday-picker">{WEEKDAYS.map(day=><label key={day}><input type="checkbox" checked={draft.weekdays.includes(day)} onChange={event=>setDraft({...draft,weekdays:event.target.checked?[...draft.weekdays,day]:draft.weekdays.filter(value=>value!==day)})}/><span>周{DAY_NAMES[day%7]}</span></label>)}</div></fieldset>
             {estimate&&<div className="phase2-plan-estimate" role="status"><b>{estimate.title}</b><p>{estimate.detail}</p></div>}
@@ -280,6 +339,7 @@ export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=fa
       </section>}
       {!plan?<section className="phase2-plan-cover panel"><BookOpen size={30}/><h2>词书、总目标、每周节奏，都由你决定。</h2><p>预填每天 15 个新词、周一至周五。保存后才开始安排；不会生成示例学习进度。</p><button type="button" className="button primary" disabled={blocked} onClick={edit}>建立我的计划<ArrowRight size={17}/></button></section>:<>
         <section className="phase2-plan-cover panel"><div className="phase2-vocab-heading"><span className="phase2-vocab-eyebrow"><BookOpen size={16}/>{WORKFLOW_BOOKS.find(book=>book.id===plan.bookId)?.name}</span><span className="phase2-local-badge">本机计划 · 未同步</span></div><h2>{projection.counts.remaining===0?'总目标已覆盖，温习让它更牢固。':'不赶路，把每个新词学扎实。'}</h2><div className="phase2-plan-stats"><span><b>{projection.counts.learned}</b>真实已学</span><span><b>{plan.goal}</b>总覆盖目标</span><span><b>{projection.counts.remaining}</b>还需认识</span></div><progress aria-label="总目标覆盖进度" value={Math.min(projection.counts.learned,plan.goal)} max={Math.max(1,plan.goal)}/><p><CalendarDays size={15}/>每周 {plan.weekdays.length} 天 · 每天 {plan.dailyNew} 个新词 · {plan.weekdays.length*plan.dailyNew} 个／周</p>{savedEstimate&&<div className="phase2-plan-estimate phase2-saved-estimate"><b>{savedEstimate.title}</b><p>{savedEstimate.detail}</p></div>}<p className="phase2-vocab-note">累计已学来自真实词卡记录；旧记录不猜算成今天的新学或复习。</p></section>
+        {getWorkflowBook(plan.bookId).imported&&<p className="phase2-vocab-note" data-wordbook-coverage>{getWorkflowBook(plan.bookId).memberCount} 个词表成员 · {getWorkflowBook(plan.bookId).legacyPracticeCount} 个既有可练 · {getWorkflowBook(plan.bookId).privateCandidateCount} 个私有候选可练 · {getWorkflowBook(plan.bookId).pendingCount} 个待补教学内容。既有可练沿用原有内容；私有候选的文本经AI校阅，语音已自动校验、未口音标定。词表标签不代表ETS官方范围。</p>}
         {selected&&<section className="phase2-plan-calendar panel" aria-label="单词计划日历">
           <div className="phase2-vocab-heading"><h2>这周，慢慢积累</h2><div className="phase2-plan-view" role="group" aria-label="计划视图">{(['week','day'] as const).map(view=><button key={view} type="button" aria-pressed={planView===view} disabled={overlayBlocked} onClick={()=>setPlanView(view)}>{view==='week'?'周':'日'}</button>)}</div></div>
           <div className="phase2-calendar-range"><button type="button" className="text-button" aria-label="上一周" disabled={overlayBlocked} onClick={()=>changeWeek(-1)}><ChevronLeft size={18}/></button><b>{calendarDate(calendar[0].localDate)} — {calendarDate(calendar[6].localDate)}</b><button type="button" className="text-button" aria-label="下一周" disabled={overlayBlocked} onClick={()=>changeWeek(1)}><ChevronRight size={18}/></button></div>
@@ -289,8 +349,8 @@ export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=fa
           <div className="phase2-calendar-detail" aria-live="polite"><h3>{selected.isToday?'今天':calendarDate(selected.localDate)}的安排</h3>{selected.isToday?<><div className="phase2-calendar-counts"><span><b>{projection.daily.newDone}</b>已新学</span><span><b>{projection.daily.reviewDone}</b>已复习</span><span><b>{projection.daily.newRemaining}</b>待新学</span></div><p>到期／主动复习另有 {projection.daily.reviewRemaining} 词待练，已复习不计入新词覆盖。</p></>:selected.localDate<projection.daily.window.localDate?<p>此视图未读取该日历史记录；已新学、已复习均未记录，不从当前计划反推。</p>:<><div className="phase2-calendar-counts"><span><b>{selected.estimatedNew}</b>预计新词</span><span><b>待排</b>到期复习</span><span><b>—</b>完成未发生</span></div><p>{selected.isLearningDay?'按保存计划估计新词配额；实际任务在当天安排。':'这是休息日，不安排新词；当天到期复习仍可进行。'}</p></>}</div>
           {(weekOffset!==0||!selected.isToday)&&<button type="button" className="text-button" disabled={overlayBlocked} onClick={()=>{setWeekOffset(0);setSelectedDate(null);}}>回到今天<CalendarDays size={15}/></button>}
         </section>}
-        <TodayVocabularyTask workflow={workflow} disabled={blocked} onOpen={()=>setCompletedHidden('')}/>
-        <div className="phase2-vocab-secondary-actions"><button type="button" className="button secondary" disabled={blocked||projection.daily.reviewRemaining===0} onClick={()=>void run(()=>workflow.startGroup('review'),'复习词组已准备好。',()=>setCompletedHidden(''))}>复习 · {projection.daily.reviewRemaining} 词</button><button type="button" className="text-button" disabled={blocked} onClick={()=>void run(()=>workflow.startGroup('extra'),'加练词组已准备好。',()=>setCompletedHidden(''))}>主动加练<Plus size={16}/></button>{onOpenSearch&&<button type="button" className="text-button" disabled={blocked} onClick={onOpenSearch}>去查词添加候选<ArrowRight size={16}/></button>}</div>
+        <TodayVocabularyTask workflow={workflow} disabled={blocked} onOpen={openPlan} onOpenStudy={openStudy}/>
+        <div className="phase2-vocab-secondary-actions"><button type="button" className="button secondary" disabled={blocked||projection.daily.reviewRemaining===0} onClick={()=>void run(()=>workflow.startGroup('review'),'复习词组已准备好。',openStudy)}>复习 · {projection.daily.reviewRemaining} 词</button><button type="button" className="text-button" disabled={blocked} onClick={()=>void run(()=>workflow.startGroup('extra'),'加练词组已准备好。',openStudy)}>主动加练<Plus size={16}/></button>{onOpenSearch&&<button type="button" className="text-button" disabled={blocked} onClick={onOpenSearch}>去查词添加候选<ArrowRight size={16}/></button>}</div>
       </>}
       {showSession&&<VocabularyStudyCard workflow={workflow} theme={theme} onExampleLookup={onExampleLookup} overlayBlocked={overlayBlocked||busy} onFinish={()=>setCompletedHidden(workflow.activeSession?.id||'')}/>}
       {!showSession&&<ThemeScene theme={theme} scene="blue-lake"/>}

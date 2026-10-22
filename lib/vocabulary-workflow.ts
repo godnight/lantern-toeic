@@ -4,9 +4,10 @@ import {validatePracticeWorkflowBackup} from './practice-workflow';
 import questions from '../content/questions.json';
 import type {Question} from './study-model';
 import {vocabularyId, vocabularyState, validVocabularyEvent, type VocabularyEvent, type Word} from './vocabulary-model';
-import {getWorkflowCatalog, WORKFLOW_WORDS, type WorkflowBookId} from './workflow-catalog';
+import {getWorkflowCatalog, WORKFLOW_WORDS, isWorkflowBookId, getCandidateLearningWord, CANDIDATE_CONTENT_PENDING, type WorkflowBookId} from './workflow-catalog';
+import {FULL4109_CURRENT_MODE} from './vocabulary-content-catalog';
 
-export type VocabularyWorkflowScope = {kind:'web-owner'; ownerId:string} | {kind:'web-local'|'harmony-device'; partition:'existing-device'};
+export type VocabularyWorkflowScope = {kind:'web-owner'|'harmony-owner'; ownerId:string} | {kind:'web-local'|'harmony-device'; partition:'existing-device'};
 export type RawVocabularyRating = 'known'|'fuzzy'|'forgotten';
 export type VocabularyIntent = 'new'|'due-review'|'manual-review'|'reinforcement';
 export type CandidateKind = 'new'|'manual-review';
@@ -26,7 +27,7 @@ export type VocabularyCommand = {schemaVersion:1; id:string; sessionId:string; s
 export type VocabularyProjection = {plan:VocabularyPlan|null; counts:{capacity:number; learned:number; remaining:number; reviewDue:number}; daily:{window:VocabularyDayWindow; newDone:number; reviewDone:number; newRemaining:number; reviewRemaining:number; newWordIds:string[]; reviewWordIds:string[]; goalCompleted:boolean; isLearningDay:boolean}; activeSession:VocabularySession|null; candidates:VocabularyCandidate[]; learnedWordIds:string[]; unresolvedReviewWordIds:string[]};
 export type VocabularyWorkflowResult = {status:'applied'|'replayed'|'already-present'|'already-review'|'today-reviewed'|'stage-changed'|'empty'|'pending'|'unknown'|'conflict'|'blocked'; reason?:string; id?:string; receipt?:VocabularyReceipt; session?:VocabularySession; added?:number};
 export type VocabularyLegacyAdapter = {readEvents:()=>VocabularyEvent[]|Promise<VocabularyEvent[]>; readEvent:(id:string)=>VocabularyEvent|undefined|Promise<VocabularyEvent|undefined>; writeReview:(event:VocabularyReviewEvent)=>unknown|Promise<unknown>};
-export type VocabularyWorkflowOptions = {scope:VocabularyWorkflowScope; legacy:VocabularyLegacyAdapter; words?:Word[]; now?:()=>Date; repository?:Awaited<ReturnType<typeof openLearningDomainRepository>>; databaseName?:string; factory?:IDBFactory; isCurrent?:()=>boolean};
+export type VocabularyWorkflowOptions = {scope:VocabularyWorkflowScope; legacy:VocabularyLegacyAdapter; words?:Word[]; practiceQuestionCatalogs?:readonly (readonly Question[])[]; now?:()=>Date; repository?:Awaited<ReturnType<typeof openLearningDomainRepository>>; databaseName?:string; factory?:IDBFactory; isCurrent?:()=>boolean};
 
 const PLAN_ID='vocab:plan', ACTIVE_ID='vocab:active', POLICY='three-label-conservative-v1' as const;
 const unique=(items:string[])=>[...new Set(items)];
@@ -34,6 +35,17 @@ const json=(value:unknown)=>canonicalValue(value);
 const same=(a:unknown,b:unknown)=>canonicalJson(a)===canonicalJson(b);
 const stamp=(value:unknown):value is string=>typeof value==='string'&&Number.isFinite(Date.parse(value));
 const object=(value:unknown):value is Record<string,unknown>=>!!value&&typeof value==='object'&&!Array.isArray(value);
+function admittedNewCandidate(candidate:VocabularyCandidate):boolean {
+  if(!FULL4109_CURRENT_MODE)return true;
+  const current=getCandidateLearningWord(candidate.word);
+  return !!current&&current.id===candidate.word.id&&(['word','pos','meaning','example','translation'] as const).every(key=>current[key]===candidate.word[key]);
+}
+/** One coverage membership for saved plans, draft forecasts and future groups. */
+export function vocabularyPlanMembers(bookId:WorkflowBookId,candidates:readonly VocabularyCandidate[]):Word[] {
+  const map=new Map(getWorkflowCatalog(bookId).map(word=>[word.id,word]));
+  for(const candidate of candidates)if(candidate.kind==='new'&&admittedNewCandidate(candidate))map.set(candidate.word.id,candidate.word);
+  return [...map.values()];
+}
 function wordSnapshot(input:Word):Word {
   if(!input||!/^[a-zA-Z0-9-]{1,100}$/.test(input.id)||typeof input.word!=='string'||!input.word.trim()||input.word.length>200)throw Error('词条标识或内容无效，请选择明确词条。');
   const result:Word={id:input.id,word:input.word,pos:input.pos,meaning:input.meaning,category:input.category,example:input.example,translation:input.translation,collocation:input.collocation};
@@ -78,7 +90,7 @@ function validateValue(collection:DomainCollection,id:string,value:unknown) {
   if(!object(value)||value.schemaVersion!==1)throw Error('词汇工作流版本不支持或内容损坏。');
   if(collection==='plans'){
     const row=value as unknown as VocabularyPlan;
-    if(id!==PLAN_ID||row.id!==PLAN_ID||!['scene','expressions'].includes(row.bookId)||!Number.isSafeInteger(row.revision)||row.revision<1||!Number.isSafeInteger(row.goal)||row.goal<0||!Number.isSafeInteger(row.dailyNew)||row.dailyNew<1||row.dailyNew>1000||!Array.isArray(row.weekdays)||row.weekdays.length>7||row.weekdays.some(day=>!Number.isInteger(day)||day<1||day>7)||!stamp(row.createdAt)||!stamp(row.updatedAt))throw Error('单词计划损坏。');
+    if(id!==PLAN_ID||row.id!==PLAN_ID||!isWorkflowBookId(row.bookId)||!Number.isSafeInteger(row.revision)||row.revision<1||!Number.isSafeInteger(row.goal)||row.goal<0||!Number.isSafeInteger(row.dailyNew)||row.dailyNew<1||row.dailyNew>1000||!Array.isArray(row.weekdays)||row.weekdays.length>7||row.weekdays.some(day=>!Number.isInteger(day)||day<1||day>7)||!stamp(row.createdAt)||!stamp(row.updatedAt))throw Error('单词计划损坏。');
   }else if(collection==='days'){
     const row=value as unknown as VocabularyDay;
     validWindow(row.window);if(row.window.id!==id||!Array.isArray(row.newDone)||!Array.isArray(row.reviewDone)||[...row.newDone,...row.reviewDone].some(item=>typeof item!=='string')||typeof row.goalCompleted!=='boolean')throw Error('单词日账本损坏。');
@@ -160,9 +172,7 @@ export async function createVocabularyWorkflow(options:VocabularyWorkflowOptions
   }
   async function facts(){const events=await options.legacy.readEvents();if(!Array.isArray(events)||!events.every(validVocabularyEvent))throw Error('旧词卡记录无法安全读取，工作流已停止写入。');return events;}
   function members(plan:VocabularyPlan|null,candidates:VocabularyCandidate[]) {
-    const map=new Map((plan?getWorkflowCatalog(plan.bookId):getWorkflowCatalog('scene')).map(word=>[word.id,word]));
-    for(const candidate of candidates)if(candidate.kind==='new')map.set(candidate.word.id,candidate.word);
-    return [...map.values()];
+    return vocabularyPlanMembers(plan?.bookId??'scene',candidates);
   }
   function coverageFor(plan:VocabularyPlan,candidates:VocabularyCandidate[],events:VocabularyEvent[]):VocabularyGoalCoverage {
     const selected=new Set(members(plan,candidates).map(word=>word.id)),covered=new Map<string,VocabularyReviewEvent>();
@@ -173,8 +183,11 @@ export async function createVocabularyWorkflow(options:VocabularyWorkflowOptions
     assertCurrent();const [snapshot,events]=await Promise.all([repo.exportBackup(),facts()]);
     const fromSnapshot=<T>(collection:DomainCollection)=>snapshot.records[collection].filter(row=>row.id.startsWith('vocab:')).map(row=>{validateValue(collection,row.id,row.value);return row as unknown as DomainRecord<T>;});
     const plan=fromSnapshot<VocabularyPlan>('plans').find(row=>row.id===PLAN_ID),days=fromSnapshot<VocabularyDay>('days'),candidateRows=fromSnapshot<VocabularyCandidate>('candidates'),sessions=fromSnapshot<VocabularySession>('sessions'),commands=fromSnapshot<VocabularyCommand>('commands');
-    const day=await dayFor(timezone,days),candidates=candidateRows.map(row=>row.value),memberWords=members(plan?.value??null,candidates),byId=new Map([...knownWords,...memberWords.map(word=>[word.id,word] as const),...candidates.map(row=>[row.word.id,row.word] as const)]);
+    const day=await dayFor(timezone,days),candidates=candidateRows.map(row=>row.value),memberWords=members(plan?.value??null,candidates);
     const learned=new Set(events.filter(row=>row.type==='review').map(row=>row.wordId)),eventMap=new Map(events.map(event=>[event.id,event]));
+    // Persisted old candidates remain available for factual reviews. Unlearned
+    // stale candidates must not override a current admitted new-group snapshot.
+    const byId=new Map([...knownWords,...memberWords.map(word=>[word.id,word] as const),...candidates.filter(row=>row.kind==='manual-review'||learned.has(row.word.id)||admittedNewCandidate(row)).map(row=>[row.word.id,row.word] as const)]);
     const verified=new Set(commands.filter(row=>{const event=legacyReview(eventMap.get(row.value.legacyPayload.id));return !!event&&same(event,row.value.legacyPayload);}).map(row=>row.id));
     const pointer=sessions.find(row=>row.id===ACTIVE_ID) as unknown as DomainRecord<{schemaVersion:1;sessionId:string}>|undefined;
     if(pointer)validateValue('sessions',ACTIVE_ID,pointer.value);
@@ -203,7 +216,7 @@ export async function createVocabularyWorkflow(options:VocabularyWorkflowOptions
     const reviewIds=unique([...dueIds,...manual.map(row=>row.word.id)]);
     const weekday=((new Date(day.value.window.localDate+'T12:00:00.000Z').getUTCDay()+6)%7)+1,isLearningDay=!!plan?.value.weekdays.includes(weekday);
     const newRemaining=plan&&isLearningDay?Math.max(0,Math.min(plan.value.dailyNew-newDone.length,plan.value.goal-learnedCount)):0;
-    const requestedNew=candidates.filter(row=>row.kind==='new'&&!learned.has(row.word.id)).sort((a,b)=>a.createdAt.localeCompare(b.createdAt)||a.word.id.localeCompare(b.word.id)).map(row=>row.word.id);
+    const requestedNew=candidates.filter(row=>row.kind==='new'&&!learned.has(row.word.id)&&admittedNewCandidate(row)).sort((a,b)=>a.createdAt.localeCompare(b.createdAt)||a.word.id.localeCompare(b.word.id)).map(row=>row.word.id);
     const newIds=unique([...requestedNew,...memberWords.filter(word=>!learned.has(word.id)).map(word=>word.id)]).slice(0,newRemaining);
     const coverage=day.value.goalCoverage,coveredFact=day.value.goalCompleted&&!!coverage&&coverage.coverage.every(ref=>{const event=legacyReview(eventMap.get(ref.eventId));return event?.wordId===ref.wordId&&canonicalHash(canonicalJson(event))===ref.eventHash;});
     const projection:VocabularyProjection={plan:plan?.value??null,counts:{capacity:memberWords.length,learned:learnedCount,remaining:Math.max(0,(plan?.value.goal??memberWords.length)-learnedCount),reviewDue:dueIds.length},daily:{window:day.value.window,newDone:newDone.length,reviewDone:reviewDone.length,newRemaining,reviewRemaining:reviewIds.length,newWordIds:newIds,reviewWordIds:reviewIds,goalCompleted:coveredFact||(!!plan&&learnedCount>=plan.value.goal),isLearningDay},activeSession:activeValue,candidates,learnedWordIds:[...learned],unresolvedReviewWordIds:reviewIds.filter(id=>!byId.has(id))};
@@ -219,9 +232,10 @@ export async function createVocabularyWorkflow(options:VocabularyWorkflowOptions
   }
   async function savePlan(draft:VocabularyPlanDraft,expectedRevision:number|null,timezone='UTC'):Promise<VocabularyWorkflowResult> {
     try{
+      if(!isWorkflowBookId(draft.bookId))return {status:'blocked',reason:'不支持的词书，原计划保留。'};
       const state=await load(timezone),capacity=members({...draft,id:PLAN_ID,schemaVersion:1,revision:1,createdAt:now().toISOString(),updatedAt:now().toISOString()},state.projection.candidates),learned=capacity.filter(word=>state.learned.has(word.id)).length;
       // Goal errors have priority over the independent no-study-days error.
-      if(!['scene','expressions'].includes(draft.bookId)||!Number.isSafeInteger(draft.goal)||draft.goal<learned||draft.goal>capacity.length)return {status:'blocked',reason:`目标须为 ${learned} 至 ${capacity.length} 的整数。`};
+      if(!isWorkflowBookId(draft.bookId)||!Number.isSafeInteger(draft.goal)||draft.goal<learned||draft.goal>capacity.length)return {status:'blocked',reason:`目标须为 ${learned} 至 ${capacity.length} 的整数。`};
       if(!Array.isArray(draft.weekdays)||(!draft.weekdays.length&&draft.goal>learned)||draft.weekdays.some(day=>!Number.isInteger(day)||day<1||day>7))return {status:'blocked',reason:'请至少选择一个学习日。'};
       if(!Number.isSafeInteger(draft.dailyNew)||draft.dailyNew<1||draft.dailyNew>1000)return {status:'blocked',reason:'每日新词须为 1 至 1000 的整数。'};
       if((state.plan?.revision??null)!==expectedRevision)return {status:'conflict',reason:'计划已在另一窗口更新，请重新读取。'};
@@ -233,6 +247,7 @@ export async function createVocabularyWorkflow(options:VocabularyWorkflowOptions
     }catch(error){return {status:'blocked',reason:error instanceof Error?error.message:'计划保存失败。'};}
   }
   function candidateStatus(word:Word):CandidateStatus {
+    if(!cached?.learnedWordIds.includes(word.id))word=getCandidateLearningWord(word)??word;
     if(!cached||!cached.learnedWordIds.includes(word.id))return cached?.candidates.some(candidate=>candidate.kind==='new'&&candidate.word.id===word.id)?'already-present':'available-new';
     if(cachedReviewDone.has(word.id))return 'today-reviewed';
     if(cached.candidates.some(row=>row.kind==='manual-review'&&row.dayId===cached?.daily.window.id&&row.word.id===word.id))return 'already-review';
@@ -243,7 +258,11 @@ export async function createVocabularyWorkflow(options:VocabularyWorkflowOptions
   let cachedReviewDone=new Set<string>();
   async function addCandidate(word:Word,kind:CandidateKind,commandId=vocabularyId(),timezone='UTC'):Promise<VocabularyWorkflowResult> {
     try{
-      const snapshot=wordSnapshot(word),state=await load(timezone);if(!state.plan)return {status:'blocked',reason:'请先保存单词计划。'};
+      const offered=wordSnapshot(word),state=await load(timezone);
+      const reusableWord=getCandidateLearningWord(offered);
+      if(kind==='new'&&!reusableWord)return {status:'blocked',reason:CANDIDATE_CONTENT_PENDING};
+      const snapshot=state.learned.has(offered.id)?offered:(reusableWord??offered);
+      if(!state.plan)return {status:'blocked',reason:'请先保存单词计划。'};
       const stage=state.learned.has(word.id)?'manual-review':'new';if(kind!==stage)return {status:'stage-changed',reason:'该词学习阶段已变化，请按最新按钮重新选择。'};
       const reviewed=state.commands.some(row=>state.verified.has(row.id)&&row.value.status==='applied'&&row.value.intent!=='new'&&row.value.intent!=='reinforcement'&&row.value.legacyPayload.wordId===word.id&&state.sessions.find(session=>session.id===row.value.sessionId)?.value.dayWindow.id===state.day.value.window.id);
       if(kind==='manual-review'&&reviewed)return {status:'today-reviewed'};
@@ -371,7 +390,7 @@ export async function createVocabularyWorkflow(options:VocabularyWorkflowOptions
   }
   function validateBackup(input:unknown):asserts input is WorkflowBackup {
     validateVocabularyWorkflowBackup(input,repo.scopeKey);
-    validatePracticeWorkflowBackup(input,questions as Question[],repo.scopeKey);
+    validatePracticeWorkflowBackup(input,questions as Question[],repo.scopeKey,options.practiceQuestionCatalogs);
   }
   async function restoreWorkflow(input:unknown,timezone='UTC'):Promise<VocabularyWorkflowResult> {
     try{assertCurrent();validateBackup(input);const result=await repo.restoreBackup(input);if('reason'in result)return {status:result.status,reason:result.reason};await readProjection(timezone);return {status:result.status==='committed'?'applied':'replayed',added:result.addedRecords,reason:'工作流已合并；旧词卡备份另行恢复，缺失引用不计完成。'};}catch(error){return {status:'blocked',reason:error instanceof Error?error.message:'工作流恢复失败，原数据保留。'};}

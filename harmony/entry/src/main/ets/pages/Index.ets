@@ -4,6 +4,7 @@ import { webview } from '@kit.ArkWeb';
 import { BusinessError, systemDateTime } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { NativeDownloads } from '../NativeDownloads';
+import { NativeAuthHost } from '../auth/NativeAuthHost';
 
 // This is an intercepted local origin. No server or certificate is required.
 const APP_ORIGIN: string = 'https://lantern.local';
@@ -507,6 +508,7 @@ struct Index {
   @State private backPending: boolean = false;
   private controller: webview.WebviewController = new webview.WebviewController();
   private downloads: NativeDownloads | undefined = undefined;
+  private authHost: NativeAuthHost | undefined = undefined;
   private attached: boolean = false;
   private alive: boolean = false;
   private documentGeneration: number = 0;
@@ -526,6 +528,8 @@ struct Index {
   }
 
   aboutToDisappear(): void {
+    this.authHost?.dispose();
+    this.authHost = undefined;
     this.alive = false;
     this.downloads?.invalidate();
     this.lifecycleGeneration++;
@@ -583,6 +587,7 @@ struct Index {
   }
 
   private onForegroundChanged(): void {
+    this.authHost?.invalidate();
     // @Watch runs synchronously. Even a background/foreground round trip
     // invalidates every earlier permission and Back callback.
     this.lifecycleGeneration++;
@@ -650,6 +655,7 @@ struct Index {
   }
 
   private pageBegin(): void {
+    this.authHost?.invalidate();
     this.downloads?.invalidate();
     this.documentGeneration++;
     this.pageReady = false;
@@ -950,6 +956,10 @@ struct Index {
         .mediaPlayGestureAccess(true)
         .onControllerAttached(() => {
           this.attached = true;
+          this.authHost?.dispose();
+          this.authHost = new NativeAuthHost(this.controller,
+            () => this.alive && this.foreground && this.pageReady && this.isTrustedDocument());
+          if (!this.authHost.attach()) this.authHost = undefined;
           this.downloads?.invalidate();
           this.downloads = new NativeDownloads(() => this.context(),
             () => this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
