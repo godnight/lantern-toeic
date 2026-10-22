@@ -6,7 +6,7 @@ type Row = {id:string; user_id:string; object_key:string; manifest:string; bytes
 const ID = /^[a-f0-9-]{36}$/;
 function item(row: Row) { return {...JSON.parse(row.manifest), id:row.id, state:row.state, createdAt:row.created_at}; }
 async function authorize(request: Request, mutation = false) {
-  const uid = await userId();
+  const uid = await userId(request);
   if (!uid) return privateJson({error:'请登录后打开个人题包库'}, 401);
   if ((mutation || request.headers.has('x-lantern-owner')) && request.headers.get('x-lantern-owner') !== uid) return privateJson({error:'账号已切换，请刷新后重试'}, 409);
   if (mutation && !safeMutation(request)) return privateJson({error:'请求来源不匹配'}, 403);

@@ -4,13 +4,13 @@ import {userId,safeMutation,privateJson} from '@/lib/server-auth';
 import {parseVocabularyBackup} from '@/lib/vocabulary-model';
 import {readBoundedRequestBody,RequestBodyTooLargeError} from '@/lib/request-body';
 
-export async function GET(){
- const owner=await userId();if(!owner)return privateJson({error:'请登录后同步'},401);
+export async function GET(request:Request){
+ const owner=await userId(request);if(!owner)return privateJson({error:'请登录后同步'},401);
  try{const rows=await getDb().all<{body:string}>(sql`SELECT body FROM vocabulary_events WHERE user_id = ${owner}`);return privateJson({owner,kind:'lantern-vocabulary',schemaVersion:1,events:rows.map(row=>JSON.parse(row.body))});}
  catch{return privateJson({error:'词库同步暂时不可用，本机记录会保留'},503);}
 }
 export async function POST(request:Request){
- const owner=await userId();if(!owner)return privateJson({error:'请登录后同步'},401);
+ const owner=await userId(request);if(!owner)return privateJson({error:'请登录后同步'},401);
  if(request.headers.get('x-lantern-owner')!==owner)return privateJson({error:'账号已切换，请刷新'},409);
  if(!safeMutation(request))return privateJson({error:'请求来源不匹配'},403);
  let raw:string;try{raw=await new Response(await readBoundedRequestBody(request,100000)).text();}catch(error){return error instanceof RequestBodyTooLargeError?privateJson({error:'请求过大'},413):privateJson({error:'词库请求读取失败，请稍后重试'},503);}

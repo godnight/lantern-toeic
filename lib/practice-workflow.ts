@@ -15,7 +15,7 @@ export type PracticeProjection={activeSessionId:string|null;sessions:PracticeSes
 export type PracticeResult={status:'started'|'restored'|'applied'|'replayed'|'updated'|'closed';sessionId:string;revision?:number}|{status:'pending'|'unknown';sessionId:string;reason:string}|{status:'conflict'|'blocked';reason:string;sessionId?:string};
 export type PracticeLegacy={addAttempt:(attempt:Attempt)=>boolean;addCheckin:(checkin:Checkin)=>boolean;readAttempt:(id:string)=>Attempt|undefined;readCheckin:(id:string)=>Checkin|undefined};
 export type PracticeStartOptions={unitIds:readonly string[];chainId?:string;initialSeenQids?:readonly string[]};
-export type PracticeWorkflowOptions={scope:WorkflowScope;questions:readonly Question[];legacy:PracticeLegacy;timezone:string;repository?:LearningDomainRepository;factory?:IDBFactory;name?:string;now?:()=>Date;id?:()=>string;isCurrent?:()=>boolean;seenQuestionIds?:()=>readonly string[]};
+export type PracticeWorkflowOptions={scope:WorkflowScope;questions:readonly Question[];compatibleQuestionCatalogs?:readonly (readonly Question[])[];legacy:PracticeLegacy;timezone:string;repository?:LearningDomainRepository;factory?:IDBFactory;name?:string;now?:()=>Date;id?:()=>string;isCurrent?:()=>boolean;seenQuestionIds?:()=>readonly string[]};
 const ACTIVE='practice:active';
 const same=(a:unknown,b:unknown)=>canonicalJson(a)===canonicalJson(b);
 const json=(value:unknown)=>canonicalValue(value);
@@ -42,6 +42,24 @@ export function practiceCatalogVersion(questions:readonly Question[]):string {
  return 'practice-v1:'+canonicalHash(canonicalJson(JSON.parse(JSON.stringify(questions))));
 }
 function unitId(question:Question){return question.groupId?`group:${question.part}:${question.groupId}`:`question:${question.id}`;}
+
+type RegisteredPracticeCatalog={version:string;questions:readonly Question[];byId:Map<string,Question>};
+function registerPracticeCatalogs(questions:readonly Question[],compatible:readonly (readonly Question[])[]=[]){
+ const catalogs=new Map<string,RegisteredPracticeCatalog>();
+ for(const rows of [questions,...compatible]){
+  const byId=new Map(rows.map(question=>[question.id,question]));if(byId.size!==rows.length)throw Error('practice-catalog-duplicate');
+  const version=practiceCatalogVersion(rows);catalogs.set(version,{version,questions:rows,byId});
+ }
+ return catalogs;
+}
+function parseRegisteredPracticeSession(row:DomainRecord<unknown>,scopeKey:string,primary:RegisteredPracticeCatalog,catalogs:Map<string,RegisteredPracticeCatalog>,now:()=>Date=()=>new Date()):StoredSession {
+ const version=plain(row.value)&&typeof row.value.catalogVersion==='string'?row.value.catalogVersion:'';
+ const registered=catalogs.get(version),source=registered??primary;
+ const session=parsePracticeSession(row,scopeKey,source.version,source.byId,now);
+ if(registered&&session.questionIds.some(id=>!registered.byId.has(id)))throw Error('practice-queue-invalid');
+ return session;
+}
+
 
 function parsePracticeSession(row:DomainRecord<unknown>,scopeKey:string,catalogVersion:string,questions:Map<string,Question>,now:()=>Date=()=>new Date()):StoredSession {
   const value=row.value;
@@ -75,12 +93,12 @@ function parsePracticeSession(row:DomainRecord<unknown>,scopeKey:string,catalogV
 /** Whole-backup preflight. No storage/legacy reads, writes, receipt promotion or intent execution.
  * Generic repository validation still owns the envelope and other collections; this owns every
  * practice row and its fixed IDs, including historical practice snapshots in technical receipts. */
-export function validatePracticeWorkflowBackup(input:unknown,questions:readonly Question[],expectedScopeKey?:string):void {
+export function validatePracticeWorkflowBackup(input:unknown,questions:readonly Question[],expectedScopeKey?:string,compatibleQuestionCatalogs:readonly (readonly Question[])[]=[]):void {
  if(typeof input==='string'){try{input=JSON.parse(input);}catch{throw Error('practice-backup-json');}}
  if(!plain(input)||input.kind!=='lantern-workflow'||input.schemaVersion!==1||!plain(input.records)||!Array.isArray(input.records.sessions)||!Array.isArray(input.records.commands)||!Array.isArray(input.commands))throw Error('practice-backup-schema');
  const scopeKey=workflowScopeKey(input.scope as WorkflowScope);if(expectedScopeKey!==undefined&&scopeKey!==expectedScopeKey)throw Error('scope-mismatch');
- const catalogVersion=practiceCatalogVersion(questions),catalog=new Map(questions.map(question=>[question.id,question]));
- if(catalog.size!==questions.length)throw Error('practice-catalog-duplicate');
+ const catalogVersion=practiceCatalogVersion(questions),catalogs=registerPracticeCatalogs(questions,compatibleQuestionCatalogs),primary=catalogs.get(catalogVersion)!;
+ const catalog=primary.byId,parse=(row:DomainRecord<unknown>)=>parseRegisteredPracticeSession(row,scopeKey,primary,catalogs);
  const sessions=new Map<string,StoredSession>(),commands=new Map<string,BridgeCommand>();let pointer:ActivePointer|undefined;
  const attemptIds=new Set<string>(),stepIds=new Set<string>(),commandIds=new Set<string>(),checkinIds=new Set<string>();
  const row=(raw:unknown):DomainRecord<unknown>=>{if(!plain(raw)||!validId(raw.id)||!Number.isSafeInteger(raw.revision)||Number(raw.revision)<1||!('value'in raw))throw Error('practice-backup-row');return raw as DomainRecord<unknown>;};
@@ -92,14 +110,14 @@ export function validatePracticeWorkflowBackup(input:unknown,questions:readonly 
   return value as unknown as BridgeCommand;
  }
  function validateUnits(session:StoredSession){
-  if(session.catalogVersion!==catalogVersion)return; // Preserved catalog mismatch is read-only later.
-  const queue=session.questionIds.map(id=>catalog.get(id));if(queue.some(question=>!question))throw Error('practice-queue-invalid');
+  const source=catalogs.get(session.catalogVersion);if(!source)return; // Unknown hashes remain preserved and read-only.
+  const queue=session.questionIds.map(id=>source.byId.get(id));if(queue.some(question=>!question))throw Error('practice-queue-invalid');
   const fixed=queue as Question[],units=[...new Set(fixed.map(unitId))];if(!same(units,session.unitIds)||!same(fixed.map(question=>question.id),units.flatMap(unit=>fixed.filter(question=>unitId(question)===unit).map(question=>question.id))))throw Error('practice-units-invalid');
-  for(const unit of units)if(!same(fixed.filter(question=>unitId(question)===unit).map(question=>question.id),questions.filter(question=>unitId(question)===unit).map(question=>question.id)))throw Error('practice-group-incomplete');
+  for(const unit of units)if(!same(fixed.filter(question=>unitId(question)===unit).map(question=>question.id),source.questions.filter(question=>unitId(question)===unit).map(question=>question.id)))throw Error('practice-group-incomplete');
  }
  for(const raw of input.records.sessions){const item=row(raw);if(!isPractice(item))continue;
   if(item.id===ACTIVE){if(pointer||!plain(item.value)||item.value.kind!=='practice-active'||(item.value.sessionId!==null&&!validId(item.value.sessionId)))throw Error('practice-pointer-corrupt');keys(item.value,['kind','sessionId']);pointer=item.value as ActivePointer;continue;}
-  const session=parsePracticeSession(item,scopeKey,catalogVersion,catalog);if(sessions.has(session.id))throw Error('practice-session-duplicate');validateUnits(session);sessions.set(session.id,session);
+  const session=parse(item);if(sessions.has(session.id))throw Error('practice-session-duplicate');validateUnits(session);sessions.set(session.id,session);
   for(const step of session.steps){if(attemptIds.has(step.attemptId)||checkinIds.has(step.attemptId)||stepIds.has(step.stepId)||commandIds.has(step.commandId))throw Error('practice-fixed-id-duplicate');attemptIds.add(step.attemptId);stepIds.add(step.stepId);commandIds.add(step.commandId);}
   if(checkinIds.has(session.settlement.checkinId)||commandIds.has(session.settlement.commandId)||attemptIds.has(session.settlement.checkinId))throw Error('practice-fixed-id-duplicate');checkinIds.add(session.settlement.checkinId);commandIds.add(session.settlement.commandId);
  }
@@ -123,7 +141,7 @@ export function validatePracticeWorkflowBackup(input:unknown,questions:readonly 
    const step=session.steps.find(candidate=>candidate.commandId===item.id),settlement=session.settlement;
    if(value.intent==='practice-answer'?!step||step.stepId!==value.stepId||!same(step.pendingPayload,value.legacyPayload):settlement.commandId!==item.id||settlement.checkinId!==value.stepId||!same(settlement.pendingPayload,value.legacyPayload))throw Error('practice-command-reference');return;
   }
-  const value=parsePracticeSession(item,scopeKey,catalogVersion,catalog),latest=sessions.get(value.id);if(!latest)throw Error('practice-session-reference');validateUnits(value);
+  const value=parse(item),latest=sessions.get(value.id);if(!latest)throw Error('practice-session-reference');validateUnits(value);
   const identity=(session:StoredSession)=>({id:session.id,scopeKey:session.scopeKey,catalogVersion:session.catalogVersion,chainId:session.chainId,questionIds:session.questionIds,unitIds:session.unitIds,startedAt:session.startedAt,timezone:session.timezone,steps:session.steps.map(({stepId,attemptId,commandId,initialSeen})=>({stepId,attemptId,commandId,initialSeen})),settlement:{checkinId:session.settlement.checkinId,commandId:session.settlement.commandId}});
   if(!same(identity(value),identity(latest)))throw Error('practice-session-reference');
   for(let i=0;i<value.steps.length;i++)if(value.steps[i].pendingPayload&&!same(value.steps[i].pendingPayload,latest.steps[i].pendingPayload))throw Error('practice-command-reference');
@@ -132,7 +150,7 @@ export function validatePracticeWorkflowBackup(input:unknown,questions:readonly 
  for(const raw of input.commands){if(!plain(raw)||!plain(raw.command)||!Array.isArray(raw.command.writes))throw Error('practice-backup-receipt');for(const write of raw.command.writes){const item=row(write);if(isPractice(item)){if(!plain(write)||!['sessions','commands'].includes(String(write.collection)))throw Error('practice-backup-collection');historical(item);}}}
  for(const [collection,items] of Object.entries(input.records))if(collection!=='sessions'&&collection!=='commands'&&Array.isArray(items))for(const raw of items)if(isPractice(row(raw)))throw Error('practice-backup-collection');
  const versions=new Map<string,Map<number,StoredSession>>();
- const remember=(item:DomainRecord<unknown>)=>{if(!plain(item.value)||item.value.kind!=='practice-session')return;const parsed=parsePracticeSession(item,scopeKey,catalogVersion,catalog);let history=versions.get(item.id);if(!history){history=new Map();versions.set(item.id,history);}const prior=history.get(item.revision);if(prior&&!same(prior,parsed))throw Error('practice-history-revision-conflict');history.set(item.revision,parsed);};
+ const remember=(item:DomainRecord<unknown>)=>{if(!plain(item.value)||item.value.kind!=='practice-session')return;const parsed=parse(item);let history=versions.get(item.id);if(!history){history=new Map();versions.set(item.id,history);}const prior=history.get(item.revision);if(prior&&!same(prior,parsed))throw Error('practice-history-revision-conflict');history.set(item.revision,parsed);};
  for(const raw of input.records.sessions)remember(row(raw));
  for(const raw of input.commands){const stored=raw as {command:{writes:DomainRecord<unknown>[]}};for(const write of stored.command.writes)remember(row(write));}
  const business=(session:StoredSession)=>{const {training,schemaVersion,...value}=session;return value;};
@@ -141,9 +159,9 @@ export function validatePracticeWorkflowBackup(input:unknown,questions:readonly 
   if(!/^practice-training:[a-zA-Z0-9-]{1,100}$/.test(command.commandId)||!stamp(command.occurredAt)||!plain(command.payload)||command.payload.intent!=='practice-training'||typeof command.payload.sessionId!=='string'||typeof command.payload.expectedHash!=='string'||!/^[a-f0-9]{64}$/.test(command.payload.expectedHash)||!Array.isArray(command.expected)||command.expected.length!==1||command.writes.length!==1)throw Error('practice-training-command-corrupt');
   keys(command.payload,['intent','sessionId','expectedHash','training']);const write=command.writes[0],guard=command.expected[0];
   if(write.collection!=='sessions'||write.id!==command.payload.sessionId||!plain(guard)||guard.collection!=='sessions'||guard.id!==write.id||guard.revision!==write.revision-1)throw Error('practice-training-command-reference');
-  const after=parsePracticeSession(row(write),scopeKey,catalogVersion,catalog),before=versions.get(write.id)?.get(write.revision-1);
+  const after=parse(row(write)),before=versions.get(write.id)?.get(write.revision-1);
   if(!before||after.schemaVersion!==2||!same(after.training,command.payload.training)||!same(business(before),business(after)))throw Error('practice-training-changed-learning-facts');
-  if(before.training||before.catalogVersion===catalogVersion){const queue=before.questionIds.map(id=>catalog.get(id)!).filter(Boolean),training=before.training??initialPracticeTraining(queue,before.cursor);if(trainingHash(training)!==command.payload.expectedHash)throw Error('practice-training-command-hash');}
+  if(before.training||catalogs.has(before.catalogVersion)){const source=catalogs.get(before.catalogVersion)??primary,queue=before.questionIds.map(id=>source.byId.get(id)!).filter(Boolean),training=before.training??initialPracticeTraining(queue,before.cursor);if(trainingHash(training)!==command.payload.expectedHash)throw Error('practice-training-command-hash');}
  }
 
 }
@@ -151,19 +169,24 @@ export function validatePracticeWorkflowBackup(input:unknown,questions:readonly 
 /** Workflow state coordinates existing Study facts; it never replaces their journal authority. */
 export class PracticeWorkflow {
  readonly scopeKey:string;readonly catalogVersion:string;
- private readonly questions:Map<string,Question>;private readonly now:()=>Date;private readonly id:()=>string;
+ private readonly questions:Map<string,Question>;private readonly catalogs:Map<string,RegisteredPracticeCatalog>;private readonly primaryCatalog:RegisteredPracticeCatalog;private readonly now:()=>Date;private readonly id:()=>string;
  private closed=false;
  constructor(readonly repository:LearningDomainRepository,private readonly options:PracticeWorkflowOptions){
   this.scopeKey=workflowScopeKey(options.scope);this.catalogVersion=practiceCatalogVersion(options.questions);
   if(repository.scopeKey!==this.scopeKey)throw Error('scope-mismatch');
-  this.questions=new Map(options.questions.map(question=>[question.id,question]));
-  if(this.questions.size!==options.questions.length)throw Error('practice-catalog-duplicate');
+  this.catalogs=registerPracticeCatalogs(options.questions,options.compatibleQuestionCatalogs);
+  this.primaryCatalog=this.catalogs.get(this.catalogVersion)!;this.questions=this.primaryCatalog.byId;
+  // A registered legacy version is an immutable complete subset, not an alias for changed answers.
+  for(const source of this.catalogs.values())if(source.version!==this.catalogVersion){
+   for(const question of source.questions)if(!this.questions.has(question.id)||!same(JSON.parse(JSON.stringify(question)),JSON.parse(JSON.stringify(this.questions.get(question.id)))))throw Error('practice-compatible-catalog-changed');
+   for(const unit of new Set(source.questions.map(unitId)))if(!same(source.questions.filter(question=>unitId(question)===unit).map(question=>question.id),options.questions.filter(question=>unitId(question)===unit).map(question=>question.id)))throw Error('practice-compatible-group-changed');
+  }
   this.now=options.now??(()=>new Date());this.id=options.id??createId;
   dayKey(this.now(),options.timezone);
  }
  close(){this.closed=true;this.repository.close();}
  private current(){if(this.closed||this.options.isCurrent?.()===false)throw Error('scope-changed');}
- private parse(row:DomainRecord<unknown>):StoredSession {return parsePracticeSession(row,this.scopeKey,this.catalogVersion,this.questions,this.now);}
+ private parse(row:DomainRecord<unknown>):StoredSession {return parseRegisteredPracticeSession(row,this.scopeKey,this.primaryCatalog,this.catalogs,this.now);}
  private async sessionRow(id:string){const row=await this.repository.read<unknown>('sessions',id);this.current();if(!row)throw Error('practice-session-missing');return {...row,value:this.parse(row)};}
  private async pointer(){const row=await this.repository.read<ActivePointer>('sessions',ACTIVE);this.current();if(row&&(!plain(row.value)||row.value.kind!=='practice-active'||(row.value.sessionId!==null&&!validId(row.value.sessionId))))throw Error('practice-pointer-corrupt');return row;}
  private async bridgeRow(session:StoredSession,id:string,stepId:string,intent:BridgeCommand['intent'],status:BridgeCommand['status'],payload:Attempt|Checkin){
@@ -196,8 +219,8 @@ export class PracticeWorkflow {
  }
  private async project(row:DomainRecord<StoredSession>):Promise<PracticeSession>{
   const value=row.value;let integrityError:string|null=null;
-  const queue=value.questionIds.map(id=>this.questions.get(id)).filter((question):question is Question=>!!question);
-  if(value.catalogVersion!==this.catalogVersion||queue.length!==value.questionIds.length)integrityError='catalog-mismatch';
+  const source=this.catalogs.get(value.catalogVersion),queue=value.questionIds.map(id=>(source?.byId??this.questions).get(id)).filter((question):question is Question=>!!question);
+  if(!source||queue.length!==value.questionIds.length)integrityError='catalog-mismatch';
   const steps:PracticeStep[]=value.steps.map(step=>{
    let status:PracticeStep['status']=step.status==='prepared'?'pending':step.status;
    if(step.status==='applied'){
@@ -267,8 +290,8 @@ export class PracticeWorkflow {
    await this.reconcile(row);
    const currentProjection=await this.project(row);if(currentProjection.integrityError)throw Error(currentProjection.integrityError);
    if(session.status!=='active'||session.cursor!==expectedCursor)return {status:'conflict',reason:'practice-cursor-changed',sessionId:id};
-   if(session.catalogVersion!==this.catalogVersion)throw Error('catalog-mismatch');
-   const question=this.questions.get(session.questionIds[expectedCursor]);if(!question)throw Error('catalog-mismatch');
+   const source=this.catalogs.get(session.catalogVersion);if(!source)throw Error('catalog-mismatch');
+   const question=source.byId.get(session.questionIds[expectedCursor]);if(!question)throw Error('catalog-mismatch');
    if(!Number.isInteger(choice)||choice<0||choice>=question.options.length||choice>3||!Number.isInteger(seconds)||seconds<0||seconds>7200)throw Error('practice-answer-invalid');
    let step=session.steps[expectedCursor];
    if(step.status==='unanswered'){
@@ -303,7 +326,7 @@ export class PracticeWorkflow {
    if(session.cursor!==expectedCursor)return session.cursor===expectedCursor+1?{status:'replayed',sessionId:id}:{status:'conflict',reason:'practice-cursor-changed',sessionId:id};
    if(session.status!=='active')return {status:'conflict',reason:'practice-not-active',sessionId:id};
    if(projection.steps[expectedCursor]?.status!=='applied')return {status:'blocked',reason:'practice-answer-unconfirmed',sessionId:id};
-   const next=structuredClone(session);next.cursor++;if(next.training){next.training.viewIndex=next.cursor;const q=this.questions.get(next.questionIds[next.cursor]);const item=q&&next.training.materials.find(item=>item.unitId===unitId(q)&&item.materialHash===materialHash(q));if(item&&next.steps[next.cursor]?.status!=='applied')item.step='answer';}if(next.cursor===next.questionIds.length)next.status='completed';
+   const next=structuredClone(session);next.cursor++;if(next.training){next.training.viewIndex=next.cursor;const q=this.catalogs.get(next.catalogVersion)?.byId.get(next.questionIds[next.cursor]);const item=q&&next.training.materials.find(item=>item.unitId===unitId(q)&&item.materialHash===materialHash(q));if(item&&next.steps[next.cursor]?.status!=='applied')item.step='answer';}if(next.cursor===next.questionIds.length)next.status='completed';
    const pointer=await this.pointer();if(pointer?.value.sessionId!==id)throw Error('practice-pointer-changed');
    const rows:{collection:'sessions';row:DomainRecord<unknown>|undefined;id:string;value:unknown}[]=[{collection:'sessions',row,id,value:next}];
    if(next.status==='completed')rows.push({collection:'sessions',row:pointer,id:ACTIVE,value:{kind:'practice-active',sessionId:null}});

@@ -1,6 +1,6 @@
 'use client';
 
-import {Check, CircleAlert} from 'lucide-react';
+import {Check} from 'lucide-react';
 import type {Theme} from '@/lib/study-model';
 import {UI_THEME_BY_PERSISTED, UI_THEME_META, UI_THEME_ORDER} from '@/lib/ui-theme';
 
@@ -38,7 +38,7 @@ export function ThemeScene({theme, scene = 'blue-lake', caption, className = ''}
       width={widths[0]} height={lake ? 252 : 315}
       alt={lake ? '奎若与小骑士坐在蓝湖边，完整洞顶、瀑布与湖面倒影构图' : '小骑士在德特茅斯长椅与暖灯下休憩的完整场景'}
       loading="lazy" decoding="async"/>
-    <figcaption>{label}<span>既有 AI 同人场景 · 完整构图</span></figcaption>
+    <figcaption>{label}</figcaption>
   </figure>;
 }
 
@@ -63,41 +63,21 @@ export type ThemeChooserProps = {
   disabled?: boolean;
 };
 
-/** One real button per theme. Every preview action/status is static and hidden to AT. */
-export function ThemeChooser({theme, onChange, disabled = false}: ThemeChooserProps) {
-  return <div className="ui-theme-chooser" role="group" aria-label="界面主题">
-    {UI_THEME_ORDER.map(candidate => {
-      const meta = UI_THEME_META[candidate];
-      const selected = theme === candidate;
-      return <button key={candidate} type="button" className="ui-theme-card"
+/** One real action per row; selected state comes from the persisted profile theme. */
+export function ThemeChooser({theme,onChange,disabled=false}:ThemeChooserProps){
+  const descriptions:Record<Theme,string>={paper:'奶油 · 嫩绿 · 柔桃',crystal:'炭灰 · 薄荷',hollow:'蓝湖 · 雨城',silk:'绛红 · 丝线'};
+  return <div className="ui-theme-chooser v040-theme-list" role="group" aria-label="界面主题">
+    {UI_THEME_ORDER.map(candidate=>{
+      const selected=theme===candidate;
+      return <button key={candidate} type="button" className="ui-theme-card v040-theme-option"
         aria-pressed={selected} disabled={disabled}
-        aria-label={`${meta.name}，${meta.description}${selected ? '，正在使用' : ''}`}
-        onClick={() => {if (!selected) onChange(candidate);}}>
-        <span className="ui-theme-preview" data-ui-theme={UI_THEME_BY_PERSISTED[candidate]} aria-hidden="true">
-          <span className="ui-theme-preview-title"><strong>词卡自测</strong>
-            {meta.game ? <ThemeMotif theme={candidate}/> : <span className="ui-theme-plain-mark">Aa</span>}
-          </span>
-          <span className="ui-theme-preview-description">先回忆词义，再揭示释义。</span>
-          <span className="ui-theme-preview-word">
-            <span><strong lang="en">schedule</strong><span className="ui-theme-preview-meaning">日程表；安排</span></span>
-            <span className="ui-theme-preview-selected"><Check size={14}/>选中</span>
-          </span>
-          <span className="ui-theme-preview-action">查看释义</span>
-          <span className="ui-theme-preview-states">
-            <span className="ui-theme-preview-states-label">组件状态示例</span>
-            <span className="ui-theme-preview-success"><Check size={14}/>反馈已保存</span>
-            <span className="ui-theme-preview-failure">
-              <strong><CircleAlert size={14}/>反馈未保存</strong>
-              <span>选择保留，可重试。</span>
-              <span className="ui-theme-preview-retry">重试保存</span>
-            </span>
-          </span>
+        aria-label={`${UI_THEME_META[candidate].name}，${descriptions[candidate]}${selected?'，正在使用':''}`}
+        onClick={()=>{if(!selected)onChange(candidate);}}>
+        <span className={`v040-theme-swatch v040-swatch-${UI_THEME_BY_PERSISTED[candidate]}`} aria-hidden="true">
+          {candidate==='hollow'&&<img src="/phase2-theme/blue-lake-hd-1x.webp" width={448} height={252} alt="" decoding="async"/>}
         </span>
-        <span className="ui-theme-caption">
-          <span><span className="ui-theme-caption-name">{meta.name}</span>
-            <span className="ui-theme-caption-description">{meta.description}</span></span>
-          {selected && <span className="ui-theme-current"><Check size={15} aria-hidden="true"/>正在使用</span>}
-        </span>
+        <span className="v040-theme-copy"><strong>{UI_THEME_META[candidate].name}</strong><small>{descriptions[candidate]}</small></span>
+        <span className="v040-choice-mark" aria-hidden="true"><Check size={14}/></span>
       </button>;
     })}
   </div>;

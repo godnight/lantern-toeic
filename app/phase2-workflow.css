@@ -10,3 +10,8 @@
 .practice-config{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-block:1rem}
 .practice-lookup-dialog .vocab-redesign{min-height:0}
 @media(max-width:440px){.practice-config{grid-template-columns:1fr}.practice-continuation .button{flex:1 1 40%}}
+
+/* Real decoded audio positions; layout keeps the slider usable on narrow screens. */
+.audio-player:has(.audio-seek){flex-wrap:wrap;}
+.audio-seek{display:flex;flex-direction:column;gap:4px;min-width:120px;flex:1 1 160px;}
+.audio-seek input{width:100%;min-height:44px;accent-color:var(--primary);}

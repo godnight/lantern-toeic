@@ -1,7 +1,7 @@
 import {canonicalJson,canonicalValue,canonicalHash,type JsonValue} from './domain-command';
 export type {JsonValue} from './domain-command';
 
-export type WorkflowScope={kind:'web-owner';ownerId:string}|{kind:'web-local';partition:'existing-device'}|{kind:'harmony-device';partition:'existing-device'};
+export type WorkflowScope={kind:'web-owner'|'harmony-owner';ownerId:string}|{kind:'web-local';partition:'existing-device'}|{kind:'harmony-device';partition:'existing-device'};
 export const DOMAIN_COLLECTIONS=['plans','days','candidates','sessions','commands','events','outbox'] as const;
 export type DomainCollection=typeof DOMAIN_COLLECTIONS[number];
 export type DomainProvenance='local'|'restored-unverified';
@@ -33,7 +33,7 @@ export class DomainRepositoryError extends Error {
 }
 export function workflowScopeKey(input:WorkflowScope):string {
  if(!object(input))throw new DomainRepositoryError('scope');
- if(input.kind==='web-owner'){
+ if(input.kind==='web-owner'||input.kind==='harmony-owner'){
   strictKeys(input,['kind','ownerId']);if(!validId(input.ownerId)||!input.ownerId.trim())throw new DomainRepositoryError('scope');
   return canonicalJson({kind:input.kind,ownerId:input.ownerId});
  }
