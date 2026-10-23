@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "buildId": "v041-h5-code-probe-a5bfac7a883e",
-  "sourceInputsSha256": "a5bfac7a883e9a910feb15b79ee2819251abb79c6b690dac0e0f37dc79b6775c",
-  "inputCount": 13827,
+  "buildId": "v041-h5-integrated-probe-9be44740c026",
+  "sourceInputsSha256": "9be44740c0264688e5a008629f964d1bf59b4c1358c51b913f9320c314620f3b",
+  "inputCount": 13943,
   "excludedSelf": "public/build-identity.json",
   "versionName": "0.4.1",
   "versionCode": 20057

@@ -235,6 +235,18 @@ async function screenshot(name) {
   const file = path.join(OUT, name + '.png'); await page.screenshot({path:file,fullPage:true,animations:'disabled'}); report.screenshots.push(file);
 }
 async function layout(stage) {
+  if (stage==='reading' || stage==='results') {
+    const disclosure=page.locator('.mock-answer-card details'), summary=disclosure.locator(':scope > summary');
+    const initiallyOpen=await disclosure.evaluate(element=>element.open);
+    const label=async()=> (await summary.innerText()).trim();
+    assert.equal(await label(),initiallyOpen?'收起题号导航':'展开题号导航');
+    await summary.click();
+    assert.equal(await disclosure.evaluate(element=>element.open),!initiallyOpen);
+    assert.equal(await label(),initiallyOpen?'展开题号导航':'收起题号导航');
+    await summary.click();
+    assert.equal(await disclosure.evaluate(element=>element.open),initiallyOpen);
+    assert.equal(await label(),initiallyOpen?'收起题号导航':'展开题号导航');
+  }
   const rows=[];
   for (const width of [320,390,768]) {
     await page.setViewportSize({width,height:844});
@@ -242,7 +254,20 @@ async function layout(stage) {
       overflowing:[...document.querySelectorAll('main,section,article,aside,button,audio,table')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0 && (r.left < -1 || r.right > innerWidth+1);}).slice(0,10).map(el=>({tag:el.tagName,cls:el.className,right:el.getBoundingClientRect().right}))}));
     assert.ok(dimensions.documentWidth <= dimensions.clientWidth + 1, `${stage} horizontal overflow at ${width}: ${JSON.stringify(dimensions)}`);
     assert.ok(dimensions.bodyWidth <= dimensions.clientWidth + 1, `${stage} body overflow at ${width}: ${JSON.stringify(dimensions)}`);
-    rows.push({width,...dimensions}); await screenshot(`${stage}-${width}`);
+    let resultTable;
+    if (stage==='results') {
+      resultTable=await page.locator('.mock-results table').evaluate(table=>{
+        const wrap=table.parentElement, bounds=wrap.getBoundingClientRect();
+        return {scrollWidth:table.scrollWidth,availableWidth:wrap.clientWidth,
+          headers:[...table.querySelectorAll('thead th')].map(cell=>({text:cell.innerText,scrollWidth:cell.scrollWidth,clientWidth:cell.clientWidth,left:cell.getBoundingClientRect().left,right:cell.getBoundingClientRect().right})),
+          wrapLeft:bounds.left,wrapRight:bounds.right};
+      });
+      assert.equal(resultTable.headers.length,5);
+      assert.match(resultTable.headers[4].text,/驻留用时/);
+      assert.ok(resultTable.scrollWidth<=resultTable.availableWidth+1,`Complete result table must fit at ${width}: ${JSON.stringify(resultTable)}`);
+      assert.ok(resultTable.headers.every(cell=>cell.left>=resultTable.wrapLeft-1 && cell.right<=resultTable.wrapRight+1 && cell.scrollWidth<=cell.clientWidth+1),`Every result header must be visible at ${width}: ${JSON.stringify(resultTable)}`);
+    }
+    rows.push({width,...dimensions,...(resultTable?{resultTable}:{})}); await screenshot(`${stage}-${width}`);
   }
   await page.setViewportSize({width:390,height:844}); return rows;
 }

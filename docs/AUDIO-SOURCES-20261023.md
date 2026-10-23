@@ -16,3 +16,8 @@
 `mobile/offline-audio/` 另有 1,015 个历史 MP3，由 Windows System.Speech／Microsoft Zira Desktop（en-US）本地合成；其生成方式、原文与媒体哈希继续以该目录原有 `README.md` 和 `manifest.json` 为准。保留其历史说明与语音供应方权利声明；既有审计未找到该批次单独的公开再分发依据。本次核验范围未发现私人用户录音来源证据，也未读取私人录音。
 
 朗读文本与音频生成来源分别记录：项目原创内容沿用 `LICENSE-CONTENT.md`；词典及词表沿用 `public/dictionaries/NOTICE.txt`、`THIRD-PARTY-CONTENT-NOTICE.md` 和 `docs/CONTENT_SOURCES.md` 中的归属说明。词典文字来源不表示上游提供了录音；本批生成音频也不应标为 ETS／VOA 官方录音。两个模型卡均声明 Apache-2.0；这项声明描述模型许可，生成音频与朗读文本仍需保留各自的来源和权利说明。既有 MIT、CC BY 及第三方 NOTICE 的范围保持原样。本说明补充来源事实，不作音质验收或权利保证。
+
+
+后续准入补充（同日）：实际准入 pack 为 v040-natural-1d86187246c3，替代未准入候选 v040-natural-65600beab942；本批仍为 57 个完整词对、114 个 MP3，不含未配对的 considerate。114 个 MP3 字节与原 r3 已验记录相同，原始分段来源保留。Kokoro-82M 固定版本 f3ff3571791e39611d31c381e3a41a3af07b4987：am_michael 56 段、af_heart 25 段；Qwen3-TTS-12Hz-1.7B-CustomVoice 固定版本 0c0e3051f131929182e2c023b9537f8b1c68adfe：Ryan 32 段、Aiden 1 段。全部 114 段保留 adapter 身份。以新 pack 的 manifest/admission JSON 和实际准入回读 pin 追溯；新增 174 条听力交付仍单独追加。
+
+本项准入后，源码中的自然音频共有19个现行分包，另保留上述四个历史目录；实点12,332个MP3和38个JSON。57是媒体已准入的来源词对数；实际词库新增53个可见正文，另4项保留原作者词卡正文和既有音频分派，不以内部来源计数冒充新增可见词卡。人工听音和最终设备验收分别记录。

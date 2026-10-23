@@ -98,7 +98,12 @@ test('actual UI catalog retains all original 295 IDs, definitions and example fi
 test('567 authored additions do not overlap legacy IDs/headwords and have valid scene glosses', () => {
   assert.equal(expansion.length,567);
   assert.equal(catalog.legacyLearningWords.length,862);
-  assert.equal(catalog.learningWords.length,4203,'Frozen admitted teaching words extend the legacy862 instead of replacing them');
+  const admittedCatalog=require('./helpers/actual-source-loader.cjs').createSourceLoader({root}).load('lib/vocabulary-content-catalog.ts');
+  assert.equal(admittedCatalog.FULL4109_CURRENT_WORDS.length,4040,'Only the actual committed current teaching admission supplies this catalog');
+  const legacyIds=new Set(catalog.legacyLearningWords.map(word=>word.id)),visibleAdditions=admittedCatalog.B02_PRIVATE_WORDS.filter(word=>!legacyIds.has(word.id));
+  assert.equal(visibleAdditions.length,3394,'The57 source additions yield53 new visible IDs while4 legacy authored snapshots keep precedence');
+  assert.equal(catalog.learningWords.length,862+3394,'Admitted visible teaching words extend the original legacy862');
+  assert.equal(JSON.stringify(catalog.learningWords.slice(862)),JSON.stringify(visibleAdditions),'Every added visible body is the actual current Library projection');
   assert.equal(JSON.stringify(catalog.learningWords.slice(0,862)),JSON.stringify(catalog.legacyLearningWords),'Every legacy ID/body remains an exact prefix');
   const ids=new Set(),heads=new Set();
   for (const word of catalog.learningWords) {

@@ -10,6 +10,7 @@ export type NaturalAudioPackDescriptor={
 export type NaturalAudioRouteTuple=[packOrdinal:number,selectorSha256:string,textSha256:string,encodedSha256:string,cacheKey:string,contextHash:string,pairKey:string,legacySourceId?:string];
 export type NaturalAudioCatalogIndex={schemaVersion:1;catalogId:string;basePackId:string;packs:NaturalAudioPackDescriptor[];
   routes:Record<string,NaturalAudioRouteTuple[]>;bindings:Record<string,number>;wordExceptions:CompiledWordAudioException[];blockedAssetSha256?:string[];blockedContexts?:[string,string][]};
+const NATURAL_AUDIO_CATALOG_MAX_BYTES=5*1024*1024;
 const sha=/^[a-f0-9]{64}$/;
 const frozen=<T>(value:T):T=>{if(value&&typeof value==='object'){Object.values(value).forEach(frozen);Object.freeze(value);}return value;};
 const validPath=(value:string)=>/^\/audio\/natural\/[a-z0-9-]+\/[a-zA-Z0-9._-]+\.json$/.test(value)&&!value.includes('..');
@@ -25,7 +26,7 @@ export function naturalAudioSelectorDigest(textSha256:string,assetKey:string,mat
 function readCompiled():{index:Readonly<NaturalAudioCatalogIndex>|null;error:string|null}{
   try{
     const source=JSON.stringify(compiled);
-    if(new TextEncoder().encode(source).byteLength>4*1024*1024)throw Error('自然音频定位索引超过4MiB。');
+    if(new TextEncoder().encode(source).byteLength>NATURAL_AUDIO_CATALOG_MAX_BYTES)throw Error('自然音频定位索引超过5MiB。');
     const value=JSON.parse(source) as NaturalAudioCatalogIndex;
     if(value.schemaVersion!==1||!value.catalogId||!Array.isArray(value.packs)||value.packs.length>64||!value.packs.length||!value.routes||!value.bindings||!Array.isArray(value.wordExceptions))throw Error('自然音频定位索引格式不正确。');
     const seen=new Set<string>();

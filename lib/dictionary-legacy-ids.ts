@@ -9,7 +9,7 @@ for(const [legacy,canonical] of Object.entries(index.aliases)){
  if(!/^dict-[a-f0-9]{20}$/.test(legacy)||!/^v041-word-[a-f0-9]{20}$/.test(canonical)||legacy.slice(5)!==canonical.slice(10)||canonicalIds.has(canonical))throw Error('词典历史标识索引冲突。');
  aliases.set(legacy,canonical);canonicalIds.add(canonical);
 }
-if(aliases.size!==1346)throw Error('词典历史标识索引不完整。');
+if(aliases.size!==1371)throw Error('词典历史标识索引不完整。');
 export const DICTIONARY_LEGACY_ALIAS_COUNT=aliases.size;
 export function canonicalVocabularyWordId(wordId:string):string{return aliases.get(wordId)??wordId;}
 
