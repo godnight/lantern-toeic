@@ -199,7 +199,34 @@ function navigation(){return page.getByRole('navigation',{name:page.viewportSize
 async function navigate(label){const button=navigation().getByRole('button',{name:label,exact:true});await button.click();await eventually(()=>button.getAttribute('aria-current').then(value=>value==='page'),'Current navigation is not '+label);await page.locator('#workspace-main').waitFor({state:'visible'});}
 async function layout(label){const dimensions=await page.evaluate(()=>({width:innerWidth,document:document.documentElement.scrollWidth,body:document.body.scrollWidth}));assert.ok(dimensions.document<=dimensions.width+1,label+' document overflow '+JSON.stringify(dimensions));assert.ok(dimensions.body<=dimensions.width+1,label+' body overflow '+JSON.stringify(dimensions));return dimensions;}
 async function accessibleControl(locator){await locator.scrollIntoViewIfNeeded();const result=await locator.evaluate(el=>{const r=el.getBoundingClientRect();const top=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:innerWidth,height:innerHeight,hit:top===el||el.contains(top)};});assert.ok(result.left>=-1&&result.right<=result.width+1&&result.top>=-1&&result.bottom<=result.height+1,'Control outside viewport '+JSON.stringify(result));assert.equal(result.hit,true,'Control covered '+JSON.stringify(result));return result;}
-async function facts(){return page.evaluate(()=>{const rows={};for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);let value;try{value=JSON.parse(localStorage.getItem(key));}catch{continue;}if(key.startsWith('lantern-v1-')){const data=value.data;if(data){rows[key]={...data,profile:{...data.profile,theme:undefined}};}}if(key.startsWith('lantern-vocab-v1:'))rows[key]=value;}return rows;});}
+function collectLearningFacts(storage = globalThis.localStorage) {
+ const rows = {};
+ const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+ const exactKeys = (value, keys) => record(value) && Object.keys(value).sort().join(',') === keys;
+ for (let i = 0; i < storage.length; i++) {
+  const key = storage.key(i);
+  let value;
+  try { value = JSON.parse(storage.getItem(key)); } catch { continue; }
+  if (key.startsWith('lantern-v1-')) {
+   if (key.includes(':op:')) {
+    // StudyOperation and enqueue/saveTheme persist one owner-scoped operation.
+    // Exempt only the complete theme-only schema; retain every other journal row.
+    const themeOnly = exactKeys(value, 'data,id,owner,type') && value.type === 'theme'
+     && typeof value.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value.id)
+     && (value.owner === null || (typeof value.owner === 'string' && value.owner.length > 0))
+     && key === 'lantern-v1-' + (value.owner === null ? 'device' : value.owner) + ':op:' + value.id
+     && exactKeys(value.data, 'theme') && ['paper', 'crystal', 'hollow', 'silk'].includes(value.data.theme);
+    if (!themeOnly) rows[key] = value;
+    continue;
+   }
+   const data = value?.data;
+   if (data) rows[key] = {...data, profile: {...data.profile, theme: undefined}};
+  }
+  if (key.startsWith('lantern-vocab-v1:')) rows[key] = value;
+ }
+ return rows;
+}
+async function facts(){return page.evaluate(collectLearningFacts);}
 async function imageInfo(locator){await locator.scrollIntoViewIfNeeded();await eventually(()=>locator.evaluate(img=>img.complete&&img.naturalWidth>0),'Image failed to decode');return locator.evaluate(async img=>{const r=img.getBoundingClientRect();const bitmap=await createImageBitmap(await(await fetch(img.currentSrc)).blob());const pixelWidth=bitmap.width;bitmap.close();return{pixelWidth,path:new URL(img.currentSrc).pathname,width:img.naturalWidth,height:img.naturalHeight,displayWidth:r.width,displayHeight:r.height,fit:getComputedStyle(img).objectFit};});}
 async function artwork(id){await navigate('今日');const brand=page.locator(page.viewportSize().width<1024?'.workspace-mobile-brand':'.workspace-brand');await accessibleControl(brand);assert.equal(await brand.locator('svg').count(),1);assert.equal(await brand.locator('img').count(),0,'Current brand is the shared Flame mark');const scenes=page.locator('.phase2-scene-window');if(id==='hollow'||id==='silk'){assert.equal(await scenes.count(),2);const images=[];for(const scene of await scenes.all()){const image=await imageInfo(scene.locator('img'));assert.match(image.path,new RegExp('^/design-r1/'+id+'-'));assert.equal(image.width,1672);assert.equal(image.height,941);images.push(image);}assert.match(images[0].path,new RegExp('/'+id+'-home\\.png$'));assert.match(images[1].path,new RegExp('/'+id+'-'+(id==='hollow'?'lake':'calm')+'\\.png$'));assert.equal(images[1].fit,'contain','Quiet scene keeps the complete image');return{images};}assert.equal(await scenes.count(),0,'Day and night must not inherit game scenes');assert.equal(await page.locator('[data-scene-source]').count(),0);return{gameSceneAbsent:true};}
 async function choose(id,method){await page.getByRole('button',{name:'打开个人信息与设置',exact:true}).click();await page.getByRole('button',{name:/^外观主题/}).click();const group=page.getByRole('group',{name:'界面主题',exact:true});await group.waitFor();assert.equal(await group.getByRole('button').count(),4);const button=group.locator('[data-theme-choice="'+id+'"]');await accessibleControl(button);if(method==='preview')await button.locator('.v041-theme-thumb').click();else if(method==='caption')await button.locator('.v041-theme-option-name').click();else{await button.focus();await page.keyboard.press(method==='space'?'Space':'Enter');}await eventually(()=>button.getAttribute('aria-pressed').then(value=>value==='true'),'Theme selection did not become pressed');assert.equal(await group.locator('button[aria-pressed="true"]').count(),1);await rootTheme(id);await accessibleControl(button);return layout('theme-picker-'+id);}
