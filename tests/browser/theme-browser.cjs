@@ -227,6 +227,45 @@ function collectLearningFacts(storage = globalThis.localStorage) {
  return rows;
 }
 async function facts(){return page.evaluate(collectLearningFacts);}
+async function sceneScreenshotReady(id) {
+ const expected = id === 'hollow' ? ['/design-r1/hollow-home.png', '/design-r1/hollow-lake.png']
+  : id === 'silk' ? ['/design-r1/silk-home.png', '/design-r1/silk-calm.png'] : [];
+ const scenes = page.locator('.phase2-scene-window');
+ await eventually(async () => await scenes.count() === expected.length && await scenes.locator('img').count() === expected.length,
+  'Final mounted scene images did not become available before screenshot');
+ const images = await scenes.locator('img').evaluateAll(async elements => {
+  let timer;
+  try {
+   await Promise.race([
+    (async () => {
+     await Promise.all(elements.map(img => img.decode()));
+     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    })(),
+    new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Final scene decode/paint readiness exceeded 15 seconds')), 15000); }),
+   ]);
+  } finally { clearTimeout(timer); }
+  return elements.map(img => {
+   const rect = img.getBoundingClientRect();
+   let visible = true;
+   for (let node = img; node; node = node.parentElement) {
+    const style = getComputedStyle(node);
+    if (style.display === 'none' || ['hidden', 'collapse'].includes(style.visibility) || Number(style.opacity) === 0) visible = false;
+   }
+   return {path: new URL(img.currentSrc).pathname, connected: img.isConnected, complete: img.complete,
+    naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight, visible,
+    x: rect.x, y: rect.y, width: rect.width, height: rect.height,
+    sceneStatus: img.closest('.phase2-scene-window')?.getAttribute('data-scene-status') ?? null};
+  });
+ });
+ assert.deepEqual(images.map(img => img.path), expected, 'Screenshot must use the current exact scene images');
+ for (const img of images) {
+  assert.equal(img.connected && img.complete && img.visible, true, 'Screenshot scene image must remain mounted, loaded and visible');
+  assert.equal(img.naturalWidth, 1672); assert.equal(img.naturalHeight, 941);
+  assert.ok(img.width > 0 && img.height > 0, 'Screenshot scene image must occupy visible layout space');
+  assert.notEqual(img.sceneStatus, 'unavailable', 'Screenshot scene image must not be a failure placeholder');
+ }
+ return {images, afterDecodeAnimationFrames: 2};
+}
 async function imageInfo(locator){await locator.scrollIntoViewIfNeeded();await eventually(()=>locator.evaluate(img=>img.complete&&img.naturalWidth>0),'Image failed to decode');return locator.evaluate(async img=>{const r=img.getBoundingClientRect();const bitmap=await createImageBitmap(await(await fetch(img.currentSrc)).blob());const pixelWidth=bitmap.width;bitmap.close();return{pixelWidth,path:new URL(img.currentSrc).pathname,width:img.naturalWidth,height:img.naturalHeight,displayWidth:r.width,displayHeight:r.height,fit:getComputedStyle(img).objectFit};});}
 async function artwork(id){await navigate('今日');const brand=page.locator(page.viewportSize().width<1024?'.workspace-mobile-brand':'.workspace-brand');await accessibleControl(brand);assert.equal(await brand.locator('svg').count(),1);assert.equal(await brand.locator('img').count(),0,'Current brand is the shared Flame mark');const scenes=page.locator('.phase2-scene-window');if(id==='hollow'||id==='silk'){assert.equal(await scenes.count(),2);const images=[];for(const scene of await scenes.all()){const image=await imageInfo(scene.locator('img'));assert.match(image.path,new RegExp('^/design-r1/'+id+'-'));assert.equal(image.width,1672);assert.equal(image.height,941);images.push(image);}assert.match(images[0].path,new RegExp('/'+id+'-home\\.png$'));assert.match(images[1].path,new RegExp('/'+id+'-'+(id==='hollow'?'lake':'calm')+'\\.png$'));assert.equal(images[1].fit,'contain','Quiet scene keeps the complete image');return{images};}assert.equal(await scenes.count(),0,'Day and night must not inherit game scenes');assert.equal(await page.locator('[data-scene-source]').count(),0);return{gameSceneAbsent:true};}
 async function choose(id,method){await page.getByRole('button',{name:'打开个人信息与设置',exact:true}).click();await page.getByRole('button',{name:/^外观主题/}).click();const group=page.getByRole('group',{name:'界面主题',exact:true});await group.waitFor();assert.equal(await group.getByRole('button').count(),4);const button=group.locator('[data-theme-choice="'+id+'"]');await accessibleControl(button);if(method==='preview')await button.locator('.v041-theme-thumb').click();else if(method==='caption')await button.locator('.v041-theme-option-name').click();else{await button.focus();await page.keyboard.press(method==='space'?'Space':'Enter');}await eventually(()=>button.getAttribute('aria-pressed').then(value=>value==='true'),'Theme selection did not become pressed');assert.equal(await group.locator('button[aria-pressed="true"]').count(),1);await rootTheme(id);await accessibleControl(button);return layout('theme-picker-'+id);}
@@ -238,7 +277,7 @@ async function colors(id,width){const sample=await page.locator('body').evaluate
   for(const [index,id] of PALETTES.entries()){
    const before=await facts();
    await step(`${width}px: ${id} selection via ${['preview','caption','enter','space'][index]} persists without changing learning facts`,async()=>{await choose(id,['preview','caption','enter','space'][index]);const sample=await colors(id,width);await page.reload({waitUntil:'networkidle'});await ready();await rootTheme(id);assert.deepEqual(await colors(id,width),sample);assert.deepEqual(await facts(),before,'Theme switch changed learning facts or goals');return{sample,layout:await layout('reloaded-'+id)};});
-   await step(`${width}px: ${id} artwork and all six route layouts`,async()=>{const art=await artwork(id);const layouts=[];for(const label of NAV){await navigate(label);await accessibleControl(navigation().getByRole('button',{name:label,exact:true}));await rootTheme(id);layouts.push({label,...await layout(id+'-'+label)});}await navigate('今日');await screenshot(`${id}-${width}`);assert.deepEqual(await facts(),before);return{art,layouts};});
+   await step(`${width}px: ${id} artwork and all six route layouts`,async()=>{const art=await artwork(id);const layouts=[];for(const label of NAV){await navigate(label);await accessibleControl(navigation().getByRole('button',{name:label,exact:true}));await rootTheme(id);layouts.push({label,...await layout(id+'-'+label)});}await navigate('今日');const screenshotArt=await sceneScreenshotReady(id);await screenshot(`${id}-${width}`);assert.deepEqual(await facts(),before);return{art,layouts,screenshotArt};});
    await step(`${width}px: ${id} real practice dialog remains readable and closes without writing an answer`,async()=>{await navigate('练习');await page.getByRole('button',{name:/^Part 5 ·/}).click();const dialog=page.getByRole('dialog').filter({has:page.locator('.practice-footer')});await dialog.waitFor({state:'visible'});assert.ok(await dialog.getByRole('radio').count()>=3);const control=dialog.getByRole('button',{name:'确认答案',exact:true});assert.equal(await control.isDisabled(),true);await accessibleControl(control);const dimensions=await layout('practice-'+id);await screenshot(`practice-${id}-${width}`);await page.keyboard.press('Escape');const confirmation=page.getByRole('dialog',{name:'先结束这组练习？',exact:true});await confirmation.waitFor({state:'visible'});await confirmation.getByRole('button',{name:'保存并返回',exact:true}).click();await eventually(()=>page.getByRole('dialog').count().then(n=>n===0),'Practice did not close');assert.deepEqual(await facts(),before);return dimensions;});
   }
   await step(`${width}px: four distinct rendered palettes and reduced motion respected`,async()=>{const samples=paletteSamples.filter(x=>x.width===width);assert.equal(new Set(samples.map(x=>x.background)).size,4);assert.equal(new Set(samples.map(x=>x.foreground)).size,4);await page.emulateMedia({reducedMotion:'reduce'});const running=await page.evaluate(()=>document.getAnimations().filter(a=>a.playState==='running'&&Number(a.effect?.getComputedTiming().duration)>1).map(a=>({name:a.animationName,duration:a.effect.getComputedTiming().duration})));assert.deepEqual(running,[],'Reduced-motion preference left a long running animation');await page.reload({waitUntil:'networkidle'});await ready();await rootTheme('silk');await page.emulateMedia({reducedMotion:'no-preference'});return{palettes:4,reducedMotion:true};});
