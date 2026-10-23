@@ -23,6 +23,8 @@ jobs:
           cache: npm
       - name: Initialize dependencies and verify core behavior (shared with Codex)
         run: bash scripts/codex-setup.sh
+      - name: Verify hosted media proxy and deployment projection
+        run: node --test tests/web-natural-media-proxy.test.cjs tests/web-hosted-prune.test.cjs
       - name: Verify bounded build cleanup
         run: node --test tests/build-timeout.test.cjs
       - run: npm run build
