@@ -22,8 +22,8 @@ export type UiThemeDefinition = Readonly<{
 export const UI_THEME_META = {
   paper: {name: '日间', description: '奶油 · 嫩绿 · 柔桃', game: false, colorScheme: 'light'},
   crystal: {name: '夜间', description: '炭灰 · 薄荷 · 无游戏元素', game: false, colorScheme: 'dark'},
-  hollow: {name: '空洞骑士', description: '蓝湖 · 雨城 · 小骑士', game: true, colorScheme: 'dark'},
-  silk: {name: '丝之歌', description: '斜针 · 丝环 · 钟线', game: true, colorScheme: 'dark'},
+  hollow: {name: '圣巢之夜', description: '蓝湖 · 雨城 · 小骑士', game: true, colorScheme: 'dark'},
+  silk: {name: '丝歌之夜', description: '斜针 · 丝环 · 钟线', game: true, colorScheme: 'dark'},
 } as const satisfies Record<Theme, UiThemeDefinition>;
 
 export type UiThemePalette = Readonly<{
