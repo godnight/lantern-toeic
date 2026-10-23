@@ -39,7 +39,7 @@ async function step(name,fn){await fn();report.steps.push({name,status:'passed'}
  if(await welcome.isVisible())await welcome.locator('[data-first-run-action="guest"]').click();
  await nav.getByRole('button',{name:'单词',exact:true}).click();
  const library=page.locator('[data-workflow-origin] > details').filter({has:page.locator('summary').filter({hasText:'词库与收藏'})});
- await library.locator('summary').click();await page.getByLabel('搜索单词或中文释义').waitFor();
+ await library.locator(':scope > summary').click();await page.getByLabel('搜索单词或中文释义').waitFor();
 }
 async function records(page){
  await page.getByRole('button',{name:'打开个人信息与设置',exact:true}).click();
