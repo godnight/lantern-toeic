@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   core-validation:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -33,6 +33,8 @@ jobs:
           python-version: '3.12'
       - name: Verify release preparation and version-code checks
         run: python -B -m unittest discover -s tests -p 'test_release_*.py'
+      - name: Prepare bounded Ubuntu downloads from the official archive
+        run: sudo --preserve-env=GITHUB_ACTIONS python3 .github/scripts/ci-ubuntu-mirror.py --expected-codename noble
       - name: Convert an original printable-protected PDF through real Poppler
         run: |
           sudo apt-get update -qq
@@ -40,15 +42,17 @@ jobs:
           python -m pip install reportlab==4.4.9
           python tests/fixtures/create-page-packer-fixture.py --out-dir "$RUNNER_TEMP/lantern-page-pack-qa" --printable-protected
           node scripts/pack-exam-pages.cjs --recipe "$RUNNER_TEMP/lantern-page-pack-qa/recipe.json"
-      - name: Build shared app and run real-browser mock-exam regression
+      - name: Build shared app for real-browser regression
+        run: npm --prefix mobile run build
+      - name: Install Chromium with all required system dependencies
+        run: node node_modules/playwright/cli.js install --with-deps chromium
+      - name: Run real-browser mock-exam, dictionary and theme regressions
         env:
           LANTERN_BROWSER_QA_DIR: ${{ runner.temp }}/lantern-browser-qa
           LANTERN_DICTIONARY_QA_DIR: ${{ runner.temp }}/lantern-dictionary-browser-qa
           LANTERN_THEME_QA_DIR: ${{ runner.temp }}/lantern-theme-browser-qa
           LANTERN_PAGE_PACK_QA_DIR: ${{ runner.temp }}/lantern-page-pack-qa
         run: |
-          npm --prefix mobile run build
-          node node_modules/playwright/cli.js install --with-deps chromium
           npm run test:browser
           npm run test:dictionary:browser
           npm run test:themes:browser
