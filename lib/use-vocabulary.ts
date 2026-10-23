@@ -1,7 +1,8 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import {toast} from 'sonner';
-import {vocabularyId,parseVocabularyBackup,readVocabulary,writeVocabulary,vocabularyKey,vocabularyState,validVocabularyEvent,type VocabularyEvent} from './vocabulary-model';
+import {nextVocabularyMarkRevision} from './dictionary-legacy-ids';
+import {vocabularyId,parseVocabularyBackup,readVocabulary,writeVocabulary,vocabularyKey,validVocabularyEvent,type VocabularyEvent} from './vocabulary-model';
 export function useVocabulary(owner:string|null,remoteEnabled=true){
  const key=vocabularyKey(owner),active=useRef(key);active.current=key;const mounted=useRef(false);const syncControl=useRef({key,blocked:false,failures:0,message:''});if(syncControl.current.key!==key)syncControl.current={key,blocked:false,failures:0,message:''};
  const [snapshot,setSnapshot]=useState<{key:string;events:VocabularyEvent[];ready:boolean;error:string}>({key,events:[],ready:false,error:''});
@@ -25,7 +26,7 @@ export function useVocabulary(owner:string|null,remoteEnabled=true){
   return()=>{cancelled=true;request?.abort();window.removeEventListener('online',online);clearInterval(timer);};
  },[key,current.ready,current.error,retry,remoteEnabled]);
  function save(events:VocabularyEvent[]){if(!mounted.current||active.current!==key||!current.ready||current.error)return false;try{const next=writeVocabulary(localStorage,key,events);setSnapshot({key,events:next,ready:true,error:''});setRetry(n=>n+1);try{if(typeof CustomEvent!=='undefined'&&typeof window.dispatchEvent==='function')window.dispatchEvent(new CustomEvent('lantern-vocabulary-changed',{detail:key}));}catch{/* An invalidation hint is not a learning event or durability acknowledgement. */}return true;}catch{toast.error('词库保存失败，当前卡片未跳过。请检查存储空间后重试。');return false;}}
- function mark(wordId:string,starred:boolean){try{const state=vocabularyState(readVocabulary(localStorage,key),wordId);return save([{id:vocabularyId(),wordId,createdAt:new Date().toISOString(),type:'mark',starred,revision:state.revision+1}]);}catch{toast.error('词库记录无法读取，未更改生词标记。');return false;}}
+ function mark(wordId:string,starred:boolean){try{const revision=nextVocabularyMarkRevision(readVocabulary(localStorage,key),wordId);return save([{id:vocabularyId(),wordId,createdAt:new Date().toISOString(),type:'mark',starred,revision}]);}catch{toast.error('词库记录无法读取，未更改生词标记。');return false;}}
  function readEvent(id:string){if(!mounted.current||active.current!==key)throw Error('账号已切换');return readVocabulary(localStorage,key).find(event=>event.id===id);}
  function reviewEvent(event:VocabularyEvent & {type:'review'}){if(!validVocabularyEvent(event)||event.type!=='review')return false;const fixed={id:event.id,wordId:event.wordId,grade:event.grade,type:'review' as const,createdAt:event.createdAt};if(!save([fixed]))return false;try{const actual=readEvent(fixed.id);return !!actual&&actual.type==='review'&&actual.wordId===fixed.wordId&&actual.grade===fixed.grade&&new Date(actual.createdAt).toISOString()===new Date(fixed.createdAt).toISOString();}catch{return false;}}
  return {...current,sync,mark,readEvent,reviewEvent,review:(wordId:string,grade:'again'|'remembered',id:string)=>save([{id,wordId,grade,type:'review',createdAt:new Date().toISOString()}]),restore:(input:unknown)=>save(parseVocabularyBackup(input).events),backup:()=>{if(!mounted.current||active.current!==key)throw Error('账号已切换');return {kind:'lantern-vocabulary',schemaVersion:1,events:readVocabulary(localStorage,key)};},retry:()=>{syncControl.current={key,blocked:false,failures:0,message:''};refresh();setRetry(n=>n+1);}};

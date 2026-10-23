@@ -11,7 +11,7 @@ const {drizzle}=require('drizzle-orm/sqlite-proxy');
 const root=path.resolve(__dirname,'..');
 function load(file,imports={}){
  const exports={};const source=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- vm.runInNewContext(source,{exports,require:name=>{if(!(name in imports))throw Error('Unexpected import '+name);return imports[name];},Date,Intl,Map,Set,structuredClone,Request,Response,Headers,crypto:{randomUUID}}, {filename:file});return exports;
+ vm.runInNewContext(source,{exports,require:name=>{if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:{}}).resolve(name,file);return imports[name];},Date,Intl,Map,Set,structuredClone,Request,Response,Headers,crypto:{randomUUID}}, {filename:file});return exports;
 }
 const plain=value=>JSON.parse(JSON.stringify(value));
 const model=load('lib/study-model.ts');

@@ -154,8 +154,10 @@ export function capabilities(enabled: boolean): AuthCapabilities {
   return { passwordLogin: enabled, phoneLogin: false, cloudSync: false, passwordRecovery: false };
 }
 
-export function unavailableBody(): AuthBody {
-  return { code: 'native-auth-unavailable', error: '此设备的网络账号服务尚未启用。', capabilities: { passwordLogin: false, phoneLogin: false, phoneBinding: false, cloudSync: false, passwordRecovery: false } };
+export function unavailableBody(action: string = 'session'): AuthBody {
+  // Account-session and phone-status expose separate public capability schemas.
+  return { code: 'native-auth-unavailable', error: '此设备的网络账号服务尚未启用。',
+    capabilities: phoneAction(action) ? { phoneLogin: false, phoneBinding: false } : capabilities(false) };
 }
 
 export function unknownBody(): AuthBody {

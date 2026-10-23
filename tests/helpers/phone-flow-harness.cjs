@@ -1,7 +1,7 @@
 "use strict";
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),os=require('node:os'),assert=require('node:assert/strict');
 async function createPhoneFlowHarness(options){
- const site=fs.realpathSync(options.site),productOnly=options.productOnly===true,candidate=productOnly?site:fs.realpathSync(options.candidate||path.resolve(__dirname,'../..'));
+ const site=fs.realpathSync(options.site),productOnly=options.productOnly!==false,candidate=productOnly?site:fs.realpathSync(options.candidate||path.resolve(__dirname,'../..'));
  const pinsOut=path.resolve(options.pinsOut||path.join(os.tmpdir(),'phone-flow-'+crypto.randomUUID()+'.json'));
  assert(!pinsOut.toLowerCase().startsWith(site.toLowerCase()+path.sep),'Pins stay outside site');
  const origin=options.origin||'https://study.test',audience=origin+'/phone-flow-test',sourcePins=new Map();
@@ -61,6 +61,7 @@ export default {async fetch(request,env){const r=new URL(request.url).pathname;
  const bundle=await build({stdin:{contents:worker,resolveDir:site,sourcefile:'phone-flow-worker.ts',loader:'ts'},bundle:true,write:false,format:'esm',platform:'neutral',target:'es2022',external:['node:*','cloudflare:workers'],nodePaths:[path.join(site,'node_modules')],plugins:[plugin],metafile:true});
  for(const f of Object.keys(bundle.metafile.inputs)){if(f.startsWith('<')||f.startsWith('no-ambient-identity:'))continue;const p=path.resolve(f);if(!fs.existsSync(p)||p.includes(path.sep+'node_modules'+path.sep))continue;const raw=fs.readFileSync(p);sourcePins.set(p,{path:p,bytes:raw.length,sha256:crypto.createHash('sha256').update(raw).digest('hex')});}
  const mf=new Miniflare({name:'synthetic-phone-flow',modules:true,script:bundle.outputFiles[0].text,compatibilityDate:'2026-05-15',compatibilityFlags:['nodejs_compat'],cf:false,host:'127.0.0.1',port:0,d1Databases:{DB:'synthetic-phone-flow'},d1Persist:false,r2Persist:false,cachePersist:false,kvPersist:false,durableObjectsPersist:false,bindings:{LANTERN_AUTH_ENABLED:'true',LANTERN_AUTH_ORIGIN:origin,LANTERN_PHONE_FAKE:'true'},outboundService:()=>new Response('External denied',{status:502}),log:new Log(LogLevel.ERROR)});
+ try{
  const db=await mf.getD1Database('DB');
  const migrations=fs.readdirSync(path.join(site,'drizzle')).filter(n=>/^\d+.*\.sql$/.test(n)).sort().map(n=>path.join(site,'drizzle',n));
  if(productOnly){assert.equal(migrations.length,9);assert(migrations.some(n=>n.endsWith('0008_phone_challenges.sql')));}else{assert(!migrations.some(n=>path.basename(n).startsWith('0008_')));migrations.push(path.join(candidate,'drizzle/0008_phone_challenges.sql'));}
@@ -69,5 +70,6 @@ export default {async fetch(request,env){const r=new URL(request.url).pathname;
  const dispatch=(route,body,cookie,headers={})=>mf.dispatchFetch(origin+route,{method:body===undefined?'GET':'POST',headers:{...(body===undefined?{}:{Origin:origin,'Content-Type':'application/json'}),...(cookie?{Cookie:cookie}:{}),...headers},...(body===undefined?{}:{body:JSON.stringify(body)})});
  const writePins=()=>{for(const pin of sourcePins.values())assert.equal(crypto.createHash('sha256').update(fs.readFileSync(pin.path)).digest('hex'),pin.sha256);if(productOnly)for(const pin of sourcePins.values())assert(pin.path.startsWith(site+path.sep));fs.writeFileSync(pinsOut,JSON.stringify({pins:[...sourcePins.values()],productOnly,realLocalWorkerdD1:true,syntheticOnly:true,remote:false,realProvider:false,realSms:false,device:false},null,2)+'\n');return pinsOut;};
  return {mf,db,origin,audience,sourcePins,pinsOut,dispatch,configure:value=>dispatch('/__test/config',value),issue:async id=>(await dispatch('/__test/issuer',{id})).json(),writePins,dispose:()=>mf.dispose()};
+ }catch(error){await mf.dispose();console.info('Synthetic phone-flow initialization failure: workerd disposal completed');throw error;}
 }
 module.exports={createPhoneFlowHarness};

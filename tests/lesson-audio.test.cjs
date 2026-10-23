@@ -9,8 +9,9 @@ const code = ts.transpileModule(source, {compilerOptions:{module:ts.ModuleKind.C
 let testClock=0;
 function implementation() {
   testClock=0;
+  const dependencies=require('./helpers/actual-source-loader.cjs').createSourceLoader({root:process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..')});
   const exports = {};
-  vm.runInNewContext(code, {exports, Map, Error, setTimeout, clearTimeout,performance:{now:()=>testClock}});
+  vm.runInNewContext(code, {exports, require:name=>dependencies.resolve(name,'lib/lesson-audio.ts'), Map, Error, setTimeout, clearTimeout,performance:{now:()=>testClock}});
   return exports;
 }
 class AudioFixture extends EventTarget {

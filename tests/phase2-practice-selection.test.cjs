@@ -4,13 +4,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const ts = require('typescript');
-const root = path.resolve(__dirname, '..');
-function load(file, imports = {}) {
-  const exports = {};
-  vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(root, file), 'utf8'), {
-    compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022},
-  }).outputText, {exports, require: name => {assert.ok(name in imports, name); return imports[name];}, Date, Map, Set});
-  return exports;
+const root = process.env.LANTERN_REVIEW_ROOT || path.resolve(__dirname, '..');
+const {createSourceLoader}=require(path.join(root,'tests/helpers/actual-source-loader.cjs'));
+function load(file,imports={},globals={}){
+ return createSourceLoader({root,imports,globals:{queueMicrotask,...globals}}).load(file);
 }
 const model = load('lib/study-model.ts');
 const {selectPractice, practiceUnits} = load('lib/practice-selection.ts', {'./study-model': model});

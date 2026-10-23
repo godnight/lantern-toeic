@@ -121,6 +121,7 @@ export function createExplicitBundledPlayback(
     resume(rate: number, target = snapshot()) { begin(false, rate, target); },
     pause(reload = false) { return halt(reload); },
     position() { return snapshot(); },
+    completed() { const lease=current;return !!lease&&valid(lease)&&lease.confirmed&&lease.inner.completed(); },
     duration() { const duration=current?.audio.duration;return typeof duration==='number'&&Number.isFinite(duration)&&duration>0?duration:0; },
     seek(target: number) {
       if(disposed||!Number.isFinite(target)||target<0)return;

@@ -18,6 +18,7 @@ type ResourceLibraryProps={
 
 export default function ResourceLibrary({checkins,onRecord,checkinOpen=false,recordsReady=true,onDetailChange}:ResourceLibraryProps){
  const [category,setCategory]=useState('all');
+ const [query,setQuery]=useState('');
  const [selectedId,setSelectedId]=useState<string|null>(null);
  const listPosition=useRef({scroll:0,id:''});
  const restoreList=useRef(false);
@@ -25,7 +26,7 @@ export default function ResourceLibrary({checkins,onRecord,checkinOpen=false,rec
  const itemButtons=useRef(new Map<string,HTMLButtonElement>());
  const selected=resources.find(resource=>resource.id===selectedId);
  useEffect(()=>{onDetailChange?.(!!selectedId);return()=>onDetailChange?.(false);},[selectedId,onDetailChange]);
- const filtered=resources.filter(resource=>category==='all'||resource.category===category);
+ const filtered=resources.filter(resource=>(category==='all'||resource.category===category)&&(!query.trim()||(resource.title+' '+resource.provider+' '+resource.description).toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())));
  const records=useMemo(()=>new Map(resources.map(resource=>{
   const visits=checkins.filter(checkin=>checkin.note.includes(`[资源:${resource.id}]`));
   return [resource.id,{count:visits.length,minutes:visits.reduce((total,checkin)=>total+checkin.minutes,0)}] as const;
@@ -91,17 +92,18 @@ export default function ResourceLibrary({checkins,onRecord,checkinOpen=false,rec
  </section>;
 
  return <section className="resource-redesign" aria-labelledby="resource-library-title">
-  <header className="rs-library-heading"><div><h2 id="resource-library-title">学习资料</h2><p>选一份材料，按步骤完成，再记录实际学习。</p></div><span>{resources.length} 个材料入口</span></header>
+  <header className="rs-library-heading"><div><h2 id="resource-library-title">学习资料</h2></div></header>
+  <label className="field v041-resource-search">搜索资料<input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="标题或提供方"/></label>
   <div className="rs-filters" role="group" aria-label="按技能筛选资料">{categories.map(([id,label])=><button type="button" key={id} data-resource-category={id} aria-pressed={category===id} aria-controls="resource-list" onClick={()=>setCategory(id)}>{label}</button>)}</div>
   <div className="rs-list-summary" role="status">{category==='all'?`全部 ${filtered.length} 份材料`:`${categories.find(([id])=>id===category)?.[1]} · ${filtered.length} 份材料`}</div>
   <div id="resource-list" className="rs-resource-list">{filtered.length?filtered.map(resource=><article className="rs-resource-row" key={resource.id}>
    <button type="button" className="rs-item-button" data-resource-id={resource.id} ref={element=>{if(element)itemButtons.current.set(resource.id,element);else itemButtons.current.delete(resource.id);}} onClick={()=>openDetail(resource)}>
     <span className="rs-item-symbol" aria-hidden="true">{resource.hasAudio?<Headphones size={21}/>:<BookOpen size={21}/>}</span>
-    <span className="rs-item-copy"><span className="rs-item-provider" lang="en">{resource.provider}</span><span className="rs-item-title">{resource.title}</span><span className="rs-item-description">{resource.description}</span><span className="rs-item-meta">建议 {resource.minutes} 分钟{resource.parts.length>0?` · Part ${resource.parts.join(' / ')}`:''}</span></span>
+    <span className="rs-item-copy"><span className="rs-item-provider" lang="en">{resource.provider}</span><span className="rs-item-title">{resource.title}</span><span className="rs-item-meta">建议 {resource.minutes} 分钟{resource.parts.length>0?` · Part ${resource.parts.join(' / ')}`:''}</span></span>
     <ChevronRight size={20} className="rs-item-arrow" aria-hidden="true"/>
    </button>
    {recordsReady&&records.get(resource.id)!.count>0&&<div className="rs-row-records">{summary(resource)}</div>}
   </article>):<div className="rs-empty"><BookOpen size={27} aria-hidden="true"/><h3>这个分类暂时没有材料</h3><p>可以切换到其他技能，或查看全部资料。</p><button type="button" className="rs-action rs-secondary" onClick={()=>setCategory('all')}>查看全部资料</button></div>}</div>
-  <p className="rs-library-note">材料在原网站使用；这里保留入口、学习步骤和你的学习记录。资料建议用时与音频时长分别计算。</p>
+  
  </section>;
 }

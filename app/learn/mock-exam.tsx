@@ -10,7 +10,7 @@ import {openExamRepository, type ExamRepository, type ExamSummary, type SavedExa
 import {ExamAssetLeases, releaseExamAssetLease, type ExamAssetLease, ExamUiSession, StaleExamOwner, attachExamMedia, audioOffsetSeconds, checkExamAudioDuration, clockText, remainingMs, trySaveExamExit, verifyExamImage} from '@/lib/exam-ui';
 import ExamLibrary from './exam-library';
 
-type Props = {ownerId: string | null; onClose: () => void; cloudEnabled?:boolean};
+type Props = {ownerId: string | null; onClose: () => void; cloudEnabled?:boolean;managementOnly?:boolean};
 type Catalog = {packages: ExamSummary[]; attempts: SavedExamAttempt[]};
 type VisibleQuestion = ReturnType<typeof presentExam>['questions'][number];
 type VisibleGroup = ReturnType<typeof presentExam>['groups'][number];
@@ -25,12 +25,12 @@ const ignore = () => {};
 const inactive = (a: ExamAttempt | null) => !a || a.status === 'submitted';
 
 /** key remount prevents even one render of a previous owner's package/answers. */
-export default function MockExam({ownerId, onClose,cloudEnabled=true}: Props) {
+export default function MockExam({ownerId, onClose,cloudEnabled=true,managementOnly=false}: Props) {
   if (!ownerId?.trim()) return <section className="mock-exam panel" role="alert">
     <h2>暂时无法确认本机记录范围</h2><p>请先恢复当前账号状态，再打开模考。</p>
     <button className="button secondary" onClick={onClose}>返回</button>
   </section>;
-  return <MockExamOwner key={ownerId} ownerId={ownerId} onClose={onClose} cloudEnabled={cloudEnabled}/>;
+  return <MockExamOwner key={ownerId} ownerId={ownerId} onClose={onClose} cloudEnabled={cloudEnabled} managementOnly={managementOnly}/>;
 }
 
 async function readCatalog(repo: ExamRepository): Promise<Catalog> {
@@ -39,7 +39,7 @@ async function readCatalog(repo: ExamRepository): Promise<Catalog> {
   return {packages: await repo.listPackages(), attempts: await repo.listAttempts()};
 }
 
-export function MockExamOwner({ownerId, onClose,cloudEnabled=true}: {ownerId: string; onClose: () => void;cloudEnabled?:boolean}) {
+export function MockExamOwner({ownerId, onClose,cloudEnabled=true,managementOnly=false}: {ownerId: string; onClose: () => void;cloudEnabled?:boolean;managementOnly?:boolean}) {
   const [catalog, setCatalog] = useState<Catalog>({packages: [], attempts: []});
   const [ready, setReady] = useState(false), [busy, setBusy] = useState(false);
   const [error, setError] = useState(''), [notice, setNotice] = useState('');
@@ -370,6 +370,14 @@ export function MockExamOwner({ownerId, onClose,cloudEnabled=true}: {ownerId: st
   const missingAnswers = 200 - answered;
   const localBytes = catalog.packages.reduce((sum, item) => sum + item.bytes, 0);
 
+  if(managementOnly)return <section className="panel v041-mock-data" aria-busy={busy}><h2>模考备份</h2><p className="small muted">题包、媒体、答案与本机考试记录。</p>
+    {error&&<div role="alert"><p>{error}</p><button className="text-button" disabled={busy} onClick={()=>void refresh().catch(ignore)}>重新读取</button></div>}
+    {!ready&&!error&&<p role="status">正在读取模考记录…</p>}
+    {(busy||notice)&&<p role="status">{busy?(transfer?transfer+'中…':'正在处理…'):notice}</p>}
+    {transfer&&<button className="text-button" onClick={()=>transferController.current?.abort(new Error('操作已取消'))}>取消文件操作</button>}
+    <div className="button-row"><button className="button secondary" disabled={!ready||busy||!catalog.packages.length} onClick={()=>void backup().catch(ignore)}>导出模考备份</button><button className="button secondary" disabled={!ready||busy} onClick={()=>inputs.current.backup?.click()}>恢复模考备份</button></div>
+    <input hidden ref={node=>{inputs.current.backup=node;}} type="file" accept="application/json,.json" aria-label="选择模考备份" onChange={event=>{const file=event.target.files?.[0];event.target.value='';if(file)void restore(file).catch(ignore);}}/>
+  </section>;
   return <section className={saved && !durableSubmitted ? 'mock-exam is-running' : 'mock-exam'} aria-label="完整听读模考" aria-busy={busy}>
     <header className="mock-heading">
       <div><p className="eyebrow">{saved ? durableSubmitted ? '模考复盘' : '专注作答' : '听读模考'}</p><h2>{exam?.title || '题包与本机记录'}</h2>
@@ -416,7 +424,7 @@ export function MockExamOwner({ownerId, onClose,cloudEnabled=true}: {ownerId: st
         {libraryView === 'history' && <section className="mock-history"><div className="mock-catalog-toolbar"><div><h3>已交卷记录</h3><p className="mock-muted">首次、复测分别保存；回看原题包与原答案。</p></div></div>{catalog.attempts.filter(row => row.attempt.status === 'submitted').length ? catalog.attempts.filter(row => row.attempt.status === 'submitted').map(row => <article className="panel mock-history-item" key={row.attempt.id}>
           <div><span className="mock-badge">{row.attempt.ordinal===1?'首次':`复测第 ${row.attempt.ordinal-1} 次`}</span><h4>{catalog.packages.find(p => p.id===row.attempt.examId && p.version===row.attempt.examVersion)?.title || '本机题包'}</h4><p className="mock-muted">{getExamProfile(row.attempt.format).label} · {new Date(row.attempt.startedAt).toLocaleString()}</p><p>正确 {row.result?.correct ?? '—'} / 200 · {row.result?.integrity==='interrupted'?'有中断或时钟异常标记':'未记录到中断（不等于监考认证）'}</p></div><button className="button secondary" disabled={busy} onClick={() => void openPackage(examKey({id:row.attempt.examId,version:row.attempt.examVersion}),row.attempt.id).catch(ignore)}>成绩与复盘</button>
         </article>) : <div className="panel mock-empty"><h3>还没有已交卷记录</h3><p>完成一次完整模考后，在这里回看原始题数与原题。</p></div>}</section>}
-        <section className="panel mock-backup-panel"><div><h3>模考完整备份</h3><p>题包、媒体与本机考试记录一起保存。卸载或清理设备前，请确认下载文件存在。</p></div><div className="mock-actions"><button className="button secondary" disabled={busy || !catalog.packages.length} onClick={() => void backup().catch(ignore)}><Download size={17} aria-hidden/>导出完整备份</button><button className="button secondary" disabled={busy} onClick={() => inputs.current.backup?.click()}>恢复本机备份</button></div><p className="mock-muted">备份按同一记录范围校验后合并，原记录保留。可一次导入多份题包，每份独立保存；失败时先重新读取，核对已完成文件。</p></section>
+
       </>}
       <input hidden ref={node => {inputs.current.packages=node;}} type="file" accept="application/json,.json" multiple aria-label="选择题包 JSON" onChange={event => {const files=Array.from(event.target.files||[]);event.target.value='';if(files.length)void importFiles(files).catch(ignore);}}/>
       <input hidden ref={node => {inputs.current.backup=node;}} type="file" accept="application/json,.json" aria-label="选择模考备份" onChange={event => {const file=event.target.files?.[0];event.target.value='';if(file)void restore(file).catch(ignore);}}/>
@@ -436,7 +444,7 @@ export function MockExamOwner({ownerId, onClose,cloudEnabled=true}: {ownerId: st
           <aside className="panel mock-answer-card"><h3>答题卡</h3><p className="mock-card-count">已保存 {answered} / 200<br/>{durableSubmitted?'交卷后 · 全部题目':displayed?.status==='listening'?'听力阶段 · Part 1–4':'阅读阶段 · Part 5–7'}</p><div className="mock-card-legend"><span>✓ 已保存</span><span>□ 未答</span><span>○ 待保存变更</span></div><details><summary>展开题号导航</summary><p className="mock-muted">{durableSubmitted?'查看本次原答案；交卷后不可修改':'只显示当前阶段；点击题号返回原题。'}</p>{[1,2,3,4,5,6,7].map(part=>{const items=presented?.questions.filter(q=>q.part===part)||[];return !!items.length && <div className="mock-part" key={part}><h4>Part {part} · {items.length} 题</h4><div className="mock-grid">{items.map(q=>{const hasAnswer=saved.attempt.answers[q.number]!==undefined,isPending=!durableSubmitted && pendingAnswer?.number===q.number;return <button key={q.number} className={`${hasAnswer?'has-answer':''} ${isPending?'is-pending':''}`} aria-current={q.number===questionNumber?'true':undefined} aria-label={`第 ${q.number} 题，${hasAnswer?'已保存':'未答'}${isPending?'，另有待保存变更':''}`} disabled={busy || !!expiredSaving || !!pendingAnswer && !durableSubmitted} onClick={()=>void select(q.number,true).catch(ignore)}>{q.number}<span aria-hidden>{isPending?'○':hasAnswer?'✓':''}</span></button>;})}</div></div>;})}</details>{!durableSubmitted && displayed?.status==='reading' && <button className="button primary" disabled={busy || !!expiredSaving} onClick={()=>setConfirmSubmit(true)}>提交整卷</button>}
           </aside>
         </div>
-        {durableSubmitted && <div className="mock-actions mock-result-actions"><button className="button secondary" onClick={()=>{setExam(null);setSaved(null);current.current=null;setLibraryView('history');}}>回到题包与记录</button><button className="button secondary" disabled={busy} onClick={()=>void backup().catch(ignore)}><Download size={17} aria-hidden/>导出完整备份</button></div>}
+        {durableSubmitted && <div className="mock-actions mock-result-actions"><button className="button secondary" onClick={()=>{setExam(null);setSaved(null);current.current=null;setLibraryView('history');}}>回到题包与记录</button></div>}
       </>}
     </>}
     <Dialog open={confirmSubmit} onOpenChange={open=>{if(!busy)setConfirmSubmit(open);}}><DialogContent className="mock-submit-dialog"><DialogHeader><DialogTitle>{submitting?'正在保存交卷…':'确认提交整卷？'}</DialogTitle><DialogDescription>已保存 {answered} / 200 题，还有 {missingAnswers} 题未保存答案，漏答按错误计。交卷后不能修改本次答案；再次开始会保留为复测记录。</DialogDescription></DialogHeader>

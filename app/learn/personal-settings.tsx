@@ -5,6 +5,7 @@ import {BookOpen,CalendarDays,ChevronRight,Cloud,Info,Mic,Palette,Settings2,Shie
 import type {Theme} from '@/lib/study-model';
 import {UI_THEME_META} from '@/lib/ui-theme';
 import {ThemeChooser} from './ui-theme';
+import {PublicInfoLinks} from './legal-pages';
 
 type SettingsRowProps={
   icon:ComponentType<{size?:number;className?:string;'aria-hidden'?:boolean}>;
@@ -46,20 +47,19 @@ export function PersonalSettings({name,scope,theme,dailyNewLabel,accountLabel,sy
     <div className="v040-settings-group">
       <SettingsRow icon={ShieldCheck} label="账号与安全" value={accountLabel} onClick={onAccount}/>
       <SettingsRow icon={Cloud} label="记录同步" value={syncLabel} onClick={onSync} disabled={syncDisabled||disabled}/>
-      <SettingsRow icon={Settings2} label="记录与备份" value="分别保留" onClick={onBackups}/>
+      <SettingsRow icon={Settings2} label="数据管理" onClick={onBackups}/>
       <SettingsRow icon={Mic} label="录音历史" onClick={onRecordings}/>
     </div>
     <h2 className="v040-group-label">应用</h2>
-    <div className="v040-settings-group"><SettingsRow icon={Info} label="关于微光" onClick={onAbout}/></div>
+    <div className="v040-settings-group"><PublicInfoLinks/><SettingsRow icon={Info} label="关于微光" onClick={onAbout}/></div>
   </div>;
 }
 
 export type ThemeSettingsProps={theme:Theme;onChange:(theme:Theme)=>void;disabled?:boolean};
 export function ThemeSettings({theme,onChange,disabled=false}:ThemeSettingsProps){
   return <div className="v040-page v040-themes" data-v040-page="themes">
-    <div className="v040-page-heading"><p className="v040-date">外观</p><h1>选择主题</h1><p>选择你喜欢的界面外观</p></div>
+    <div className="v040-page-heading"><h1>选择主题</h1></div>
     <ThemeChooser theme={theme} onChange={onChange} disabled={disabled}/>
-    <p className="v040-theme-hint" role="status">当前主题：{UI_THEME_META[theme].name}</p>
   </div>;
 }
 

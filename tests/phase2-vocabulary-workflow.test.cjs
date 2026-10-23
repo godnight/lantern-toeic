@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const crypto=require('node:crypto');
-const root=path.resolve(__dirname,'..');
+const root=process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..');
 const ts=require(path.join(root,'node_modules/typescript'));
 const {IDBFactory}=require(path.join(root,'node_modules/fake-indexeddb'));
 const plain=value=>JSON.parse(JSON.stringify(value));
@@ -12,7 +12,7 @@ const cache=new Map();
 function load(file,overrides={},globals={}){
  const key=file+Object.keys(overrides).join();if(!Object.keys(overrides).length&&cache.has(key))return cache.get(key);
  const exports={},source=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;
- vm.runInNewContext(source,{exports,require(name){if(name in overrides)return overrides[name];if(name.endsWith('.json'))return JSON.parse(fs.readFileSync(path.resolve(path.dirname(path.join(root,file)),name),'utf8'));return load(path.relative(root,path.resolve(path.dirname(path.join(root,file)),name+'.ts')));},Date,Intl,Map,Set,Promise,Error,JSON,Number,Object,Array,Math,RegExp,Uint8Array,Uint32Array,DataView,TextEncoder,TextDecoder,structuredClone,crypto:crypto.webcrypto,setTimeout,clearTimeout,...globals},{filename:file});
+ vm.runInNewContext(source,{exports,require(name){if(name in overrides)return overrides[name];if(name.startsWith('@/'))return name.endsWith('.json')?JSON.parse(fs.readFileSync(path.join(root,name.slice(2)),'utf8')):load(name.slice(2)+'.ts');if(name.endsWith('.json'))return JSON.parse(fs.readFileSync(path.resolve(path.dirname(path.join(root,file)),name),'utf8'));return load(path.relative(root,path.resolve(path.dirname(path.join(root,file)),name+'.ts')));},Date,Intl,Map,Set,Promise,Error,JSON,Number,Object,Array,Math,RegExp,Uint8Array,Uint32Array,DataView,TextEncoder,TextDecoder,structuredClone,crypto:crypto.webcrypto,setTimeout,clearTimeout,...globals},{filename:file});
  if(!Object.keys(overrides).length)cache.set(key,exports);return exports;
 }
 const model=load('lib/vocabulary-model.ts');
@@ -20,7 +20,12 @@ const repository=load('lib/learning-domain-repository.ts');
 const actualCatalog=load('lib/workflow-catalog.ts');
 const word=(id,text=id)=>({id,word:text,pos:'adj',meaning:'释义 '+text,category:'office',example:'An example of '+text+'.',translation:'例句',collocation:''});
 const words=[word('quiet'),word('available'),word('invoice')];
-const catalog={WORKFLOW_WORDS:words,getWorkflowCatalog:book=>book==='expressions'?[word('expression')]:words};
+// This transition suite's explicit synthetic catalog has exact eligible pairs.
+// Real exhaustive content admission remains covered by catalog/compat suites.
+const syntheticCandidates=[...words,word('lookup-quiet','quiet')];
+const catalog={WORKFLOW_WORDS:words,getWorkflowCatalog:book=>book==='expressions'?[word('expression')]:words,
+ isWorkflowBookId:book=>book==='scene'||book==='expressions',getCandidateLearningWord:row=>syntheticCandidates.find(current=>['id','word','pos','meaning','category','example','translation','collocation'].every(key=>current[key]===row[key]))??null,
+ CANDIDATE_CONTENT_PENDING:'Synthetic pair was not admitted'};
 const {createVocabularyWorkflow,vocabularyDayWindow}=load('lib/vocabulary-workflow.ts',{'./workflow-catalog':catalog});
 const scope={kind:'web-local',partition:'existing-device'};
 const draft=(extra={})=>({bookId:'scene',goal:3,dailyNew:2,weekdays:[1,2,3,4,5,6,7],...extra});
@@ -39,7 +44,10 @@ const oldReview=(wordId,grade='remembered',id='old-'+wordId,createdAt='2026-09-0
 
 test('catalog reuses the real 807 scene IDs and 55 expression IDs without fabricated learning',()=>{
  assert.equal(actualCatalog.SCENE_WORDS.length,807);assert.equal(actualCatalog.EXPRESSION_WORDS.length,55);
- assert.equal(new Set(actualCatalog.WORKFLOW_WORDS.map(row=>row.id)).size,862);
+ const legacy=[...actualCatalog.SCENE_WORDS,...actualCatalog.EXPRESSION_WORDS];assert.equal(new Set(legacy.map(row=>row.id)).size,862);
+ assert.deepEqual(plain(actualCatalog.WORKFLOW_WORDS.slice(0,862)),plain(legacy),'All original IDs/bodies remain exact');
+ const current=load('lib/vocabulary-content-catalog.ts'),expected=new Set([...legacy,...current.LEGACY_PRIVATE_WORDS,...current.FULL4109_CURRENT_WORDS].map(row=>row.id));
+ assert.equal(new Set(actualCatalog.WORKFLOW_WORDS.map(row=>row.id)).size,expected.size);for(const id of expected)assert(actualCatalog.WORKFLOW_WORDS.some(row=>row.id===id),id);
  assert.equal(actualCatalog.SCENE_WORDS[0].id,JSON.parse(fs.readFileSync(path.join(root,'content/vocabulary.json'),'utf8'))[0].id);
 });
 test('initial projection does not create a plan, fake history, or classify old reviews as today',async()=>{

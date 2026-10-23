@@ -1,4 +1,5 @@
 'use client';
+import {PublicInfoLinks} from '../learn/legal-pages';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import type {FormEvent} from 'react';
@@ -21,12 +22,13 @@ function responseUser(value:unknown):User|null {
   return typeof id==='string'&&/^usr_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)&&typeof username==='string'&&/^[a-z0-9_]{3,32}$/.test(username)?{id,username}:null;
 }
 
-export default function AccountForm() {
+export default function AccountForm({initialMode='login'}:{initialMode?:Mode}={}) {
   const [session,setSession]=useState<Session>({status:'loading'});
-  const [mode,setMode]=useState<Mode>('login');
+  const [mode,setMode]=useState<Mode>(initialMode);
   const [username,setUsername]=useState('');
   const [password,setPassword]=useState('');
   const [confirmation,setConfirmation]=useState('');
+  const [passwordVisible,setPasswordVisible]=useState(false);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
   const [review,setReview]=useState<'switch'|'logout'|null>(null);
@@ -42,6 +44,13 @@ export default function AccountForm() {
   const operationGeneration=useRef(0);
   const operation=useRef<AuthOperation|null>(null);
   const sessionGuard=useProductSession(session.status==='authenticated'?session.user.id:null,session.status==='native');
+
+  useEffect(()=>{
+    const clear=()=>{setPassword('');setConfirmation('');setPasswordVisible(false);};
+    const visibility=()=>{if(document.visibilityState==='hidden')clear();};
+    window.addEventListener('pagehide',clear);document.addEventListener('visibilitychange',visibility);
+    return()=>{window.removeEventListener('pagehide',clear);document.removeEventListener('visibilitychange',visibility);};
+  },[]);
 
   function belongsToPage(op:AuthOperation){return alive.current&&operation.current===op&&operationGeneration.current===op.generation;}
   function isActive(op:AuthOperation){return belongsToPage(op)&&op.active;}
@@ -94,7 +103,7 @@ export default function AccountForm() {
   },[check]);
 
   function changeMode(next:Mode){
-    setMode(next);setPassword('');setConfirmation('');setError('');
+    setMode(next);setPassword('');setConfirmation('');setPasswordVisible(false);setError('');
   }
 
   function invalidateIdentity(op:AuthOperation){
@@ -157,7 +166,7 @@ export default function AccountForm() {
       if(belongsToPage(op)){
         if(op.timer!==null)clearTimeout(op.timer);
         op.active=false;operation.current=null;operationGeneration.current++;controller.abort();
-        setPassword('');setConfirmation('');requestPending.current=false;setBusy(false);
+        setPassword('');setConfirmation('');setPasswordVisible(false);requestPending.current=false;setBusy(false);
       }
     }
   }
@@ -191,7 +200,7 @@ export default function AccountForm() {
   }
 
   const available=session.status==='guest'||session.status==='authenticated';
-  if(resultBarrier||sessionGuard.status!=='ready')return <section className="panel" aria-live="polite" aria-busy={resultBarrier&&sessionGuard.status==='ready'||sessionGuard.status==='checking'}><h2>核对账号状态</h2><p>{sessionGuard.status==='checking'||resultBarrier&&sessionGuard.status==='ready'?'正在重新核对服务器会话，账号操作已暂停。':sessionGuard.status==='redirecting'?'会话已变化，正在重新打开学习页。':'当前会话无法确认，账号操作保持暂停，请重试。'}</p>{error&&<p role="alert" className="bad">{error}</p>}<div className="button-row">{(sessionGuard.status==='error'||resultBarrier&&sessionGuard.status==='ready')&&<button className="button primary" onClick={sessionGuard.recheck}>重新核对账号</button>}<a className="button secondary" href="/">返回学习</a></div></section>;
+  if(resultBarrier||sessionGuard.status!=='ready')return <section className="panel" aria-live="polite" aria-busy={resultBarrier&&sessionGuard.status==='ready'||sessionGuard.status==='checking'}><h2>核对账号状态</h2><p>{sessionGuard.status==='checking'||resultBarrier&&sessionGuard.status==='ready'?'正在重新核对服务器会话，账号操作已暂停。':sessionGuard.status==='redirecting'?'会话已变化，正在重新打开学习页。':'当前会话无法确认，账号操作保持暂停，请重试。'}</p>{error&&<p role="alert" className="bad">{error}</p>}<div className="button-row">{(sessionGuard.status==='error'||resultBarrier&&sessionGuard.status==='ready')&&<button className="button primary" onClick={sessionGuard.recheck}>重新核对账号</button>}<a className="button secondary" href="/">返回学习</a></div><PublicInfoLinks compact/></section>;
   return <div className="workspace-account" aria-busy={busy||session.status==='loading'} style={{display:'grid',gap:20}}>
     <section className="panel" aria-labelledby="account-session-title" style={{display:'grid',gap:16}}>
       <h2 id="account-session-title">当前账号状态</h2>
@@ -210,10 +219,11 @@ export default function AccountForm() {
       {switching&&<p className="small muted">当前会话在另一个账号登录成功前保持有效。取消切换不会退出当前账号。</p>}
       <form onSubmit={event=>void submit(event)}>
         <label className="field" htmlFor="account-username">用户名<input id="account-username" name="username" value={username} onChange={event=>setUsername(event.target.value)} autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} aria-describedby="account-username-help" required disabled={busy}/></label>
-        <p id="account-username-help" className="small muted">3–32 个英文字母、数字或下划线，大小写不区分，首尾空白会去除。</p>
-        <label className="field" htmlFor="account-password">密码<input id="account-password" name="password" type="password" value={password} onChange={event=>setPassword(event.target.value)} autoComplete={mode==='register'?'new-password':'current-password'} aria-describedby="account-password-help" required disabled={busy}/></label>
-        <p id="account-password-help" className="small muted">15–128 个字符，首尾空白属于密码。支持粘贴和密码管理器，请妥善保管。</p>
-        {mode==='register'&&<label className="field" htmlFor="account-password-confirmation">再次输入密码<input id="account-password-confirmation" name="password-confirmation" type="password" value={confirmation} onChange={event=>setConfirmation(event.target.value)} autoComplete="new-password" required disabled={busy}/></label>}
+        <p id="account-username-help" className="small muted">3–32 位字母、数字或下划线。</p>
+        <label className="field" htmlFor="account-password">密码<input id="account-password" name="password" type={passwordVisible?'text':'password'} value={password} onChange={event=>setPassword(event.target.value)} autoComplete={mode==='register'?'new-password':'current-password'} aria-describedby="account-password-help" required disabled={busy}/></label>
+        <button type="button" className="text-button" aria-pressed={passwordVisible} disabled={busy} onClick={()=>setPasswordVisible(value=>!value)}>{passwordVisible?'隐藏密码':'显示密码'}</button>
+        <p id="account-password-help" className="small muted">15–128 个字符，空格也属于密码。</p>
+        {mode==='register'&&<label className="field" htmlFor="account-password-confirmation">再次输入密码<input id="account-password-confirmation" name="password-confirmation" type={passwordVisible?'text':'password'} value={confirmation} onChange={event=>setConfirmation(event.target.value)} autoComplete="new-password" required disabled={busy}/></label>}
         <div className="button-row"><button className="button primary" type="submit" disabled={busy}>{busy?'正在提交……':mode==='login'?'登录':'注册并登录'}</button><button className="button secondary" type="button" disabled={busy} onClick={()=>changeMode(mode==='login'?'register':'login')}>{mode==='login'?'注册新账号':'已有账号，去登录'}</button>{switching&&<button className="button secondary" type="button" disabled={busy} onClick={()=>{setSwitching(false);setPassword('');setConfirmation('');setError('');}}>取消切换</button>}</div>
       </form>
     </section>}
@@ -221,6 +231,6 @@ export default function AccountForm() {
       purpose={session.status==='authenticated'&&!switching?'bind':'login'} transport={phoneTransport} disabled={busy}
       challenge={phoneChallenge?.owner===(session.status==='authenticated'?session.user.id:null)?phoneChallenge.challenge:null}
       onChallenge={challenge=>{setPhoneOutcome(null);setPhoneChallenge(challenge?{owner:session.status==='authenticated'?session.user.id:null,challenge}:null);}} outcome={phoneOutcome} onMutation={phoneMutation}/>}
-    <section className="panel" style={{display:'grid',gap:12}}><h2>新账号与原记录</h2><p>注册或登录不会认领、复制或上传访客及旧站记录。新账号从自己的独立分区开始；原记录仍保留在原分区。当前没有跨账号迁移或静默合并功能。</p><p>手机号服务按实时能力开放，第一版号码范围仅为中国大陆 +86，号码格式合法不代表已验证归属。</p><p>当前没有经过验证的短信、邮箱或恢复码渠道，不能找回密码，也不能仅凭用户名重置。请在使用前确认能妥善保存密码；可信恢复方案仍是公开发布前的待办。</p><p className="small muted">本地开发候选，未真实短信联调，未公开上线。原生及短信能力按各自实际环境验收。</p></section>
+    <PublicInfoLinks compact/><details className="panel"><summary>账号与记录说明</summary><p>账号与访客记录分别保留，不会自动合并。</p><p>手机号按实际服务能力开放，仅支持中国大陆 +86。</p><p>暂不支持找回密码，请妥善保存。</p></details>
   </div>;
 }

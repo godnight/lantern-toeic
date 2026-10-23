@@ -1,11 +1,11 @@
-const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),ts=require('typescript');
-const transpile=name=>ts.transpileModule(fs.readFileSync(path.join(__dirname,'../lib',name),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-const innerCode=transpile('lesson-audio.ts'),wrapperCode=transpile('explicit-bundled-playback.ts');
+const test=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
+const root=process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..');
+const {createSourceLoader}=require(path.join(root,'tests/helpers/actual-source-loader.cjs'));
 function fixture(hooks={}){
  let now=0,timer=0,errors=0,confirmations=0;const timers=new Map(),audios=[],changes=[],ticks=[],confirmPoints=[];
  const sandbox={Map,Error,console:{info(){}},performance:{now:()=>now},setTimeout(fn,delay){timers.set(++timer,{fn,at:now+delay});return timer;},clearTimeout(id){timers.delete(id);}};
- const inner={};vm.runInNewContext(innerCode,{...sandbox,exports:inner});
- const wrapper={};vm.runInNewContext(wrapperCode,{...sandbox,exports:wrapper,require(name){assert.equal(name,'./lesson-audio');return inner;}});
+ const source=createSourceLoader({root,globals:sandbox});
+ const inner=source.load('lib/lesson-audio.ts'),wrapper=source.load('lib/explicit-bundled-playback.ts');
  class Media extends EventTarget{
   raw=0;src='https://lantern.local/audio/offline/1935c17708c726884ac9.mp3';currentSrc=this.src;readyState=1;duration=33.151519;paused=true;seeking=false;ended=false;muted=false;playbackRate=1;preload='metadata';plays=0;loads=0;removed=false;targets=[];steps=[];history=new Map();listeners=new Map();error=null;
   seekable={length:1,start:()=>0,end:()=>this.duration};

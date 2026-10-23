@@ -1,0 +1,74 @@
+/* D-06/07/08/14. Audio internals remain owned by SpeechPlayer's mode styles. */
+.v041-vocabulary { min-width: 0; color: var(--ui-text); }
+.phase2-vocabulary-plan.v041-vocabulary { gap: 20px; }
+.v041-vocabulary :is(h1,h2,h3,p) { overflow-wrap: anywhere; }
+.v041-vocabulary .panel { padding: 20px; }
+.v041-vocabulary :is(button,input,select,summary):focus-visible,
+.v041-vocabulary-data :is(button,input,summary):focus-visible { outline: 3px solid var(--ui-focus); outline-offset: 3px; }
+.v041-vocabulary :is(.button,.text-button),.v041-vocabulary-data :is(.button,.text-button) { min-height: 44px; }
+.v041-vocabulary .button.primary { min-height: 48px; }
+.v041-vocabulary .phase2-word-session-heading { margin: 0 0 12px; gap: 8px; font-size: 13px; }
+.v041-vocabulary .phase2-word-card { max-width: 760px; }
+.v041-word-heading { display: flex; align-items: center; gap: 12px; min-width: 0; flex-wrap: wrap; }
+.v041-word-heading :is(.phase2-current-word,.vocab-word-title) { flex: 0 1 auto; min-width: 0; margin: 0; font-size: clamp(36px,8vw,42px); line-height: 1.25; letter-spacing: -.025em; }
+.v041-word-heading > :is(.speech-audio,.dictionary-pronunciation) { flex: 0 0 auto; max-width: 100%; }
+.v041-vocabulary .word-phonetic { margin: 8px 0 0; font-size: 14px; }
+.v041-vocabulary .phase2-rating-actions { gap: 8px; margin: 24px 0 0; }
+.v041-vocabulary .phase2-rating-actions .button { padding-inline: 10px; }
+.v041-vocabulary .phase2-feedback-saved { margin: 20px 0 12px; font-size: 13px; }
+.v041-vocabulary .phase2-word-meaning { font-size: 16px; line-height: 1.75; }
+.v041-vocabulary :is(.phase2-word-meaning,.word-definition) blockquote { margin: 16px 0 8px; padding: 12px 14px; font-size: 16px; line-height: 1.75; }
+.v041-vocabulary .phase2-word-meaning > .speech-audio { margin-bottom: 8px; }
+.v041-vocabulary .phase2-next-word { width: 100%; margin-top: 20px; }
+.v041-vocabulary .phase2-fixed-feedback { margin: 12px 0 0; }
+.v041-vocabulary .phase2-plan-editor h2 { font-size: 24px; margin-bottom: 24px; }
+.v041-plan-books { margin: 0; padding: 0; border: 0; }
+.v041-plan-books legend { margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+.v041-plan-books > div { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.v041-plan-books label { position: relative; min-width: 0; }
+.v041-plan-books input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.v041-plan-books span { display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px; border: 1px solid var(--ui-control-border); border-radius: var(--ui-radius-control,12px); cursor: pointer; }
+.v041-plan-books input:checked + span { border-color: var(--ui-primary); background: var(--ui-selection); box-shadow: inset 0 0 0 1px var(--ui-primary); font-weight: 650; }
+.v041-plan-books input:checked + span::after { content: '✓'; margin-left: 8px; }
+.v041-plan-books input:focus-visible + span { outline: 3px solid var(--ui-focus); outline-offset: 3px; }
+.v041-plan-books input:disabled + span { opacity: .55; cursor: not-allowed; }
+.v041-plan-books > p { font-size: 13px; color: var(--ui-text-secondary); }
+.v041-vocabulary .phase2-plan-number-fields { gap: 12px; }
+.v041-vocabulary .phase2-plan-estimate { margin-top: 20px; padding: 12px; }
+.v041-vocabulary .phase2-plan-estimate p { font-size: 13px; }
+.v041-vocabulary .phase2-weekday-picker { gap: 4px; }
+.v041-vocabulary .phase2-weekday-picker span { font-size: 12px; }
+.v041-vocabulary .phase2-plan-editor .button-row { justify-content: flex-end; gap: 12px; margin-top: 20px; }
+.v041-vocabulary .v041-current-plan { padding: 16px 20px; }
+.v041-current-plan h2 { margin: 0; font-size: 18px; }
+.v041-current-plan > p { margin: 8px 0; color: var(--ui-text-secondary); font-size: 14px; }
+.v041-current-plan progress { display: block; width: 100%; height: 6px; accent-color: var(--ui-primary); margin-top: 16px; }
+.v041-current-plan > small { font-size: 13px; color: var(--ui-text-secondary); }
+.v041-vocabulary :is(.v041-plan-details,.v041-source-details,.word-notes) { margin-top: 16px; font-size: 13px; color: var(--ui-text-secondary); }
+.v041-vocabulary :is(.v041-plan-details,.v041-source-details,.word-notes) > summary { display: list-item; min-height: 44px; padding-block: 12px; cursor: pointer; }
+.v041-plan-details .phase2-plan-calendar { box-shadow: none; padding: 12px 0 0; background: transparent; border: 0; }
+.v041-vocabulary .phase2-vocab-secondary-actions { gap: 16px; }
+.phase2-today-vocabulary.v041-today-vocabulary { padding: 20px; }
+.v041-today-vocabulary .phase2-vocab-heading h2 { margin: 0; padding: 0; min-height: 0; font-size: 22px; }
+.v041-today-vocabulary p { margin: 12px 0; font-size: 14px; }
+.v041-today-vocabulary .button.primary { width: 100%; min-height: 48px; margin-top: 8px; }
+.v041-today-vocabulary progress { width: 100%; accent-color: var(--ui-primary); }
+.v041-vocabulary .vocab-page-heading h1 { font-size: 24px; }
+.v041-vocabulary .vocab-detail { padding: 20px; }
+.v041-vocabulary .vocab-detail-back { margin-bottom: 16px; }
+.v041-vocabulary .word-definition { font-size: 16px; line-height: 1.75; }
+.v041-vocabulary .vocab-mark-actions { gap: 12px; margin-top: 20px; }
+.v041-vocabulary .vocab-category { font-size: 13px; }
+.v041-vocabulary .word-row .word-open { padding-block: 16px; }
+.v041-vocabulary .wordbook-tags { font-size: 12px; }
+.v041-vocabulary-data { min-width: 0; }
+.v041-vocabulary-data h2 { margin: 0 0 8px; font-size: 18px; }
+.v041-vocabulary-data p { color: var(--ui-text-secondary); font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }
+.v041-vocabulary-data .button-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.v041-vocabulary-data details { margin-top: 12px; font-size: 13px; }
+.v041-vocabulary-data summary { min-height: 44px; padding-block: 12px; cursor: pointer; }
+@media (max-width: 360px) {
+  .v041-vocabulary .panel,.v041-vocabulary .vocab-detail { padding: 16px; }
+  .v041-vocabulary .phase2-plan-number-fields { grid-template-columns: 1fr; gap: 16px; }
+  .v041-vocabulary .phase2-weekday-picker { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; }
+}

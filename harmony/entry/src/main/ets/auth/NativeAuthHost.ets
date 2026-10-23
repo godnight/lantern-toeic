@@ -18,11 +18,13 @@ interface Operation {
   sessionMayHaveChanged: boolean;
 }
 
-// Both object and method permission lists use exact scheme, host and default port.
+// ArkWeb compares the serialized URL port: default HTTPS is empty, not "443".
+// An empty permission port skips that engine check; request() still captures the
+// caller synchronously and trustedFrame/live enforce the exact local HTTPS authority.
 const PROXY_PERMISSION: string = '{"javascriptProxyPermission":{"urlPermissionList":' +
-  '[{"scheme":"https","host":"lantern.local","port":"443","path":""}],' +
+  '[{"scheme":"https","host":"lantern.local","port":"","path":""}],' +
   '"methodList":[{"methodName":"request","urlPermissionList":' +
-  '[{"scheme":"https","host":"lantern.local","port":"443","path":""}]}]}}';
+  '[{"scheme":"https","host":"lantern.local","port":"","path":""}]}]}}';
 
 /** Auth-only bridge. No private API, arbitrary URL, header, filesystem or cookie API. */
 export class NativeAuthHost {
@@ -88,7 +90,7 @@ export class NativeAuthHost {
     }
     this.seen.push(input.id);
     if (!this.available()) {
-      this.send(input.id, 503, unavailableBody(), epoch);
+      this.send(input.id, 503, unavailableBody(input.action), epoch);
       return;
     }
     if (NativeAuthHost.busy) {

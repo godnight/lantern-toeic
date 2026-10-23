@@ -10,10 +10,10 @@ const {DatabaseSync}=require('node:sqlite');
 const ts=require('typescript');
 const orm=require('drizzle-orm');
 const {drizzle}=require('drizzle-orm/sqlite-proxy');
-const root=path.resolve(__dirname,'..');
+const root=process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..');
+const {createSourceLoader}=require(path.join(root,'tests/helpers/actual-source-loader.cjs'));
 function load(file,imports={},globals={}){
- const exports={};const code=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- vm.runInNewContext(code,{exports,require(name){assert.ok(name in imports,'Unexpected import '+name);return imports[name];},Date,Intl,Map,Set,structuredClone,Request,Response,Headers,Blob,URL,AbortController,FormData,crypto:webcrypto,...globals},{filename:file});return exports;
+ return createSourceLoader({root,imports,globals:{queueMicrotask,...globals}}).load(file);
 }
 const plain=value=>JSON.parse(JSON.stringify(value));
 const model=load('lib/study-model.ts');
@@ -146,16 +146,20 @@ test('a payload-conflict 409 blocks only its event while healthy later records s
  const op=h.ops().find(op=>op.type==='checkin');assert.equal(h.storage.get(main+':ack:'+op.id),'1');assert.equal(h.storage.has(main+':sync:session:account'),false);
 });
 
-function server(){
- const sqlite=new DatabaseSync(':memory:');for(const file of fs.readdirSync(path.join(root,'drizzle')).filter(x=>x.endsWith('.sql')).sort())sqlite.exec(fs.readFileSync(path.join(root,'drizzle',file),'utf8'));
- let owner='alice',failed=false;
- const db=drizzle(async(query,params,method)=>{if(failed)throw Error('Synthetic database failure');const prepared=sqlite.prepare(query);if(method==='run'){prepared.run(...params);return {rows:[]};}const rows=prepared.all(...params).map(row=>Object.values(row));return {rows:method==='get'?rows[0]:rows};});
- const api=load('app/api/study/route.ts',{'drizzle-orm':orm,zod:require('zod'),'@/db':{getDb:()=>db},'@/db/schema':schema,'@/db/mutable-study':statements,'@/lib/study-model':model,'@/lib/request-body':load('lib/request-body.ts'),'@/lib/server-auth':{userId:async()=>owner,safeMutation:req=>req.headers.get('origin')==='https://test.local',privateJson:(body,status=200)=>Response.json(body,{status})},'@/content/questions.json':{default:questions},'@/content/resources-v2':resources,'@/content/exams/catalogue.json':{default:exams}});
- return {sqlite,api,owner(value){owner=value;},fail(){failed=true;},post:(type,data,headerOwner=owner)=>api.POST(new Request('https://test.local/api/study',{method:'POST',headers:{origin:'https://test.local','Content-Type':'application/json','X-Lantern-Owner':headerOwner},body:JSON.stringify({type,data})}))};
+async function server(){
+ // Real registration, password/session/cookie verification and study route;
+ // only the existing D1/SQLite I/O adapter is controlled.
+ const {environment}=require(path.join(root,'tests/helpers/product-auth-harness.cjs'));
+ const env=environment(),users={alice:await env.register('alice'),bob:await env.register('bob')};let owner='alice',failed=false;
+ for(const user of Object.values(users)){const response=await env.call('session','GET',{cookie:user.cookie});assert.equal(response.status,200);assert.equal((await response.json()).user.id,user.id);}
+ env.hooks.beforeSql=sql=>{if(failed&&/\b(?:attempts|checkins|profiles|recordings|question_marks|resource_tasks)\b/i.test(sql))throw Error('Synthetic business database failure');};
+ return {sqlite:env.sqlite,api:{GET:()=>env.call('study','GET',{cookie:users[owner].cookie})},
+  owner(value){assert.ok(users[value],'Registered owner alias');owner=value;},fail(){failed=true;},
+  post:(type,data,headerOwner)=>env.call('study','POST',{cookie:users[owner].cookie,owner:headerOwner===undefined?users[owner].id:(users[headerOwner]?.id||headerOwner),body:{type,data}})};
 }
 
 test('server same-payload retries preserve one row, original first mode and server-calculated correctness',async()=>{
- const h=server();try{
+ const h=await server();try{
   const attempt={...a(),correct:questions[0].correctIndex!==0,mode:'review'};
   for(let i=0;i<4;i++)assert.equal((await h.post('attempt',attempt)).status,200);
   const rows=h.sqlite.prepare('SELECT * FROM attempts').all();assert.equal(rows.length,1);assert.equal(rows[0].mode,'first');assert.equal(Boolean(rows[0].correct),attempt.choice===questions[0].correctIndex);
@@ -166,7 +170,7 @@ test('server same-payload retries preserve one row, original first mode and serv
 });
 
 test('server same-owner attempt payload changes return 409 and preserve the complete original row',async()=>{
- const h=server();try{
+ const h=await server();try{
   const attempt=a();assert.equal((await h.post('attempt',attempt)).status,200);const before=plain(h.sqlite.prepare('SELECT * FROM attempts').all());
   for(const change of [{qid:questions[1].id},{choice:1},{seconds:9},{createdAt:'2026-01-02T10:00:00.000Z'}]){const response=await h.post('attempt',{...attempt,...change});assert.equal(response.status,409);assert.equal(response.headers.get('X-Lantern-Conflict'),'event-payload');}
   assert.deepEqual(plain(h.sqlite.prepare('SELECT * FROM attempts').all()),before);
@@ -174,7 +178,7 @@ test('server same-owner attempt payload changes return 409 and preserve the comp
 });
 
 test('server settlement retries count once; changes to any checkin payload field return 409',async()=>{
- const h=server();try{
+ const h=await server();try{
   const checkin=c();for(let i=0;i<4;i++)assert.equal((await h.post('checkin',checkin)).status,200);
   const before=plain(h.sqlite.prepare('SELECT * FROM checkins').all());assert.equal(before.length,1);
   for(const change of [{date:'2026-01-02'},{minutes:9},{load:'重'},{note:'changed'},{createdAt:'2026-01-02T10:00:00.000Z'}])assert.equal((await h.post('checkin',{...checkin,...change})).status,409);
@@ -183,7 +187,7 @@ test('server settlement retries count once; changes to any checkin payload field
 });
 
 test('server global-ID collisions retain account isolation and existing 422 without copying foreign rows',async()=>{
- const h=server();try{
+ const h=await server();try{
   const attempt=a(),checkin=c();assert.equal((await h.post('attempt',attempt)).status,200);assert.equal((await h.post('checkin',checkin)).status,200);
   h.owner('bob');assert.equal((await h.post('attempt',attempt)).status,422);assert.equal((await h.post('checkin',checkin)).status,422);
   const bob=await (await h.api.GET()).json();assert.equal(bob.attempts.length,0);assert.equal(bob.checkins.length,0);
@@ -192,7 +196,7 @@ test('server global-ID collisions retain account isolation and existing 422 with
 });
 
 test('overlapping identical server retries produce one durable event and no false conflicts',async()=>{
- const h=server();try{
+ const h=await server();try{
   const attempt=a(),checkin=c();const results=await Promise.all(Array.from({length:5},()=>h.post('attempt',attempt)));assert.ok(results.every(r=>r.status===200));
   const settlements=await Promise.all(Array.from({length:5},()=>h.post('checkin',checkin)));assert.ok(settlements.every(r=>r.status===200));
   assert.equal(h.sqlite.prepare('SELECT count(*) AS n FROM attempts').get().n,1);assert.equal(h.sqlite.prepare('SELECT count(*) AS n FROM checkins').get().n,1);
@@ -200,5 +204,5 @@ test('overlapping identical server retries produce one durable event and no fals
 });
 
 test('server database failure returns unavailable, never a durable success',async()=>{
- const h=server();try{h.fail();assert.equal((await h.post('attempt',a())).status,503);assert.equal((await h.post('checkin',c())).status,503);assert.equal(h.sqlite.prepare('SELECT count(*) AS n FROM attempts').get().n,0);}finally{h.sqlite.close();}
+ const h=await server();try{h.fail();assert.equal((await h.post('attempt',a())).status,503);assert.equal((await h.post('checkin',c())).status,503);assert.equal(h.sqlite.prepare('SELECT count(*) AS n FROM attempts').get().n,0);}finally{h.sqlite.close();}
 });

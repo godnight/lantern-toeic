@@ -6,7 +6,7 @@ const path = require('node:path');
 const { environment, plain } = require('./helpers/product-auth-harness.cjs');
 const root = process.env.LANTERN_REVIEW_ROOT || path.resolve(__dirname, '..');
 
-test('withoutAuth omits only the four auth migrations and keeps complete Study sync triggers', t => {
+test('withoutAuth omits only the four auth migrations and keeps complete Study sync triggers', async t => {
   const e = environment({ withoutAuth: true });
   t.after(() => e.close());
   const tables = e.sqlite.prepare("SELECT name FROM sqlite_schema WHERE type='table'").all().map(row => row.name);
@@ -17,12 +17,17 @@ test('withoutAuth omits only the four auth migrations and keeps complete Study s
   const actualTriggers = e.sqlite.prepare("SELECT name FROM sqlite_schema WHERE type='trigger' ORDER BY name").all().map(row => row.name);
   assert.deepEqual(actualTriggers, expectedTriggers);
   const before = e.sqlite.prepare('SELECT revision,ready FROM study_sync_clock WHERE id=1').get();
-  assert.equal(before.ready, 1);
+  assert.equal(before,undefined,'Schema-only migration must not eagerly initialize or backfill user data');
   const owner = 'synthetic-migration-wiring-only';
   const profile = { ...plain(e.load('lib/study-model.ts').DEFAULT_PROFILE), name: 'Synthetic trigger check' };
   e.sqlite.prepare('INSERT INTO profiles(user_id,body,updated_at) VALUES(?,?,?)').run(owner, JSON.stringify(profile), '2026-01-01T00:00:00.000Z');
   const row = e.sqlite.prepare('SELECT user_id,kind,entity_id,revision,deleted FROM study_sync_index WHERE user_id=?').get(owner);
-  assert.deepEqual(plain(row), { user_id: owner, kind: 'profile', entity_id: owner, revision: before.revision + 1, deleted: 0 });
+  assert.deepEqual(plain(row), { user_id: owner, kind: 'profile', entity_id: owner, revision: 1, deleted: 0 });
+  assert.equal(e.sqlite.prepare('SELECT count(*) AS n FROM study_sync_clock').get().n,0,'Trigger fallback does not invent a ready clock');
+  await e.load('db/initialize-study-sync.ts').initializeStudySyncBatch(e.d1,100);
+  const initialized=e.sqlite.prepare('SELECT revision,ready FROM study_sync_clock WHERE id=1').get();assert.equal(initialized.ready,1);
+  e.sqlite.prepare('UPDATE profiles SET body=? WHERE user_id=?').run(JSON.stringify({...profile,name:'Synthetic updated profile'}),owner);
+  const updated=e.sqlite.prepare('SELECT revision,deleted FROM study_sync_index WHERE user_id=?').get(owner);assert.deepEqual(plain(updated),{revision:initialized.revision+1,deleted:0});
 });
 
 test('normal migration load retains auth tables and the admission column alongside Study sync', t => {

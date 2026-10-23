@@ -92,7 +92,12 @@ export function useProductSession(owner:string|null,nativeMode:boolean){
     }
     const recheck=()=>{void check();};
     const hide=()=>suspend();
-    const pageShow=(event:PageTransitionEvent)=>{if(event.persisted||suspended)recheck();};
+    const pageShow=(event:PageTransitionEvent)=>{
+      // A BFCache document can resume after its previous navigation completed.
+      // Drop only that stale navigation lock; fresh session evidence is still required.
+      if(event.persisted)navigating=false;
+      if(event.persisted||suspended)recheck();
+    };
     const visibility=()=>{if(visible())recheck();else hide();};
     const storage=(event:StorageEvent)=>{
       if(event.key!==STORAGE_KEY||event.newValue===null)return;

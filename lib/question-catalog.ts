@@ -1,7 +1,8 @@
 import legacyData from '../content/questions.json';
 import listening50Gate from '../content/questions-v041-listening50-text-image-gates.json';
 import {validatedListening50Questions,LISTENING50_STATS} from './listening50-catalog';
-import {getListening50Audio} from './question-audio-bindings-v041';
+import {getReviewedListeningAudio} from './question-audio-dispatch-v041';
+import {LISTENING150_ADMISSION} from './listening150-package';
 export {LISTENING50_STATS};
 import b03Data from '../content/questions-v040-b03-r2.json';
 import gateData from '../content/questions-v040-b03-r2-gates.json';
@@ -45,8 +46,13 @@ if(mediaData.sourceQuestionsSha256!==gateData.sourceQuestionsSha256||mediaData.e
 const registered=registerQuestionCatalog(LEGACY_QUESTIONS,B03_QUESTIONS,gateData,mediaData.units as QuestionMediaUnit[]);
 export const CANDIDATE_R2_QUESTIONS:Question[]=registered.questions;
 export const LISTENING50_QUESTIONS=validatedListening50Questions(CANDIDATE_R2_QUESTIONS);
-export const QUESTIONS:Question[]=[...CANDIDATE_R2_QUESTIONS,...LISTENING50_QUESTIONS];
-export const QUESTION_CATALOG_STATS={...registered.counts,availableQuestions:QUESTIONS.length,availableUnits:unitCount(QUESTIONS),newListening50Questions:50,newListening50Units:30,priorListeningQuestions:CANDIDATE_R2_QUESTIONS.filter(q=>q.part<=4).length};
+export const LISTENING50_CATALOG_163:Question[]=[...CANDIDATE_R2_QUESTIONS,...LISTENING50_QUESTIONS];
+const additionalListening=LISTENING150_ADMISSION?.questions??[];
+if(additionalListening.some(q=>LISTENING50_CATALOG_163.some(old=>old.id===q.id)))throw Error('listening150-legacy-id-collision');
+export const LISTENING_COLLECTION_QUESTIONS:Question[]=[...LISTENING50_QUESTIONS,...additionalListening];
+export const LISTENING_COLLECTION_STATS={questions:LISTENING_COLLECTION_QUESTIONS.length,materials:unitCount(LISTENING_COLLECTION_QUESTIONS),targetQuestions:200,ready200:additionalListening.length===150};
+export const QUESTIONS:Question[]=[...LISTENING50_CATALOG_163,...additionalListening];
+export const QUESTION_CATALOG_STATS={...registered.counts,availableQuestions:QUESTIONS.length,availableUnits:unitCount(QUESTIONS),newListening50Questions:50,newListening50Units:30,newListening150Questions:additionalListening.length,newListening150Units:unitCount(additionalListening),priorListeningQuestions:CANDIDATE_R2_QUESTIONS.filter(q=>q.part<=4).length};
 /** App opts in explicitly; default workflow APIs and legacy expression seeds remain unchanged. */
 export const READING_ONLY_QUESTIONS=registerQuestionCatalog(LEGACY_QUESTIONS,B03_QUESTIONS,gateData,[]).questions;
 /** Exact r1 question objects remain available to resume their original practice hash. */
@@ -56,7 +62,8 @@ export const QUESTION_CATALOG_VERSIONS={
  reading93:'practice-v1:d160c266be1fa18b59f6cf7af559bb81209d3f97804454fa7cbb04e24002ced8',
  frozenR1_106:'practice-v1:e468ef5e6bb6c0dd7d7ebd8c5f98bbc2f742f81cb7bcba94447cd474f3ff2371',
  candidateR2_113:'practice-v1:3dff085048aeb511e4c2539ba4d7e876b8cf7213385472d489c817987f879c1e',
- listening50_163:'practice-v1:'+listening50Gate.combinedCatalogCanonicalSha256
+ listening50_163:'practice-v1:'+listening50Gate.combinedCatalogCanonicalSha256,
+ ...(LISTENING150_ADMISSION?{listening200_313:'practice-v1:'+LISTENING150_ADMISSION.combined313CanonicalSha256}:{})
 } as const;
 function assertExactCatalogSnapshot(rows:readonly Question[],version:string){
  if('practice-v1:'+canonicalHash(canonicalJson(JSON.parse(JSON.stringify(rows))))!==version)throw Error('question-catalog-snapshot-mismatch');
@@ -65,6 +72,7 @@ assertExactCatalogSnapshot(LEGACY_QUESTIONS,QUESTION_CATALOG_VERSIONS.legacy68);
 assertExactCatalogSnapshot(READING_ONLY_QUESTIONS,QUESTION_CATALOG_VERSIONS.reading93);
 assertExactCatalogSnapshot(R1_QUESTIONS,QUESTION_CATALOG_VERSIONS.frozenR1_106);
 assertExactCatalogSnapshot(CANDIDATE_R2_QUESTIONS,QUESTION_CATALOG_VERSIONS.candidateR2_113);
-assertExactCatalogSnapshot(QUESTIONS,QUESTION_CATALOG_VERSIONS.listening50_163);
-export const PRACTICE_QUESTION_CATALOGS:readonly (readonly Question[])[]=[LEGACY_QUESTIONS,READING_ONLY_QUESTIONS,R1_QUESTIONS,CANDIDATE_R2_QUESTIONS,QUESTIONS];
-export function getQuestionAudioSelection(qid:string):QuestionAudioSelection|null{return getListening50Audio(qid)?.body??registered.audioByQuestion.get(qid)??null;}
+assertExactCatalogSnapshot(LISTENING50_CATALOG_163,QUESTION_CATALOG_VERSIONS.listening50_163);
+if(LISTENING150_ADMISSION)assertExactCatalogSnapshot(QUESTIONS,'practice-v1:'+LISTENING150_ADMISSION.combined313CanonicalSha256);
+export const PRACTICE_QUESTION_CATALOGS:readonly (readonly Question[])[]=[LEGACY_QUESTIONS,READING_ONLY_QUESTIONS,R1_QUESTIONS,CANDIDATE_R2_QUESTIONS,LISTENING50_CATALOG_163,...(LISTENING150_ADMISSION?[QUESTIONS]:[])];
+export function getQuestionAudioSelection(qid:string):QuestionAudioSelection|null{return getReviewedListeningAudio(qid)?.body??registered.audioByQuestion.get(qid)??null;}

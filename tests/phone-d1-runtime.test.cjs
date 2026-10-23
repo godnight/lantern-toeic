@@ -1,8 +1,8 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),os=require('node:os');
-const site=fs.realpathSync(process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'../../site'));
+const site=fs.realpathSync(process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..'));
 const fixtureRoot=path.resolve(__dirname,'..');
-const productOnly=process.env.LANTERN_PHONE_D1_PRODUCT_ONLY==='1';
+const productOnly=process.env.LANTERN_PHONE_D1_PRODUCT_ONLY!=='0';
 const candidate=productOnly?site:fixtureRoot;
 const pinOutput=path.resolve(process.env.LANTERN_PHONE_D1_PINS||path.join(os.tmpdir(),'lantern-phone-d1-pins-'+crypto.randomUUID()+'.json'));
 assert.equal(pinOutput.toLowerCase().startsWith(site.toLowerCase()+path.sep),false,'Runtime pin output must stay outside the product site');
@@ -77,7 +77,7 @@ test('real local workerd D1 phone proof/binding/session transactions preserve st
   const raw=fs.readFileSync(file);sourcePins.set(file,{path:file,bytes:raw.length,sha256:crypto.createHash('sha256').update(raw).digest('hex')});
  }
  const mf=new Miniflare({name:'phone-d1-synthetic-only',modules:true,script:built.outputFiles[0].text,compatibilityDate:'2026-05-15',compatibilityFlags:['nodejs_compat'],cf:false,host:'127.0.0.1',port:0,d1Databases:{DB:'phone-d1-synthetic-only'},d1Persist:false,cachePersist:false,kvPersist:false,r2Persist:false,durableObjectsPersist:false,bindings:{LANTERN_AUTH_ENABLED:'true',LANTERN_AUTH_ORIGIN:origin,LANTERN_PHONE_FAKE:'true'},log:new Log(LogLevel.ERROR),outboundService:()=>new Response('External network denied',{status:502})});
- t.after(()=>mf.dispose());
+ t.after(async()=>{await mf.dispose();t.diagnostic('Local synthetic workerd D1 disposed; cleanup awaited');});
  const db=await mf.getD1Database('DB');
  const migrationFiles=fs.readdirSync(path.join(site,'drizzle')).filter(name=>/^\d+.*\.sql$/.test(name)).sort().map(name=>path.join(site,'drizzle',name));
  if(productOnly){assert.equal(migrationFiles.length,9,'Final product has exactly the nine approved migrations');assert.equal(migrationFiles.some(file=>path.basename(file)==='0007_phone_auth.sql'),true,'Final product owns the actual phone proof migration');assert.equal(migrationFiles.some(file=>path.basename(file)==='0008_phone_challenges.sql'),true,'Final product owns the actual phone challenge migration');}

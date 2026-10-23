@@ -1,6 +1,10 @@
 'use client';
 
 import {useEffect,useRef,useState,type FormEvent} from 'react';
+import {PublicInfoLinks} from '../../app/learn/legal-pages';
+import {FirstRunWelcome} from '@/app/learn/first-run-welcome';
+import {useFirstRun} from '@/lib/use-first-run';
+import {applyDocumentTheme} from '@/lib/ui-theme';
 import {flushSync} from 'react-dom';
 import StudyApp from '@/app/study-app';
 import {subscribeNativeState,registerNativeBack} from '@/lib/native-host';
@@ -16,6 +20,9 @@ export default function NativeAccountRoot(){
   const [accountOpen,setAccountOpen]=useState(false),[switching,setSwitching]=useState(false);
   const [mode,setMode]=useState<'login'|'register'>('login'),[username,setUsername]=useState('');
   const [password,setPassword]=useState(''),[confirmation,setConfirmation]=useState(''),[error,setError]=useState('');
+  const [passwordVisible,setPasswordVisible]=useState(false);
+  const accountOrigin=useRef<'welcome'|'study'>('study');
+  const firstRun=useFirstRun(state.status==='ready',state.status==='ready'?state.user?.id??null:null);
   const controller=useRef<NativeAccountController|null>(null);
   const [phoneTransport,setPhoneTransport]=useState<PhoneClientTransport|null>(null);
   const [phoneChallenge,setPhoneChallenge]=useState<{owner:string|null;challenge:PhoneChallenge}|null>(null);
@@ -25,7 +32,7 @@ export default function NativeAccountRoot(){
     const transport=createNativeAuthTransport();const value=new NativeAccountController(transport);controller.current=value;setPhoneTransport(nativePhoneClient(transport));
     const unsubscribe=value.subscribe((next,synchronous)=>{if(synchronous)flushSync(()=>setState(next));else setState(next);});
     let foreground=true,initialized=false;
-    const clear=()=>{setPassword('');setConfirmation('');setPhoneChallenge(null);setPhoneOutcome(null);};
+    const clear=()=>{setPassword('');setConfirmation('');setPasswordVisible(false);setPhoneChallenge(null);setPhoneOutcome(null);};
     const hide=()=>{clear();value.suspend();};
     const show=()=>{clear();if(foreground&&document.visibilityState!=='hidden')value.recheck();else value.suspend();};
     const unsubscribeNative=subscribeNativeState(active=>{
@@ -42,7 +49,7 @@ export default function NativeAccountRoot(){
       window.removeEventListener('pagehide',hide);window.removeEventListener('pageshow',show);
       window.removeEventListener('focus',show);document.removeEventListener('visibilitychange',visibility);};
   },[]);
-  const clearSecrets=()=>{setPassword('');setConfirmation('');};
+  const clearSecrets=()=>{setPassword('');setConfirmation('');setPasswordVisible(false);};
   function closeAccount(fromPop=false){
     clearSecrets();setUsername('');setError('');setSwitching(false);setMode('login');setPhoneChallenge(null);setPhoneOutcome(null);setAccountOpen(false);
     // Back records the user's close intent even during a pending/unknown identity.
@@ -51,13 +58,21 @@ export default function NativeAccountRoot(){
   }
   closeRef.current=closeAccount;
   useEffect(()=>{
+    if(!document.documentElement.dataset.uiTheme)applyDocumentTheme('paper');
+  },[]);
+  useEffect(()=>{
+    // Only the controller's independent session proof can finish account entry.
+    if(accountOpen&&accountOrigin.current==='welcome'&&state.status==='ready'&&state.user&&firstRun.status==='complete')closeRef.current();
+  },[accountOpen,state,firstRun.status]);
+  useEffect(()=>{
     if(!accountOpen)return;
     const pop=()=>closeRef.current(true);
     window.addEventListener('popstate',pop);
     const unsubscribe=registerNativeBack(()=>{closeRef.current();return true;},100);
     return()=>{unsubscribe();window.removeEventListener('popstate',pop);};
   },[accountOpen]);
-  function openAccount(){clearSecrets();setError('');setSwitching(false);setPhoneChallenge(null);setPhoneOutcome(null);
+  function openAccount(initialMode:'login'|'register'='login'){clearSecrets();setError('');setSwitching(false);setPhoneChallenge(null);setPhoneOutcome(null);
+    setMode(initialMode);accountOrigin.current=firstRun.status==='welcome'?'welcome':'study';
     window.history.pushState({...window.history.state,lanternNativeAccount:true},'');setAccountOpen(true);}
   async function phoneMutation(purpose:PhonePurpose,body:PhoneVerification){
     const value=controller.current;if(!value||state.status!=='ready')return;
@@ -77,17 +92,28 @@ export default function NativeAccountRoot(){
   if(state.status!=='ready')return <main className="workspace-account" style={{padding:24}}>
     <section className="panel" aria-live="polite" aria-busy={state.status==='checking'}><h1>核对账号状态</h1>
       <p>{state.message}</p>{state.status==='blocked'&&<button type="button" className="button primary" onClick={recheck}>重新核对账号</button>}
-      <p className="small muted">原账号和设备记录仍保留原归属。当前不会猜测身份或打开其他学习分区。</p>
+      <PublicInfoLinks compact/>
     </section></main>;
-  if(!accountOpen)return <StudyApp key={state.user?.id??'device-guest'} owner={state.user?.id??null} nativeMode onAccount={openAccount}/>;
   const available=state.capabilities.passwordLogin&&!state.unavailable;
+  if(firstRun.status==='checking'||firstRun.status==='error')return <main className="workspace-account" style={{padding:24}}>
+    <section className="panel" aria-live="polite" aria-busy={firstRun.status==='checking'}>
+      <h1>{firstRun.status==='checking'?'正在准备微光':'暂时无法读取本机设置'}</h1>
+      {firstRun.error&&<p role="alert">{firstRun.error}</p>}
+      {firstRun.status==='error'&&<button className="button primary" type="button" onClick={firstRun.retry}>重试</button>}
+      <PublicInfoLinks compact/>
+    </section></main>;
+  if(!accountOpen){
+    if(firstRun.status==='welcome')return <FirstRunWelcome accountAvailable={available}
+      onRegister={()=>openAccount('register')} onLogin={()=>openAccount('login')}
+      onGuest={()=>{if(state.status==='ready'&&!state.user)firstRun.complete('guest-entered');}}/>;
+    return <StudyApp key={state.user?.id??'device-guest'} owner={state.user?.id??null} nativeMode onAccount={()=>openAccount()}/>;
+  }
   return <main className="workspace-account" style={{display:'grid',gap:20,padding:24}}>
-    <section className="panel" style={{display:'grid',gap:12}}><h1>账号与本机记录</h1>
+    <section className="panel" style={{display:'grid',gap:12}}><h1>账号与安全</h1>
       {state.user?<p role="status">已由服务器验证：<b>{state.user.username}</b></p>:
         <p role="status">{state.unavailable?'原生账号能力尚未配置或当前系统不支持；可继续使用原设备访客记录。':'当前未登录，正在使用此设备的访客分区。'}</p>}
-      <p>每个账号的学习记录分别保存在本机。切换或退出会保留原记录，访客记录仍属于此设备。</p>
-      <p className="small muted">切换前请保存当前草稿和录音，并按需备份。当前不提供原生云同步。</p>
-      <div className="button-row"><button type="button" className="button secondary" onClick={()=>closeAccount()}>返回学习</button>
+      <p className="small muted">各账号与访客记录分别保留在本机。</p>
+      <div className="button-row"><button type="button" className="button secondary" onClick={()=>closeAccount()}>{accountOrigin.current==='welcome'?'返回欢迎页':'返回学习'}</button>
         <button type="button" className="text-button" onClick={recheck}>重新核对账号</button>
         {state.user&&<><button type="button" className="button secondary" onClick={()=>{clearSecrets();setError('');setPhoneChallenge(null);setPhoneOutcome(null);setSwitching(true);}}>切换账号</button>
           <button type="button" className="button secondary" onClick={()=>{clearSecrets();setError('');setPhoneChallenge(null);setPhoneOutcome(null);void controller.current?.mutate('logout');}}>退出当前账号</button></>}
@@ -98,12 +124,13 @@ export default function NativeAccountRoot(){
       <form onSubmit={event=>void submit(event)}>
         <label className="field" htmlFor="native-account-username">用户名<input id="native-account-username" name="username" value={username}
           onChange={event=>setUsername(event.target.value)} autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} required/></label>
-        <p className="small muted">3–32 个英文字母、数字或下划线，大小写不区分，首尾空白会去除。</p>
-        <label className="field" htmlFor="native-account-password">密码<input id="native-account-password" name="password" type="password" value={password}
+        <p className="small muted">3–32 位字母、数字或下划线。</p>
+        <label className="field" htmlFor="native-account-password">密码<input id="native-account-password" name="password" type={passwordVisible?'text':'password'} value={password}
           onChange={event=>setPassword(event.target.value)} autoComplete={mode==='register'?'new-password':'current-password'} required/></label>
-        <p className="small muted">15–128 个字符，首尾空白属于密码。支持粘贴和密码管理器。</p>
+        <button type="button" className="text-button" aria-pressed={passwordVisible} onClick={()=>setPasswordVisible(value=>!value)}>{passwordVisible?'隐藏密码':'显示密码'}</button>
+        <p className="small muted">15–128 个字符，空格也属于密码。</p>
         {mode==='register'&&<label className="field" htmlFor="native-account-confirmation">再次输入密码<input id="native-account-confirmation" name="password-confirmation"
-          type="password" value={confirmation} onChange={event=>setConfirmation(event.target.value)} autoComplete="new-password" required/></label>}
+          type={passwordVisible?'text':'password'} value={confirmation} onChange={event=>setConfirmation(event.target.value)} autoComplete="new-password" required/></label>}
         {error&&<p role="alert" className="bad">{error}</p>}
         <div className="button-row"><button className="button primary" type="submit">{mode==='login'?'登录':'注册并登录'}</button>
           <button className="button secondary" type="button" onClick={()=>{clearSecrets();setError('');setMode(mode==='login'?'register':'login');}}>{mode==='login'?'注册新账号':'已有账号，去登录'}</button>
@@ -115,6 +142,6 @@ export default function NativeAccountRoot(){
       purpose={state.user&&!switching?'bind':'login'} transport={phoneTransport} onMutation={phoneMutation}
       challenge={phoneChallenge?.owner===(state.user?.id??null)?phoneChallenge.challenge:null} outcome={phoneOutcome}
       onChallenge={challenge=>{setPhoneOutcome(null);setPhoneChallenge(challenge?{owner:state.user?.id??null,challenge}:null);}}/>}
-    <section className="panel"><h2>恢复渠道</h2><p>当前没有已验证的密码恢复渠道，请妥善保管密码。生产短信提供方尚未配置，能力探测不会被当作已发送短信。</p></section>
+    <p className="small muted">暂不支持找回密码，请妥善保存。</p><PublicInfoLinks compact/>
   </main>;
 }

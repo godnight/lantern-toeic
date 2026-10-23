@@ -46,7 +46,7 @@ export function selectPractice(
   if (!pool.length) return {kind: 'exhausted', reason: options.intent === 'continue' ? 'no-unseen' : 'no-matching-content'};
   const chosen: PracticeUnit[] = [];
   let count = 0;
-  for (const unit of pool) {chosen.push(unit); count += unit.questions.length; if (count >= options.targetCount) break;}
+  for (const unit of pool) {if (count + unit.questions.length > 200) break; chosen.push(unit); count += unit.questions.length; if (count >= options.targetCount) break;}
   return {
     kind: 'queue', questions: chosen.flatMap(unit => unit.questions), unitIds: chosen.map(unit => unit.id),
     isReview: chosen.some(unit => unit.questions.some(question => seen.has(question.id))),

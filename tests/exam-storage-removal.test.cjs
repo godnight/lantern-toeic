@@ -3,7 +3,7 @@ const root=process.env.LANTERN_EXAM_ROOT||path.resolve(__dirname,'..'),ts=requir
 const {IDBFactory,IDBObjectStore}=require('fake-indexeddb');
 const fixture=require('./fixtures/synthetic-exam.cjs');
 const plain=v=>JSON.parse(JSON.stringify(v));
-function load(file,imports={}){const exports={},code=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;vm.runInNewContext(code,{exports,require:name=>{assert.ok(name in imports);return imports[name];},Date,Map,Set,Error,JSON,Promise,structuredClone,TextEncoder,Uint8Array,Uint32Array,ArrayBuffer,Blob,URL,atob,btoa,crypto:crypto.webcrypto});return exports;}
+function load(file,imports={}){const exports={},code=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;vm.runInNewContext(code,{exports,require:name=>{if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:{}}).resolve(name,file);return imports[name];},Date,Map,Set,Error,JSON,Promise,structuredClone,TextEncoder,Uint8Array,Uint32Array,ArrayBuffer,Blob,File,URL,Request,Response,Headers,ReadableStream,AbortController,TextDecoder,atob,btoa,crypto:crypto.webcrypto});return exports;}
 const model=load('lib/exam-model.ts'),storage=load('lib/exam-storage.ts',{'./exam-model':model});
 const start=Date.parse('2026-10-11T00:00:00Z');
 const repo=(factory=new IDBFactory(),owner='alice')=>storage.openExamRepository(owner,{factory,name:'removal-test'});

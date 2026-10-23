@@ -8,9 +8,9 @@ const fixture=require(path.join(root,'tests/fixtures/synthetic-exam.cjs'));
 const plain=v=>JSON.parse(JSON.stringify(v));
 function load(file,imports={},globals={}){
  const exports={},code=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- vm.runInNewContext(code,{exports,require:name=>{assert.ok(name in imports,name);return imports[name];},Date,Map,Set,Error,JSON,Promise,structuredClone,TextEncoder,TextDecoder,Uint8Array,Uint32Array,ArrayBuffer,Blob,File,URL,Request,Response,Headers,ReadableStream,atob,btoa,crypto:crypto.webcrypto,...globals},{filename:file});return exports;
+ vm.runInNewContext(code,{exports,require:name=>{if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals}).resolve(name,file);return imports[name];},Date,Map,Set,Error,JSON,Promise,structuredClone,TextEncoder,TextDecoder,Uint8Array,Uint32Array,ArrayBuffer,Blob,File,URL,Request,Response,Headers,ReadableStream,AbortController,atob,btoa,crypto:crypto.webcrypto,...globals},{filename:file});return exports;
 }
-const model=load('lib/exam-model.ts'),library=load('lib/exam-library.ts',{'@/lib/exam-model':model});
+const model=load('lib/exam-model.ts'),library=load('lib/exam-library.ts',{'@/lib/exam-model':model},{indexedDB:new (require('fake-indexeddb').IDBFactory)()});
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 function sample(id='cloud-structure-only'){
  const exam=fixture(id),body=JSON.stringify(exam),bytes=Buffer.byteLength(body);

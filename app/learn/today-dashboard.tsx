@@ -2,8 +2,11 @@
 
 import type {ReactNode} from 'react';
 import {BookOpen,Headphones,RotateCcw} from 'lucide-react';
+import type {Theme} from '@/lib/study-model';
+import {ThemeScene} from './ui-theme';
 
 export type TodayDashboardProps = {
+  theme?: Theme;
   /** Already formatted in the profile's learning timezone. */
   dateLabel: string;
   /** Existing TodayVocabularyTask, with its real start/resume/error handling. */
@@ -19,16 +22,15 @@ export type TodayDashboardProps = {
 };
 
 /** Presentation only. The parent supplies projections and the existing workflow action. */
-export function TodayDashboard({dateLabel,wordTask,wordSummary,reviewSummary,
+export function TodayDashboard({theme='paper',dateLabel,wordTask,wordSummary,reviewSummary,
   practiceSummary='按专项选择练习',onOpenPlan,onOpenPractice,onOpenReview,
   disabled=false,notices}:TodayDashboardProps) {
   const tasks=[
-    {key:'words',icon:BookOpen,title:'单词计划',summary:wordSummary,label:'看计划',onClick:onOpenPlan},
-    {key:'practice',icon:Headphones,title:'听读专项',summary:practiceSummary,label:'去选择',onClick:onOpenPractice},
-    {key:'review',icon:RotateCcw,title:'到期复习',summary:reviewSummary,label:'查看',onClick:onOpenReview},
+    {key:'practice',icon:Headphones,title:'听读练习',summary:practiceSummary,label:'选择题型',onClick:onOpenPractice},
+    {key:'review',icon:RotateCcw,title:'今日复习',summary:reviewSummary,label:'查看',onClick:onOpenReview},
   ];
   return <div className="v040-page v040-today" data-v040-page="today">
-    <div className="v040-page-heading"><p className="v040-date">{dateLabel}</p><h1>今日学习</h1></div>
+    <div className="v041-today-scene"><ThemeScene theme={theme} scene="home"/><div className="v040-page-heading"><p className="v040-date">{dateLabel}</p><h1>今日学习</h1></div></div>
     {notices}
     <div className="v040-word-action">{wordTask}</div>
     <section aria-labelledby="v040-tasks-title">
@@ -39,5 +41,6 @@ export function TodayDashboard({dateLabel,wordTask,wordSummary,reviewSummary,
         <button type="button" className="v040-row-action" disabled={disabled} onClick={task.onClick}>{task.label}</button>
       </div>)}</div>
     </section>
+    {(theme==='hollow'||theme==='silk')&&<ThemeScene theme={theme} scene={theme==='hollow'?'blue-lake':'calm'} className="v041-today-calm"/>}
   </div>;
 }

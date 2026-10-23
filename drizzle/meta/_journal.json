@@ -36,6 +36,34 @@
       "when": 1792506041360,
       "tag": "0004_study_sync_index",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1792735325390,
+      "tag": "0005_product_auth",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1792735325391,
+      "tag": "0006_auth_admission_ticket",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1792735325392,
+      "tag": "0007_phone_auth",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1792735325393,
+      "tag": "0008_phone_challenges",
+      "breakpoints": true
     }
   ]
 }

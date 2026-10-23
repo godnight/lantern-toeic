@@ -12,7 +12,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 function load(file, imports = {}, globals = {}) {
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(path.join(root, file), 'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-  vm.runInNewContext(code, {exports,require(name){assert.ok(name in imports, 'Unexpected import: '+name);return imports[name];},Date,Map,Set,structuredClone,crypto:webcrypto,Blob,URL,AbortController,...globals}, {filename:file});
+  vm.runInNewContext(code, {exports,require(name){if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals}).resolve(name,file);return imports[name];},Date,Map,Set,structuredClone,crypto:webcrypto,Blob,URL,AbortController,...globals}, {filename:file});
   return exports;
 }
 const model = load('lib/study-model.ts');

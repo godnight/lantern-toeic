@@ -1,12 +1,12 @@
 "use strict";
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),os=require('node:os');
-const site=fs.realpathSync(process.env.LANTERN_REVIEW_ROOT||String.raw`D:\zzl\托业学习\vocab-work\v041-account-auth-integration-20261022\site-r2`);
-const productOnly=process.env.LANTERN_PHONE_FLOW_PRODUCT_ONLY==='1',candidate=productOnly?site:path.resolve(__dirname,'..');
+const site=fs.realpathSync(process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..'));
+const productOnly=process.env.LANTERN_PHONE_FLOW_PRODUCT_ONLY!=='0',candidate=productOnly?site:path.resolve(__dirname,'..');
 const pinsOut=path.resolve(process.env.LANTERN_PHONE_FLOW_PINS||path.join(os.tmpdir(),'phone-flow-'+crypto.randomUUID()+'.json'));
 assert(!pinsOut.toLowerCase().startsWith(site.toLowerCase()+path.sep),'Pins output must stay outside product');
 const {createPhoneFlowHarness}=require('./helpers/phone-flow-harness.cjs');
 test('actual local workerd D1 SMS challenge/send/verify and stable account transaction boundary',{timeout:120000},async t=>{
- const {mf,db,sourcePins,origin}=await createPhoneFlowHarness({site,candidate,productOnly,pinsOut});t.after(()=>mf.dispose());
+ const {mf,db,sourcePins,origin}=await createPhoneFlowHarness({site,candidate,productOnly,pinsOut});t.after(async()=>{await mf.dispose();t.diagnostic('Local synthetic phone-flow workerd disposed; cleanup awaited');});
  const send=(route,body,cookie,headers={})=>mf.dispatchFetch(origin+route,{method:body===undefined?'GET':'POST',headers:{...(body===undefined?{}:{Origin:origin,'Content-Type':'application/json'}),...(cookie?{Cookie:cookie}:{}),...headers},...(body===undefined?{}:{body:JSON.stringify(body)})});
  const config=async value=>assert.equal((await send('/__test/config',value)).status,200);
  const issue=async id=>(await (await send('/__test/issuer',{id})).json());

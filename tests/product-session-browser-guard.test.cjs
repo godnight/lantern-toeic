@@ -8,6 +8,7 @@ const vm=require('node:vm');
 const crypto=require('node:crypto');
 const root=process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..');
 const ts=require(path.join(root,'node_modules/typescript'));
+const {createSourceLoader}=require(path.join(root,'tests/helpers/actual-source-loader.cjs'));
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const A={id:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'};
 const B={id:'usr_bbbbbbbb-2222-4222-8222-222222222222',username:'synthetic_b'};
@@ -30,8 +31,10 @@ function browserHarness(responses=[],{owner=A.id,nativeMode=false,broadcast=true
   useMemo(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps))slots[i]={deps,value:fn()};return slots[i].value;},
   useEffect(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps)){const previous=slots[i];slots[i]={deps};effects.push(()=>{previous?.cleanup?.();slots[i].cleanup=fn();});}}
  };
- const window={...events(),location:{origin:nativeMode?'https://lantern.local':'https://guard.example.test',assign(url){order.push('navigate');navigation.push(url);}},localStorage:{setItem(key,value){order.push('storage');writes.push({key,value});},removeItem(key){writes.push({key,removed:true});}}};
- const document={...events(),visibilityState:'visible'};
+ const presentationMarker={kind:'lantern-first-run',schemaVersion:1,completed:true,reason:'existing-install'};
+ const storage=new Map([['lantern-first-run-v1',JSON.stringify(presentationMarker)]]);
+ const window={...events(),location:{origin:nativeMode?'https://lantern.local':'https://guard.example.test',assign(url){order.push('navigate');navigation.push(url);}},localStorage:{get length(){return storage.size;},key:index=>[...storage.keys()][index]??null,getItem:key=>storage.get(key)??null,setItem(key,value){order.push('storage');writes.push({key,value});storage.set(key,String(value));},removeItem(key){writes.push({key,removed:true});storage.delete(key);}}};
+ const document={...events(),visibilityState:'visible',documentElement:{dataset:{uiTheme:'paper'}}};
  if(broadcast)window.BroadcastChannel=class {
   constructor(name){this.name=name;this.onmessage=null;channels.add(this);ownedChannels.add(this);}
   postMessage(data){order.push('broadcast');posted.push(structuredClone(data));for(const channel of channels)if(channel!==this&&channel.name===this.name)channel.onmessage?.({data});}
@@ -43,9 +46,29 @@ function browserHarness(responses=[],{owner=A.id,nativeMode=false,broadcast=true
   if(response instanceof Response)return response;
   return {status:response.status,json:async()=>{if(response.jsonPromise)return await response.jsonPromise;if(response.jsonError)throw response.jsonError;return response.body;},ok:response.status>=200&&response.status<300};
  }};
- function load(file,imports){const exports={};vm.runInNewContext(ts.transpileModule(sourceOverrides[file]??fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,{exports,require:name=>{assert.ok(name in imports,'Unexpected import: '+name);return imports[name];},...globals},{filename:file});return exports;}
- const helper=load('lib/use-product-session.ts',{react,'react-dom':{flushSync(fn){flushes++;fn();render();}}});
+ function load(file,imports,localGlobals={}){const exports={};vm.runInNewContext(ts.transpileModule(sourceOverrides[file]??fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,{exports,require:name=>{assert.ok(name in imports,'Unexpected import: '+name);return imports[name];},...globals,...localGlobals},{filename:file});return exports;}
+ const countListeners=items=>[...items.values()].reduce((count,functions)=>count+functions.size,0);
+ const addListener=(items,type,fn)=>{if(!items.has(type))items.set(type,new Set());items.get(type).add(fn);};
+ const removeListener=(items,type,fn)=>{items.get(type)?.delete(fn);if(!items.get(type)?.size)items.delete(type);};
+ const sessionListeners=new Map(),sessionWindow=Object.create(window);
+ sessionWindow.addEventListener=(type,fn)=>{addListener(sessionListeners,type,fn);window.addEventListener(type,fn);};
+ sessionWindow.removeEventListener=(type,fn)=>{removeListener(sessionListeners,type,fn);window.removeEventListener(type,fn);};
+ const accountListeners=new Map(),accountWindow=Object.create(window);
+ accountWindow.addEventListener=(type,fn)=>{addListener(accountListeners,type,fn);window.addEventListener(type,fn);};
+ accountWindow.removeEventListener=(type,fn)=>{removeListener(accountListeners,type,fn);window.removeEventListener(type,fn);};
+ const helper=load('lib/use-product-session.ts',{react,'react-dom':{flushSync(fn){flushes++;fn();render();}}},{window:sessionWindow});
  const jsx=(type,props,key)=>({type,props,key});
+ // Real presentation hook/domain; preexisting marker contains no identity.
+ // Auth-specific listener probes retain their original scope. Presentation
+ // listeners still register on the very same event map and receive dispatch;
+ // ownership is tracked separately instead of treating them as auth listeners.
+ const presentationListeners=new Map(),allWindowListeners=window.count;
+ const presentationWindow=Object.create(window);
+ presentationWindow.addEventListener=(type,fn)=>{addListener(presentationListeners,type,fn);window.addEventListener(type,fn);};
+ presentationWindow.removeEventListener=(type,fn)=>{removeListener(presentationListeners,type,fn);window.removeEventListener(type,fn);};
+ window.sessionCount=()=>countListeners(sessionListeners);
+ const firstRunSource=createSourceLoader({root,imports:{react},globals:{...globals,window:presentationWindow}}),firstRun=firstRunSource.load('lib/use-first-run.ts');
+ assert.deepEqual(JSON.parse(JSON.stringify(firstRunSource.load('lib/first-run.ts').readFirstRunMarker(window.localStorage))),presentationMarker);
  if(account){
   const identity=load('lib/product-identity.ts',{});
   const number=load('lib/phone-number.ts',{});
@@ -53,9 +76,9 @@ function browserHarness(responses=[],{owner=A.id,nativeMode=false,broadcast=true
   // This harness inspects the parent account/session barrier. Child PhoneFlow
   // stays opaque, as StudyWorkspace does below; actual phone UI has separate
   // interactive browser-to-D1 coverage rather than fake React hook execution.
-  component=load('app/account/account-form.tsx',{react,'react/jsx-runtime':{jsx,jsxs:jsx},'./phone-flow':{default:function PhoneFlow(){}},'@/lib/phone-auth-client':phone,'@/lib/use-product-session':{useProductSession(...args){guard=realAccountGuard?helper.useProductSession(...args):{status:'ready',recheck(){}};return guard;},broadcastProductSessionChange:helper.broadcastProductSessionChange}}).default;
+  component=load('app/account/account-form.tsx',{'../learn/legal-pages':{PublicInfoLinks:'PublicInfoLinks'},react,'react/jsx-runtime':{jsx,jsxs:jsx},'./phone-flow':{default:function PhoneFlow(){}},'@/lib/phone-auth-client':phone,'@/lib/use-product-session':{useProductSession(...args){guard=realAccountGuard?helper.useProductSession(...args):{status:'ready',recheck(){}};return guard;},broadcastProductSessionChange:helper.broadcastProductSessionChange}},{window:accountWindow}).default;
  }else{
-  const imports={react,'react/jsx-runtime':{jsx,jsxs:jsx},'@/lib/use-product-session':{useProductSession(...args){guard=helper.useProductSession(...args);return guard;}}};
+  const imports={react,'react/jsx-runtime':{jsx,jsxs:jsx},'@/lib/use-first-run':firstRun,'@/lib/use-product-session':{useProductSession(...args){guard=helper.useProductSession(...args);return guard;}}};
   // StudyWorkspace itself remains opaque: assertions inspect whether React
   // receives that keyed component at all, without substituting guest data.
   const code=fs.readFileSync(path.join(root,'app/study-app.tsx'),'utf8');
@@ -64,8 +87,10 @@ function browserHarness(responses=[],{owner=A.id,nativeMode=false,broadcast=true
  }
  function nodes(value,result=[]){if(!value||typeof value!=='object')return result;if(Array.isArray(value)){value.forEach(child=>nodes(child,result));return result;}result.push(value);nodes(value.props?.children,result);return result;}
  function text(value){if(value==null||typeof value==='boolean')return '';if(Array.isArray(value))return value.map(text).join('');return typeof value==='object'?text(value.props?.children):String(value);}
- function render(){cursor=0;tree=component({owner,nativeMode});const nextMounted=nodes(tree).some(node=>node.type===component.workspace);if(mounted&&!nextMounted)unmounts++;mounted=nextMounted;const pending=effects;effects=[];pending.forEach(fn=>fn());return tree;}
+ function listenerAudit(){return {all:allWindowListeners(),session:{module:'lib/use-product-session.ts',count:countListeners(sessionListeners),types:[...sessionListeners.keys()]},presentation:{module:'lib/use-first-run.ts',count:countListeners(presentationListeners),types:[...presentationListeners.keys()]},account:{module:'app/account/account-form.tsx',count:countListeners(accountListeners),types:[...accountListeners.keys()]},unclassified:allWindowListeners()-countListeners(sessionListeners)-countListeners(presentationListeners)-countListeners(accountListeners)};}
+ function render(){cursor=0;tree=component({owner,nativeMode});const nextMounted=nodes(tree).some(node=>node.type===component.workspace);if(mounted&&!nextMounted)unmounts++;mounted=nextMounted;const pending=effects;effects=[];pending.forEach(fn=>fn());assert.equal(listenerAudit().unclassified,0,'All window subscriptions must have explicit fixture module ownership');return tree;}
  render();
+ if(nativeMode)console.info('NATIVE_AUTH_FIXTURE_LISTENER_OWNERSHIP '+JSON.stringify(listenerAudit()));
  return {calls,navigation,posted,writes,order,window,document,helper,responses,
   get timerCount(){return timers.size;},get status(){return guard?.status;},get mounted(){return mounted;},get unmounts(){return unmounts;},get flushes(){return flushes;},get workspace(){return nodes(tree).find(node=>node.type===component.workspace);},
   text:()=>text(tree),render,
@@ -79,7 +104,7 @@ function browserHarness(responses=[],{owner=A.id,nativeMode=false,broadcast=true
   input(id,value){this.node('input',id).props.onChange({target:{value}});render();},
   async click(label){this.node('button',label).props.onClick();await this.settle();},
   async submit(){this.node('form').props.onSubmit({preventDefault(){}});await this.settle();},
-  dispose(){slots.forEach(slot=>slot?.cleanup?.());assert.equal(timers.size,0);assert.equal(ownedChannels.size,0);}
+  dispose(){slots.forEach(slot=>slot?.cleanup?.());assert.equal(timers.size,0);assert.equal(ownedChannels.size,0);assert.equal(presentationListeners.size,0);assert.equal(accountListeners.size,0);assert.equal(sessionListeners.size,0);assert.equal(allWindowListeners(),0);assert.equal(document.count(),0);if(nativeMode)console.info('NATIVE_AUTH_FIXTURE_LISTENERS_DISPOSED '+JSON.stringify(listenerAudit()));}
  };
 }
 
@@ -257,7 +282,7 @@ test('storage fallback only invalidates identity and malformed 200/timeouts neve
 
 test('native does not subscribe, fetch or broadcast product sessions',async()=>{
  const h=browserHarness([],{nativeMode:true});await h.settle();h.window.dispatch('focus');h.window.dispatch('pageshow',{persisted:true});h.visibility('hidden');h.visibility('visible');h.helper.broadcastProductSessionChange();
- assert.equal(h.status,'ready');assert.equal(h.mounted,true);assert.equal(h.calls.length,0);assert.equal(h.window.count(),0);assert.equal(h.document.count(),0);assert.deepEqual(h.writes,[]);assert.deepEqual(h.posted,[]);h.dispose();
+ assert.equal(h.status,'ready');assert.equal(h.mounted,true);assert.equal(h.calls.length,0);assert.equal(h.window.sessionCount(),0);assert.equal(h.document.count(),0);assert.deepEqual(h.writes,[]);assert.deepEqual(h.posted,[]);h.dispose();
 });
 
 test('successful auth sends only invalidation before navigation',async()=>{

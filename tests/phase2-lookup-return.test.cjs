@@ -5,10 +5,14 @@ const root=process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..');
 const componentFile=process.env.LANTERN_SEARCH_COMPONENT||path.join(root,'app/learn/vocabulary-library.tsx');
 const ts=require(path.join(root,'node_modules/typescript'));
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
+const {createSourceLoader}=require(path.join(root,'tests/helpers/actual-source-loader.cjs'));
 function load(file,imports={},globals={}){
- const source=fs.readFileSync(file==='app/learn/vocabulary-library.tsx'?componentFile:path.join(root,file),'utf8'),exports={};
- const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
- vm.runInNewContext(code,{exports,require:name=>{assert.ok(name in imports,'import '+name);return imports[name];},Date,Map,Set,Intl,Error,crypto:crypto.webcrypto,setTimeout,clearTimeout,...globals},{filename:file});return exports;
+ const source=createSourceLoader({root,imports,globals:{queueMicrotask,...globals}});
+ if(file!=='app/learn/vocabulary-library.tsx'||path.resolve(componentFile)===path.resolve(root,file))return source.load(file);
+ // Preserve the existing explicit component-override contract while resolving
+ // its dependency closure through actual project sources.
+ const code=ts.transpileModule(fs.readFileSync(componentFile,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,exports={};
+ vm.runInNewContext(code,{exports,require:name=>source.resolve(name,file),Date,Map,Set,Intl,Error,crypto:crypto.webcrypto,setTimeout,clearTimeout,...globals},{filename:file});return exports;
 }
 const study=load('lib/study-model.ts'),vocab=load('lib/vocabulary-model.ts',{'./study-model':study}),dictionary=load('lib/dictionary-model.ts',{'./vocabulary-model':vocab});
 const entry=(word,n)=>({id:'dict-'+String(n).padStart(20,'0'),word,phonetics:[],senses:[{pos:'noun',meaning:'查词返回测试 '+word}],forms:[]});
@@ -32,7 +36,7 @@ function harness({navigationBoundary='lookup',lookupOnly=true,parentLease=true,s
  const react={useId(){const i=cursor++;if(!(i in slots))slots[i]='return-'+fixture+'-'+i;return slots[i];},useState(initial){const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return[slots[i],value=>{const next=typeof value==='function'?value(slots[i]):value;if(!Object.is(next,slots[i])){slots[i]=next;dirty=true;}}];},useRef(initial){const i=cursor++;if(!(i in slots))slots[i]={current:initial};return slots[i];},useMemo(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps))slots[i]={value:fn(),deps};return slots[i].value;},useDeferredValue:value=>value,useEffect(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps)){const old=slots[i];slots[i]={deps};pending.push(()=>{old?.cleanup?.();slots[i].cleanup=fn();});}}};
  const jsx=(type,props)=>typeof type==='function'&&['DictionarySources','InteractiveExample'].includes(type.name)?type(props):({type,props}),icons=new Proxy({},{get:(_,key)=>String(key)});
  const imports={react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':icons,'./vocabulary-redesign.css':{},sonner:{toast:{success(){},error(){}}},'@/lib/native-host':shared.native,'@/lib/vocabulary-model':vocab,'@/lib/dictionary-model':dictionary,'@/lib/load-dictionary':{loadDictionary:()=>Promise.resolve({entries})},'@/lib/lesson-audio':{bundledLessonAudio:()=>null},'./practice':{SpeechPlayer:'SpeechPlayer'},'@/lib/use-vocabulary':{useVocabulary:()=>({events,ready:true,error:'',sync:'local',mark(){throw Error('navigation must not mark');},review(wordId,grade,id){events=vocab.mergeVocabularyEvents(events,[{id,wordId,grade,type:'review',createdAt:new Date().toISOString()}]);return true;},backup:()=>({events}),retry(){}})}};
- for(const name of ['vocabulary','questions','vocabulary-expansion','dictionary-metadata'])imports['@/content/'+name+'.json']={default:JSON.parse(fs.readFileSync(path.join(root,'content',name+'.json'),'utf8'))};
+ for(const name of ['vocabulary','questions','vocabulary-expansion','dictionary-metadata'])imports['@/content/'+name+'.json']={__esModule:true,default:JSON.parse(fs.readFileSync(path.join(root,'content',name+'.json'),'utf8'))};
  imports['./interactive-example']=load('app/learn/interactive-example.tsx',{'react/jsx-runtime':imports['react/jsx-runtime']});
  const Component=load('app/learn/vocabulary-library.tsx',imports,{window,document:{createElement:()=>({click(){}})},requestAnimationFrame:fn=>fn(),setInterval:()=>1,clearInterval(){}}).default;
  const marker='lookup-lease-'+fixture;

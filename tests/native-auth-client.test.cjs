@@ -3,7 +3,7 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto');
 const {createRequire}=require('node:module');
-const ROOT=process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..'),SITE=ROOT,req=createRequire(path.join(SITE,'package.json'));
+const ROOT=path.resolve(process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..')),SITE=ROOT,req=createRequire(path.join(SITE,'package.json'));
 const ts=req('typescript'),cache=new Map();
 const plain=value=>JSON.parse(JSON.stringify(value));
 function load(relative){
@@ -206,16 +206,17 @@ test('production core TypeScript typechecks independently without changing or wr
 test('actual React server render of the real NativeAccountRoot stays behind the initial identity barrier',()=>{
   const React=req('react'),{renderToStaticMarkup}=req('react-dom/server'),modules=new Map();
   function sourceModule(input){
-    let file=input;if(!path.extname(file))file=['.ts','.tsx','.json'].map(ext=>file+ext).find(candidate=>fs.existsSync(candidate))||input;
+    let file=path.resolve(input);assert(file.startsWith(ROOT+path.sep),'Product SSR module escaped root');if(!path.extname(file))file=['.ts','.tsx','.json'].map(ext=>file+ext).find(candidate=>fs.existsSync(candidate))||file;
     if(modules.has(file))return modules.get(file);
     if(file.endsWith('.json')){const value=JSON.parse(fs.readFileSync(file));modules.set(file,value);return value;}
+    if(file.endsWith('.css')){fs.readFileSync(file);const style={};modules.set(file,style);return style;}
     const exports={};modules.set(file,exports);
     const out=ts.transpileModule(fs.readFileSync(file,'utf8'),{fileName:file,compilerOptions:{module:ts.ModuleKind.CommonJS,
       target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText;
     function imports(name){
       if(!name.startsWith('.')&&!name.startsWith('@/'))return req(name);
       let target=name.startsWith('@/')?path.join(ROOT,name.slice(2)):path.resolve(path.dirname(file),name);
-      if(!['','.ts','.tsx','.json','.cjs','.js','.mjs'].includes(path.extname(target)))throw Error('Non-code candidate import');
+      if(!['','.ts','.tsx','.json','.cjs','.js','.mjs','.css'].includes(path.extname(target)))throw Error('Non-code candidate import');
       if(!['.ts','.tsx','.json'].some(ext=>fs.existsSync(target+ext))&&!fs.existsSync(target)){
         const relative=name.startsWith('@/')?name.slice(2):path.relative(ROOT,target);target=path.join(SITE,relative);
       }

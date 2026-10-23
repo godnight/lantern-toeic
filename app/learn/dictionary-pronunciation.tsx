@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import {Play,Square} from 'lucide-react';
+import {Volume2,Square,LoaderCircle} from 'lucide-react';
 import type {Word} from '@/lib/vocabulary-model';
 import {DictionarySpeechController,type DictionarySpeechState,type LocalSpeechEngine} from '@/lib/dictionary-pronunciation';
 import {isNativeForeground,subscribeNativeState} from '@/lib/native-host';
@@ -9,7 +9,7 @@ import {getWordAudioBindingForSnapshot,isPrivateWordAudioBlocked,PRIVATE_AUDIO_L
 import {SpeechPlayer} from './practice';
 
 const INITIAL:DictionarySpeechState={phase:'unavailable',available:false,reason:'unsupported',language:null};
-const message=(state:DictionarySpeechState)=>state.phase==='queued'?'正在启动设备系统发音…':state.phase==='speaking'?'设备系统发音中':state.phase==='ended'?'设备系统发音已结束':state.phase==='stopped'?'设备系统发音已停止':state.reason==='no-local-english-voice'?'此设备未提供已安装的本地英语系统语音，当前词条暂不能发音。':state.reason==='unsupported'?'当前环境不支持设备本地系统发音，当前词条暂不能发音。':state.reason==='invalid-headword'?'当前词头不适合设备系统发音。':state.reason==='inactive'?'请返回当前词条后再发音。':state.reason==='start-unconfirmed'?'设备系统语音未能确认启动，请检查本机英语语音后重试。':state.reason==='stop-unconfirmed'?'设备系统语音未能确认停止，已暂停再次发音；请检查设备语音状态。':state.reason==='engine-error'?'设备系统语音未能播放，请检查本机英语语音后重试。':'仅使用此设备已安装的英语语音，不下载或调用在线语音。';
+const message=(state:DictionarySpeechState)=>state.phase==='queued'?'正在准备发音…':state.reason==='no-local-english-voice'?'设备未提供本地英语发音。':state.reason==='unsupported'?'此设备暂不支持系统发音。':state.reason==='invalid-headword'?'此词暂不能使用系统发音。':state.reason==='inactive'?'返回当前词条后可发音。':state.reason==='start-unconfirmed'?'未能播放，请检查设备英语语音。':state.reason==='stop-unconfirmed'?'未能停止，请先检查设备语音。':state.reason==='engine-error'?'发音失败，请重试。':'';
 
 function LocalSystemPronunciation({text,disabled=false}:{text:string;disabled?:boolean}){
  const [state,setState]=useState<DictionarySpeechState>(INITIAL),controller=useRef<DictionarySpeechController|null>(null),blocked=useRef(disabled);blocked.current=disabled;
@@ -26,10 +26,9 @@ function LocalSystemPronunciation({text,disabled=false}:{text:string;disabled?:b
  },[text]);
  useEffect(()=>{if(disabled)controller.current?.stop();},[disabled]);
  const active=state.phase==='queued'||state.phase==='speaking';
- return <div className="dictionary-system-pronunciation" data-dictionary-pronunciation="system-local">
-  <p className="word-footnote">此词暂无已核自然音。设备系统发音是基本读音参考，不计为自然音覆盖。</p>
-  <button type="button" className="button secondary" disabled={disabled||!state.available} onClick={()=>active?controller.current?.stop():controller.current?.start(text)} aria-label={active?'停止设备系统发音':'用设备系统发音'}>{active?<Square size={16}/>:<Play size={16}/>} {active?'停止设备系统发音':'用设备系统发音'}</button>
-  <p className="word-footnote" role={state.phase==='error'?'alert':'status'}>{message(state)}</p>
+ return <div className="dictionary-system-pronunciation speech-audio speech-audio--word" data-dictionary-pronunciation="system-local">
+  <button type="button" className="speech-audio-icon" title="设备系统发音" disabled={disabled||!state.available} onClick={()=>active?controller.current?.stop():controller.current?.start(text)} aria-label={active?'停止设备系统发音':'用设备系统发音'} aria-busy={state.phase==='queued'||undefined}>{state.phase==='queued'?<LoaderCircle size={20} className="speech-audio-loading"/>:active?<Square size={18}/>:<Volume2 size={22}/>}</button>
+  {message(state)&&<small className="speech-audio-feedback" role={state.phase==='error'?'alert':'status'}>{message(state)}</small>}
  </div>;
 }
 
@@ -39,9 +38,9 @@ export function DictionaryPronunciation({word,disabled=false}:{word:Word;disable
  useEffect(()=>subscribeProductLessonAudio(()=>revision(value=>value+1)),[]);
  const binding=getWordAudioBindingForSnapshot(word,'headword'),selector={assetKey:binding?.audioKey,materialId:binding?.materialId??word.id,segmentId:binding?.segmentId??'headword',voiceProfileId:binding?.voiceProfileId};
  const natural=naturalLessonDescriptor(word.word,selector),availability=productLessonAudioState();
- if(isPrivateWordAudioBlocked(word)||!natural&&naturalAudioRegistry.isBlocked(word.word))return <p className="word-footnote" data-dictionary-pronunciation="held" role="status">此词发音待核对，当前不使用系统发音替代；原学习记录保留。</p>;
- if(natural)return <div data-dictionary-pronunciation="natural"><SpeechPlayer key={word.id} text={word.word} {...(binding??{materialId:word.id,segmentId:'headword'})} label="听单词发音" sourceLabel={binding?PRIVATE_AUDIO_LABEL:'词典自然音'}/></div>;
- if(availability.phase==='idle'||availability.phase==='preparing')return <p className="word-footnote" data-dictionary-pronunciation="preparing" role="status">正在核对自然音资源，尚未启动发音。</p>;
- if(availability.phase==='error')return <div data-dictionary-pronunciation="resource-error"><p className="word-footnote" role="alert">自然音资源核对失败，暂不启用系统替代。请先重试准备音频。</p><button type="button" className="text-button" disabled={disabled} onClick={()=>void retryProductLessonAudio()}>重试准备音频</button></div>;
+ if(isPrivateWordAudioBlocked(word)||!natural&&naturalAudioRegistry.isBlocked(word.word))return <small className="speech-audio-feedback" data-dictionary-pronunciation="held" role="status">此词发音暂不可用。</small>;
+ if(natural)return <div className="dictionary-word-audio" data-dictionary-pronunciation="natural"><SpeechPlayer key={word.id} text={word.word} {...(binding??{materialId:word.id,segmentId:'headword'})} label="单词发音" mode="word" disabled={disabled} sourceLabel={binding?PRIVATE_AUDIO_LABEL:'词典自然音'}/></div>;
+ if(availability.phase==='idle'||availability.phase==='preparing')return <span className="speech-audio speech-audio--word" data-dictionary-pronunciation="preparing"><button type="button" className="speech-audio-icon" disabled aria-label="正在准备单词发音" aria-busy="true"><LoaderCircle size={20} className="speech-audio-loading"/></button><small className="speech-audio-feedback" role="status">正在准备发音…</small></span>;
+ if(availability.phase==='error')return <span className="speech-audio speech-audio--word" data-dictionary-pronunciation="resource-error"><button type="button" className="speech-audio-icon" disabled={disabled} aria-label="重试准备单词发音" onClick={()=>void retryProductLessonAudio()}><Volume2 size={22}/></button><small className="speech-audio-feedback" role="alert">准备失败，请重试。</small></span>;
  return <LocalSystemPronunciation key={word.id+':'+word.word} text={word.word} disabled={disabled}/>;
 }

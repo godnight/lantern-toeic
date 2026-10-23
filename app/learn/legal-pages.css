@@ -1,0 +1,27 @@
+.v041-public-info-page{width:100%;min-width:0;max-width:760px;margin:0 auto;color:var(--ui-text,var(--foreground));background:var(--ui-canvas,var(--background));font-family:var(--ui-font,inherit);}
+.v041-public-route-header,.v041-public-info-header{display:flex;flex-direction:row!important;align-items:center;gap:12px;text-align:left!important;min-height:60px;margin:0;padding:10px 16px;border-bottom:1px solid var(--ui-divider,var(--border));flex:none;}
+.v041-public-route-header h1,.v041-public-info-header [data-slot="dialog-title"]{min-width:0;margin:0;font-size:1.125rem;line-height:1.5;font-weight:600;overflow-wrap:anywhere;}
+.v041-public-info-back{display:inline-flex;align-items:center;justify-content:center;width:44px;min-width:44px;min-height:44px;padding:10px;flex-shrink:0;background:transparent;color:inherit;border:0;border-radius:50%;cursor:pointer;}
+.v041-public-info-back:focus-visible,.v041-public-info-links a:focus-visible{outline:3px solid var(--ui-focus,var(--ring));outline-offset:3px;}
+.v041-public-info-body{min-width:0;padding:24px 20px calc(32px + env(safe-area-inset-bottom,0px));font-size:1rem;line-height:1.85;overflow-wrap:anywhere;word-break:normal;}
+.v041-public-info-body p{margin:0 0 18px;white-space:pre-line;}
+.v041-public-info-body strong{font-weight:650;}
+.v041-public-info-body h3{font-size:1.125rem;line-height:1.65;font-weight:650;margin:30px 0 14px;overflow-wrap:anywhere;}
+.v041-public-info-body .v041-policy-document-title{font-size:1.375rem;line-height:1.5;font-weight:650;margin:0 0 22px;overflow-wrap:anywhere;}
+.v041-public-info-dialog[data-slot="dialog-content"]{position:fixed;z-index:1300;display:flex;flex-direction:column;gap:0;top:12px;bottom:12px;left:50%;right:auto;transform:translateX(-50%);width:min(760px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:none;height:calc(100dvh - 24px);padding:0;overflow:hidden;border:1px solid var(--ui-divider,var(--border));border-radius:16px;background:var(--ui-canvas,var(--background));color:var(--ui-text,var(--foreground));}
+.v041-public-info-reader{flex:1;min-height:0;min-width:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+.v041-public-info-page--embedded{max-width:none;}
+.v041-public-info-links{display:grid;gap:0;min-width:0;}
+.v041-public-info-links>a{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;min-height:52px;padding:12px 0;color:var(--ui-text,var(--foreground));text-decoration:none;border-bottom:1px solid var(--ui-divider,var(--border));}
+.v041-public-info-links>a>span{min-width:0;flex:1;overflow-wrap:anywhere;}
+.v041-public-info-links>a>svg{flex:none;color:var(--ui-text-secondary,var(--muted-foreground));}
+.v041-public-info-links--compact{display:flex;flex-wrap:wrap;gap:4px 18px;border-top:1px solid var(--ui-divider,var(--border));margin-top:28px;padding-top:12px;}
+.v041-public-info-links--compact>a{min-height:44px;padding:6px 0;font-size:.875rem;line-height:1.65;color:var(--ui-primary,var(--primary));border:0;}
+.v041-support-email{display:block;width:100%;min-width:0;margin:0 0 20px;}
+.v041-support-email>input{display:block;width:100%;min-width:0;min-height:48px;padding:10px 12px;border:1px solid var(--ui-control-border,var(--input));border-radius:10px;background:var(--ui-surface,var(--card));color:var(--ui-text,var(--foreground));font:inherit;font-size:1rem;user-select:all;-webkit-user-select:all;}
+.v041-support-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:24px 0 14px;}
+.v041-support-actions>.button{flex:1 1 150px;min-width:0;min-height:48px;white-space:normal;text-decoration:none;}
+.v041-support-notice{color:var(--ui-primary,var(--primary));font-size:.875rem;line-height:1.8;}
+.v041-support-note{font-size:.875rem;color:var(--ui-text-secondary,var(--muted-foreground));}
+@media(max-width:360px){.v041-public-info-body{padding-inline:16px;}.v041-public-route-header,.v041-public-info-header{padding-inline:10px;gap:8px;}}
+@media(prefers-reduced-motion:reduce){.v041-public-info-dialog,.v041-public-info-page *{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}

@@ -9,6 +9,12 @@ import { NativeAuthHost } from '../auth/NativeAuthHost';
 // This is an intercepted local origin. No server or certificate is required.
 const APP_ORIGIN: string = 'https://lantern.local';
 const APP_URL: string = APP_ORIGIN + '/';
+const SUPPORT_MAILTO: string = 'mailto:zzl1414179@qq.com';
+const SUPPORT_MAILTO_SUBJECT: string = SUPPORT_MAILTO + '?subject=%E5%BE%AE%E5%85%89%E6%89%98%E4%B8%9A%E9%97%AE%E9%A2%98%E5%8F%8D%E9%A6%88';
+
+function isSupportMailto(destination: string): boolean {
+  return destination === SUPPORT_MAILTO || destination === SUPPORT_MAILTO_SUBJECT;
+}
 
 // Process-local diagnostic budget. Never inspect arbitrary URLs, header values or bodies.
 const MEDIA_RANGE_LOG_LIMIT: number = 64;
@@ -809,8 +815,9 @@ struct Index {
   }
 
   private openExternal(destination: string): void {
+    const supportMail: boolean = isSupportMailto(destination);
     if (!this.foreground || !this.pageReady || !this.bridgeReady || !this.isTrustedDocument() ||
-      isAppUrl(destination) || !/^https:\/\/[a-z0-9.-]+(?::[0-9]+)?(?:[/?#]|$)/i.test(destination)) {
+      isAppUrl(destination) || (!supportMail && !/^https:\/\/[a-z0-9.-]+(?::[0-9]+)?(?:[/?#]|$)/i.test(destination))) {
       return;
     }
     const now: number = Date.now();
@@ -821,12 +828,17 @@ struct Index {
     this.lastExternalAt = now;
     this.lastExitBackAt = 0;
     try {
+      if (supportMail) {
+        this.context().startAbility({ action: 'ohos.want.action.sendToData', uri: destination })
+          .catch((_error: BusinessError) => this.toast('未能打开邮件应用，请复制邮箱后发送'));
+        return;
+      }
       this.context().openLink(destination).catch((error: BusinessError) => {
         this.toast('暂时无法打开链接');
         console.warn('Unable to open external link: ' + error.code);
       });
     } catch {
-      this.toast('暂时无法打开链接');
+      this.toast(supportMail ? '未能打开邮件应用，请复制邮箱后发送' : '暂时无法打开链接');
     }
   }
 

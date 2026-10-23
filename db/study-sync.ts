@@ -1,4 +1,5 @@
 import {sql} from 'drizzle-orm';
+import {initializeStudySyncBatch} from './initialize-study-sync';
 import type {getDb} from './index';
 import {DATA_SCHEMA_VERSION} from '../lib/study-model';
 import {STUDY_SYNC_PROTOCOL,STUDY_SYNC_PAGE_SIZE,STUDY_SYNC_MAX_PAGE_BYTES,StudySyncError,parseStudySyncRequest,encodeStudySyncToken,type StudySyncKind,type StudySyncPage} from '../lib/study-sync';
@@ -9,7 +10,10 @@ type IndexedRow={revision:number;kind:StudySyncKind;entityId:string;deleted:numb
  * Only one latest revision per entity is retained: this is not an ever-growing
  * operation log. A moving entity above this run's watermark is read next run. */
 export async function readStudySyncPage(db:Db,owner:string,url:URL):Promise<StudySyncPage>{
- const clock=await db.get<{epoch:string;revision:number}>(sql`SELECT epoch, revision FROM study_sync_clock WHERE id=1 AND ready=1`);
+ let clock=await db.get<{epoch:string;revision:number}>(sql`SELECT epoch, revision FROM study_sync_clock WHERE id=1 AND ready=1`);
+ // The API authenticates the product owner before this shared sync boundary.
+ // Advance one bounded, idempotent derived-index batch; never alter old facts.
+ if(!clock){await initializeStudySyncBatch(db.$client,100);clock=await db.get<{epoch:string;revision:number}>(sql`SELECT epoch, revision FROM study_sync_clock WHERE id=1 AND ready=1`);}
  if(!clock)throw new StudySyncError('同步索引尚未准备完成',503);
  const cursor=parseStudySyncRequest(url,owner,clock);
  const rows=await db.all<IndexedRow>(sql`

@@ -204,8 +204,12 @@ async function enter(section = '练习') {
   // At 390px the app has a visible mobile nav, while its sidebar duplicate is hidden.
   await page.setViewportSize({width:390,height:844});
   const nav = page.getByRole('navigation', {name:'手机主导航',exact:true});
+  const welcome=page.locator('[data-first-run="welcome"]');
+  await Promise.race([welcome.waitFor(),nav.waitFor()]);
+  if(await welcome.isVisible())await welcome.locator('[data-first-run-action="guest"]').click();
   await (await visible(nav.getByRole('button', {name:section,exact:true}))).click();
-  await (await visible(page.getByRole('button', {name:/完整听读模考/}))).click();
+  if(section==='资料'){await page.getByText('题包与模考',{exact:true}).click();await click('本机题包与模考');}
+  else await (await visible(page.getByRole('button', {name:/完整听读模考/}))).click();
   await visible(page.getByRole('button', {name:'导入题包 JSON',exact:true}));
   await idle();
 }
