@@ -11,8 +11,8 @@
 .v041-vocabulary .phase2-word-card { max-width: 760px; }
 .v041-vocabulary .v045-stable-word-card {
   box-sizing: border-box;
-  block-size: clamp(320px,calc(100vh - 12rem - env(safe-area-inset-bottom)),640px);
-  block-size: clamp(320px,calc(100svh - 12rem - env(safe-area-inset-bottom)),640px);
+  block-size: clamp(320px,calc(100vh - 144px - 3rem - env(safe-area-inset-bottom)),640px);
+  block-size: clamp(320px,calc(100svh - 144px - 3rem - env(safe-area-inset-bottom)),640px);
   min-width: 0;
   scroll-margin-block-start: 5rem;
 }
@@ -32,12 +32,11 @@
 .v045-stable-word-card :is(.phase2-word-header,.phase2-word-body) { flex: 0 0 auto; }
 .v045-stable-word-card .phase2-word-body { display: flex; flex-direction: column; flex: 1 0 auto; }
 .v045-stable-word-card .phase2-word-content:focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
-.v045-stable-word-card .phase2-word-prompt { display: grid; place-content: center; flex: 1; min-height: 6rem; margin: 0; font-size: 1rem; text-align: center; }
 .v045-stable-word-card .phase2-word-controls { min-width: 0; padding-top: 8px; border-top: 1px solid var(--ui-divider); }
 .v045-stable-word-card .phase2-word-status { display: flex; align-items: center; min-block-size: 3em; font-size: .8125rem; line-height: 1.5; }
 .v041-vocabulary .v045-stable-word-card .phase2-word-status :is(.phase2-feedback-saved,.phase2-fixed-feedback) { margin: 0; font-size: inherit; line-height: inherit; }
 .v041-vocabulary .v045-stable-word-card :is(.phase2-rating-actions,.phase2-next-word) { margin: 0; }
-.v045-stable-word-card .phase2-word-controls .button { position: relative; min-height: 3rem; padding-block: .625rem; font-size: 1rem; line-height: 1.5; }
+.v041-vocabulary .v045-stable-word-card .phase2-word-controls .button { position: relative; min-height: 3rem; padding-block: .625rem; font-size: 1rem; line-height: 1.5; }
 .v041-vocabulary .v045-stable-word-card .phase2-rating-actions .button { min-height: 3rem; padding-inline: 4px; }
 .phase2-rating-spinner { position: absolute; inset-block-start: 4px; inset-inline-end: 5px; width: 12px; animation: speech-audio-spin 1s linear infinite; }
 .v041-word-heading { display: flex; align-items: center; gap: 12px; min-width: 0; flex-wrap: wrap; }

@@ -232,7 +232,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
               {step.word.collocation&&<p lang="en">{step.word.collocation}</p>}
               {step.word.example&&<><blockquote><InteractiveExample text={step.word.example} onLookup={onExampleLookup} disabled={overlayBlocked}/></blockquote>{!audioHeld&&<SpeechPlayer mode="example" key={step.id+'-example'} text={step.word.example} {...(exampleAudio||{materialId:step.word.id,segmentId:'example'})} label="听例句发音" sourceLabel={exampleAudio?PRIVATE_AUDIO_LABEL:'单词学习'}/>}</>}
               {step.word.translation&&<p className="muted">{step.word.translation}</p>}
-            </div>:<p className="phase2-word-prompt">回想词义后，选择下方反馈。</p>}
+            </div>:null}
             {message&&<p className="phase2-vocab-message" role="alert">{message}</p>}
           </div>
           </div>

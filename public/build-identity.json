@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "buildId": "v045-word-card-20261024-r4-fbf1e97be5b8",
-  "sourceInputsSha256": "fbf1e97be5b8430c817ab371f50d433663dad51abd19a38631ba8a71765bba45",
+  "buildId": "v045-word-card-20261024-r10-004f4c14065e",
+  "sourceInputsSha256": "004f4c14065ef9099f12d6c99b304696b6c8aeb094d390fab4b03d7b88ab8425",
   "inputCount": 14138,
   "excludedSelf": "public/build-identity.json",
   "versionName": "0.4.5",
