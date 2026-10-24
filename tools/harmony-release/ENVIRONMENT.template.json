@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "studioRoot": null,
+  "encryptedBuildProfile": null,
+  "privateOutputRoot": null,
+  "knownGoodReceipt": null,
+  "knownGoodReceiptSha256": null,
+  "signerDerSha256": null,
+  "certificateSha256": null,
+  "profileSha256": null,
+  "toolEntrypoints": [
+    {"name": "studio/tools/node/node.exe", "bytes": null, "sha256": null},
+    {"name": "studio/jbr/bin/java.exe", "bytes": null, "sha256": null},
+    {"name": "studio/sdk/default/openharmony/toolchains/lib/hap-sign-tool.jar", "bytes": null, "sha256": null},
+    {"name": "studio/tools/hvigor/hvigor-ohos-plugin/src/utils/decipher-util.js", "bytes": null, "sha256": null},
+    {"name": "studio/tools/hvigor/hvigor/index.js", "bytes": null, "sha256": null}
+  ]
+}

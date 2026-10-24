@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "buildId": "v041-web-media-20261023-r1-3d3a98ceea51",
-  "sourceInputsSha256": "3d3a98ceea51038f895a6d3636a91e738007b93376b47c777cee49a154e3c3b8",
-  "inputCount": 14136,
+  "buildId": "v045-today-actions-20261024-r12-d19bfae193f1",
+  "sourceInputsSha256": "d19bfae193f111449cddf2c917b26e2cbaf49a60c1b69233816ea1407c0b162b",
+  "inputCount": 14138,
   "excludedSelf": "public/build-identity.json",
-  "versionName": "0.4.1",
-  "versionCode": 20057
+  "versionName": "0.4.5",
+  "versionCode": 20059
 }

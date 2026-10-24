@@ -9,6 +9,36 @@
 .v041-vocabulary .button.primary { min-height: 48px; }
 .v041-vocabulary .phase2-word-session-heading { margin: 0 0 12px; gap: 8px; font-size: 13px; }
 .v041-vocabulary .phase2-word-card { max-width: 760px; }
+.v041-vocabulary .v045-stable-word-card {
+  box-sizing: border-box;
+  block-size: clamp(320px,calc(100vh - 144px - 3rem - env(safe-area-inset-bottom)),640px);
+  block-size: clamp(320px,calc(100svh - 144px - 3rem - env(safe-area-inset-bottom)),640px);
+  min-width: 0;
+  scroll-margin-block-start: 5rem;
+}
+.v045-stable-word-card .phase2-word-fieldset { display: block; inline-size: 100%; block-size: 100%; min-inline-size: 0; margin: 0; padding: 0; border: 0; }
+.v045-stable-word-card .phase2-word-layout { display: grid; grid-template-rows: minmax(0,1fr) auto; gap: 12px; block-size: 100%; min-width: 0; }
+.v045-stable-word-card .phase2-word-header { min-width: 0; }
+.v045-stable-word-card .v041-word-heading { display: grid; grid-template-columns: minmax(0,1fr) 44px; align-items: start; gap: 4px 12px; }
+.v045-stable-word-card .v041-word-heading .phase2-current-word { font-size: clamp(2rem,8vw,2.625rem); }
+.v045-stable-word-card .v041-word-heading > .speech-audio--word { display: contents; }
+.v045-stable-word-card .v041-word-heading .speech-audio-icon { grid-column: 2; grid-row: 1; }
+.v045-stable-word-card .v041-word-heading > .speech-audio--word > .speech-audio-feedback { display: block; grid-column: 1/-1; block-size: 3em; overflow: auto; margin: 0; font-size: .8125rem; }
+.v041-vocabulary .v045-stable-word-card .word-phonetic { font-size: .875rem; }
+.v041-vocabulary .v045-stable-word-card .phase2-word-meaning,
+.v041-vocabulary .v045-stable-word-card .phase2-word-meaning blockquote { font-size: 1rem; }
+.v045-stable-word-card .v041-word-heading > .word-footnote { grid-column: 1/-1; min-height: 3em; margin: 0; }
+.v045-stable-word-card .phase2-word-content { display: flex; flex-direction: column; gap: 12px; min-width: 0; min-height: 0; overflow-y: auto; overflow-wrap: anywhere; scrollbar-gutter: stable; padding: 0 4px 4px 0; scroll-padding-block: 8px; }
+.v045-stable-word-card :is(.phase2-word-header,.phase2-word-body) { flex: 0 0 auto; }
+.v045-stable-word-card .phase2-word-body { display: flex; flex-direction: column; flex: 1 0 auto; }
+.v045-stable-word-card .phase2-word-content:focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
+.v045-stable-word-card .phase2-word-controls { min-width: 0; padding-top: 8px; border-top: 1px solid var(--ui-divider); }
+.v045-stable-word-card .phase2-word-status { display: flex; align-items: center; min-block-size: 3em; font-size: .8125rem; line-height: 1.5; }
+.v041-vocabulary .v045-stable-word-card .phase2-word-status :is(.phase2-feedback-saved,.phase2-fixed-feedback) { margin: 0; font-size: inherit; line-height: inherit; }
+.v041-vocabulary .v045-stable-word-card :is(.phase2-rating-actions,.phase2-next-word) { margin: 0; }
+.v041-vocabulary .v045-stable-word-card .phase2-word-controls .button { position: relative; min-height: 3rem; padding-block: .625rem; font-size: 1rem; line-height: 1.5; }
+.v041-vocabulary .v045-stable-word-card .phase2-rating-actions .button { min-height: 3rem; padding-inline: 4px; }
+.phase2-rating-spinner { position: absolute; inset-block-start: 4px; inset-inline-end: 5px; width: 12px; animation: speech-audio-spin 1s linear infinite; }
 .v041-word-heading { display: flex; align-items: center; gap: 12px; min-width: 0; flex-wrap: wrap; }
 .v041-word-heading :is(.phase2-current-word,.vocab-word-title) { flex: 0 1 auto; min-width: 0; margin: 0; font-size: clamp(36px,8vw,42px); line-height: 1.25; letter-spacing: -.025em; }
 .v041-word-heading > :is(.speech-audio,.dictionary-pronunciation) { flex: 0 0 auto; max-width: 100%; }

@@ -8,7 +8,12 @@ import {mutableStudyUpsert} from '@/db/mutable-study';
 import {DEFAULT_PROFILE,DATA_SCHEMA_VERSION,validQuestionMark,validResourceTask,validStudyDate} from '@/lib/study-model';
 import {userId,safeMutation,privateJson} from '@/lib/server-auth';
 import {readBoundedRequestBody,RequestBodyTooLargeError} from '@/lib/request-body';
-import {QUESTIONS as questions} from '@/lib/question-catalog';
+// Admission and catalog hashes remain mandatory before use, but unrelated or
+// unauthenticated requests must not initialize the teaching catalog at startup.
+let questionCatalogPromise: Promise<typeof import('@/lib/question-catalog')>|undefined;
+function loadQuestionCatalog(){
+ return questionCatalogPromise??=import('@/lib/question-catalog');
+}
 import {resources} from '@/content/resources-v2';
 import examResources from '@/content/exams/catalogue.json';
 const resourceIds=new Set([...resources.map(resource=>resource.id),...examResources.map(resource=>'exam-'+resource.id)]);
@@ -33,7 +38,7 @@ export async function POST(request:Request){const uid=await userId(request);if(!
   await db.insert(profiles).values({userId:uid,body:JSON.stringify({...DEFAULT_PROFILE,theme:parsed.theme}),updatedAt}).onConflictDoUpdate({target:profiles.userId,set:{body:sql`json_set(${profiles.body}, '$.theme', ${parsed.theme})`,updatedAt}});return privateJson({ok:true});
  }
  if(body.type==='attempt'){
-  const a=attempt.parse(body.data);const q=questions.find(q=>q.id===a.qid);if(!q||a.choice>=q.options.length)return privateJson({error:'题目或选项无效'},400);
+  const a=attempt.parse(body.data);const {QUESTIONS:questions}=await loadQuestionCatalog();const q=questions.find(q=>q.id===a.qid);if(!q||a.choice>=q.options.length)return privateJson({error:'题目或选项无效'},400);
   const prev=await db.select({id:attempts.id}).from(attempts).where(and(eq(attempts.userId,uid),eq(attempts.qid,a.qid))).limit(1);
   await db.insert(attempts).values({...a,userId:uid,correct:a.choice===q.correctIndex,mode:prev.length?'review':'first'}).onConflictDoNothing();
   const owned=await db.select().from(attempts).where(and(eq(attempts.id,a.id),eq(attempts.userId,uid))).limit(1);
@@ -50,7 +55,8 @@ export async function POST(request:Request){const uid=await userId(request);if(!
   return parsed.success&&stored.createdAt===c.createdAt&&checkinPayload(parsed.data)===checkinPayload(c)?privateJson({ok:true}):eventConflict();
  }
  if(body.type==='questionMark'){
-  const mark=body.data;if(!validQuestionMark(mark)||!questions.some(question=>question.id===mark.qid))return privateJson({error:'题目标记格式或题目无效'},400);
+  const mark=body.data;if(!validQuestionMark(mark))return privateJson({error:'题目标记格式或题目无效'},400);
+  const {QUESTIONS:questions}=await loadQuestionCatalog();if(!questions.some(question=>question.id===mark.qid))return privateJson({error:'题目标记格式或题目无效'},400);
   stamp.parse(mark.updatedAt);await db.run(mutableStudyUpsert('questionMark',uid,mark));return privateJson({ok:true});
  }
  if(body.type==='resourceTask'){
