@@ -126,3 +126,14 @@
  .v041-vocabulary .phase2-weekday-picker{grid-template-columns:repeat(4,minmax(44px,1fr));gap:8px;}
  .v041-vocabulary .phase2-weekday-picker :is(label,span){min-width:44px;min-height:44px;}
 }
+
+/* Today only: quiet full-width actions, aligned at the bottom of both cards. */
+.v040-today .v045-today-tasks{grid-template-columns:repeat(auto-fit,minmax(min(100%,7.5rem),1fr));}
+.v040-today .v045-today-task{grid-template-rows:1fr auto;align-items:start;}
+.v045-today-task .v040-task-icon{align-self:start;padding-top:2px;}
+.v040-today .v045-today-task .v045-today-action{grid-column:1/-1;align-self:end;justify-self:stretch;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:44px;margin:0;padding:8px 0;border:0;border-top:1px solid var(--border);border-radius:0;background:transparent;color:var(--ui-primary);font-size:.85rem;line-height:1.5;text-align:left;white-space:normal;}
+.v045-today-action>span{min-width:0;overflow-wrap:anywhere;}
+.v045-today-action>svg{flex-shrink:0;}
+.v040-today .v045-today-task .v045-today-action:focus-visible{outline:2px solid var(--ring);outline-offset:3px;border-radius:4px;}
+.v040-today .v045-today-task .v045-today-action:active:not(:disabled){background:var(--ui-selection);border-radius:4px;}
+.v040-today .v045-today-task .v045-today-action:disabled{opacity:.5;cursor:default;}
