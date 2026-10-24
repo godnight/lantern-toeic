@@ -12,7 +12,7 @@ concurrency:
 jobs:
   core-validation:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
         with:
@@ -48,6 +48,22 @@ jobs:
         run: npm --prefix mobile run build
       - name: Install Chromium with all required system dependencies
         run: node node_modules/playwright/cli.js install --with-deps chromium
+      - name: Verify continuous word-card layout and reading accessibility
+        env:
+          LANTERN_WORDCARD_QA_DIR: ${{ runner.temp }}/lantern-word-card-layout-qa
+        run: |
+          node --test tests/phase2-vocabulary-ui.test.cjs
+          node tests/browser/word-card-layout.cjs
+      - name: Retain continuous word-card QA evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: word-card-qa-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/lantern-word-card-layout-qa/result.json
+            ${{ runner.temp }}/lantern-word-card-layout-qa/*.png
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Run real-browser mock-exam, dictionary and theme regressions
         env:
           LANTERN_BROWSER_QA_DIR: ${{ runner.temp }}/lantern-browser-qa
@@ -59,12 +75,6 @@ jobs:
           npm run test:dictionary:browser
           npm run test:themes:browser
           LANTERN_THEME_QA_DIR="$RUNNER_TEMP/lantern-theme-web-browser-qa" npm run test:themes:web:browser
-      - name: Verify continuous word-card layout and reading accessibility
-        env:
-          LANTERN_WORDCARD_QA_DIR: ${{ runner.temp }}/lantern-word-card-layout-qa
-        run: |
-          node --test tests/phase2-vocabulary-ui.test.cjs
-          node tests/browser/word-card-layout.cjs
       - name: Retain synthetic browser QA evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -79,8 +89,6 @@ jobs:
             ${{ runner.temp }}/lantern-theme-browser-qa/*.png
             ${{ runner.temp }}/lantern-theme-web-browser-qa/result.json
             ${{ runner.temp }}/lantern-theme-web-browser-qa/*.png
-            ${{ runner.temp }}/lantern-word-card-layout-qa/result.json
-            ${{ runner.temp }}/lantern-word-card-layout-qa/*.png
           if-no-files-found: ignore
           retention-days: 14
       - name: Apply migrations to an empty local SQLite database
