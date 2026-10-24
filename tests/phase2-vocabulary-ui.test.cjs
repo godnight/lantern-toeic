@@ -8,6 +8,8 @@ const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.Comm
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const word={id:'quiet',word:'quiet',pos:'adj.',meaning:'安静的；轻声的',category:'office',example:'Keep the room quiet.',translation:'让房间保持安静。',collocation:''};
 const words=[word,{...word,id:'available',word:'available'}];
+const referenceFixture={schemaVersion:1,sources:{dictionary:{label:'合成词典来源',url:'https://example.test/dictionary',wordUrlPattern:'https://example.test/word/{word}',license:'CC-BY-SA-4.0',licenseUrl:'https://example.test/license',attribution:'合成测试来源'}},entries:{quiet:{phonetics:['/qa-primary/','/qa-variant/'],etymology:'合成构词资料_QUIET',phoneticSource:'dictionary',etymologySource:'dictionary',phoneticSourceUrl:'https://example.test/word/quiet?oldid=123'},available:{phonetics:['/qa-next/'],etymology:'合成构词资料_AVAILABLE',phoneticSource:'dictionary',etymologySource:'dictionary'}}};
+
 const books=[{id:'scene',name:'托业场景词',capacity:2},{id:'expressions',name:'题内表达',capacity:1},{id:'general-base-1.2',name:'通用基础',capacity:2},{id:'combined-with-supplement-1.2',name:'托业备考',capacity:2}];
 const plan={id:'plan',schemaVersion:1,revision:1,createdAt:'2026-10-14T00:00:00.000Z',updatedAt:'2026-10-14T00:00:00.000Z',bookId:'scene',goal:2,dailyNew:15,weekdays:[1,2,3,4,5]};
 const day={id:'day',localDate:'2026-10-14',timezone:'Etc/UTC',startAt:'2026-10-14T00:00:00.000Z',endAt:'2026-10-15T00:00:00.000Z'};
@@ -19,7 +21,7 @@ function controller(overrides={}){
 function session(){return {id:'session',schemaVersion:1,planRevision:1,dayWindow:day,createdAt:day.startAt,cursor:0,status:'active',queue:[{id:'step-1',wordId:word.id,word,intent:'new',reasons:[]}],currentStep:{id:'step-1',wordId:word.id,word,intent:'new',reasons:[]}};}
 function nodes(tree,predicate){const result=[],queue=[tree];while(queue.length){const node=queue.shift();if(!node)continue;if(Array.isArray(node)){queue.push(...node);continue;}if(typeof node==='object'){if(predicate(node))result.push(node);queue.push(node.props?.children);}}return result;}
 function text(node){return node==null||typeof node==='boolean'?'':typeof node==='string'||typeof node==='number'?String(node):Array.isArray(node)?node.map(text).join(''):text(node.props?.children);}
-function harness(componentName,initialProps){
+function harness(componentName,initialProps,references=referenceFixture){
  let slots=[],cursor=0,effects=[],tree,props=initialProps;const downloads=[];
  const same=(a,b)=>a&&b&&a.length===b.length&&a.every((value,index)=>Object.is(value,b[index]));
  const react={useState(value){const i=cursor++;if(!(i in slots))slots[i]=typeof value==='function'?value():value;return [slots[i],next=>slots[i]=typeof next==='function'?next(slots[i]):next];},useRef(value){const i=cursor++;if(!(i in slots))slots[i]={current:value};return slots[i];},useEffect(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps)){const old=slots[i];slots[i]={deps};effects.push(()=>{old?.cleanup?.();slots[i].cleanup=fn();});}}};
@@ -29,6 +31,7 @@ function harness(componentName,initialProps){
  imports['@/lib/vocabulary-workflow']=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports:{'./workflow-catalog':imports['@/lib/workflow-catalog']}}).load('lib/vocabulary-workflow.ts');
  imports['@/lib/word-audio-bindings-v040']={getWordAudioBindingForSnapshot:()=>null,isPrivateWordAudioBlocked:()=>false,PRIVATE_AUDIO_LABEL:'Synthetic no playback'};
  imports['@/lib/lesson-audio']={naturalAudioRegistry:{pinSelectors:async()=>({release(){}})},subscribeProductLessonAudio:()=>()=>{},productLessonAudioState:()=>({phase:'ready'})};
+ imports['./word-card-reference']=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports:{'@/content/word-card-reference.json':{__esModule:true,default:references}}}).load('app/learn/word-card-reference.ts');
  imports['./v041-vocabulary.css']={};
  vm.runInNewContext(code,{exports:componentExports,require:name=>{assert.ok(name in imports,name);return imports[name];},Set,Map,Date,Number,Math,JSON,Error,Promise,URL,Blob,setTimeout,clearTimeout,document:{createElement:()=>{const anchor={click(){downloads.push({href:anchor.href,download:anchor.download});}};return anchor;}}});
  function render(){cursor=0;tree=componentExports[componentName](props);const pending=effects;effects=[];pending.forEach(fn=>fn());return tree;}
@@ -91,6 +94,74 @@ test('learned quiet can explicitly join review; candidate actions never mark lea
  const calls=[],workflow=controller({candidateStatus:()=> 'available-review',addCandidate:async(...args)=>{calls.push(args);return {status:'applied'};}});
  const h=harness('CandidateAction',{workflow,word});h.click('加入今日复习');await h.flush();assert.equal(calls.length,1);assert.equal(calls[0][0].id,'quiet');assert.equal(calls[0][1],'manual-review');assert.equal(workflow.projection.daily.reviewDone,0);assert.match(text(h.tree),/尚未计入已复习/);
  workflow.candidateStatus=()=> 'today-reviewed';h.render();assert.equal(h.button('今日已复习').props.disabled,true);h.click('今日已复习');await h.flush();assert.equal(calls.length,1);h.unmount();
+});
+
+test('all reference phonetics stay visible before and after each rating; etymology is revealed only after saving',async()=>{
+ for(const [rating,label] of [['known','认识'],['fuzzy','模糊'],['forgotten','忘记']]){
+  const active=session(),snapshot=JSON.stringify(active.currentStep.word),calls=[];
+  const workflow=controller({activeSession:active,submitRating:async value=>{calls.push(value);active.currentStep.receipt={...receipt,rawRating:value};return {status:'applied'};}});
+  const h=harness('VocabularyStudyCard',{workflow,theme:'paper'});
+  const phonetic=()=>nodes(h.tree,node=>node.props?.className==='word-phonetic')[0];
+  assert.equal(text(phonetic()),'/qa-primary/ · /qa-variant/');
+  assert.doesNotMatch(text(h.tree),/合成构词资料_QUIET|参考来源/);
+  h.click(label);await h.flush();
+  assert.deepEqual(calls,[rating]);assert.equal(text(phonetic()),'/qa-primary/ · /qa-variant/');
+  assert.match(text(h.tree),/词源与构词参考.*合成构词资料_QUIET/);
+  assert.equal(nodes(h.tree,node=>node.type==='a'&&node.props.href==='https://example.test/word/quiet?oldid=123').length,1);
+  assert.equal(nodes(h.tree,node=>node.type==='a'&&node.props.href==='https://example.test/license').length,1);
+  assert.equal(JSON.stringify(active.currentStep.word),snapshot,'Display enrichment changed the saved word');
+  h.unmount();
+ }
+});
+
+test('existing word reference fields retain priority without modifying the snapshot',()=>{
+ const active=session();active.currentStep.word={...word,phonetics:[' /saved-one/ ','/saved-two/'],etymology:'原词卡构词参考'};
+ active.currentStep.receipt=receipt;const snapshot=JSON.stringify(active.currentStep.word);
+ const h=harness('VocabularyStudyCard',{workflow:controller({activeSession:active}),theme:'paper'});
+ assert.match(text(h.tree),/\/saved-one\/ · \/saved-two\//);assert.match(text(h.tree),/原词卡构词参考/);
+ assert.doesNotMatch(text(h.tree),/qa-primary|合成构词资料_QUIET|合成词典来源/);
+ assert.equal(JSON.stringify(active.currentStep.word),snapshot);h.unmount();
+});
+
+test('reference lookup changes with the exact headword and does not stem or invent missing entries',()=>{
+ const active=session();active.currentStep.word={...word,word:'  QUIET  '};active.currentStep.receipt=receipt;
+ const h=harness('VocabularyStudyCard',{workflow:controller({activeSession:active}),theme:'paper'});
+ assert.match(text(h.tree),/qa-primary/);assert.match(text(h.tree),/合成构词资料_QUIET/);
+ active.currentStep={...active.currentStep,id:'step-next',word:{...word,id:'available',word:'available'},receipt:undefined};h.render();
+ assert.match(text(h.tree),/qa-next/);assert.doesNotMatch(text(h.tree),/qa-primary|合成构词资料_QUIET|合成构词资料_AVAILABLE/);
+ active.currentStep={...active.currentStep,id:'step-missing',word:{...word,word:'quietly'},receipt};h.render();
+ assert.match(text(h.tree),/暂无音标/);assert.doesNotMatch(text(h.tree),/qa-primary|词源与构词参考|参考来源/);
+ h.unmount();
+});
+
+test('the known CV card replaces stale verb IPA only with its reviewed noun reference and never mutates the snapshot',()=>{
+ const cv={...word,id:'v-resume',word:'resume',pos:'名词',meaning:'简历（美式英语，也写作 résumé）',phonetics:['/qa-old-verb/'],etymology:'旧混合动词资料'};
+ const references=structuredClone(referenceFixture);
+ references.entries.resume={phonetics:['/qa-reviewed-noun/'],etymology:'合成名词来源_简历',phoneticSource:'dictionary',etymologySource:'dictionary',partOfSpeech:'noun',overrideWordIds:['v-resume']};
+ const active=session();active.currentStep.word=cv;active.currentStep.receipt=receipt;const snapshot=JSON.stringify(cv);
+ const h=harness('VocabularyStudyCard',{workflow:controller({activeSession:active}),theme:'paper'},references);
+ assert.match(text(h.tree),/qa-reviewed-noun/);assert.match(text(h.tree),/合成名词来源_简历/);assert.doesNotMatch(text(h.tree),/qa-old-verb|旧混合动词资料/);
+ assert.equal(JSON.stringify(cv),snapshot);h.unmount();
+ // An absent or old unscoped reference must not revive the known wrong verb IPA.
+ for(const entry of [undefined,{phonetics:['/qa-unscoped-verb/']}]){
+  const unavailable=structuredClone(referenceFixture);if(entry)unavailable.entries.resume=entry;
+  const missing=harness('VocabularyStudyCard',{workflow:controller({activeSession:active}),theme:'paper'},unavailable);
+  assert.match(text(missing.tree),/暂无音标/);assert.doesNotMatch(text(missing.tree),/qa-old-verb|qa-unscoped-verb|旧混合动词资料/);missing.unmount();
+ }
+});
+
+test('noun-scoped resume references do not leak into verbs or override unrelated saved words',()=>{
+ const references=structuredClone(referenceFixture);
+ references.entries.resume={phonetics:['/qa-reviewed-noun/'],etymology:'合成名词来源_简历',phoneticSource:'dictionary',etymologySource:'dictionary',partOfSpeech:'noun',overrideWordIds:['v-resume']};
+ for(const pos of ['动词','v.','n./v.']){
+  const active=session();active.currentStep.word={...word,id:'other-resume',word:'resume',pos,meaning:'继续',phonetics:[]};active.currentStep.receipt=receipt;
+  const h=harness('VocabularyStudyCard',{workflow:controller({activeSession:active}),theme:'paper'},references);
+  assert.match(text(h.tree),/暂无音标/);assert.doesNotMatch(text(h.tree),/qa-reviewed-noun|合成名词来源_简历|词源与构词参考/);
+  active.currentStep.word.phonetics=['/qa-own-verb/'];h.render();assert.match(text(h.tree),/qa-own-verb/);assert.doesNotMatch(text(h.tree),/qa-reviewed-noun/);h.unmount();
+ }
+ const active=session();active.currentStep.word={...word,id:'other-noun',word:'resume',pos:'n.',meaning:'摘要',phonetics:['/qa-own-noun/']};active.currentStep.receipt=receipt;
+ const h=harness('VocabularyStudyCard',{workflow:controller({activeSession:active}),theme:'paper'},references);
+ assert.match(text(h.tree),/qa-own-noun/);assert.doesNotMatch(text(h.tree),/qa-reviewed-noun/);h.unmount();
 });
 
 test('failed feedback keeps the meaning hidden, locks the original rating and retries it before Next',async()=>{

@@ -24,7 +24,12 @@
 .v045-stable-word-card .v041-word-heading > .speech-audio--word { display: contents; }
 .v045-stable-word-card .v041-word-heading .speech-audio-icon { grid-column: 2; grid-row: 1; }
 .v045-stable-word-card .v041-word-heading > .speech-audio--word > .speech-audio-feedback { display: block; grid-column: 1/-1; block-size: 3em; overflow: auto; margin: 0; font-size: .8125rem; }
-.v041-vocabulary .v045-stable-word-card .word-phonetic { font-size: .875rem; }
+.v041-vocabulary .v045-stable-word-card .word-phonetic { font-size: .875rem; line-height: 1.65; white-space: normal; overflow-wrap: anywhere; }
+.v041-vocabulary .phase2-word-etymology { margin-block: 16px; padding-block-start: 12px; border-top: 1px solid var(--ui-divider); }
+.v041-vocabulary .phase2-word-etymology h3 { margin: 0 0 8px; font-size: .875rem; color: var(--ui-text-secondary); }
+.v041-vocabulary .phase2-word-etymology p { margin: 0; white-space: pre-line; }
+.v041-vocabulary .phase2-word-reference-sources { margin-block: 8px; font-size: .8125rem; }
+.v041-vocabulary .phase2-word-reference-sources a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 .v041-vocabulary .v045-stable-word-card .phase2-word-meaning,
 .v041-vocabulary .v045-stable-word-card .phase2-word-meaning blockquote { font-size: 1rem; }
 .v045-stable-word-card .v041-word-heading > .word-footnote { grid-column: 1/-1; min-height: 3em; margin: 0; }

@@ -13,6 +13,7 @@ const {pathToFileURL} = require('node:url');
 
 const REPO = path.resolve(process.env.LANTERN_WORDCARD_QA_REPO || path.join(__dirname, '../..'));
 const repoRequire = createRequire(path.join(REPO, 'package.json'));
+const REFERENCE_ONLY = process.argv.includes('--reference-only');
 const CONDITIONS = [
   {id: 'paper-320', theme: 'paper', width: 320, height: 640, font: 100},
   {id: 'hollow-390', theme: 'hollow', width: 390, height: 844, font: 100},
@@ -20,11 +21,11 @@ const CONDITIONS = [
   {id: 'night-wide', theme: 'crystal', width: 1024, height: 768, font: 100},
   {id: 'paper-short', theme: 'paper', width: 320, height: 480, font: 100},
   {id: 'hollow-font200', theme: 'hollow', width: 390, height: 844, font: 200},
-];
+].filter(condition => !REFERENCE_ONLY || ['paper-320', 'hollow-390', 'hollow-font200'].includes(condition.id));
 const RATINGS = ['known', 'fuzzy', 'forgotten'];
 const LABELS = {known: '认识', fuzzy: '模糊', forgotten: '忘记'};
 const report = {
-  schemaVersion: 1, status: 'RUNNING', scope: 'Actual word-card/source CSS geometry with isolated synthetic workflow I/O',
+  schemaVersion: 1, status: 'RUNNING', mode: REFERENCE_ONLY ? 'reference-only' : 'full-word-card', scope: 'Actual word-card/source CSS geometry with isolated synthetic workflow I/O',
   startedAt: new Date().toISOString(), conditions: [], screenshots: [], pageErrors: [], blockedExternal: [],
   limitations: [
     'Synthetic promises/receipts validate component transitions and callback counts, not IndexedDB durability or actual SRS scheduling.',
@@ -55,7 +56,7 @@ async function pins() {
   const inputs = ['app/learn/vocabulary-plan.tsx', 'app/learn/workspace-shell.tsx', 'app/globals.css',
     'app/redesign.css', 'app/v041-design-theme.css', 'app/learn/v041-vocabulary.css',
     'app/learn/audio-redesign.css', 'app/v041-app-redesign.css', 'app/learn/legal-pages.css',
-    'public/build-identity.json'];
+    'app/learn/word-card-reference.ts', 'content/word-card-reference.json', 'public/build-identity.json'];
   report.sourcePins = [];
   for (const relative of inputs) {
     const bytes = await fs.readFile(path.join(REPO, relative));
@@ -338,6 +339,20 @@ async function runFreshPreparationControl(){
   try{await openFixturePage({...CONDITIONS[0],id:'paper-320-independent-trial'});control=await inputPreparationControl({id:'paper-320-independent-trial'});}
   finally{await context?.close();context=null;page=null;if(control)control.contextClosedBeforeMatrix=true;}
 }
+async function assertWordReference(word, revealed) {
+  const phonetic = page.locator('.word-phonetic');
+  assert.equal((await phonetic.innerText()).trim(), word.phonetics.length ? word.phonetics.join(' · ') : '暂无音标');
+  const layout = await phonetic.evaluate(element => {
+    const style = getComputedStyle(element);
+    return {clientWidth: element.clientWidth, scrollWidth: element.scrollWidth, lineClamp: style.webkitLineClamp, overflow: style.overflow};
+  });
+  assert.ok(layout.scrollWidth <= layout.clientWidth + 1, 'Phonetic variants overflow horizontally');
+  assert.ok(!layout.lineClamp || layout.lineClamp === 'none', 'Phonetics were line-clamped');
+  assert.notEqual(layout.overflow, 'hidden', 'Phonetics were clipped');
+  const etymology = page.locator('.phase2-word-etymology');
+  assert.equal(await etymology.count(), revealed && word.etymology ? 1 : 0, 'Etymology revealed before a confirmed rating or missing after it');
+  if(revealed && word.etymology) assert.equal((await etymology.locator('p').innerText()).trim(), word.etymology.trim());
+}
 async function runCondition(config) {
   const condition = {...config, status: 'RUNNING', geometry: [], flow: []}; report.conditions.push(condition);
   await openFixturePage(config);
@@ -349,6 +364,7 @@ async function runCondition(config) {
     assert.equal(beforeState.cursor, index);
     assert.equal(await page.getByText(word.answerMarker, {exact: false}).count(), 0, 'Unrevealed answer is mounted in DOM');
     assert.equal(await page.locator('.phase2-word-meaning').count(), 0);
+    await assertWordReference(word, false);
     const before = index === 0 ? first : await snapshot(condition, index, 'before'); stable(first, before);
     const savedBefore = beforeState.saved.length, attemptBefore = beforeState.attempts.length;
     await visiblePointerClick(page.getByRole('button', {name: label, exact: true}),condition,index,'rating',first);
@@ -382,6 +398,7 @@ async function runCondition(config) {
     assert.equal(saved.saved.at(-1).rating, rating);
     assert.equal(saved.next.length, index, 'Next callback ran before explicit Next');
     assert.ok((await page.locator('.phase2-word-meaning').innerText()).includes(word.answerMarker));
+    await assertWordReference(word, true);
     const revealed = await snapshot(condition, index, 'revealed'); stable(first, revealed);
     assert.equal(await page.evaluate(() => document.activeElement?.matches('.phase2-word-content')), true,
       'First confirmed reveal lost focus instead of moving to the reading region');
