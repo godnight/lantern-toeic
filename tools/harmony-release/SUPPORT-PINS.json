@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "name": "support/direct-sign.cjs",
+      "bytes": 2845,
+      "sha256": "c4aa88f25c9433ec1fcd9743c9f6043c0a124a545e5bd57da4497a100b2e7fb4"
+    },
+    {
+      "name": "support/CredentialPipe.java",
+      "bytes": 886,
+      "sha256": "2f4bcdb276be9021901eb82f69ddd94340ba7328e4f816e02eb17304a7d16021"
+    },
+    {
+      "name": "support/secure_files.py",
+      "bytes": 14417,
+      "sha256": "8007f0a42c3aa5da6b6134186ad28c5dc3b42cba1e423d439461d65b991c22e1"
+    },
+    {
+      "name": "support/public_core.py",
+      "bytes": 1696,
+      "sha256": "bedd6f50ae59bee414a5198ecdc074f92d57453495cdc06c857198bf4241d426"
+    }
+  ]
+}
