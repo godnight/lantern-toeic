@@ -1,6 +1,6 @@
 {
   "name": "lantern-toeic",
-  "version": "0.3.7",
+  "version": "0.4.5",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -8,12 +8,12 @@
   "scripts": {
     "install:ci": "bash scripts/install-ci.sh",
     "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vite",
-    "build": "node scripts/build-verified.mjs",
+    "build": "node scripts/build-hosted-web.mjs",
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "test": "npm run validate:content && npm run test:study && npm run build && node --test tests/*.test.mjs",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate",
-    "test:study": "node --test tests/study-invariants.test.cjs tests/native-lifecycle.test.cjs tests/repo-review-regressions.test.cjs tests/study-data-v2.test.cjs tests/lesson-audio.test.cjs tests/vocabulary.test.cjs tests/exams.test.cjs tests/exam-ui.test.cjs tests/exam-page-packer.test.cjs tests/native-mock-verifier.test.cjs tests/native-mock-timeout.test.cjs tests/dictionary.test.cjs tests/dictionary-ui.test.cjs tests/exam-legacy.test.cjs tests/exam-library-api.test.cjs tests/exam-storage-removal.test.cjs tests/exam-library-ui.test.cjs tests/theme-persistence.test.cjs tests/theme-atmosphere.test.cjs tests/ui-redesign-search.test.cjs tests/ui-redesign-speaking.test.cjs tests/ui-redesign-resources.test.cjs tests/ui-redesign-practice.test.cjs tests/ui-redesign-hook-contract.test.cjs tests/ui-redesign-exam.test.cjs tests/ui-redesign-owner-shell.test.cjs tests/continuous-training.test.cjs tests/continuous-audio-ui.test.cjs tests/phase2-practice-workflow.test.cjs tests/audio-resume-confirmation.test.cjs tests/recording-player.test.cjs tests/recording-media-diagnostics.test.cjs tests/recording-capture-diagnostics.test.cjs tests/f04-study-calendar-date.test.cjs tests/f04-study-backup-export-ui.test.cjs tests/request-body.test.cjs tests/request-body-routes.test.cjs tests/recording-storage.test.cjs tests/pcm-recorder.test.cjs",
+    "test:study": "node --test tests/study-invariants.test.cjs tests/native-lifecycle.test.cjs tests/repo-review-regressions.test.cjs tests/study-data-v2.test.cjs tests/lesson-audio.test.cjs tests/vocabulary.test.cjs tests/exams.test.cjs tests/exam-ui.test.cjs tests/exam-page-packer.test.cjs tests/native-mock-verifier.test.cjs tests/native-mock-timeout.test.cjs tests/dictionary.test.cjs tests/dictionary-ui.test.cjs tests/exam-legacy.test.cjs tests/exam-library-api.test.cjs tests/exam-storage-removal.test.cjs tests/exam-library-ui.test.cjs tests/theme-persistence.test.cjs tests/theme-atmosphere.test.cjs tests/ui-redesign-search.test.cjs tests/ui-redesign-speaking.test.cjs tests/ui-redesign-resources.test.cjs tests/ui-redesign-practice.test.cjs tests/ui-redesign-hook-contract.test.cjs tests/ui-redesign-exam.test.cjs tests/ui-redesign-owner-shell.test.cjs tests/continuous-training.test.cjs tests/continuous-audio-ui.test.cjs tests/phase2-practice-workflow.test.cjs tests/audio-resume-confirmation.test.cjs tests/recording-player.test.cjs tests/recording-media-diagnostics.test.cjs tests/recording-capture-diagnostics.test.cjs tests/f04-study-calendar-date.test.cjs tests/f04-study-backup-export-ui.test.cjs tests/request-body.test.cjs tests/request-body-routes.test.cjs tests/recording-storage.test.cjs tests/pcm-recorder.test.cjs tests/actual-source-loader.test.cjs tests/auth-fixture-headers.test.cjs tests/dictionary-legacy-compat.test.cjs tests/sites-legacy-readonly.test.cjs tests/study-sync-initialization.test.cjs tests/short-word-audio.test.cjs tests/listening200-runtime.test.cjs tests/natural-audio-index-capacity.test.cjs",
     "test:owner-shell": "node --test tests/ui-redesign-owner-shell.test.cjs",
     "typecheck": "tsc --noEmit",
     "validate:content": "node scripts/validate-content.mjs",
@@ -27,7 +27,9 @@
     "test:dictionary:browser": "node tests/browser/dictionary.cjs",
     "test:themes:browser": "node tests/browser/theme-browser.cjs",
     "test:themes:web:browser": "node tests/browser/theme-browser.cjs --web",
-    "test:continuous": "node --test tests/continuous-training.test.cjs tests/continuous-audio-ui.test.cjs tests/phase2-practice-workflow.test.cjs tests/lesson-audio.test.cjs tests/audio-resume-confirmation.test.cjs"
+    "test:continuous": "node --test tests/continuous-training.test.cjs tests/continuous-audio-ui.test.cjs tests/phase2-practice-workflow.test.cjs tests/lesson-audio.test.cjs tests/audio-resume-confirmation.test.cjs",
+    "test:auth": "node --test tests/auth-primitives.test.cjs tests/product-auth.test.cjs tests/auth-admission.test.cjs tests/product-auth-runtime.test.cjs tests/product-session-browser-guard.test.cjs",
+    "auth:local": "node scripts/auth-local.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

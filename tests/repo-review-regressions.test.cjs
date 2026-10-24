@@ -9,9 +9,10 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 
 // Executes repository modules. Only browser, React hooks and network I/O are simulated.
 function load(file, imports, globals = {}) {
+  const dependencies=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals});
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(root + '/' + file, 'utf8'), {
-    compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX}
+    fileName:file,compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX}
   }).outputText;
   vm.runInNewContext(code, {exports, require: name => {
     if (name === '@/lib/pcm-recorder') return {createRecordingCapture:stream=>new globals.MediaRecorder(stream),captureDuration:(_rec,seconds)=>seconds,captureWarning:()=>''};
@@ -19,7 +20,7 @@ function load(file, imports, globals = {}) {
     if (name === '@/lib/recording-media-diagnostics') return {recordingMediaTrace(){}};
     if (name === '@/release-manifest.json') return {default:JSON.parse(fs.readFileSync(root + '/release-manifest.json','utf8'))};
     if (name === '@/lib/use-dialog-viewport') return load('lib/use-dialog-viewport.ts', {react: imports.react}, globals);
-    if (!(name in imports)) throw Error('Unexpected import: ' + name);
+    if (!(name in imports)) return dependencies.resolve(name,file);
     return imports[name];
   }, Date, Intl, Map, Set, structuredClone, crypto: {randomUUID}, Blob, URL, URLSearchParams, AbortController, ...globals}, {filename: file});
   return exports;
@@ -36,6 +37,7 @@ function environment({reverse = false} = {}) {
     useCallback(fn, deps) {const i = cursor++; if (!slots[i] || !same(slots[i].deps, deps)) slots[i] = {value: fn, deps}; return slots[i].value;},
     useEffect(fn, deps) {const i = cursor++; if (!slots[i] || !same(slots[i].deps, deps)) {const old = slots[i]; slots[i] = {deps}; effects.push(() => {old?.cleanup?.(); slots[i].cleanup = fn();});}}
   };
+  react.useLayoutEffect=react.useEffect;
   const model = load('lib/study-model.ts', {});
   const backup = load('lib/study-backup.ts', {'./study-model':model,zod:require(root + '/node_modules/zod')});
   remote = structuredClone(model.EMPTY_DATA);
@@ -48,8 +50,9 @@ function environment({reverse = false} = {}) {
   };
   const toast = Object.assign(() => {}, {success: text => messages.success.push(text), error: text => messages.error.push(text), message: text => messages.error.push(text)});
   const browser = {
-    document: {documentElement: {dataset: {},style:{setProperty(){}}}, body:{dataset:{},style:{}}, hidden: false},
-    window: {location:{search:''}, history:{state:null,pushState(state){this.state=state;}}, addEventListener: (name, fn) => listeners.set(name, fn), removeEventListener: name => listeners.delete(name), scrollTo() {}},
+    HTMLElement:class HTMLElement{},requestAnimationFrame:fn=>{fn();return 1;},
+    document: {querySelector:()=>null,querySelectorAll:()=>[],activeElement:null,documentElement: {dataset: {},style:{setProperty(){}}}, body:{dataset:{},style:{}}, hidden: false},
+    window: {location:{search:''}, history:{state:null,pushState(state){this.state=state;},replaceState(state){this.state=state;},back(){this.state=null;listeners.get('popstate')?.({state:null});}}, addEventListener: (name, fn) => listeners.set(name, fn), removeEventListener: name => listeners.delete(name), scrollTo() {}},
     navigator: {get onLine() {return online;}},
     localStorage, setInterval: () => 1, clearInterval() {}, setTimeout, clearTimeout,
     fetch: async (url, init) => {
@@ -98,14 +101,14 @@ function textOf(node) {
 function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
   const pureComponents = new Set();
   let workspaceComponent;
-  const jsx = (type, props, key) => {if(keyedWorkspace&&type===workspaceComponent)h.replaceWorkspace(key);return pureComponents.has(type) ? type(props) : ({type, props, key});};
+  const jsx = (type, props, key) => {if(keyedWorkspace&&type===workspaceComponent)h.replaceWorkspace(key);return (pureComponents.has(type)||type?.name==='SettingsRow') ? type(props) : ({type, props, key});};
   const stubs = new Proxy({}, {get: (_, name) => String(name)});
   const runtime = {jsx, jsxs: jsx, Fragment: 'fragment'};
   const themeModel = load('lib/ui-theme.ts', {}, h.browser);
   const themeUi = load('app/learn/ui-theme.tsx', {
-    'react/jsx-runtime':runtime, 'lucide-react':stubs, '@/lib/ui-theme':themeModel
+    react:h.react,'react/jsx-runtime':runtime, 'lucide-react':stubs, '@/lib/ui-theme':themeModel
   }, h.browser);
-  for (const component of Object.values(themeUi)) if (typeof component === 'function') pureComponents.add(component);
+  for (const component of Object.values(themeUi)) if (typeof component === 'function'&&component!==themeUi.ThemeScene) pureComponents.add(component);
   const workspace = load('app/learn/workspace-shell.tsx', {
     'react/jsx-runtime':runtime, 'lucide-react':stubs, './ui-theme':themeUi
   }, h.browser);
@@ -117,8 +120,14 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
     '@/lib/native-host':{registerNativeBack:()=>()=>{},isNativeForeground:()=>true,subscribeNativeState:()=>()=>{}},
     sonner:{toast:h.toast}
   }, h.browser);
+  pureComponents.add(speaking.SpeakingTaskCatalog);
+  const presentationImports={react:h.react,'react/jsx-runtime':runtime,'lucide-react':stubs,'./ui-theme':themeUi,'@/lib/ui-theme':themeModel,'@/lib/study-model':h.model,'./legal-pages':{PublicInfoLinks:'PublicInfoLinks'},'@/components/ui/tabs':stubs};
+  const presentation={};
+  for(const file of ['personal-settings','today-dashboard','practice-home']){const module=load('app/learn/'+file+'.tsx',presentationImports,h.browser);presentation['./learn/'+file]=module;for(const component of Object.values(module))if(typeof component==='function')pureComponents.add(component);}
   const imports = {
+    ...presentation,'./account/account-form':{default:'AccountForm'},'./learn/legal-pages':{PublicInfoLinks:'PublicInfoLinks'},'./legal-pages':{PublicInfoLinks:'PublicInfoLinks'},
     react:h.react, 'react/jsx-runtime':runtime, 'lucide-react':stubs, sonner:{toast:h.toast},
+    '@/lib/lesson-audio':{prepareProductLessonAudio:async()=>undefined,stopLessonAudio(){}},
     '@/lib/use-study':{useStudy: data ? () => ({data,ready:true,recordsReadable:true,sync:'local',issues:[],...api}) : owner => h.useStudy(owner)},
     '@/lib/study-model':h.model, '@/lib/study-backup':h.backup, '@/lib/speaking-recovery':load('lib/speaking-recovery.ts',{}),
     '@/lib/native-host':{registerNativeBack(fn){h.backs.add(fn);return()=>h.backs.delete(fn);}},
@@ -140,12 +149,14 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
   h.recovery=imports['@/lib/speaking-recovery'];
   workspaceComponent=app.StudyWorkspace;
   pureComponents.add(app.StudyWorkspace);
-  return app.default;
+  // Owner-scoping probes target the exported post-verification workspace.
+  // Authentication barriers are covered by the dedicated product-session tests.
+  return props=>jsx(app.StudyWorkspace,props,JSON.stringify([props.nativeMode,props.owner]));
 }
 function dailyApp(data) {
   const h=environment(), App=createStudyApp(h,{data});
   h.setRenderer(()=>App({owner:null,nativeMode:true}));
-  return ()=>h.render();
+  const render=()=>h.render();render.studyData=data;render.studyModel=h.model;return render;
 }
 
 // Reconcile the actual shipped workspace key with separate hook slots. Browser
@@ -158,18 +169,18 @@ function ownerWorkspace() {
   const render=()=>{h.render();return h.render();};
   const button=(label)=>nodes(render(),n=>n.type==='button'&&textOf(n)===label)[0];
   const dialog=(title)=>nodes(render(),n=>n.type==='Dialog'&&textOf(n).includes(title))[0];
-  return {h,render,button,dialog,switchTo(next,nextNative=false){owner=next;nativeMode=nextNative;return render();}};
+  return {h,render,button,dialog,preferences(){navigateApp(render,'profile');nodes(render(),n=>n.type==='button'&&textOf(n).startsWith('学习偏好'))[0].props.onClick();},switchTo(next,nextNative=false){owner=next;nativeMode=nextNative;return render();}};
 }
 
 test('C10: owner and mode boundary removes preference drafts while same owner keeps edits',()=>{
-  const app=ownerWorkspace();app.render();app.button('调整学习偏好').props.onClick();
-  let dialog=app.dialog('设定你的下一程');assert.equal(dialog.props.open,true);
+  const app=ownerWorkspace();app.render();app.preferences();
+  let dialog=app.dialog('学习偏好');assert.equal(dialog.props.open,true);
   nodes(dialog,n=>n.type==='input'&&n.props.maxLength===40)[0].props.onChange({target:{value:'ALICE PRIVATE DRAFT'}});
-  assert.equal(nodes(app.dialog('设定你的下一程'),n=>n.type==='input'&&n.props.maxLength===40)[0].props.value,'ALICE PRIVATE DRAFT');
-  app.switchTo('bob');assert.equal(app.dialog('设定你的下一程').props.open,false);
-  app.button('调整学习偏好').props.onClick();dialog=app.dialog('设定你的下一程');
+  assert.equal(nodes(app.dialog('学习偏好'),n=>n.type==='input'&&n.props.maxLength===40)[0].props.value,'ALICE PRIVATE DRAFT');
+  app.switchTo('bob');assert.equal(app.dialog('学习偏好').props.open,false);
+  app.preferences();dialog=app.dialog('学习偏好');
   assert.equal(nodes(dialog,n=>n.type==='input'&&n.props.maxLength===40)[0].props.value,'BOB');
-  app.switchTo('bob',true);assert.equal(app.dialog('设定你的下一程').props.open,false,'Changing native/web mode also disposes the draft');
+  app.switchTo('bob',true);assert.equal(app.dialog('学习偏好').props.open,false,'Changing native/web mode also disposes the draft');
   assert.doesNotMatch(JSON.stringify([...app.h.storage]),/ALICE PRIVATE DRAFT/,'Unsaved draft never enters either account snapshot');
 });
 
@@ -188,7 +199,7 @@ test('C10: resource checkin fields and departed completion callbacks cannot ente
 });
 
 test('C10: practice and speaking sessions are removed at owner change, retaining original callback owner',()=>{
-  const app=ownerWorkspace();app.render();app.button('开始今日练习').props.onClick();
+  const app=ownerWorkspace();app.render();startWorkspacePractice(app.render);
   const practice=nodes(app.render(),n=>n.type==='Practice')[0];assert.ok(practice);
   app.switchTo('bob');assert.equal(nodes(app.render(),n=>n.type==='Practice').length,0);
   practice.props.onFinish(8);assert.equal(app.dialog('留下一点今天的收获').props.open,false);
@@ -196,7 +207,7 @@ test('C10: practice and speaking sessions are removed at owner change, retaining
   practice.props.onAttempt(attempt);
   assert.equal(JSON.parse(app.h.storage.get('lantern-v1-bob')).data.attempts.length,0,'A departed callback cannot write the replacement account');
   assert.ok(JSON.parse(app.h.storage.get('lantern-v1-alice')).data.attempts.some(a=>a.id===attempt.id),'A captured callback remains scoped to its original account');
-  app.switchTo('alice');const oral=nodes(app.render(),n=>n.type==='button'&&textOf(n).includes('朗读 ·'))[0];oral.props.onClick();
+  app.switchTo('alice');navigateApp(app.render,'train');const oral=nodes(app.render(),n=>n.type==='button'&&n.props['aria-label']==='开始'+JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8'))[0].title)[0];oral.props.onClick();
   const speaking=nodes(app.render(),n=>n.type==='SpeakingRoom')[0];assert.ok(speaking);
   app.switchTo(null,true);assert.equal(nodes(app.render(),n=>n.type==='SpeakingRoom').length,0);
   speaking.props.onFinish(9);assert.equal(app.dialog('留下一点今天的收获').props.open,false,'A departed speaking completion cannot open a new owner checkin');
@@ -208,7 +219,7 @@ test('I01: workspace recovery stays with the original owner and a processing cli
   const scope=JSON.stringify([false,'alice']),clip={prompt:prompts[0],meta:{id:'qa-owner-retained',promptId:prompts[0].id,title:prompts[0].title,createdAt:'2026-10-13T08:00:00Z',duration:8,mime:'audio/webm',note:''},blob:new Blob(['private Alice clip'])};
   app.h.recovery.retainSpeakingRecovery(scope,{...clip,processing:true});
   assert.equal(app.button('恢复未保存录音').props.disabled,true);
-  nodes(app.render(),n=>n.type==='button'&&textOf(n).includes('朗读 ·'))[0].props.onClick();assert.equal(nodes(app.render(),n=>n.type==='SpeakingRoom').length,0);
+  navigateApp(app.render,'train');nodes(app.render(),n=>n.type==='button'&&n.props['aria-label']==='开始'+JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8'))[0].title)[0].props.onClick();assert.equal(nodes(app.render(),n=>n.type==='SpeakingRoom').length,0);
   app.h.recovery.retainSpeakingRecovery(scope,clip);app.switchTo('bob');assert.equal(app.button('恢复未保存录音'),undefined);assert.doesNotMatch(textOf(app.render()),/有一段口语录音尚未保存/);
   app.switchTo('alice');app.button('恢复未保存录音').props.onClick();const room=nodes(app.render(),n=>n.type==='SpeakingRoom')[0];assert.ok(room);assert.equal(room.props.recovery.blob,clip.blob);assert.equal(room.props.recovery.meta.id,clip.meta.id);
   room.props.onRelease(clip.meta.id);room.props.onClose();assert.equal(app.h.recovery.getSpeakingRecovery(scope),undefined);assert.equal(app.button('恢复未保存录音'),undefined);
@@ -220,40 +231,32 @@ test('I09: nested lookup preserves the same practice queue and restores its look
   h.browser.HTMLElement=Element;h.browser.document.activeElement=new Element();h.browser.requestAnimationFrame=fn=>fn();
   h.browser.window.history.back=()=>{backCount++;h.browser.window.history.state={lanternPracticeView:'qa-parent-practice'};};
   const App=createStudyApp(h,{data});h.setRenderer(()=>App({owner:'alice',nativeMode:false}));const render=()=>h.render();
-  nodes(render(),n=>n.type==='button'&&textOf(n)==='开始今日练习')[0].props.onClick();const before=nodes(render(),n=>n.type==='Practice')[0];
+  startWorkspacePractice(render);const before=nodes(render(),n=>n.type==='Practice')[0];
   before.props.onLookup('reservation');let practice=nodes(render(),n=>n.type==='Practice')[0],dictionary=nodes(render(),n=>n.type==='VocabularyLibrary')[0];
   assert.equal(practice.props.queue,before.props.queue);assert.equal(practice.props.lookupActive,true);assert.equal(dictionary.props.initialQuery,'reservation');assert.equal(dictionary.props.initialMode,'dictionary');
   dictionary.props.onBack();practice=nodes(render(),n=>n.type==='Practice')[0];assert.equal(practice.props.queue,before.props.queue);assert.equal(practice.props.lookupActive,false);assert.equal(backCount,1);assert.equal(focusCount,1);
 });
 function navigateApp(render, id) {
+  if(id==='profile'){const entry=nodes(render(),n=>n.type==='button'&&n.props['aria-label']==='打开个人信息与设置')[0]||nodes(render(),n=>n.type==='button'&&textOf(n)==='我的与设置')[0];assert.ok(entry,'Actual personal entry');entry.props.onClick();return;}
   const nav=nodes(render(),n=>n.type==='nav'&&n.props['aria-label']==='桌面主导航')[0];
-  const labels={today:'今日',train:'练习',resources:'资料'};
+  const labels={today:'今日',train:'练习',resources:'资料',profile:'我的'};
   const button=nodes(nav,n=>n.type==='button'&&textOf(n)===labels[id])[0];
   assert.ok(button,'Find the real WorkspaceShell navigation button for '+id);
   button.props.onClick();
 }
+function startWorkspacePractice(render){navigateApp(render,'train');const start=nodes(render(),n=>n.type==='button'&&textOf(n).includes('Part 1 ·'))[0];assert.ok(start,'Actual Part 1 entry');start.props.onClick();}
+// Daily recommendations are now a model contract; the redesigned Today UI routes
+// to explicit Part selection instead of rendering the old three task buttons.
 function dailySnapshot(render) {
-  let tree=render();
-  const priority=nodes(tree,n=>n.type==='section'&&n.props.className==='workspace-priority panel')[0];
-  assert.ok(priority,'The listening recommendation has an actual visible entry');
-  const listening={title:textOf(nodes(priority,n=>n.type==='h2')[0]),done:textOf(priority).includes('今日听力已练习')};
-  const start=nodes(priority,n=>n.type==='button'&&textOf(n)==='开始今日练习')[0];
-  assert.ok(start,'Find the shipped daily listening/reading action');
-  start.props.onClick();
-  let practice=nodes(render(),n=>n.type==='Practice')[0];
-  assert.ok(practice); listening.parts=Array.from(new Set(practice.props.queue.map(q=>q.part)));
-  practice.props.onClose(); tree=render();
-  const rows=nodes(tree,n=>n.type==='button'&&n.props.className==='workspace-task-row');
-  assert.equal(rows.length,3,'Reading, vocabulary and speaking follow-up tasks remain available');
-  const reading={title:textOf(nodes(rows[0],n=>n.type==='b')[0]),done:textOf(rows[0]).includes('今日已练习')};
-  rows[0].props.onClick(); practice=nodes(render(),n=>n.type==='Practice')[0];
-  assert.ok(practice); reading.parts=Array.from(new Set(practice.props.queue.map(q=>q.part)));
-  practice.props.onClose(); tree=render();
-  const oral=nodes(tree,n=>n.type==='button'&&n.props.className==='workspace-task-row')[2];
-  const speaking={title:textOf(nodes(oral,n=>n.type==='b')[0]),done:textOf(oral).includes('今日已练习')};
-  oral.props.onClick(); const room=nodes(render(),n=>n.type==='SpeakingRoom')[0];
-  assert.ok(room); speaking.promptId=room.props.prompt.id; room.props.onClose();
-  return [listening,reading,speaking];
+ const data=render.studyData,model=render.studyModel;
+ const questions=load('lib/question-catalog.ts',{}).QUESTIONS;
+ const prompts=JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8'));
+ const plan=model.dailyPlan(data,questions,prompts);
+ return [
+  {title:'Part '+plan.listeningPart,done:plan.checkedTasks[0],parts:[plan.listeningPart]},
+  {title:'Part '+plan.readingPart,done:plan.checkedTasks[1],parts:[plan.readingPart]},
+  {title:plan.oral.title,done:plan.checkedTasks[2],promptId:plan.oral.id},
+ ];
 }
 
 test('recording dates follow the configured timezone across UTC day boundaries', () => {
@@ -410,7 +413,10 @@ test('daily recommendations advance at the configured local midnight and retain 
   assert.equal(after.oral.id, prompts[1].id);
   assert.deepEqual(Array.from(after.checkedTasks), [false, false, false]);
   data.attempts[0].correct = false;
-  assert.equal(model.dailyPlan(data, questions, prompts, '2026-09-19').listeningPart, 1);
+  assert.equal(model.dailyPlan(data, questions, prompts, '2026-09-19').recommendation.focusPart, null,'One error is insufficient evidence for a weakness');
+  const evidenceQuestions=Array.from({length:10},(_,i)=>({id:'focus-'+i,part:1}));
+  data.attempts=evidenceQuestions.map(q=>({id:randomUUID(),qid:q.id,choice:0,correct:false,createdAt:'2026-09-19T06:59:00Z',seconds:12,mode:'first'}));
+  assert.equal(model.dailyPlan(data,[...questions,...evidenceQuestions],prompts,'2026-09-19').listeningPart,1,'Sufficient first-answer errors retain the focus Part');
 });
 
 test('theme originals preview in the app and native Back closes the image before leaving the library', () => {
@@ -480,12 +486,10 @@ test('mobile access guidance distinguishes synchronized PWA and local native mod
     h.setRenderer(() => StudyApp({owner, nativeMode}));
     h.render();
     let tree = h.render();
-    const settingsButton=nodes(tree,n=>n.type==='button'&&n.props['aria-label']==='外观与偏好')[0];
-    assert.ok(settingsButton,'Open the shipped preferences page'); settingsButton.props.onClick();tree=h.render();
-    const deviceRow=nodes(tree,n=>n.type==='div'&&n.props.className==='workspace-settings-row'&&textOf(n).includes('设备安装与离线范围'))[0];
-    const button=nodes(deviceRow,n=>n.type==='button')[0];
-    assert.ok(button,'Find the actual device-installation control');
-    button.props.onClick();
+    navigateApp(()=>h.render(),'profile');tree=h.render();
+    nodes(tree,n=>n.type==='button'&&textOf(n)==='关于微光')[0].props.onClick();tree=h.render();
+    const button=nodes(tree,n=>n.type==='button'&&textOf(n)==='设备与离线使用')[0];
+    assert.ok(button,'Find the actual device-installation control');button.props.onClick();
     tree = h.render();
     return nodes(tree, n => n.type === 'Dialog' && n.props.open && textOf(n).includes(nativeMode ? '原生预览' : '鸿蒙桌面'))[0];
   };
@@ -494,7 +498,7 @@ test('mobile access guidance distinguishes synchronized PWA and local native mod
   const webDialog = openInstall(web, createApp(web), 'alice', false);
   assert.match(textOf(webDialog), /HarmonyOS \/ 鸿蒙/);
   assert.doesNotMatch(textOf(webDialog), /Android|iPhone/);
-  assert.match(textOf(webDialog), /ChatGPT 账号/);
+  assert.match(textOf(webDialog), /微光产品会话/);assert.doesNotMatch(textOf(webDialog),/ChatGPT 账号/);
   assert.match(textOf(webDialog), /账号同步已开启/);
 
   const native = environment();

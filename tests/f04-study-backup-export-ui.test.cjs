@@ -15,18 +15,18 @@ const ts = require(path.join(root, 'node_modules/typescript'));
 const genericError = '备份暂时无法生成，当前记录未改。';
 const successMessage = '学习记录备份已生成，请确认文件已保存。';
 const entries = [
-  {name:'resources', label:'导出听读与口语记录', route:['资料']},
-  {name:'backups', label:'导出学习记录', route:['外观与偏好','管理备份']},
+  {name:'resources', label:'导出学习记录', route:['我的','数据管理']},
+  {name:'backups', label:'导出学习记录', route:['我的','数据管理']},
 ];
 
 function load(file, imports = {}, globals = {}) {
   const exports = {};
   const source = fs.readFileSync(path.join(root, file), 'utf8');
-  const code = ts.transpileModule(source, {compilerOptions:{
+  const code = ts.transpileModule(source, {fileName:file,compilerOptions:{
     module:ts.ModuleKind.CommonJS, target:ts.ScriptTarget.ES2022, jsx:ts.JsxEmit.ReactJSX,
   }}).outputText;
   vm.runInNewContext(code, {exports, require(name) {
-    assert.ok(Object.hasOwn(imports, name), `Unexpected import in ${file}: ${name}`);
+    if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals}).resolve(name,file);
     return imports[name];
   }, Date, Intl, Map, Set, structuredClone, crypto:{randomUUID}, Blob, URL,
   URLSearchParams, AbortController, ...globals}, {filename:file});
@@ -88,6 +88,7 @@ function workspace(data, {failDownload = false} = {}) {
     useEffect(fn,deps) {const i=cursor++;if (!slots[i]||!same(slots[i].deps,deps)) {
       const old=slots[i];slots[i]={deps};effects.push(()=>{old?.cleanup?.();slots[i].cleanup=fn();});}},
   };
+  react.useLayoutEffect=react.useEffect;
   const messages = {success:[],error:[]}, events = [], downloads = [], blobs = new Map();
   const storage = new Map([['f04-synthetic-study', JSON.stringify({data})],['f04-unrelated','keep-exact']]);
   const before = {data:JSON.stringify(data), storage:JSON.stringify([...storage])};
@@ -125,14 +126,14 @@ function workspace(data, {failDownload = false} = {}) {
     navigator:{onLine:false},setInterval:()=>1,clearInterval(){},setTimeout:()=>1,clearTimeout(){},
     requestAnimationFrame:fn=>fn(),HTMLElement:class {},fetch(){throw Error('No network allowed in F04 synthetic UI tests');},
   };
-  const pure = new Set(), jsx = (type,props,key)=>pure.has(type)?type(props):({type,props,key});
+  const pure = new Set(), jsx = (type,props,key)=>(pure.has(type)||type?.name==='SettingsRow')?type(props):({type,props,key});
   const runtime = {jsx,jsxs:jsx,Fragment:'fragment'};
   const stubs = new Proxy({}, {get:(_,name)=>String(name)});
   const theme = load('lib/ui-theme.ts', {}, browser);
   const themeUi = load('app/learn/ui-theme.tsx', {
-    'react/jsx-runtime':runtime,'lucide-react':stubs,'@/lib/ui-theme':theme,
+    react,'react/jsx-runtime':runtime,'lucide-react':stubs,'@/lib/ui-theme':theme,
   }, browser);
-  Object.values(themeUi).filter(value=>typeof value==='function').forEach(value=>pure.add(value));
+  Object.values(themeUi).filter(value=>typeof value==='function'&&value!==themeUi.ThemeScene).forEach(value=>pure.add(value));
   const shell = load('app/learn/workspace-shell.tsx', {
     'react/jsx-runtime':runtime,'lucide-react':stubs,'./ui-theme':themeUi,
   }, browser);
@@ -144,7 +145,9 @@ function workspace(data, {failDownload = false} = {}) {
       'addAttempt','addCheckin','addRecording'].map(name=>[name,mutation(name)])),
     readAttempt:async()=>null,readCheckin:async()=>null,recordingUrl:async()=>{throw Error('No recording reads allowed');},
   };
+  const personal=load('app/learn/personal-settings.tsx',{react,'react/jsx-runtime':runtime,'lucide-react':stubs,'@/lib/ui-theme':theme,'./ui-theme':themeUi,'./legal-pages':{PublicInfoLinks:'PublicInfoLinks'}},browser);Object.values(personal).filter(value=>typeof value==='function').forEach(value=>pure.add(value));
   const imports = {
+    './learn/personal-settings':personal,'./account/account-form':{default:'AccountForm'},'./learn/legal-pages':{PublicInfoLinks:'PublicInfoLinks'},'./legal-pages':{PublicInfoLinks:'PublicInfoLinks'},
     react,'react/jsx-runtime':runtime,'lucide-react':stubs,sonner:{toast},
     '@/lib/use-study':{useStudy:()=>api},'@/lib/study-model':model,'@/lib/study-backup':backup,
     '@/lib/native-host':{registerNativeBack:()=>()=>{}},'@/lib/ui-theme':theme,
@@ -152,7 +155,7 @@ function workspace(data, {failDownload = false} = {}) {
       retainSpeakingRecovery(){},releaseSpeakingRecovery(){},subscribeSpeakingRecovery:()=>()=>{}},
     './learn/recording-player':{RecordingPlayer:'RecordingPlayer'},
     '@/lib/recording-media-diagnostics':{recordingMediaTrace(){}},
-    '@/lib/lesson-audio':{stopLessonAudio(){}},
+    '@/lib/lesson-audio':{prepareProductLessonAudio:async()=>undefined,stopLessonAudio(){}},
     './learn/workspace-shell':shell,'./learn/ui-theme':themeUi,
     './learn/exam-collection':{default:'ExamCollection'},'./learn/resource-library':{default:'ResourceLibrary'},
     './learn/practice':{default:'Practice'},'./learn/speaking':{default:'SpeakingRoom',
@@ -169,7 +172,7 @@ function workspace(data, {failDownload = false} = {}) {
   Object.assign(imports,require(path.join(root,'tests/helpers/phase2-shell-fixture.cjs')).workflowShellFixture(react,selection));
   const app=load('app/study-app.tsx',imports,browser);
   function render(){cursor=0;tree=app.StudyWorkspace({owner:null,nativeMode:true});const pending=effects;effects=[];pending.forEach(run=>run());return tree;}
-  function button(label){const found=nodes(tree,node=>node.type==='button'&&textOf(node)===label)[0];assert.ok(found,`Missing real UI button: ${label}`);return found;}
+  function button(label){const found=nodes(tree,node=>node.type==='button'&&(textOf(node)===label||label==='我的'&&node.props['aria-label']==='打开个人信息与设置'))[0];assert.ok(found,`Missing real UI button: ${label}`);return found;}
   function preserved(){assert.equal(JSON.stringify(data),before.data,'Input study data changed.');
     assert.equal(JSON.stringify([...storage]),before.storage,'Synthetic storage changed.');
     assert.equal(events.some(([event])=>event.startsWith('storage-')||event==='study-mutation'),false,'Export invoked a persistence mutation.');}

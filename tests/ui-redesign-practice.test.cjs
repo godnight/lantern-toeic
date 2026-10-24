@@ -15,7 +15,7 @@ function load(file, imports, globals = {}) {
     fileName:file,compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX}
   }).outputText;
   vm.runInNewContext(code, {exports, require(name) {
-    assert.ok(name in imports, 'Unexpected import: ' + name);
+    if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals}).resolve(name,file);
     return imports[name];
   }, Date, Map, Set, TextEncoder, structuredClone, crypto: webcrypto, ...globals}, {filename: file});
   return exports;
@@ -104,7 +104,7 @@ test('failed save retains the same answer and attempt identity; retry gates feed
   assert.equal(h.one(n => n.type === 'Progress').props.value, 50);
   assert.match(textOf(h.one(n => n.props?.className === 'answer-feedback')), /判断正确/);
   h.click('下一题');
-  assert.match(textOf(h.one(n => n.type === 'DialogDescription')), /已提交 1 题/);
+  assert.match(textOf(h.one(n => n.type === 'DialogDescription')), /2 \/ 2 · 首次作答/);assert.equal(h.saved.length,1);
   assert.equal(h.one(n => n.type === 'RadioGroup').props.value, ''); h.unmount();
 });
 
@@ -124,7 +124,7 @@ test('submitted count and score advance once per saved question, preserving firs
   assert.equal(h.calls[0].mode, 'review'); h.click('下一题'); h.choose(1); h.click('确认答案');
   assert.equal(h.calls[1].mode, 'first');
   assert.equal(h.one(n => n.type === 'Progress').props.value, 100);
-  assert.match(textOf(h.one(n => n.type === 'DialogDescription')), /已提交 2 题/);
+  assert.match(textOf(h.one(n => n.type === 'DialogDescription')), /2 \/ 2 · 首次作答/);assert.equal(h.saved.length,2);
   h.click('完成本组答题');
   assert.match(textOf(h.one(n => n.props?.className === 'session-complete')), /1 \/ 2 题/);
   assert.equal(h.calls.length, 2); assert.deepEqual(attempts, [prior]);
@@ -333,7 +333,7 @@ test('I09: controlled lookup leaves Practice mounted with identical question, an
   assert.equal(h.one(n=>n.props?.className==='question-image').props.src,original[0].image);
   assert.deepEqual(h.saved,[answer]);assert.deepEqual(questions,original);assert.equal(h.calls.length,1);assert.equal(h.finishes.length,0);
   h.click('放大本题配图');h.nativeBack();assert.equal(nodes(h.tree,n=>n.props?.className==='practice-image-dialog').length,0);
-  h.click('下一题');assert.match(textOf(h.tree),/2 \/ 2 · 已提交 1 题/);h.unmount();
+  h.click('下一题');assert.match(textOf(h.tree),/2 \/ 2 · 首次作答/);assert.equal(h.saved.length,1);h.unmount();
 });
 
 test('I09: Practice history capture yields during nested lookup and resumes its original guard after controlled return',()=>{
@@ -355,7 +355,7 @@ test('I09: repeated lookup does not advance the question or create attempts/chec
   const h=harness({queue:lookupQuestions(),lookup:true});h.choose(1);h.click('确认答案');
   const staleNext=h.button('下一题');h.click('查词 reservation');
   staleNext.props.onClick();h.render();assert.deepEqual(h.lookups,['reservation']);
-  assert.match(textOf(h.one(n=>n.type==='DialogDescription')),/1 \/ 2 · 已提交 1 题/);
+  assert.match(textOf(h.one(n=>n.type==='DialogDescription')),/1 \/ 2 · 首次作答/);assert.equal(h.saved.length,1);
   assert.equal(h.button('查词 reservation').props.disabled,true);assert.equal(h.calls.length,1);assert.equal(h.finishes.length,0);
   h.lookupActive(false);h.click('查词 reservation');assert.deepEqual(h.lookups,['reservation','reservation']);
   assert.equal(h.saved.length,1);h.unmount();

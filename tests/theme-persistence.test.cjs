@@ -20,7 +20,7 @@ function load(file, imports = {}) {
   vm.runInNewContext(source, {
     exports,
     require: name => {
-      if (!(name in imports)) throw Error('Unexpected import: ' + name);
+      if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:{}}).resolve(name,file);
       return imports[name];
     },
     Date, Intl, Map, Set, structuredClone, Request, Response, Headers,

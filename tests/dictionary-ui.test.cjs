@@ -6,8 +6,8 @@ const ts=require(path.join(root,'node_modules/typescript'));
 const componentFile=process.env.LANTERN_SEARCH_COMPONENT||path.join(root,'app/learn/vocabulary-library.tsx');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function load(file,imports={},globals={}){
- const exports={};const code=ts.transpileModule(fs.readFileSync(file==='app/learn/vocabulary-library.tsx'?componentFile:path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
- vm.runInNewContext(code,{exports,require:name=>{assert.ok(name in imports,name);return imports[name];},Date,Map,Set,Intl,Error,crypto:crypto.webcrypto,setTimeout,clearTimeout,...globals},{filename:file});return exports;
+ const exports={};const code=ts.transpileModule(fs.readFileSync(file==='app/learn/vocabulary-library.tsx'?componentFile:path.join(root,file),'utf8'),{fileName:file,compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
+ vm.runInNewContext(code,{exports,require:name=>{if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals}).resolve(name,file);return imports[name];},Date,Map,Set,Intl,Error,crypto:crypto.webcrypto,setTimeout,clearTimeout,...globals},{filename:file});return exports;
 }
 const study=load('lib/study-model.ts'),vocab=load('lib/vocabulary-model.ts',{'./study-model':study}),dict=load('lib/dictionary-model.ts',{'./vocabulary-model':vocab});
 const sourceEntry={id:'dict-0123456789abcdef0123',word:'foobarquux',phonetics:[],forms:['foobarquuxed'],senses:[{pos:'noun',meaning:'字典首义'},{pos:'verb',meaning:'预订座位独特'}]};
@@ -25,11 +25,11 @@ function harness({entries=[sourceEntry],native=false,loadPromise,initialEvents=[
  };
  // Run the real hook-free attribution component so text/link assertions inspect its rendered output.
  // Other children remain platform stubs; do not silently execute future components with their own hooks.
- const jsx=(type,props)=>typeof type==='function'&&type.name==='DictionarySources'?type(props):({type,props}),stubs=new Proxy({},{get:(_,name)=>String(name)});
- const imports={'./vocabulary-redesign.css':{},react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stubs,'@/components/ui/dialog':stubs,'@/components/ui/select':stubs,sonner:{toast:{success(){},error(){}}},'@/lib/native-host':{registerNativeBack:()=>()=>{}},'@/lib/vocabulary-model':vocab,'@/lib/dictionary-model':dict,'@/lib/load-dictionary':{loadDictionary:()=>loadPromise||Promise.resolve({entries})},'@/lib/lesson-audio':{bundledLessonAudio:()=>null},'./practice':{SpeechPlayer:'SpeechPlayer'},'@/lib/use-vocabulary':{useVocabulary:()=>({events,ready:true,error:'',sync:'local',mark(wordId,starred){const revision=vocab.vocabularyState(events,wordId).revision+1;events=vocab.mergeVocabularyEvents(events,[{id:crypto.randomUUID(),wordId,createdAt:new Date().toISOString(),type:'mark',starred,revision}]);return true;},review(wordId,grade,id){events=vocab.mergeVocabularyEvents(events,[{id,wordId,grade,createdAt:new Date().toISOString(),type:'review'}]);return true;},backup:()=>({kind:'lantern-vocabulary',schemaVersion:1,events}),retry(){}})}};
+ const jsx=(type,props)=>typeof type==='function'&&['DictionarySources','DictionaryPronunciation','LocalSystemPronunciation'].includes(type.name)?type(props):({type,props}),stubs=new Proxy({},{get:(_,name)=>String(name)});
+ const imports={'./vocabulary-redesign.css':{},react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stubs,'@/components/ui/dialog':stubs,'@/components/ui/select':stubs,sonner:{toast:{success(){},error(){}}},'@/lib/native-host':{registerNativeBack:()=>()=>{},isNativeForeground:()=>true,subscribeNativeState:()=>()=>{}},'@/lib/vocabulary-model':vocab,'@/lib/dictionary-model':dict,'@/lib/load-dictionary':{loadDictionary:()=>loadPromise||Promise.resolve({entries})},'@/lib/lesson-audio':{bundledLessonAudio:()=>null,naturalLessonDescriptor:()=>null,productLessonAudioState:()=>({phase:'ready'}),naturalAudioRegistry:{isBlocked:()=>false},subscribeProductLessonAudio:()=>()=>{},stopLessonAudio(){}},'./practice':{SpeechPlayer:'SpeechPlayer'},'@/lib/use-vocabulary':{useVocabulary:()=>({events,ready:true,error:'',sync:'local',mark(wordId,starred){const revision=vocab.vocabularyState(events,wordId).revision+1;events=vocab.mergeVocabularyEvents(events,[{id:crypto.randomUUID(),wordId,createdAt:new Date().toISOString(),type:'mark',starred,revision}]);return true;},review(wordId,grade,id){events=vocab.mergeVocabularyEvents(events,[{id,wordId,grade,createdAt:new Date().toISOString(),type:'review'}]);return true;},backup:()=>({kind:'lantern-vocabulary',schemaVersion:1,events}),retry(){}})}};
  for(const name of ['vocabulary','questions','vocabulary-expansion','dictionary-metadata'])imports['@/content/'+name+'.json']={default:JSON.parse(fs.readFileSync(path.join(root,'content',name+'.json'),'utf8'))};
  imports['./interactive-example']=load('app/learn/interactive-example.tsx',{'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'}});
- const component=load('app/learn/vocabulary-library.tsx',imports,{window:{__LANTERN_HARMONY__:native,scrollTo(){}},setInterval:()=>1,clearInterval(){}}).default;
+ const component=load('app/learn/vocabulary-library.tsx',imports,{document:{hidden:false,addEventListener(){},removeEventListener(){}},window:{__LANTERN_HARMONY__:native,scrollTo(){},addEventListener(){},removeEventListener(){}},setInterval:()=>1,clearInterval(){}}).default;
  let tree;const render=()=>{cursor=0;tree=component({owner:null,onQuestion(){}});const batch=pending;pending=[];batch.forEach(fn=>fn());return tree;};
  const click=label=>{const button=nodes(tree,node=>node.type==='button'&&textOf(node)===label)[0];assert.ok(button,'Missing button '+label);button.props.onClick();return render();};
  const search=value=>{nodes(tree,node=>node.type==='input'&&node.props['aria-label']==='搜索单词或中文释义')[0].props.onChange({target:{value}});return render();};
@@ -49,10 +49,10 @@ test('a new dictionary word enters actual flashcard UI and writes the original r
  assert.equal(h.events.length,2);const state=vocab.vocabularyState(h.events,sourceEntry.id);assert.equal(state.starred,true);assert.equal(state.level,1);assert.match(textOf(h.tree),/这一组，复习完成/);h.unmount();
 });
 
-test('native dictionary detail without bundled audio gives the accurate offline-audio limitation',async()=>{
+test('native dictionary detail without bundled audio gives the accurate unavailable system-voice limitation',async()=>{
  const h=harness({native:true});h.render();await tick();h.render();h.click('英汉查词');h.search('foobarquux');await tick();h.render();
  nodes(h.tree,n=>n.type==='button'&&n.props.className==='word-open')[0].props.onClick();h.render();
- assert.match(textOf(h.tree),/暂无离线发音/);assert.equal(nodes(h.tree,n=>n.type==='SpeechPlayer').length,0);assert.match(textOf(h.tree),/词源参考不等于记忆联想/);
+ assert.match(textOf(h.tree),/此设备暂不支持系统发音/);assert.equal(nodes(h.tree,n=>n.type==='button'&&n.props['aria-label']==='用设备系统发音')[0].props.disabled,true);assert.equal(nodes(h.tree,n=>n.type==='SpeechPlayer').length,0);assert.match(textOf(h.tree),/词源参考不等于记忆联想/);
  const links=nodes(h.tree,n=>n.type==='a').map(n=>n.props.href);
  assert.ok(links.includes('https://zh.wiktionary.org/wiki/foobarquux'));
  assert.ok(links.includes('https://zh.wiktionary.org/w/index.php?title=foobarquux&action=history'));
@@ -83,4 +83,23 @@ test('real attribution component preserves source and author-history links for e
  const links=nodes(h.tree,n=>n.type==='a').map(n=>n.props.href);
  for(const variant of variants){assert.ok(links.includes('https://zh.wiktionary.org/wiki/'+encodeURIComponent(variant)),variant+' original source');assert.ok(links.includes('https://zh.wiktionary.org/w/index.php?title='+encodeURIComponent(variant)+'&action=history'),variant+' contributor history');}
  assert.ok(links.includes(metadata.licenseUrl));assert.match(textOf(h.tree),/中文维基词典贡献者/);assert.match(textOf(h.tree),/词源参考不等于记忆联想/);h.unmount();
+});
+
+
+// Existing shipped dictionary IDs remain facts even after a new teaching base
+// admits the same headword. This deliberately exercises the real merge + UI.
+for(const word of ['apple','abandon'])test(`legacy dictionary ${word} marks and review remain visible through the current teaching word without rewriting facts`,async()=>{
+ const metadata=JSON.parse(fs.readFileSync(path.join(root,'content/dictionary-metadata.json'),'utf8'));
+ const dictionary=JSON.parse(fs.readFileSync(path.join(root,'public/dictionaries',metadata.file),'utf8')).entries;
+ const legacy=dictionary.find(entry=>entry.word===word);assert.ok(legacy);assert.match(legacy.id,/^dict-[a-f0-9]{20}$/);
+ const original=[{id:'legacy-mark-'+word,wordId:legacy.id,type:'mark',starred:true,revision:7,createdAt:'2026-01-01T00:00:00.000Z'},
+  {id:'legacy-review-'+word,wordId:legacy.id,type:'review',grade:'again',createdAt:'2026-01-01T00:00:01.000Z'}];
+ const before=JSON.stringify(original),h=harness({entries:[legacy],initialEvents:original});h.render();h.click('我的生词');h.search(word);await tick();h.render();h.render();
+ const row=nodes(h.tree,node=>node.type==='button'&&node.props.className==='word-open'&&textOf(node).startsWith(word))[0];
+ assert.ok(row,'The legacy mark must remain represented by the visible current '+word+' row');
+ row.props.onClick();h.render();assert.ok(nodes(h.tree,node=>node.type==='button'&&textOf(node).trim()==='已加入生词本').length);
+ assert.equal(JSON.stringify(h.events),before,'Projection never migrates or rewrites stored events');
+ h.click('到期复习');h.search(word);await tick();h.render();
+ assert.ok(nodes(h.tree,node=>node.props?.className==='word-open'&&textOf(node).startsWith(word)).length,'Old review due state remains visible');
+ assert.equal(JSON.stringify(h.events),before);h.unmount();
 });

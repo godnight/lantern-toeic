@@ -204,8 +204,12 @@ async function enter(section = '练习') {
   // At 390px the app has a visible mobile nav, while its sidebar duplicate is hidden.
   await page.setViewportSize({width:390,height:844});
   const nav = page.getByRole('navigation', {name:'手机主导航',exact:true});
+  const welcome=page.locator('[data-first-run="welcome"]');
+  await Promise.race([welcome.waitFor(),nav.waitFor()]);
+  if(await welcome.isVisible())await welcome.locator('[data-first-run-action="guest"]').click();
   await (await visible(nav.getByRole('button', {name:section,exact:true}))).click();
-  await (await visible(page.getByRole('button', {name:/完整听读模考/}))).click();
+  if(section==='资料'){await page.getByText('题包与模考',{exact:true}).click();await click('本机题包与模考');}
+  else await (await visible(page.getByRole('button', {name:/完整听读模考/}))).click();
   await visible(page.getByRole('button', {name:'导入题包 JSON',exact:true}));
   await idle();
 }
@@ -231,6 +235,18 @@ async function screenshot(name) {
   const file = path.join(OUT, name + '.png'); await page.screenshot({path:file,fullPage:true,animations:'disabled'}); report.screenshots.push(file);
 }
 async function layout(stage) {
+  if (stage==='reading' || stage==='results') {
+    const disclosure=page.locator('.mock-answer-card details'), summary=disclosure.locator(':scope > summary');
+    const initiallyOpen=await disclosure.evaluate(element=>element.open);
+    const label=async()=> (await summary.innerText()).trim();
+    assert.equal(await label(),initiallyOpen?'收起题号导航':'展开题号导航');
+    await summary.click();
+    assert.equal(await disclosure.evaluate(element=>element.open),!initiallyOpen);
+    assert.equal(await label(),initiallyOpen?'展开题号导航':'收起题号导航');
+    await summary.click();
+    assert.equal(await disclosure.evaluate(element=>element.open),initiallyOpen);
+    assert.equal(await label(),initiallyOpen?'收起题号导航':'展开题号导航');
+  }
   const rows=[];
   for (const width of [320,390,768]) {
     await page.setViewportSize({width,height:844});
@@ -238,7 +254,20 @@ async function layout(stage) {
       overflowing:[...document.querySelectorAll('main,section,article,aside,button,audio,table')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0 && (r.left < -1 || r.right > innerWidth+1);}).slice(0,10).map(el=>({tag:el.tagName,cls:el.className,right:el.getBoundingClientRect().right}))}));
     assert.ok(dimensions.documentWidth <= dimensions.clientWidth + 1, `${stage} horizontal overflow at ${width}: ${JSON.stringify(dimensions)}`);
     assert.ok(dimensions.bodyWidth <= dimensions.clientWidth + 1, `${stage} body overflow at ${width}: ${JSON.stringify(dimensions)}`);
-    rows.push({width,...dimensions}); await screenshot(`${stage}-${width}`);
+    let resultTable;
+    if (stage==='results') {
+      resultTable=await page.locator('.mock-results table').evaluate(table=>{
+        const wrap=table.parentElement, bounds=wrap.getBoundingClientRect();
+        return {scrollWidth:table.scrollWidth,availableWidth:wrap.clientWidth,
+          headers:[...table.querySelectorAll('thead th')].map(cell=>({text:cell.innerText,scrollWidth:cell.scrollWidth,clientWidth:cell.clientWidth,left:cell.getBoundingClientRect().left,right:cell.getBoundingClientRect().right})),
+          wrapLeft:bounds.left,wrapRight:bounds.right};
+      });
+      assert.equal(resultTable.headers.length,5);
+      assert.match(resultTable.headers[4].text,/驻留用时/);
+      assert.ok(resultTable.scrollWidth<=resultTable.availableWidth+1,`Complete result table must fit at ${width}: ${JSON.stringify(resultTable)}`);
+      assert.ok(resultTable.headers.every(cell=>cell.left>=resultTable.wrapLeft-1 && cell.right<=resultTable.wrapRight+1 && cell.scrollWidth<=cell.clientWidth+1),`Every result header must be visible at ${width}: ${JSON.stringify(resultTable)}`);
+    }
+    rows.push({width,...dimensions,...(resultTable?{resultTable}:{})}); await screenshot(`${stage}-${width}`);
   }
   await page.setViewportSize({width:390,height:844}); return rows;
 }
@@ -274,8 +303,32 @@ async function resultSummary(correct,unanswered) {
   assert.match(await page.locator('.mock-results').innerText(),new RegExp('正确 '+correct+' / 200'));
   assert.match(await page.locator('.mock-result-metrics>div').filter({hasText:'整卷漏答'}).innerText(),new RegExp('整卷漏答\\s*'+unanswered+'\\s* / 200'));
 }
+async function backupManagement() {
+  // Backups moved to the shared My > Data management screen. Use its real UI;
+  // the ordinary exam catalog intentionally has no export/restore controls.
+  await click('返回学习');
+  await click('打开个人信息与设置'); await click('数据管理');
+  const panel = page.locator('.v041-mock-data');
+  await visible(panel.getByRole('heading',{name:'模考备份',exact:true}));
+  await backupIdle();
+  return panel;
+}
+async function backupIdle() {
+  await eventually(async()=>await page.locator('.v041-mock-data').getAttribute('aria-busy')==='false', 'Backup transaction did not finish');
+}
+async function leaveBackupManagement() {
+  await click('返回我的'); await click('返回上一页'); await enter();
+}
+async function restoreBackup(file) {
+  const button = await enabled(page.locator('.v041-mock-data').getByRole('button',{name:'恢复模考备份',exact:true}));
+  const [chooser] = await Promise.all([page.waitForEvent('filechooser'), button.click()]);
+  await chooser.setFiles(file); await backupIdle();
+}
 async function downloadBackup(name) {
-  const pending = page.waitForEvent('download'); await click('导出完整备份'); const download = await pending;
+  // Resolve the control before subscribing, so a stale locator is reported as
+  // such instead of leaving an unhandled download-wait rejection.
+  const button = await enabled(page.locator('.v041-mock-data').getByRole('button',{name:'导出模考备份',exact:true}));
+  const [download] = await Promise.all([page.waitForEvent('download'), button.click()]);
   assert.equal(download.suggestedFilename(),'lantern-exam-backup.json'); const file=path.join(OUT,name); await download.saveAs(file);
   const backup = JSON.parse(await fs.readFile(file,'utf8')); assert.equal(backup.ownerId,OWNER); assert.equal(backup.kind,'lantern-exam-backup'); return {file,backup};
 }
@@ -349,13 +402,22 @@ async function downloadBackup(name) {
   });
   await step('results responsive widths',()=>layout('results'));
   await step('backup download and repeated restore through UI',async()=>{
-    await click('回到题包与记录'); const downloaded=await downloadBackup('qa-first-backup.json'); backupFile=downloaded.file;
+    await click('回到题包与记录'); await backupManagement(); const downloaded=await downloadBackup('qa-first-backup.json'); backupFile=downloaded.file;
     assert.equal(downloaded.backup.packages.length,2); assert.equal(downloaded.backup.attempts.length,1);
-    for (let i=0;i<2;i++) { await importViaUI('恢复本机备份',backupFile); assert.match(await page.locator('.mock-status').innerText(),/新增 0 套题包、0 次记录/); }
+    assert.deepEqual(downloaded.backup.packages.slice().sort((a,b)=>a.id.localeCompare(b.id)),packages.slice().sort((a,b)=>a.id.localeCompare(b.id)),'Export preserves complete question, answer and media payloads');
+    assert.deepEqual(downloaded.backup.attempts,[originalFirst],'Export preserves the exact original attempt');
+    for (let i=0;i<2;i++) { await restoreBackup(backupFile); assert.match(await page.locator('.v041-mock-data').innerText(),/新增 0 套题包、0 次记录/); }
     const db=await state(); assert.equal(db.catalog.length,2); assert.equal(db.attempts.length,1); assert.deepEqual(db.attempts[0].attempt,originalFirst);
+    // A new page reloads IndexedDB through the product before the next action.
+    const restoredAt=await page.evaluate(()=>Date.now()+2000);
+    await page.close(); await newPage(new Date(restoredAt)); await enter();
+    const cold=await state(); assert.equal(cold.catalog.length,2); assert.equal(cold.attempts.length,1); assert.deepEqual(cold.attempts[0].attempt,originalFirst);
+    await backupManagement();
     const foreign=structuredClone(downloaded.backup); foreign.ownerId='qa-other-owner'; const foreignFile=path.join(OUT,'qa-foreign-owner-backup.json'); await fs.writeFile(foreignFile,JSON.stringify(foreign));
-    await importViaUI('恢复本机备份',foreignFile); await visible(page.getByRole('alert')); assert.match(await page.getByRole('alert').innerText(),/其他账号/);
-    assert.equal((await state()).attempts.length,1); await click('重新读取记录'); await idle(); return {packages:2,attempts:1,repeatedRestores:2,foreignOwnerRejected:true};
+    await restoreBackup(foreignFile); const panel=page.locator('.v041-mock-data'); await visible(panel.getByRole('alert')); assert.match(await panel.getByRole('alert').innerText(),/其他账号/);
+    assert.equal((await state()).attempts.length,1); assert.deepEqual((await state()).attempts[0].attempt,originalFirst);
+    await (await enabled(panel.getByRole('button',{name:'重新读取',exact:true}))).click(); await backupIdle();
+    await leaveBackupManagement(); return {packages:2,attempts:1,repeatedRestores:2,coldPageRestored:true,foreignOwnerRejected:true};
   });
   await step('retake preserves first result and automatically submits at total deadline',async()=>{
     await preflight(packages[0].title); await click('开始新考试 · 立即计时');
@@ -366,7 +428,7 @@ async function downloadBackup(name) {
     assert.equal(retake.attempt.submittedReason,'timeout'); assert.equal(retake.attempt.submittedAt,retake.attempt.readingDeadline); assert.equal(retake.result.firstAttempt,false); assert.equal(retake.result.elapsedMs,120*60*1000);
     assert.deepEqual((await currentAttempt(a=>a.id===firstId)).attempt,originalFirst);
     await screenshot('retake-timeout'); await click('回到题包与记录');
-    const finalBackup=await downloadBackup('qa-final-backup.json'); assert.equal(finalBackup.backup.attempts.length,2);
+    await backupManagement(); const finalBackup=await downloadBackup('qa-final-backup.json'); assert.equal(finalBackup.backup.attempts.length,2);
     return {ordinal:retake.attempt.ordinal,reason:retake.attempt.submittedReason,firstAttemptUnchanged:true,finalBackup:finalBackup.file};
   });
   await step('valid PNG header with corrupt image bytes cannot pass preflight',async()=>{
@@ -387,8 +449,8 @@ async function downloadBackup(name) {
       for(const value of Object.values(attempt.answers))value.savedAt+=shift;
       for(const interruption of attempt.interruptions)interruption.at+=shift;
     }
-    const file=path.join(OUT,'qa-future-backup.json');await fs.writeFile(file,JSON.stringify(future));await importViaUI('恢复本机备份',file);
-    await visible(page.getByRole('alert'));const rejection=await page.getByRole('alert').innerText();assert.match(rejection,/未来|时间/);
+    const file=path.join(OUT,'qa-future-backup.json');await fs.writeFile(file,JSON.stringify(future));await backupManagement();await restoreBackup(file);
+    const alert=page.locator('.v041-mock-data').getByRole('alert');await visible(alert);const rejection=await alert.innerText();assert.match(rejection,/未来|时间/);
     const db=await state();assert.equal(db.catalog.length,0);assert.equal(db.attempts.length,0);await screenshot('future-backup-blocked');return {rejection,packages:0,attempts:0};
   });
   await step('simulated quota failure keeps saved answer and allows explicit exit',async()=>{

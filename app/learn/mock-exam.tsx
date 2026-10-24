@@ -5,12 +5,12 @@ import {ArrowLeft, Check, CircleAlert, Headphones, Image as ImageIcon, Upload, D
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import {isNativeForeground, registerNativeBack, subscribeNativeState} from '@/lib/native-host';
 import {EXAM_LIMITS, READING_MS, advanceAttempt, examKey, getListeningDurationMs, getExamProfile, presentExam,
-  type ExamAttempt, type ExamPackage, type ExamResult, type InterruptionReason} from '@/lib/exam-model';
-import {openExamRepository, type ExamRepository, type ExamSummary, type SavedExamAttempt} from '@/lib/exam-storage';
-import {ExamAssetUrls, ExamUiSession, StaleExamOwner, attachExamMedia, audioOffsetSeconds, checkExamAudioDuration, clockText, remainingMs, trySaveExamExit, verifyExamImage} from '@/lib/exam-ui';
+  type ExamAttempt, type ExamResult, type InterruptionReason} from '@/lib/exam-model';
+import {openExamRepository, type ExamRepository, type ExamSummary, type SavedExamAttempt, type ExamView} from '@/lib/exam-storage';
+import {ExamAssetLeases, releaseExamAssetLease, type ExamAssetLease, ExamUiSession, StaleExamOwner, attachExamMedia, audioOffsetSeconds, checkExamAudioDuration, clockText, remainingMs, trySaveExamExit, verifyExamImage} from '@/lib/exam-ui';
 import ExamLibrary from './exam-library';
 
-type Props = {ownerId: string | null; onClose: () => void};
+type Props = {ownerId: string | null; onClose: () => void; cloudEnabled?:boolean;managementOnly?:boolean};
 type Catalog = {packages: ExamSummary[]; attempts: SavedExamAttempt[]};
 type VisibleQuestion = ReturnType<typeof presentExam>['questions'][number];
 type VisibleGroup = ReturnType<typeof presentExam>['groups'][number];
@@ -25,12 +25,12 @@ const ignore = () => {};
 const inactive = (a: ExamAttempt | null) => !a || a.status === 'submitted';
 
 /** key remount prevents even one render of a previous owner's package/answers. */
-export default function MockExam({ownerId, onClose}: Props) {
+export default function MockExam({ownerId, onClose,cloudEnabled=true,managementOnly=false}: Props) {
   if (!ownerId?.trim()) return <section className="mock-exam panel" role="alert">
     <h2>暂时无法确认本机记录范围</h2><p>请先恢复当前账号状态，再打开模考。</p>
     <button className="button secondary" onClick={onClose}>返回</button>
   </section>;
-  return <MockExamOwner key={ownerId} ownerId={ownerId} onClose={onClose}/>;
+  return <MockExamOwner key={ownerId} ownerId={ownerId} onClose={onClose} cloudEnabled={cloudEnabled} managementOnly={managementOnly}/>;
 }
 
 async function readCatalog(repo: ExamRepository): Promise<Catalog> {
@@ -39,12 +39,12 @@ async function readCatalog(repo: ExamRepository): Promise<Catalog> {
   return {packages: await repo.listPackages(), attempts: await repo.listAttempts()};
 }
 
-function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void}) {
+export function MockExamOwner({ownerId, onClose,cloudEnabled=true,managementOnly=false}: {ownerId: string; onClose: () => void;cloudEnabled?:boolean;managementOnly?:boolean}) {
   const [catalog, setCatalog] = useState<Catalog>({packages: [], attempts: []});
   const [ready, setReady] = useState(false), [busy, setBusy] = useState(false);
   const [error, setError] = useState(''), [notice, setNotice] = useState('');
   const [exitFailure, setExitFailure] = useState(false);
-  const [exam, setExam] = useState<ExamPackage | null>(null);
+  const [exam, setExam] = useState<ExamView | null>(null);
   const [saved, setSaved] = useState<SavedExamAttempt | null>(null);
   const [now, setNow] = useState(Date.now()), [reviewNumber, setReviewNumber] = useState(1);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
@@ -61,15 +61,40 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
     // Media events invalidate this synchronously, before a Start click can use stale React state.
     preflightRef.current = {url, ready}; setPreflight(ready);
   }, []);
-  const [assetState, setAssetState] = useState<{exam: ExamPackage | null; urls: Record<string, string>}>({exam: null, urls: {}});
-  const urls = assetState.exam === exam ? assetState.urls : {};
-  const [imageCheck, setImageCheck] = useState<{exam: ExamPackage | null; state: 'pending' | 'ready' | 'error'}>({exam: null, state: 'pending'});
+  const [assetSession, setAssetSession] = useState<{exam: ExamView; leases: ExamAssetLeases} | null>(null);
+  const [audioSource, setAudioSource] = useState<{exam: ExamView | null; url: string}>({exam: null, url: ''});
+  const [imageSources, setImageSources] = useState<{exam: ExamView | null; groupId: string; urls: Record<string, string>}>({exam: null, groupId: '', urls: {}});
+  const [imageCheck, setImageCheck] = useState<{exam: ExamView | null; state: 'pending' | 'ready' | 'error'}>({exam: null, state: 'pending'});
   const [imageRetry, setImageRetry] = useState(0);
+  const precheckController = useRef<AbortController | null>(null);
   const imagesReady = imageCheck.exam === exam && imageCheck.state === 'ready';
   const session = useRef<ExamUiSession | null>(null), current = useRef<SavedExamAttempt | null>(null);
   const pending = useRef(0), userLock = useRef(false);
   const errorRef = useRef(''), inputs = useRef<{packages: HTMLInputElement | null; backup: HTMLInputElement | null}>({packages: null, backup: null});
   const downloadUrls = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  const transferController = useRef<AbortController | null>(null);
+  const [transfer, setTransfer] = useState<string | null>(null);
+  async function withTransfer<T>(label: string, work: (signal: AbortSignal) => Promise<T>): Promise<T> {
+    const controller = new AbortController(); transferController.current = controller; setTransfer(label);
+    try {return await work(controller.signal);}
+    finally {if (transferController.current === controller) {transferController.current = null; if (session.current) setTransfer(null);}}
+  }
+
+  const displayed = saved ? advanceAttempt(saved.attempt, now) : null;
+  // A computed timeout must wait for durable submission before revealing answers.
+  const durableSubmitted = saved?.attempt.status === 'submitted' && !!saved.result;
+  const presented = exam && saved ? presentExam(exam, durableSubmitted ? saved.attempt : displayed?.status === 'submitted' ? saved.attempt : displayed!) : null;
+  const questionNumber = durableSubmitted ? reviewNumber : displayed?.activeQuestion;
+  const question = presented?.questions.find(q => q.number === questionNumber);
+  const group = question && presented?.groups.find(g => g.id === question.groupId);
+  const active = catalog.attempts.find(row => row.attempt.status !== 'submitted');
+  const answered = saved ? Object.keys(saved.attempt.answers).length : 0;
+  const expiredSaving = displayed?.status === 'submitted' && !durableSubmitted;
+  const audioActive = !!exam && (!displayed || displayed.status === 'listening');
+  const urls: Record<string, string> = {
+    ...(audioSource.exam === exam && exam && audioSource.url ? {[exam.listeningAudioId]: audioSource.url} : {}),
+    ...(imageSources.exam === exam && imageSources.groupId === group?.id ? imageSources.urls : {}),
+  };
 
   function fail(error: unknown) { const text = message(error); errorRef.current = text; setError(text); }
   function clearError() { errorRef.current = ''; setError(''); }
@@ -117,7 +142,7 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
       return perform(readCatalog, value => {setCatalog(value); setReady(true);}, false);
     }).catch(cause => { if (!cancelled && !(cause instanceof StaleExamOwner)) fail(cause); });
     return () => {
-      cancelled = true; opened?.close();
+      cancelled = true; transferController.current?.abort(new Error('模考页面已关闭，文件操作已取消')); opened?.close();
       if (session.current === opened) session.current = null;
       downloadUrls.current.forEach((timer, url) => {clearTimeout(timer); URL.revokeObjectURL(url);});
       downloadUrls.current.clear();
@@ -125,30 +150,70 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
   }, [ownerId]); // owner is immutable until the keyed component unmounts.
 
   useEffect(() => {
-    setAssetState({exam: null, urls: {}}); updatePreflight(false, ''); setHeard(false);
-    if (!exam) return;
-    const owned = new ExamAssetUrls(exam);
-    try { setAssetState({exam, urls: Object.fromEntries(exam.assets.map(asset => [asset.id, owned.get(asset.id)]))}); }
-    catch (cause) { owned.close(); fail(cause); }
-    return () => owned.close();
+    setAudioSource({exam: null, url: ''}); setImageSources({exam: null, groupId: '', urls: {}});
+    setImagePreview(null); updatePreflight(false, ''); setHeard(false);
+    if (!exam) {setAssetSession(null); return;}
+    const owner = session.current;
+    const leases = new ExamAssetLeases(async id => {
+      if (!owner) throw new StaleExamOwner(); owner.assertActive();
+      const blob = await owner.repository.getAssetBlob(examKey(exam), id);
+      owner.assertActive(); return blob;
+    });
+    setAssetSession({exam, leases});
+    return () => {precheckController.current?.abort(); leases.close();};
   }, [exam]);
 
   useEffect(() => {
-    if (!exam || assetState.exam !== exam) return;
-    const controller = new AbortController();
+    setAudioSource({exam: null, url: ''});
+    if (!exam || assetSession?.exam !== exam || !audioActive) return;
+    let cancelled = false, lease: ExamAssetLease | null = null;
+    void assetSession.leases.acquire(exam.listeningAudioId).then(value => {
+      if (cancelled) {value.release(); return;}
+      lease = value; setAudioSource({exam, url: value.url});
+    }).catch(cause => {if (!cancelled && !(cause instanceof StaleExamOwner)) fail(cause);});
+    return () => {cancelled = true; if (lease) releaseExamAssetLease(lease);};
+    // Question navigation must never release/recreate the current listening track.
+  }, [exam, assetSession, audioActive]);
+
+  useEffect(() => {
+    setImageSources({exam: null, groupId: '', urls: {}}); setImagePreview(null);
+    if (!exam || assetSession?.exam !== exam || !group) return;
+    let cancelled = false;
+    const acquired: ExamAssetLease[] = [], selected: Record<string, string> = {};
+    void (async () => {
+      for (const id of group.imageIds) {
+        const lease = await assetSession.leases.acquire(id);
+        if (cancelled) {lease.release(); return;}
+        acquired.push(lease); selected[id] = lease.url;
+      }
+      if (!cancelled) setImageSources({exam, groupId: group.id, urls: selected});
+    })().catch(cause => {
+      acquired.splice(0).forEach(lease => lease.release());
+      if (!cancelled && !(cause instanceof StaleExamOwner)) {setImageCheck({exam, state: 'error'}); fail(cause);}
+    });
+    return () => {cancelled = true; acquired.splice(0).forEach(lease => lease.release());};
+  }, [exam, assetSession, group?.id]);
+
+  useEffect(() => {
+    if (!exam || assetSession?.exam !== exam) return;
+    const controller = new AbortController(); precheckController.current = controller;
     let cancelled = false;
     setImageCheck({exam, state: 'pending'});
     void (async () => {
-      // Decode sequentially to avoid holding every full-resolution image at once.
+      // Decode one image, detach its decoder and release its lease before the next.
       for (const asset of exam.assets.filter(value => value.mime.startsWith('image/'))) {
-        await verifyExamImage(assetState.urls[asset.id], controller.signal);
+        const lease = await assetSession.leases.acquire(asset.id);
+        try {
+          if (cancelled) return;
+          await verifyExamImage(lease.url, controller.signal);
+        } finally {lease.release();}
       }
       if (!cancelled) setImageCheck({exam, state: 'ready'});
     })().catch(cause => {
       if (!cancelled && !(cause instanceof StaleExamOwner)) {setImageCheck({exam, state: 'error'}); fail(cause);}
     });
-    return () => {cancelled = true; controller.abort();};
-  }, [exam, assetState, imageRetry]);
+    return () => {cancelled = true; controller.abort(); if (precheckController.current === controller) precheckController.current = null;};
+  }, [exam, assetSession, imageRetry]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -159,16 +224,7 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
     return () => clearInterval(timer);
   }, []);
 
-  const displayed = saved ? advanceAttempt(saved.attempt, now) : null;
-  // A computed timeout must wait for durable submission before revealing answers.
-  const durableSubmitted = saved?.attempt.status === 'submitted' && !!saved.result;
-  const presented = exam && saved ? presentExam(exam, durableSubmitted ? saved.attempt : displayed?.status === 'submitted' ? saved.attempt : displayed!) : null;
-  const questionNumber = durableSubmitted ? reviewNumber : displayed?.activeQuestion;
-  const question = presented?.questions.find(q => q.number === questionNumber);
-  const group = question && presented?.groups.find(g => g.id === question.groupId);
-  const active = catalog.attempts.find(row => row.attempt.status !== 'submitted');
-  const answered = saved ? Object.keys(saved.attempt.answers).length : 0;
-  const expiredSaving = displayed?.status === 'submitted' && !durableSubmitted;
+
 
   async function interrupt(reason: InterruptionReason) {
     if (inactive(current.current?.attempt ?? null)) return;
@@ -215,7 +271,7 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
 
   async function openPackage(key: string, attemptId?: string) {
     await perform(async repo => {
-      const value = await repo.getPackage(key);
+      const value = await repo.getDefinition(key);
       let row = attemptId ? await repo.resumeAttempt(attemptId) : null;
       if (row && row.attempt.status !== 'submitted') row = await repo.markInterrupted(row.attempt.id, 'background', Date.now(), row.attempt.revision);
       if (row?.attempt.status === 'listening') row = await repo.markInterrupted(row.attempt.id, 'audio-interrupted', Date.now(), row.attempt.revision);
@@ -270,30 +326,33 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
     } finally {if(session.current)setSubmitting(false);}
   }
   async function importFiles(files: File[]) {
-    await perform(async repo => {
-      const outcomes: string[] = [];
-      for (const file of files) {
-        session.current?.assertActive();
-        if (file.size > EXAM_LIMITS.importBytes) throw new Error(`${file.name} 超过 96 MiB 题包限额。`);
-        const text = await file.text();
-        // close() prevents a delayed file read from writing after owner disposal.
-        const outcome = await repo.importPackage(text);
-        outcomes.push(`${file.name}：${outcome.status === 'unchanged' ? '内容相同，未重复导入' : '已导入'}`);
-      }
-      return {catalog: await readCatalog(repo), outcomes};
-    }, value => {setCatalog(value.catalog); setNotice(value.outcomes.join('；'));});
-    // Multi-file selection is sequential atomic-per-file, not one batch transaction.
+    await perform(repo => withTransfer('导入题包', async signal => {
+      const outcomes: string[] = []; let error = '';
+      try {
+        for (const file of files) {
+          session.current?.assertActive();
+          if (file.size > EXAM_LIMITS.importBytes) throw new Error(`${file.name} 超过 96 MiB 题包限额。`);
+          const outcome = await repo.importPackageFile(file, Date.now(), {signal});
+          outcomes.push(`${file.name}：${outcome.status === 'unchanged' ? '内容相同，未重复导入' : '已导入'}`);
+        }
+      } catch (cause) {error = message(cause);}
+      return {catalog: await readCatalog(repo), outcomes, error};
+    }), value => {
+      setCatalog(value.catalog); setNotice(value.outcomes.join('；'));
+      if (value.error) fail(new Error(value.error + ' 已完成的题包保留，当前未完成文件没有激活。'));
+    });
+    // Multiple files are sequential atomic-per-file; a backup restore is atomic as one unit.
   }
   async function restore(file: File) {
-    await perform(async repo => {
+    await perform(repo => withTransfer('恢复完整备份', async signal => {
       if (file.size > EXAM_LIMITS.backupBytes) throw new Error('备份超过 224 MiB 限额。');
-      const result = await repo.importBackup(await file.text());
+      const result = await repo.importBackupFile(file, Date.now(), {signal});
       return {result, catalog: await readCatalog(repo)};
-    }, ({result, catalog}) => {setCatalog(catalog); setNotice(`备份已合并：新增 ${result.packagesAdded} 套题包、${result.attemptsAdded} 次记录；原记录保留。`);});
+    }), ({result, catalog}) => {setCatalog(catalog); setNotice(`备份已合并：新增 ${result.packagesAdded} 套题包、${result.attemptsAdded} 次记录；原记录保留。`);});
   }
   async function backup() {
-    await perform(repo => repo.exportBackup(), value => {
-      const url = URL.createObjectURL(new Blob([JSON.stringify(value)], {type: 'application/json'}));
+    await perform(repo => withTransfer('导出完整备份', signal => repo.exportBackupBlob({signal})), blob => {
+      const url = URL.createObjectURL(blob);
       const timer = setTimeout(() => {URL.revokeObjectURL(url); downloadUrls.current.delete(url);}, 60_000);
       downloadUrls.current.set(url, timer);
       const link = document.createElement('a'); link.href = url;
@@ -311,6 +370,14 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
   const missingAnswers = 200 - answered;
   const localBytes = catalog.packages.reduce((sum, item) => sum + item.bytes, 0);
 
+  if(managementOnly)return <section className="panel v041-mock-data" aria-busy={busy}><h2>模考备份</h2><p className="small muted">题包、媒体、答案与本机考试记录。</p>
+    {error&&<div role="alert"><p>{error}</p><button className="text-button" disabled={busy} onClick={()=>void refresh().catch(ignore)}>重新读取</button></div>}
+    {!ready&&!error&&<p role="status">正在读取模考记录…</p>}
+    {(busy||notice)&&<p role="status">{busy?(transfer?transfer+'中…':'正在处理…'):notice}</p>}
+    {transfer&&<button className="text-button" onClick={()=>transferController.current?.abort(new Error('操作已取消'))}>取消文件操作</button>}
+    <div className="button-row"><button className="button secondary" disabled={!ready||busy||!catalog.packages.length} onClick={()=>void backup().catch(ignore)}>导出模考备份</button><button className="button secondary" disabled={!ready||busy} onClick={()=>inputs.current.backup?.click()}>恢复模考备份</button></div>
+    <input hidden ref={node=>{inputs.current.backup=node;}} type="file" accept="application/json,.json" aria-label="选择模考备份" onChange={event=>{const file=event.target.files?.[0];event.target.value='';if(file)void restore(file).catch(ignore);}}/>
+  </section>;
   return <section className={saved && !durableSubmitted ? 'mock-exam is-running' : 'mock-exam'} aria-label="完整听读模考" aria-busy={busy}>
     <header className="mock-heading">
       <div><p className="eyebrow">{saved ? durableSubmitted ? '模考复盘' : '专注作答' : '听读模考'}</p><h2>{exam?.title || '题包与本机记录'}</h2>
@@ -329,15 +396,17 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
     {pendingAnswer && !busy && !error && !durableSubmitted && <div className="mock-notice"><strong>第 {pendingAnswer.number} 题变更仍待保存</strong><p>原已保存答案保持；重试成功或明确取消后才能换题。</p><div className="mock-actions"><button className="button secondary" disabled={!!expiredSaving} onClick={()=>void answer(pendingAnswer.number,pendingAnswer.choice).catch(ignore)}>重试保存本题</button><button className="text-button" onClick={()=>updatePendingAnswer(null)}>取消未保存选择</button></div></div>}
     {exitFailure && !confirmExit && <div className="mock-alert" role="alert"><strong>退出中断标记尚未保存</strong><p>当前考试继续按原截止时间计时，原已保存答案保留。</p>
       <button className="button secondary" disabled={busy} onClick={() => {setConfirmForceExit(false);setConfirmExit(true);}}>处理退出保存失败</button></div>}
+    {transfer && <div className="mock-notice" role="status"><span>{transfer}中。完成前可以取消；已经完成的其他文件保留。</span><button className="button secondary" onClick={() => transferController.current?.abort(new Error('操作已取消'))}>取消文件操作</button></div>}
     <p className="mock-status" role="status" aria-live="polite">{busy ? submitting ? '正在保存交卷…' : leaving ? '正在保存退出状态…' : '正在保存本机记录…' : notice}</p>
     {!ready ? <div className="panel mock-empty" role="status"><h3>正在打开本机记录</h3><p>请稍候。读取失败时保留原数据，并提供重试。</p></div> : !exam ? <>
       <nav className="mock-library-tabs" aria-label="模考资料范围">
         <button className={libraryView === 'local' ? 'selected' : ''} aria-pressed={libraryView === 'local'} onClick={() => setLibraryView('local')}>本机题包<span>{catalog.packages.length}</span></button>
-        <button className={libraryView === 'cloud' ? 'selected' : ''} aria-pressed={libraryView === 'cloud'} onClick={() => setLibraryView('cloud')}>私人云库</button>
+        <button className={libraryView === 'cloud' ? 'selected' : ''} aria-pressed={libraryView === 'cloud'} disabled={!cloudEnabled} onClick={() => {if(cloudEnabled)setLibraryView('cloud');}}>私人云库</button>
         <button className={libraryView === 'history' ? 'selected' : ''} aria-pressed={libraryView === 'history'} onClick={() => setLibraryView('history')}>考试记录<span>{catalog.attempts.filter(row => row.attempt.status === 'submitted').length}</span></button>
       </nav>
-      {libraryView === 'cloud' ? <ExamLibrary ownerId={ownerId} disabled={busy} onImport={async text => {
-        await perform(async repo => {const outcome=await repo.importPackage(text);return {outcome,catalog:await readCatalog(repo)};}, value => {setCatalog(value.catalog);setNotice(value.outcome.status==='unchanged'?'本机已有相同题包。':'题包已下载到本机。');});
+      {!cloudEnabled&&<p className="mock-muted">此账号的模考保存在本机分区，原生云题包尚未启用。</p>}
+      {cloudEnabled&&libraryView === 'cloud' ? <ExamLibrary ownerId={ownerId} disabled={busy} onImport={async source => {
+        await perform(async repo => {const outcome=await repo.importPackageFile(source.file, Date.now(), {signal: source.signal, expected: source.expected});return {outcome,catalog:await readCatalog(repo)};}, value => {setCatalog(value.catalog);setNotice(value.outcome.status==='unchanged'?'本机已有相同题包。':'题包已下载到本机。');});
       }}/> : <>
         {libraryView === 'local' && <>
           <div className="mock-catalog-toolbar"><div><h3>已导入题包</h3><p className="mock-muted">{(localBytes / 1024 / 1024).toFixed(1)} / 192 MiB · 已有考试记录的题包会保留</p></div><button className="button primary" disabled={busy} onClick={() => inputs.current.packages?.click()}><Upload size={17} aria-hidden/>导入题包 JSON</button></div>
@@ -355,7 +424,7 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
         {libraryView === 'history' && <section className="mock-history"><div className="mock-catalog-toolbar"><div><h3>已交卷记录</h3><p className="mock-muted">首次、复测分别保存；回看原题包与原答案。</p></div></div>{catalog.attempts.filter(row => row.attempt.status === 'submitted').length ? catalog.attempts.filter(row => row.attempt.status === 'submitted').map(row => <article className="panel mock-history-item" key={row.attempt.id}>
           <div><span className="mock-badge">{row.attempt.ordinal===1?'首次':`复测第 ${row.attempt.ordinal-1} 次`}</span><h4>{catalog.packages.find(p => p.id===row.attempt.examId && p.version===row.attempt.examVersion)?.title || '本机题包'}</h4><p className="mock-muted">{getExamProfile(row.attempt.format).label} · {new Date(row.attempt.startedAt).toLocaleString()}</p><p>正确 {row.result?.correct ?? '—'} / 200 · {row.result?.integrity==='interrupted'?'有中断或时钟异常标记':'未记录到中断（不等于监考认证）'}</p></div><button className="button secondary" disabled={busy} onClick={() => void openPackage(examKey({id:row.attempt.examId,version:row.attempt.examVersion}),row.attempt.id).catch(ignore)}>成绩与复盘</button>
         </article>) : <div className="panel mock-empty"><h3>还没有已交卷记录</h3><p>完成一次完整模考后，在这里回看原始题数与原题。</p></div>}</section>}
-        <section className="panel mock-backup-panel"><div><h3>模考完整备份</h3><p>题包、媒体与本机考试记录一起保存。卸载或清理设备前，请确认下载文件存在。</p></div><div className="mock-actions"><button className="button secondary" disabled={busy || !catalog.packages.length} onClick={() => void backup().catch(ignore)}><Download size={17} aria-hidden/>导出完整备份</button><button className="button secondary" disabled={busy} onClick={() => inputs.current.backup?.click()}>恢复本机备份</button></div><p className="mock-muted">备份按同一记录范围校验后合并，原记录保留。可一次导入多份题包，每份独立保存；失败时先重新读取，核对已完成文件。</p></section>
+
       </>}
       <input hidden ref={node => {inputs.current.packages=node;}} type="file" accept="application/json,.json" multiple aria-label="选择题包 JSON" onChange={event => {const files=Array.from(event.target.files||[]);event.target.value='';if(files.length)void importFiles(files).catch(ignore);}}/>
       <input hidden ref={node => {inputs.current.backup=node;}} type="file" accept="application/json,.json" aria-label="选择模考备份" onChange={event => {const file=event.target.files?.[0];event.target.value='';if(file)void restore(file).catch(ignore);}}/>
@@ -372,10 +441,10 @@ function MockExamOwner({ownerId, onClose}: {ownerId: string; onClose: () => void
         {expiredSaving && <div className="mock-alert" role="alert"><strong>时间已到 · 作答已锁定</strong><p>正在保存自动交卷。保存成功后才显示成绩与正确答案。{error && '请点击“重新读取记录”重试。'}</p></div>}
         <div className="mock-workspace">
           <div className="mock-paper">{question && group && <ExamPaper question={question} group={group} urls={urls} selected={saved.attempt.answers[question.number]?.choice} pendingChoice={!durableSubmitted && pendingAnswer?.number===question.number?pendingAnswer.choice:undefined} submitted={!!durableSubmitted} disabled={busy || !!expiredSaving} navigationDisabled={!!pendingAnswer && !durableSubmitted} previousAvailable={!!presented?.questions.some(q=>q.number===question.number-1)} nextAvailable={!!presented?.questions.some(q=>q.number===question.number+1)} onAnswer={choice=>void answer(question.number,choice).catch(ignore)} onSelect={number=>void select(number).catch(ignore)} onImage={(url,label)=>setImagePreview({url,label})} onImageError={()=>{setImageCheck({exam,state:'error'});fail(new Error('当前题组图片无法显示，请重试图片预检；计时不会暂停。'));}}/>}</div>
-          <aside className="panel mock-answer-card"><h3>答题卡</h3><p className="mock-card-count">已保存 {answered} / 200<br/>{durableSubmitted?'交卷后 · 全部题目':displayed?.status==='listening'?'听力阶段 · Part 1–4':'阅读阶段 · Part 5–7'}</p><div className="mock-card-legend"><span>✓ 已保存</span><span>□ 未答</span><span>○ 待保存变更</span></div><details><summary>展开题号导航</summary><p className="mock-muted">{durableSubmitted?'查看本次原答案；交卷后不可修改':'只显示当前阶段；点击题号返回原题。'}</p>{[1,2,3,4,5,6,7].map(part=>{const items=presented?.questions.filter(q=>q.part===part)||[];return !!items.length && <div className="mock-part" key={part}><h4>Part {part} · {items.length} 题</h4><div className="mock-grid">{items.map(q=>{const hasAnswer=saved.attempt.answers[q.number]!==undefined,isPending=!durableSubmitted && pendingAnswer?.number===q.number;return <button key={q.number} className={`${hasAnswer?'has-answer':''} ${isPending?'is-pending':''}`} aria-current={q.number===questionNumber?'true':undefined} aria-label={`第 ${q.number} 题，${hasAnswer?'已保存':'未答'}${isPending?'，另有待保存变更':''}`} disabled={busy || !!expiredSaving || !!pendingAnswer && !durableSubmitted} onClick={()=>void select(q.number,true).catch(ignore)}>{q.number}<span aria-hidden>{isPending?'○':hasAnswer?'✓':''}</span></button>;})}</div></div>;})}</details>{!durableSubmitted && displayed?.status==='reading' && <button className="button primary" disabled={busy || !!expiredSaving} onClick={()=>setConfirmSubmit(true)}>提交整卷</button>}
+          <aside className="panel mock-answer-card"><h3>答题卡</h3><p className="mock-card-count">已保存 {answered} / 200<br/>{durableSubmitted?'交卷后 · 全部题目':displayed?.status==='listening'?'听力阶段 · Part 1–4':'阅读阶段 · Part 5–7'}</p><div className="mock-card-legend"><span>✓ 已保存</span><span>□ 未答</span><span>○ 待保存变更</span></div><details><summary><span className="mock-nav-expand">展开题号导航</span><span className="mock-nav-collapse">收起题号导航</span></summary><p className="mock-muted">{durableSubmitted?'查看本次原答案；交卷后不可修改':'只显示当前阶段；点击题号返回原题。'}</p>{[1,2,3,4,5,6,7].map(part=>{const items=presented?.questions.filter(q=>q.part===part)||[];return !!items.length && <div className="mock-part" key={part}><h4>Part {part} · {items.length} 题</h4><div className="mock-grid">{items.map(q=>{const hasAnswer=saved.attempt.answers[q.number]!==undefined,isPending=!durableSubmitted && pendingAnswer?.number===q.number;return <button key={q.number} className={`${hasAnswer?'has-answer':''} ${isPending?'is-pending':''}`} aria-current={q.number===questionNumber?'true':undefined} aria-label={`第 ${q.number} 题，${hasAnswer?'已保存':'未答'}${isPending?'，另有待保存变更':''}`} disabled={busy || !!expiredSaving || !!pendingAnswer && !durableSubmitted} onClick={()=>void select(q.number,true).catch(ignore)}>{q.number}<span aria-hidden>{isPending?'○':hasAnswer?'✓':''}</span></button>;})}</div></div>;})}</details>{!durableSubmitted && displayed?.status==='reading' && <button className="button primary" disabled={busy || !!expiredSaving} onClick={()=>setConfirmSubmit(true)}>提交整卷</button>}
           </aside>
         </div>
-        {durableSubmitted && <div className="mock-actions mock-result-actions"><button className="button secondary" onClick={()=>{setExam(null);setSaved(null);current.current=null;setLibraryView('history');}}>回到题包与记录</button><button className="button secondary" disabled={busy} onClick={()=>void backup().catch(ignore)}><Download size={17} aria-hidden/>导出完整备份</button></div>}
+        {durableSubmitted && <div className="mock-actions mock-result-actions"><button className="button secondary" onClick={()=>{setExam(null);setSaved(null);current.current=null;setLibraryView('history');}}>回到题包与记录</button></div>}
       </>}
     </>}
     <Dialog open={confirmSubmit} onOpenChange={open=>{if(!busy)setConfirmSubmit(open);}}><DialogContent className="mock-submit-dialog"><DialogHeader><DialogTitle>{submitting?'正在保存交卷…':'确认提交整卷？'}</DialogTitle><DialogDescription>已保存 {answered} / 200 题，还有 {missingAnswers} 题未保存答案，漏答按错误计。交卷后不能修改本次答案；再次开始会保留为复测记录。</DialogDescription></DialogHeader>

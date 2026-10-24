@@ -43,6 +43,7 @@ export type ExamPackage = {
   listeningDurationMs?: number;
   scoreRanges?: { source: string; listening: ScoreBand[]; reading: ScoreBand[] };
 };
+export type ExamDefinition = Omit<ExamPackage, 'assets'>;
 export type InterruptionReason = 'background' | 'audio-failure' | 'audio-interrupted' | 'audio-seek';
 export type ExamInterruption = { reason: InterruptionReason; at: number };
 export type ExamAttempt = {
@@ -255,7 +256,7 @@ export function createAssetUrl(exam: ExamPackage, assetId: string): string {
   return URL.createObjectURL(new Blob([assetBytes(asset).buffer as ArrayBuffer], { type: asset.mime }));
 }
 
-export function createAttempt(exam: ExamPackage, options: { id: string; ownerId: string; fingerprint: string; ordinal: number; now: number }): ExamAttempt {
+export function createAttempt(exam: ExamDefinition, options: { id: string; ownerId: string; fingerprint: string; ordinal: number; now: number }): ExamAttempt {
   const format = readExamFormat(exam.format);
   const listeningMs = getListeningDurationMs(exam);
   const now = integer(options.now, 0, 8640000000000000 - listeningMs - READING_MS, '开始时间');
@@ -310,7 +311,7 @@ export function markInterrupted(value: ExamAttempt, reason: InterruptionReason, 
   if (a.interruptions.length >= 2048) fail('模考中断记录达到限额，请保留记录后交卷');
   return { ...a, interruptions: [...a.interruptions, { reason, at: a.lastObservedAt }], revision: a.revision + 1 };
 }
-export function presentExam(exam: ExamPackage, attempt: ExamAttempt) {
+export function presentExam(exam: ExamDefinition, attempt: ExamAttempt) {
   assertExamMatch(exam, attempt);
   return { ...exam, scoreRanges: attempt.status === 'submitted' ? exam.scoreRanges : undefined,
     questions: exam.questions.filter(q => attempt.status === 'submitted' || (attempt.status === 'listening' ? q.number <= 100 : q.number > 100)).map(q => {
@@ -320,8 +321,8 @@ export function presentExam(exam: ExamPackage, attempt: ExamAttempt) {
     groups: exam.groups.filter(g => attempt.status === 'submitted' || (attempt.status === 'listening' ? g.part <= 4 : g.part >= 5)),
   };
 }
-function assertExamMatch(exam: ExamPackage, attempt: ExamAttempt) { if (exam.id !== attempt.examId || exam.version !== attempt.examVersion || readExamFormat(exam.format) !== readExamFormat(attempt.format)) fail('记录与题包版本或题型不匹配'); }
-export function gradeAttempt(exam: ExamPackage, attempt: ExamAttempt): ExamResult {
+function assertExamMatch(exam: ExamDefinition, attempt: ExamAttempt) { if (exam.id !== attempt.examId || exam.version !== attempt.examVersion || readExamFormat(exam.format) !== readExamFormat(attempt.format)) fail('记录与题包版本或题型不匹配'); }
+export function gradeAttempt(exam: ExamDefinition, attempt: ExamAttempt): ExamResult {
   assertExamMatch(exam, attempt);
   if (attempt.status !== 'submitted' || attempt.submittedAt === undefined) fail('交卷前不显示答案或成绩');
   const parts: PartResult[] = getExamProfile(exam.format).partCounts.map((total, i) => ({ part: (i + 1) as Part, total, correct: 0, unanswered: 0, accuracy: 0, timeMs: 0 }));
@@ -341,7 +342,7 @@ export function gradeAttempt(exam: ExamPackage, attempt: ExamAttempt): ExamResul
 }
 
 /** Validate persisted/imported attempts rather than trusting backup grades or clocks. */
-export function validateAttempt(value: unknown, exam: ExamPackage, ownerId: string, fingerprint: string, importNow?: number): ExamAttempt {
+export function validateAttempt(value: unknown, exam: ExamDefinition, ownerId: string, fingerprint: string, importNow?: number): ExamAttempt {
   const listeningMs = getListeningDurationMs(exam);
   const r = record(value, '考试记录');
   keys(r, ['kind','schemaVersion','id','ownerId','examId','examVersion','fingerprint','ordinal','startedAt','listeningDeadline','readingDeadline','lastObservedAt','status','activeQuestion','answers','questionTimeMs','revision','clockRollback','interruptions','submittedAt','submittedReason','format'], '考试记录');

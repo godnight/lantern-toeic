@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "snapshotDate": "2026-10-20",
+  "membershipLicense": "CC-BY-SA-4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "sources": [
+    {
+      "listId": "ngsl-1.2",
+      "version": "1.2",
+      "rawFile": "raw/NGSL_12_stats.csv",
+      "landingUrl": "https://www.newgeneralservicelist.com/new-general-service-list",
+      "attribution": "Charles Browne, Brent Culligan, Joseph Phillips",
+      "license": "CC-BY-SA-4.0"
+    },
+    {
+      "listId": "tsl-1.2",
+      "version": "1.2",
+      "rawFile": "raw/TSL_12_stats.csv",
+      "landingUrl": "https://www.newgeneralservicelist.com/toeic-service-list",
+      "attribution": "Charles Browne, Brent Culligan",
+      "license": "CC-BY-SA-4.0"
+    },
+    {
+      "listId": "ngsl-supplement",
+      "version": null,
+      "versionNote": "No standalone version printed; pinned by file hash and download date",
+      "rawFile": "raw/SUP_lemmatized.csv",
+      "landingUrl": "https://www.newgeneralservicelist.com/new-general-service-list",
+      "attribution": "Charles Browne, Brent Culligan, Joseph Phillips",
+      "license": "CC-BY-SA-4.0"
+    }
+  ],
+  "modifications": "CSV parsed to JSON; NFKC/case/whitespace normalized keys; source members retained; aggregated views. No additional meanings, examples, or audio implied.",
+  "files": {
+    "merged-memberships.json": "e1c447db1b24e820613e89b1a6bc77a3d30363d1f3ec3e6312abd1670b6b5819",
+    "wordbooks.json": "c148f6410cf8c6ec3801eb261d5c84c06f9ddcfdd72d336e76d527d0c3024966"
+  }
+}

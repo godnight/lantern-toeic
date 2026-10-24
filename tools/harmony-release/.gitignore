@@ -1,0 +1,10 @@
+.local/
+*.local.json
+*.hap
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.cer
+*.p7b
+__pycache__/

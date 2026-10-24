@@ -4,9 +4,10 @@ import type {useVocabulary} from './use-vocabulary';
 import {workflowScopeKey,type WorkflowBackup} from './learning-domain-repository';
 import {createVocabularyWorkflow,type CandidateKind,type CandidateStatus,type RawVocabularyRating,type VocabularyPlanDraft,type VocabularyProjection,type VocabularySession,type VocabularyWorkflowResult,type VocabularyWorkflowScope} from './vocabulary-workflow';
 import type {Word} from './vocabulary-model';
+import type {Question} from './study-model';
 
 type Legacy=Pick<ReturnType<typeof useVocabulary>,'events'|'ready'|'error'|'readEvent'|'reviewEvent'|'backup'>;
-export type VocabularyWorkflowHookOptions={owner:string|null;nativeMode:boolean;identityReady?:boolean;timezone:string;words?:Word[];legacy:Legacy};
+export type VocabularyWorkflowHookOptions={owner:string|null;nativeMode:boolean;identityReady?:boolean;timezone:string;words?:Word[];practiceQuestionCatalogs?:readonly (readonly Question[])[];legacy:Legacy};
 export type VocabularyWorkflowController={
  scopeKey:string;ready:boolean;error:string;projection:VocabularyProjection|null;activeSession:VocabularySession|null;pendingRating:RawVocabularyRating|null;
  candidateStatus:(word:Word)=>CandidateStatus;
@@ -19,7 +20,7 @@ export type VocabularyWorkflowController={
 };
 type Service=Awaited<ReturnType<typeof createVocabularyWorkflow>>;
 export function useVocabularyWorkflow(options:VocabularyWorkflowHookOptions):VocabularyWorkflowController {
- const scope:VocabularyWorkflowScope=options.nativeMode?{kind:'harmony-device',partition:'existing-device'}:options.owner===null?{kind:'web-local',partition:'existing-device'}:{kind:'web-owner',ownerId:options.owner};
+ const scope:VocabularyWorkflowScope=options.nativeMode?(options.owner?{kind:'harmony-owner',ownerId:options.owner}:{kind:'harmony-device',partition:'existing-device'}):options.owner===null?{kind:'web-local',partition:'existing-device'}:{kind:'web-owner',ownerId:options.owner};
  const key=workflowScopeKey(scope),latest=useRef(options);latest.current=options;
  const activeKey=useRef(key);activeKey.current=key;
  const generation=useRef(0),service=useRef<{key:string;generation:number;value:Service}|null>(null),requestId=useRef(0),notify=useRef<(()=>void)|null>(null);
@@ -37,7 +38,7 @@ export function useVocabularyWorkflow(options:VocabularyWorkflowHookOptions):Voc
   if(options.identityReady===false||!options.legacy.ready||options.legacy.error){service.current=null;setSnapshot({key,ready:false,error:options.legacy.error||'',projection:null});return;}
   const stillCurrent=()=>!cancelled&&generation.current===id&&activeKey.current===key&&latest.current.identityReady!==false&&latest.current.legacy.ready&&!latest.current.legacy.error;
   setSnapshot({key,ready:false,error:'',projection:null});
-  void createVocabularyWorkflow({scope,words:options.words,isCurrent:stillCurrent,legacy:{
+  void createVocabularyWorkflow({scope,words:options.words,practiceQuestionCatalogs:options.practiceQuestionCatalogs,isCurrent:stillCurrent,legacy:{
    readEvents:()=>{if(!stillCurrent())throw Error('账号已切换');return latest.current.legacy.backup().events;},
    readEvent:eventId=>{if(!stillCurrent())throw Error('账号已切换');return latest.current.legacy.readEvent(eventId);},
    writeReview:event=>{if(!stillCurrent())throw Error('账号已切换');return latest.current.legacy.reviewEvent(event);},
@@ -45,7 +46,7 @@ export function useVocabularyWorkflow(options:VocabularyWorkflowHookOptions):Voc
   return()=>{cancelled=true;const instance=service.current;if(instance?.generation===id){instance.value.close();service.current=null;}};
   // One service owns this scope; the legacy adapter reads the latest committed journal.
   // eslint-disable-next-line react-hooks/exhaustive-deps
- },[key,options.identityReady,options.legacy.ready,options.legacy.error,openAttempt]);
+ },[key,options.identityReady,options.legacy.ready,options.legacy.error,options.practiceQuestionCatalogs,openAttempt]);
  useEffect(()=>{void refreshSnapshot();},[options.legacy.events,options.timezone]);
  useEffect(()=>{
   let channel:BroadcastChannel|undefined;

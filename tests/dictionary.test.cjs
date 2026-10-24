@@ -16,7 +16,7 @@ function load(file, imports = {}, globals = {}, append = '') {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
   }).outputText;
   vm.runInNewContext(code, { exports, require(name) {
-    assert.ok(name in imports, 'Unexpected import: ' + name); return name.endsWith('.json') ? {default:imports[name]} : imports[name];
+    if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals}).resolve(name,file); return name.endsWith('.json') ? {default:imports[name]} : imports[name];
   }, Date, Intl, Map, Set, Error, JSON, Uint8Array, TextDecoder, AbortController,
   crypto: crypto.webcrypto, setTimeout, clearTimeout, ...globals }, { filename: file });
   return exports;
@@ -39,7 +39,7 @@ const catalog = load('app/learn/vocabulary-library.tsx', {
   '@/content/vocabulary.json': core, '@/content/questions.json': questions,
   '@/content/vocabulary-expansion.json': expansion, '@/content/dictionary-metadata.json': metadata,
   '@/lib/dictionary-model': model, '@/lib/load-dictionary': {}, '@/lib/lesson-audio': {}, './practice': {},
-}, {}, '\nexport const __qaCatalog = {core, questionWords, extraWords, learningWords};\n').__qaCatalog;
+}, {}, '\nexport const __qaCatalog = {core, questionWords, extraWords, legacyLearningWords, learningWords};\n').__qaCatalog;
 const merged = model.mergeWordCatalog(catalog.learningWords, payload.entries);
 const indexed = model.indexDictionary(merged);
 const legacyFields = ['id','word','pos','meaning','category','example','translation','collocation'];
@@ -97,7 +97,14 @@ test('actual UI catalog retains all original 295 IDs, definitions and example fi
 
 test('567 authored additions do not overlap legacy IDs/headwords and have valid scene glosses', () => {
   assert.equal(expansion.length,567);
-  assert.equal(catalog.learningWords.length,862);
+  assert.equal(catalog.legacyLearningWords.length,862);
+  const admittedCatalog=require('./helpers/actual-source-loader.cjs').createSourceLoader({root}).load('lib/vocabulary-content-catalog.ts');
+  assert.equal(admittedCatalog.FULL4109_CURRENT_WORDS.length,4040,'Only the actual committed current teaching admission supplies this catalog');
+  const legacyIds=new Set(catalog.legacyLearningWords.map(word=>word.id)),visibleAdditions=admittedCatalog.B02_PRIVATE_WORDS.filter(word=>!legacyIds.has(word.id));
+  assert.equal(visibleAdditions.length,3394,'The57 source additions yield53 new visible IDs while4 legacy authored snapshots keep precedence');
+  assert.equal(catalog.learningWords.length,862+3394,'Admitted visible teaching words extend the original legacy862');
+  assert.equal(JSON.stringify(catalog.learningWords.slice(862)),JSON.stringify(visibleAdditions),'Every added visible body is the actual current Library projection');
+  assert.equal(JSON.stringify(catalog.learningWords.slice(0,862)),JSON.stringify(catalog.legacyLearningWords),'Every legacy ID/body remains an exact prefix');
   const ids=new Set(),heads=new Set();
   for (const word of catalog.learningWords) {
     assert.ok(!ids.has(word.id), word.id); ids.add(word.id);
@@ -158,7 +165,12 @@ test('apple retains its common fruit meaning and IPA after source processing and
   assert.ok(source);assert.equal(source.senses[0].pos,'noun');assert.equal(source.senses[0].meaning,'苹果（水果）');
   assert.ok(source.phonetics.includes('/ˈæp(ə)l/'));
   const result=model.findDictionary(indexed,' ＡＰＰＬＥ ')[0];
-  assert.equal(result.id,source.id);assert.equal(result.word,'apple');assert.equal(result.meaning,'苹果（水果）');
+  const authored=catalog.learningWords.find(word=>vocab.searchText(word.word)==='apple');assert.ok(authored);
+  assert.equal(result.id,authored.id,'The current teaching Word.id stays stable');assert.equal(result.word,'apple');
+  assert.equal(result.meaning,authored.meaning,'Dictionary enrichment preserves the authored teaching definition');
+  assert.ok(result.senses.some(sense=>sense.pos==='noun'&&sense.meaning==='苹果（水果）'),'The original common fruit sense is retained alongside the teaching definition');
+  const oldFacts=[mark(source.id),review(source.id)],before=JSON.stringify(oldFacts),states=model.vocabularyStates(oldFacts);
+  assert.equal(states.size,1);assert.equal(states.get(result.id).starred,true);assert.equal(states.get(result.id).reviews,1);assert.equal(JSON.stringify(oldFacts),before,'Old dictionary identity facts are projected without rewriting');
   assert.deepEqual(plain(result.phonetics),plain(source.phonetics));
 });
 

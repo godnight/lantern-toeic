@@ -1,0 +1,4 @@
+# These four files are byte-pinned; Git must preserve their exact line endings.
+support/*.py -text
+support/*.cjs -text
+support/*.java -text

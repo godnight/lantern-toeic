@@ -8,6 +8,7 @@ const ts = require(root + '/node_modules/typescript');
 
 // Transpile and run the actual source. No model implementation is copied here.
 function load(file, imports = {}, globals = {}) {
+  const dependencies=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals});
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(root + '/' + file, 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX }
@@ -18,7 +19,7 @@ function load(file, imports = {}, globals = {}) {
     if (n === '@/lib/recording-media-diagnostics') return {recordingMediaTrace(){}};
     if (n === '@/lib/recording-upload') return load('lib/recording-upload.ts', {}, {crypto:require('node:crypto').webcrypto});
     if (n === '@/lib/use-dialog-viewport') return load('lib/use-dialog-viewport.ts', {react: imports.react}, globals);
-    if (!(n in imports)) throw new Error('Unexpected import: ' + n);
+    if (!(n in imports)) return dependencies.resolve(n,file);
     return imports[n];
   }, Date, Intl, Map, Set, structuredClone, AbortController, FormData, crypto: { randomUUID }, ...globals }, { filename: file });
   return exports;
@@ -180,7 +181,7 @@ function hookHarness(sharedStorage = new Map(), options = {}) {
     window: {addEventListener:(event,fn)=>{if(!listeners.has(event))listeners.set(event,new Set());listeners.get(event).add(fn);},removeEventListener:(event,fn)=>listeners.get(event)?.delete(fn)},
     fetch:async (url, init) => {
       if (!online) throw new Error('offline');
-      requests.push({owner,url,headers:new Headers(init?.headers),body:typeof init?.body==='string'?JSON.parse(init.body):init?.body});
+      requests.push({owner,url,method:init?.method,headers:new Headers(init?.headers),body:typeof init?.body==='string'?JSON.parse(init.body):init?.body});
       if(options.handle){const custom=await options.handle(url,init,requests.at(-1));if(custom)return custom;}
       if (init?.method==='POST') return {ok:new Headers(init.headers).get('x-lantern-owner')===owner};
       return {ok:true,json:async()=>({...base(),owner,hasProfile:false,...options.remote})};
@@ -290,7 +291,7 @@ test('missing local audio stays visible while a valid recording uploads', async 
 });
 
 test('real recording content conflict blocks only that item while other uploads and account refresh continue', async t => {
-  const {environment}=require('./helpers/recording-storage-harness.cjs');const server=environment();t.after(()=>server.close());
+  const {environment}=require('./helpers/recording-storage-harness.cjs');const server=await environment();t.after(()=>server.close());
   const conflict=randomUUID(),good=randomUUID();await server.upload('alice',conflict,'server-original');
   const storage=new Map(),audio=new Map([['lantern-v1-alice:'+conflict,new Blob(['local-different'],{type:'audio/webm'})],['lantern-v1-alice:'+good,new Blob(['new-audio'],{type:'audio/webm'})]]);
   const h=hookHarness(storage,{audio,handle:async(url,init)=>{
@@ -304,7 +305,7 @@ test('real recording content conflict blocks only that item while other uploads 
   assert.equal(api.issues.some(x=>x.kind==='session'||x.status==='auth'),false);
   assert.equal(api.data.recordings.find(r=>r.id===good).uploaded,true);assert.equal(api.data.recordings.find(r=>r.id===conflict).uploaded,false);
   assert.equal(await audio.get('lantern-v1-alice:'+conflict).text(),'local-different');assert.equal(await (await server.get('alice',conflict)).text(),'server-original');
-  assert.ok(h.requests.some(r=>r.url==='/api/study'&&!r.method));
+  assert.ok(h.requests.some(r=>r.url.startsWith('/api/study')&&!r.method));
 });
 
 test('recording queued during remote refresh triggers another pass without another user event', async () => {
@@ -317,7 +318,7 @@ test('recording queued during remote refresh triggers another pass without anoth
 });
 
 test('remote audio acknowledgement repairs independent metadata and removes a missing-blob error', async () => {
-  const rec={id:'remote-audio',title:'Remote recording',promptId:'test',createdAt:'2026-09-07T10:00:00.000Z',duration:2,uploaded:true};
+  const rec={id:'remote-audio',title:'Remote recording',promptId:'test',mime:'audio/webm',createdAt:'2026-09-07T10:00:00.000Z',duration:2,uploaded:true};
   const storage=new Map([['lantern-v1-alice:recording:'+rec.id,JSON.stringify({...rec,uploaded:false})]]);
   const h=hookHarness(storage,{audio:new Map(),remote:{recordings:[rec]}});h.render();await flush();h.setOnline(true);await h.render().syncNow();
   assert.equal(JSON.parse(storage.get('lantern-v1-alice:recording:'+rec.id)).uploaded,true);assert.equal(h.render().issues.length,0);
@@ -367,7 +368,7 @@ test('invalid recording metadata and malformed multipart are permanent input fai
 
 test('uploading an offline recording retains the date the practice occurred', async t => {
   const {environment}=require('./helpers/recording-storage-harness.cjs');
-  const storage=environment();t.after(()=>storage.close());
+  const storage=await environment();t.after(()=>storage.close());
   const meta={duration:20,createdAt:'2026-09-01T12:00:00.000Z'};
   const result=await storage.upload('alice',randomUUID(),'audio data',meta);
   assert.equal(result.status,200);

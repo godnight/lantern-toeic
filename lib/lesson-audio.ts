@@ -1,3 +1,24 @@
+import naturalManifest from '../content/natural-audio-manifest.json';
+import type {NaturalAudioSelector} from './natural-audio';
+import {naturalAudioCatalogRegistry as naturalAudioRegistry} from './natural-audio-catalog';
+export {naturalAudioCatalogRegistry as naturalAudioRegistry} from './natural-audio-catalog';
+let naturalPreparation:Promise<{status:'ready'|'failed'|'superseded';reason?:string}>|null=null;
+let localCandidateAudioAuthorized=false;
+/** Root explicitly opts this private candidate in; no publication approval is implied. */
+export function prepareProductLessonAudio(options:{allowLocalCandidate?:boolean}={}){
+  localCandidateAudioAuthorized=options.allowLocalCandidate===true;
+  if(naturalPreparation)return naturalPreparation;
+  if(naturalAudioRegistry.getSnapshot().phase==='ready')return Promise.resolve({status:'ready' as const});
+  const promise=naturalAudioRegistry.activate(naturalManifest,{allowLocalCandidate:localCandidateAudioAuthorized});
+  naturalPreparation=promise;
+  void promise.finally(()=>{if(naturalPreparation===promise)naturalPreparation=null;});
+  return promise;
+}
+export const subscribeProductLessonAudio=naturalAudioRegistry.subscribe;
+export const productLessonAudioState=naturalAudioRegistry.getSnapshot;
+export const naturalLessonDescriptor=(text:string,selector:NaturalAudioSelector={})=>naturalAudioRegistry.resolve(text,selector);
+export const retryProductLessonAudio=()=>prepareProductLessonAudio({allowLocalCandidate:localCandidateAudioAuthorized});
+
 type Clip = {text:string; file:string; sha256?:string};
 let bundledSources = new Map<string,string>();
 let bundledClips = new Map<string,string>();
@@ -17,8 +38,8 @@ export function installBundledLessonAudio(clips:Clip[]) {
   bundledClips = next;bundledSources=sources;
 }
 
-export function bundledLessonAudio(text:string) { return bundledClips.get(text) ?? null; }
-export function bundledLessonSource(text:string) {return bundledSources.get(text)??null;}
+export function bundledLessonAudio(text:string,selector:NaturalAudioSelector={}) {const natural=naturalAudioRegistry.resolve(text,selector);if(natural)return natural.url;if(naturalAudioRegistry.isBlocked(text)||naturalAudioRegistry.hasText(text)||Object.values(selector).some(Boolean))return null;return bundledClips.get(text)??null;}
+export function bundledLessonSource(text:string,selector:NaturalAudioSelector={}) {const natural=naturalAudioRegistry.resolve(text,selector);if(natural)return natural.sourceId;if(naturalAudioRegistry.isBlocked(text)||naturalAudioRegistry.hasText(text)||Object.values(selector).some(Boolean))return null;return bundledSources.get(text)??null;}
 /** Explicit user/navigation boundary: stop every old lesson/TTS/replay before another source. */
 export function stopLessonAudio(){
  active?.stop();
@@ -30,7 +51,8 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
   const player=++playbackSequence;
   let disposed=false,generation=0,baseline=0,hasBaseline=false,validated=false,requested:number|null=null;
   let cleanupRequest=()=>{},needsReload=false,preparing=false,preparedSource='';
-  let pendingEnded=()=>{},acceptedDuration:number|null=null,ensureDuration=()=>false;
+  let pendingEnded=()=>{},acceptedDuration:number|null=null,ensureDuration=()=>false,validTerminal=()=>false;
+  let completed=false,completedDuration:number|null=null;
   let diagnostic: (event:string,reason?:string,cause?:unknown)=>void=()=>{};
   const source=()=>audio.currentSrc||audio.src||'';
   let expectedSource='',expectedDeclaredSource='';
@@ -44,10 +66,10 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
     if(actual!==null&&actual>=baseline-.25){baseline=Math.max(baseline,actual);hasBaseline=true;}
     return baseline;
   };
-  const stopped=()=>{generation++;cleanupRequest();cleanupRequest=()=>{};validated=false;acceptedDuration=null;ensureDuration=()=>false;preparing=false;if(active===playback)active=null;if(!disposed)changed(false);};
-  const error=(reason:string,cause?:unknown)=>{if(disposed)return;diagnostic('rejected',reason,cause);stopped();audio.pause();failed();};
-  const paused=()=>{const token=generation;if(audio.paused&&active===playback&&!preparing){if(audio.ended&&requested!==null){pendingEnded();return;}if(requested===null&&!ensureDuration()){if(token===generation)error('confirmed-position');return;}if(token!==generation)return;diagnostic('pause');sample();if(token===generation)stopped();}};
-  const ended=()=>{const token=generation;if(audio.ended&&active===playback){if(requested!==null){pendingEnded();return;}if(!ensureDuration()){if(token===generation)error('confirmed-position');return;}if(token!==generation)return;diagnostic('ended');sample();if(token===generation)stopped();}};
+  const stopped=()=>{generation++;cleanupRequest();cleanupRequest=()=>{};validated=false;acceptedDuration=null;ensureDuration=()=>false;validTerminal=()=>false;preparing=false;if(active===playback)active=null;if(!disposed)changed(false);};
+  const error=(reason:string,cause?:unknown)=>{if(disposed)return;completed=false;completedDuration=null;diagnostic('rejected',reason,cause);stopped();audio.pause();failed();};
+  const paused=()=>{const token=generation;if(audio.paused&&active===playback&&!preparing){if(audio.ended){ended();return;}if(requested===null&&!ensureDuration()){if(token===generation)error('confirmed-position');return;}if(token!==generation)return;diagnostic('pause');sample();if(token===generation)stopped();}};
+  const ended=()=>{const token=generation;if(audio.ended&&active===playback){if(requested!==null){pendingEnded();return;}if(!ensureDuration()){if(token===generation)error('confirmed-position');return;}if(token!==generation)return;const trustedEnd=validTerminal();if(token!==generation)return;diagnostic('ended');sample();if(token!==generation)return;if(trustedEnd&&validTerminal()){completed=true;completedDuration=acceptedDuration;}if(token===generation)stopped();}};
   const mediaError=()=>{if(active===playback)error('media-error',audio.error);};
   const begin=(rate:number,positionSeconds:number,restoring:boolean)=>{
     if(disposed)return;
@@ -55,11 +77,11 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
     const token=++generation;cleanupRequest();
     const target=Number.isFinite(positionSeconds)?Math.max(0,positionSeconds):0;
     if(restoring&&!hasBaseline){baseline=target;hasBaseline=true;}
-    requested=target;validated=false;acceptedDuration=null;ensureDuration=()=>false;expectedDeclaredSource=audio.src||'';expectedSource=expectedDeclaredSource||source();
+    requested=target;validated=false;completed=false;completedDuration=null;acceptedDuration=null;ensureDuration=()=>false;validTerminal=()=>false;expectedDeclaredSource=audio.src||'';expectedSource=expectedDeclaredSource||source();
     const reload=needsReload||preparedSource!==expectedSource||audio.readyState===0;needsReload=false;preparing=true;
     let stage='metadata',targetPosition=target,started=false,seekAssigned=false,seekComplete=false,seekEventSeen=false,playingSeen=false,startedAt=0,highestStartup:number|null=null;
     let windowAt:number|null=null,lastAdvanceAt:number|null=null,playingAt:number|null=null,windowPosition=0,lastProgress:number|null=null,advances=0,interrupted=false;
-    let metadataDuration:number|null=null,maximumDuration:number|null=null;
+    let metadataDuration:number|null=null,maximumDuration:number|null=null,metadataRevised=false;
     let confirmedPosition:number|null=null,confirmedAt:number|null=null;
     let preparedPosition:number|null=null,preparedDuration:number|null=null,firstProgressPosition:number|null=null,firstProgressElapsed:number|null=null,diagnosticCount=0;
     const events:Record<string,number>={};
@@ -94,6 +116,7 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
       const ready=audio.readyState>0&&!audio.error,seeking=audio.seeking,paused=audio.paused,sameSource=sourceMatches(),observedAt=clock();
       if(!valid()||requested!==request||validated!==wasValidated||acceptedDuration!==previous||baseline!==trusted||lastProgress!==progressAtRead||lastAdvanceAt!==advanceAtRead||highestStartup!==highestAtRead||confirmedPosition!==confirmedAtRead||confirmedAt!==confirmedTimeAtRead)return 'invalid';
       if(!sameSource||!ready||!finiteDuration(previous)||!finiteDuration(duration)||!Number.isFinite(rate)||rate<=0)return 'invalid';
+      if(duration!==previous)metadataRevised=true;
       if(duration===previous)return seeking?(started?'invalid':'pending'):'valid';
       const extent=Math.min(previous,duration);
       if(targetPosition<0||targetPosition>extent)return 'invalid';
@@ -111,6 +134,18 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
       acceptedDuration=duration;maximumDuration=Math.max(maximumDuration??metadataDuration,duration);return 'valid';
     };
     ensureDuration=()=>durationState()==='valid';
+    // Completion needs the real ended state and the same confirmed media timeline.
+    // A saved near-end checkpoint, a paused position, or an unconfirmed ended event
+    // cannot turn a Continue request into a restart.
+    validTerminal=()=>{
+      if(!valid()||requested!==null||!validated||!audio.ended||!ensureDuration())return false;
+      const previous=acceptedDuration,trusted=baseline,lastPosition=confirmedPosition,lastAt=confirmedAt;
+      const actual=audio.currentTime,duration=audio.duration,effectiveRate=audio.playbackRate,observedAt=clock();
+      const sameSource=sourceMatches(),ready=audio.readyState>0&&!audio.error,seeking=audio.seeking,atEnd=audio.ended;
+      const elapsed=lastAt===null?NaN:(observedAt-lastAt)/1000;
+      if(!valid()||requested!==null||!validated||acceptedDuration!==previous||baseline!==trusted||confirmedPosition!==lastPosition||confirmedAt!==lastAt)return false;
+      return atEnd&&sameSource&&ready&&!seeking&&finiteDuration(previous)&&finiteDuration(duration)&&Math.abs(duration-previous)<=.01&&Number.isFinite(actual)&&actual>=duration-.05&&actual<=duration+.05&&actual>=trusted-.25&&lastPosition!==null&&actual>=lastPosition-.25&&Number.isFinite(elapsed)&&elapsed>=0&&Number.isFinite(effectiveRate)&&Math.abs(effectiveRate-rate)<=.000001&&actual<=lastPosition+1+elapsed*rate;
+    };
     const durationMatches=ensureDuration;
     const nearTarget=()=>{const actual=finitePosition();return actual!==null&&Math.abs(actual-targetPosition)<=1;};
     const validStartPosition=()=>{
@@ -219,18 +254,31 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
       const observedTailMs=firstProgressElapsed===null?0:clock()-startedAt-firstProgressElapsed;
       const firstPlayedMs=firstProgressElapsed===null||playingAt===null?Infinity:startedAt+firstProgressElapsed-playingAt;
       const lastAdvanceGap=lastAdvanceAt===null?Infinity:clock()-lastAdvanceAt;
+      // Some decoders expose an initial media-time offset on a very short clip.
+      // Accept that zero-start case only when two real progress events prove the
+      // remaining timeline. A reset/burst/one-point jump cannot supply this proof.
+      const observedAdvance=firstProgressPosition===null||lastProgress===null?0:lastProgress-firstProgressPosition;
+      const observedAdvanceMs=windowAt===null||lastAdvanceAt===null?0:lastAdvanceAt-windowAt;
+      const observedShortStart=!metadataRevised&&target===0&&targetPosition===0&&preparedPosition===0&&rate===1&&
+        maximumDuration!==null&&maximumDuration<=1.5&&preparedDuration===maximumDuration&&acceptedDuration===maximumDuration&&
+        Math.abs(audio.playbackRate-rate)<=.000001&&windowAt!==null&&windowPosition===firstProgressPosition&&
+        firstProgressElapsed!==null&&windowAt>=startedAt+firstProgressElapsed-.01&&advances>=1&&
+        Number.isFinite(observedAdvance)&&observedAdvance>=Math.min(.05,duration*.2)&&
+        Number.isFinite(observedAdvanceMs)&&observedAdvanceMs>=observedAdvance/rate*800&&
+        lastProgress!==null&&actual!==null&&actual>=lastProgress&&
+        lastAdvanceGap>=(actual-lastProgress)/rate*800;
       // A fully observed short remainder may end before the normal confirmation window.
       // A first-point jump, instant ended, interrupted startup or a long-track ended is not proof.
       // The first advance must be timely and precede the final fifth of the remainder.
       // A stationary first segment followed by one near-end jump cannot prove a short clip.
-      if(!started||!seekComplete||!playingSeen||interrupted||audio.seeking||!sourceMatches()||!durationMatches()||!finiteDuration(preparedDuration)||!finiteDuration(duration)||actual===null||preparedPosition===null||!Number.isFinite(remaining)||remaining<=.02||!Number.isFinite(minimumRemaining)||minimumRemaining<=.02||!Number.isFinite(expectedMs)||expectedMs<=0||expectedMs>1500||!Number.isFinite(minimumExpectedMs)||minimumExpectedMs<=0||minimumExpectedMs>1500||!Number.isFinite(elapsed)||!Number.isFinite(tailMs)||tailMs<=0||!Number.isFinite(observedTailMs)||observedTailMs<tailMs*.8||!Number.isFinite(firstPlayedMs)||firstPlayedMs<0||firstPlayedMs>Math.min(500,minimumExpectedMs*.8)||!Number.isFinite(lastAdvanceGap)||lastAdvanceGap<0||lastAdvanceGap>500||firstProgressPosition===null||firstProgressElapsed===null||firstProgressPosition<=preparedPosition+.001||firstProgressPosition>preparedPosition+minimumRemaining*.8||actual<=firstProgressPosition+.001||actual<duration-.05||actual>duration+.05||elapsed<expectedMs*.8||!validStartPosition()){
+      if(!started||!seekComplete||!playingSeen||interrupted||audio.seeking||!sourceMatches()||!durationMatches()||!finiteDuration(preparedDuration)||!finiteDuration(duration)||actual===null||preparedPosition===null||!Number.isFinite(remaining)||remaining<=.02||!Number.isFinite(minimumRemaining)||minimumRemaining<=.02||!Number.isFinite(expectedMs)||expectedMs<=0||expectedMs>1500||!Number.isFinite(minimumExpectedMs)||minimumExpectedMs<=0||minimumExpectedMs>1500||!Number.isFinite(elapsed)||!Number.isFinite(tailMs)||tailMs<=0||!Number.isFinite(observedTailMs)||observedTailMs<tailMs*.8||!Number.isFinite(firstPlayedMs)||firstPlayedMs<0||firstPlayedMs>Math.min(500,minimumExpectedMs*.8)||!Number.isFinite(lastAdvanceGap)||lastAdvanceGap<0||lastAdvanceGap>500||firstProgressPosition===null||firstProgressElapsed===null||firstProgressPosition<=preparedPosition+.001||firstProgressPosition>preparedPosition+minimumRemaining*.8||actual<=firstProgressPosition+.001||actual<duration-.05||actual>duration+.05||(elapsed<expectedMs*.8&&!observedShortStart)||!validStartPosition()){
         fail('ended-before-confirmation');return;
       }
       if(!valid()||requested===null)return;
       // A short-ending proof cannot mix endpoint/timing fields from different
       // native metadata snapshots, even if the last getter returns to the old value.
       if(acceptedDuration!==durationAtRead||maximumDuration!==maximumAtRead){fail('ended-before-confirmation');return;}
-      requested=null;baseline=actual;hasBaseline=true;validated=true;stage='playing';clearTimeout(timeout);diagnostic('confirmed-short-end');confirmed?.();if(!valid())return;diagnostic('ended');stopped();
+      requested=null;baseline=actual;hasBaseline=true;validated=true;stage='playing';clearTimeout(timeout);diagnostic('confirmed-short-end');confirmed?.();if(!valid())return;diagnostic('ended');completed=true;completedDuration=acceptedDuration;stopped();
     };
     audio.addEventListener('loadedmetadata',metadata);
     audio.addEventListener('canplay',available);audio.addEventListener('progress',available);audio.addEventListener('durationchange',available);
@@ -244,7 +292,8 @@ export function createBundledPlayback(audio:HTMLAudioElement, changed:(playing:b
     resume(rate:number,positionSeconds=sample()){begin(rate,positionSeconds,true);},
     pause(reload=false){if(reload)needsReload=true;playback.stop();return baseline;},
     position:sample,
-    stop(){if(disposed)return;diagnostic('stop');sample();stopped();audio.pause();},
+    completed(){const token=generation,duration=audio.duration;return !disposed&&completed&&audio.ended&&!audio.error&&sourceMatches()&&completedDuration!==null&&duration===completedDuration&&token===generation;},
+    stop(){if(disposed)return;completed=false;completedDuration=null;diagnostic('stop');sample();stopped();audio.pause();},
     dispose(){playback.stop();disposed=true;audio.removeEventListener('pause',paused);audio.removeEventListener('ended',ended);audio.removeEventListener('error',mediaError);},
   };
   audio.addEventListener('pause',paused);audio.addEventListener('ended',ended);audio.addEventListener('error',mediaError);

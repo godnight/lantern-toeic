@@ -1,4 +1,6 @@
 import {eq, and, sql} from 'drizzle-orm';
+import {readStudySyncPage} from '@/db/study-sync';
+import {StudySyncError,STUDY_SYNC_PROTOCOL} from '@/lib/study-sync';
 import {z} from 'zod';
 import {getDb} from '@/db';
 import {profiles,attempts,checkins,recordings,questionMarks,resourceTasks} from '@/db/schema';
@@ -6,7 +8,12 @@ import {mutableStudyUpsert} from '@/db/mutable-study';
 import {DEFAULT_PROFILE,DATA_SCHEMA_VERSION,validQuestionMark,validResourceTask,validStudyDate} from '@/lib/study-model';
 import {userId,safeMutation,privateJson} from '@/lib/server-auth';
 import {readBoundedRequestBody,RequestBodyTooLargeError} from '@/lib/request-body';
-import questions from '@/content/questions.json';
+// Admission and catalog hashes remain mandatory before use, but unrelated or
+// unauthenticated requests must not initialize the teaching catalog at startup.
+let questionCatalogPromise: Promise<typeof import('@/lib/question-catalog')>|undefined;
+function loadQuestionCatalog(){
+ return questionCatalogPromise??=import('@/lib/question-catalog');
+}
 import {resources} from '@/content/resources-v2';
 import examResources from '@/content/exams/catalogue.json';
 const resourceIds=new Set([...resources.map(resource=>resource.id),...examResources.map(resource=>'exam-'+resource.id)]);
@@ -20,8 +27,8 @@ const checkin=z.object({id,date:z.string().refine(validStudyDate),minutes:z.numb
 const attemptPayload=(a:z.infer<typeof attempt>)=>JSON.stringify({id:a.id,qid:a.qid,choice:a.choice,createdAt:a.createdAt,seconds:a.seconds});
 const checkinPayload=(c:z.infer<typeof checkin>)=>JSON.stringify({id:c.id,date:c.date,minutes:c.minutes,load:c.load,note:c.note,createdAt:c.createdAt});
 const eventConflict=()=>{const response=privateJson({code:'event-payload-conflict',error:'记录标识已用于不同内容，请保留备份并检查导入来源'},409);response.headers.set('X-Lantern-Conflict','event-payload');return response;};
-export async function GET(){const uid=await userId();if(!uid)return privateJson({error:'请登录后同步',local:true},401);try{const db=getDb();const [p,a,c,r,m,t]=await Promise.all([db.select().from(profiles).where(eq(profiles.userId,uid)),db.select().from(attempts).where(eq(attempts.userId,uid)),db.select().from(checkins).where(eq(checkins.userId,uid)),db.select().from(recordings).where(eq(recordings.userId,uid)),db.select().from(questionMarks).where(eq(questionMarks.userId,uid)),db.select().from(resourceTasks).where(eq(resourceTasks.userId,uid))]);return privateJson({owner:uid,schemaVersion:DATA_SCHEMA_VERSION,profile:p[0]?JSON.parse(p[0].body):DEFAULT_PROFILE,hasProfile:!!p[0],attempts:a.map(({userId:_,...rest})=>rest),checkins:c.map(x=>JSON.parse(x.body)),recordings:r.map(x=>({...JSON.parse(x.body),uploaded:true})),questionMarks:m.map(x=>JSON.parse(x.body)),resourceTasks:t.map(x=>JSON.parse(x.body))});}catch{return privateJson({error:'同步暂时不可用，本机记录会保留'},503);}}
-export async function POST(request:Request){const uid=await userId();if(!uid)return privateJson({error:'请登录后同步'},401);if(request.headers.get('x-lantern-owner')!==uid)return privateJson({error:'账号已切换，请刷新后重试'},409);if(!safeMutation(request))return privateJson({error:'请求来源不匹配'},403);try{
+export async function GET(request?:Request){const uid=await userId(request);if(!uid)return privateJson({error:'请登录后同步',local:true},401);try{const db=getDb();const url=request?new URL(request.url):null;if(url?.searchParams.has('sync')){if(url.searchParams.get('sync')!==STUDY_SYNC_PROTOCOL)return privateJson({error:'同步协议不受支持'},400);return privateJson(await readStudySyncPage(db,uid,url));}const [p,a,c,r,m,t]=await Promise.all([db.select().from(profiles).where(eq(profiles.userId,uid)),db.select().from(attempts).where(eq(attempts.userId,uid)),db.select().from(checkins).where(eq(checkins.userId,uid)),db.select().from(recordings).where(eq(recordings.userId,uid)),db.select().from(questionMarks).where(eq(questionMarks.userId,uid)),db.select().from(resourceTasks).where(eq(resourceTasks.userId,uid))]);return privateJson({owner:uid,schemaVersion:DATA_SCHEMA_VERSION,profile:p[0]?JSON.parse(p[0].body):DEFAULT_PROFILE,hasProfile:!!p[0],attempts:a.map(({userId:_,...rest})=>rest),checkins:c.map(x=>JSON.parse(x.body)),recordings:r.map(x=>({...JSON.parse(x.body),uploaded:true})),questionMarks:m.map(x=>JSON.parse(x.body)),resourceTasks:t.map(x=>JSON.parse(x.body))});}catch(error){if(error instanceof StudySyncError)return privateJson({error:error.message,resetRequired:error.resetRequired},error.status||503);return privateJson({error:'同步暂时不可用，本机记录会保留'},503);}}
+export async function POST(request:Request){const uid=await userId(request);if(!uid)return privateJson({error:'请登录后同步'},401);if(request.headers.get('x-lantern-owner')!==uid)return privateJson({error:'账号已切换，请刷新后重试'},409);if(!safeMutation(request))return privateJson({error:'请求来源不匹配'},403);try{
  const body=z.object({type:z.string(),data:z.unknown()}).parse(await new Response(await readBoundedRequestBody(request,200000)).json());const db=getDb();
  if(body.type==='profile'){const parsed=profile.parse(body.data);await db.insert(profiles).values({userId:uid,body:JSON.stringify(parsed),updatedAt:new Date().toISOString()}).onConflictDoUpdate({target:profiles.userId,set:{body:JSON.stringify(parsed),updatedAt:new Date().toISOString()}});return privateJson({ok:true});}
  if(body.type==='theme'){
@@ -31,7 +38,7 @@ export async function POST(request:Request){const uid=await userId();if(!uid)ret
   await db.insert(profiles).values({userId:uid,body:JSON.stringify({...DEFAULT_PROFILE,theme:parsed.theme}),updatedAt}).onConflictDoUpdate({target:profiles.userId,set:{body:sql`json_set(${profiles.body}, '$.theme', ${parsed.theme})`,updatedAt}});return privateJson({ok:true});
  }
  if(body.type==='attempt'){
-  const a=attempt.parse(body.data);const q=questions.find(q=>q.id===a.qid);if(!q||a.choice>=q.options.length)return privateJson({error:'题目或选项无效'},400);
+  const a=attempt.parse(body.data);const {QUESTIONS:questions}=await loadQuestionCatalog();const q=questions.find(q=>q.id===a.qid);if(!q||a.choice>=q.options.length)return privateJson({error:'题目或选项无效'},400);
   const prev=await db.select({id:attempts.id}).from(attempts).where(and(eq(attempts.userId,uid),eq(attempts.qid,a.qid))).limit(1);
   await db.insert(attempts).values({...a,userId:uid,correct:a.choice===q.correctIndex,mode:prev.length?'review':'first'}).onConflictDoNothing();
   const owned=await db.select().from(attempts).where(and(eq(attempts.id,a.id),eq(attempts.userId,uid))).limit(1);
@@ -48,7 +55,8 @@ export async function POST(request:Request){const uid=await userId();if(!uid)ret
   return parsed.success&&stored.createdAt===c.createdAt&&checkinPayload(parsed.data)===checkinPayload(c)?privateJson({ok:true}):eventConflict();
  }
  if(body.type==='questionMark'){
-  const mark=body.data;if(!validQuestionMark(mark)||!questions.some(question=>question.id===mark.qid))return privateJson({error:'题目标记格式或题目无效'},400);
+  const mark=body.data;if(!validQuestionMark(mark))return privateJson({error:'题目标记格式或题目无效'},400);
+  const {QUESTIONS:questions}=await loadQuestionCatalog();if(!questions.some(question=>question.id===mark.qid))return privateJson({error:'题目标记格式或题目无效'},400);
   stamp.parse(mark.updatedAt);await db.run(mutableStudyUpsert('questionMark',uid,mark));return privateJson({ok:true});
  }
  if(body.type==='resourceTask'){

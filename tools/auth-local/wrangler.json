@@ -1,0 +1,25 @@
+{
+  "name": "lantern-auth-local-only",
+  "main": "../../worker/index.ts",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "send_metrics": false,
+  "secrets": {"required": []},
+  "vars": {
+    "LANTERN_AUTH_ENABLED": "false"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lantern-auth-local-only",
+      "database_id": "efefefef-0000-4000-8000-000000009443",
+      "migrations_dir": "../../drizzle"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "lantern-auth-local-only"
+    }
+  ]
+}

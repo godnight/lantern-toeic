@@ -1,8 +1,9 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),ts=require('typescript');
 function fixture({muted=false,seekRequiresPlay=false,setterEcho=false,setterSeeking=true,logThrows=false,onConfirmed}={}){
  const timers=new Map(),logs=[];let timer=0,errors=0,confirmations=0,now=0;
+ const dependencies=require('./helpers/actual-source-loader.cjs').createSourceLoader({root:process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..')});
  const exports={};vm.runInNewContext(ts.transpileModule(fs.readFileSync(process.env.CT_AUDIO_CONTROLLER_SOURCE||path.join(__dirname,'../lib/lesson-audio.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{
-  exports,Map,Error,performance:{now:()=>now},console:{info(line){if(logThrows)throw Error('logger unavailable');logs.push(JSON.parse(line.slice('Bundled playback '.length)));}},
+  exports,require:name=>dependencies.resolve(name,'lib/lesson-audio.ts'),Map,Error,performance:{now:()=>now},console:{info(line){if(logThrows)throw Error('logger unavailable');logs.push(JSON.parse(line.slice('Bundled playback '.length)));}},
   setTimeout:(fn,delay)=>{timers.set(++timer,{fn,delay,at:now+delay});return timer;},clearTimeout:id=>timers.delete(id)
  });
  class Media extends EventTarget{

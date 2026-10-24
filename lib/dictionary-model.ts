@@ -1,3 +1,4 @@
+import {projectDictionaryVocabularyEvents} from './dictionary-legacy-ids';
 import {searchText, vocabularyState, type VocabularyEvent, type Word} from './vocabulary-model';
 
 export type DictionaryEntry = {id:string;word:string;phonetics:string[];senses:{pos:string;meaning:string}[];etymology?:string;forms?:string[]};
@@ -48,7 +49,7 @@ export function findDictionary(index:ReturnType<typeof indexDictionary>, query:s
 // Group once: a large dictionary must not scan every event for every headword.
 export function vocabularyStates(events:VocabularyEvent[]){
   const groups=new Map<string,VocabularyEvent[]>();
-  for(const event of events){const group=groups.get(event.wordId)||[];group.push(event);groups.set(event.wordId,group);}
+  for(const event of projectDictionaryVocabularyEvents(events)){const group=groups.get(event.wordId)||[];group.push(event);groups.set(event.wordId,group);}
   return new Map([...groups].map(([id,rows])=>[id,vocabularyState(rows,id)]));
 }
 export const emptyVocabularyState={starred:false,revision:0,level:0,due:0,reviews:0};

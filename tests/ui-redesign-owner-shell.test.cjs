@@ -12,7 +12,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 function load(file, imports = {}, globals = {}) {
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(path.join(root, file), 'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-  vm.runInNewContext(code, {exports,require(name){if(name==='@/lib/recording-capture-diagnostics')return {createRecordingCaptureTrace:()=>()=>{}};if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};assert.ok(name in imports, 'Unexpected import: '+name);return imports[name];},Date,Map,Set,structuredClone,crypto:webcrypto,Blob,URL,AbortController,...globals}, {filename:file});
+  vm.runInNewContext(code, {exports,require(name){if(name==='@/lib/recording-capture-diagnostics')return {createRecordingCaptureTrace:()=>()=>{}};if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals}).resolve(name,file);return imports[name];},Date,Map,Set,structuredClone,crypto:webcrypto,Blob,URL,AbortController,...globals}, {filename:file});
   return exports;
 }
 const model = load('lib/study-model.ts');
@@ -48,14 +48,15 @@ const observedFiles={};
 function load(file,imports={},globals={}) {
  const source=fs.readFileSync(path.join(root,file),'utf8');observedFiles[file]=crypto.createHash('sha256').update(source).digest('hex');
  const exports={},code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
- vm.runInNewContext(code,{exports,require:name=>{if(name==='@/lib/recording-capture-diagnostics')return {createRecordingCaptureTrace:()=>()=>{}};if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};if(!(name in imports))throw Error(name);return imports[name];},Date,Intl,Set,Map,URLSearchParams,Blob,URL,...globals});return exports;
+ vm.runInNewContext(code,{exports,require:name=>{if(name==='@/lib/recording-capture-diagnostics')return {createRecordingCaptureTrace:()=>()=>{}};if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};if(!(name in imports))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals}).resolve(name,file);return imports[name];},Date,Intl,Set,Map,URLSearchParams,Blob,URL,...globals});return exports;
 }
 const model=load('lib/study-model.ts'),data=structuredClone(model.EMPTY_DATA);
 const jsx=(type,props)=>({type,props}),proxy=new Proxy({},{get:(_,key)=>String(key)});
 let slots=[],cursor=0,effects=[],frame=[],navigation=[],tree,nativeBack;
 const same=(a,b)=>a&&b&&a.length===b.length&&a.every((x,i)=>Object.is(x,b[i]));
 const hooks={useState(value){const i=cursor++;if(!(i in slots))slots[i]=typeof value==='function'?value():value;return[slots[i],next=>{slots[i]=typeof next==='function'?next(slots[i]):next;}];},useRef(value){const i=cursor++;if(!(i in slots))slots[i]={current:value};return slots[i];},useEffect(fn,deps){const i=cursor++,old=slots[i];if(!old||!same(old.deps,deps))effects.push(()=>{old?.cleanup?.();slots[i]={deps,cleanup:fn()};});}};
-const listeners=new Map(),scrolls=[];let focused=null,controls=[];
+hooks.useLayoutEffect=hooks.useEffect;
+ const listeners=new Map(),scrolls=[];let focused=null,controls=[];
 class Element {
  constructor({tag='BUTTON',label='来源按钮',text='来源控件',identity='source'}={}){this.tagName=tag;this.label=label;this.textContent=text;this.identity=identity;this.isConnected=true;this.focusCount=0;}
  getAttribute(name){return name==='aria-label'?this.label:null;}
@@ -70,7 +71,7 @@ const window={location:{search:''},scrollY:0,scrollTo(x,y){this.scrollY=typeof x
  back(){navigation.push(()=>{if(!this.index)return;this.index--;for(const fn of [...listeners.get('popstate')||[]])fn({state:this.state});if(this.scrollRestoration==='auto')window.scrollTo(0,0);});}}
 };
 const appliedThemes=[];
-const imports={react:hooks,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':proxy,
+const imports={'./account/account-form':{default:'AccountForm'},'./learn/legal-pages':{PublicInfoLinks:'PublicInfoLinks'},'./legal-pages':{PublicInfoLinks:'PublicInfoLinks'},'@/lib/lesson-audio':{prepareProductLessonAudio:async()=>undefined,stopLessonAudio(){}},react:hooks,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':proxy,
  '@/lib/study-model':model,'@/lib/use-study':{useStudy:()=>fixtureApi},
  '@/lib/study-backup':{},'@/lib/speaking-recovery':load('lib/speaking-recovery.ts'),'@/lib/native-host':{registerNativeBack:fn=>{nativeBack=fn;return()=>{if(nativeBack===fn)nativeBack=null;};}},'@/lib/ui-theme':{applyDocumentTheme(theme){appliedThemes.push(theme);},UI_THEME_META:{paper:{name:'日间'},crystal:{name:'夜间'},hollow:{name:'空洞骑士'},silk:{name:'丝之歌'}}},
  sonner:{toast:{message(){},success(){},error(){}}},'./learn/workspace-shell':{WorkspaceShell:'WorkspaceShell',WorkspaceHeading:'WorkspaceHeading',BackToWorkspace:'BackToWorkspace'},

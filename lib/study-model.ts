@@ -1,3 +1,5 @@
+import {recommendLearningParts} from './learning-recommendation';
+import {studyDayKey} from './study-format';
 export type Theme = 'hollow' | 'silk' | 'paper' | 'crystal';
 // randomUUID is restricted to secure contexts in some browsers; getRandomValues
 // still provides cryptographic randomness in local HTTP development previews.
@@ -70,7 +72,7 @@ export function migrateStudyData(value:unknown):StudyData {
  return result;
 }
 export const PARTS=['照片描述','应答问题','简短对话','简短独白','短句填空','长文填空','阅读理解'];
-export function dayKey(date:Date|string=new Date(),timezone='Asia/Shanghai'){return new Intl.DateTimeFormat('en-CA',{timeZone:timezone,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(date));}
+export function dayKey(date:Date|string=new Date(),timezone='Asia/Shanghai'){return studyDayKey(date,timezone);}
 export function dayOffset(day:string,offset:number){const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+offset);return d.toISOString().slice(0,10);}
 export function daysUntil(exam:string,today:string){if(!exam)return null;return Math.ceil((Date.parse(exam+'T12:00:00Z')-Date.parse(today+'T12:00:00Z'))/86400000);}
 export function uniqueById<T extends {id:string}>(items:T[]):T[]{return [...new Map(items.map(x=>[x.id,x])).values()];}
@@ -81,16 +83,14 @@ export function firstAttempts(attempts:Attempt[]){const seen=new Set<string>();r
 export function dailyPlan(data:StudyData,questions:Question[],prompts:Speaking[],today=dayKey(new Date(),data.profile.timezone)){
  const timezone=data.profile.timezone;
  const parts=new Map(questions.map(q=>[q.id,q.part]));
- const history=firstAttempts(data.attempts.filter(a=>dayKey(a.createdAt,timezone)<today));
- const stats=PARTS.map((_,i)=>{const attempts=history.filter(a=>parts.get(a.qid)===i+1);return {part:i+1,total:attempts.length,rate:attempts.length?attempts.filter(a=>a.correct).length/attempts.length:1};});
- const seed=Math.floor(Date.parse(today+'T00:00:00Z')/86400000);
- const pick=(listening:boolean)=>{const group=stats.filter(s=>listening?s.part<=4:s.part>4);const weakest=group.filter(s=>s.total>0).sort((a,b)=>a.rate-b.rate)[0];return weakest&&weakest.rate<.7?weakest.part:group.find(s=>s.total===0)?.part||group[((seed%group.length)+group.length)%group.length].part;};
- const listeningPart=pick(true),readingPart=pick(false);
+ const recommendation=recommendLearningParts({attempts:data.attempts,questions,timezone,today});
+ // Preserve the legacy numeric return shape. Empty banks still launch zero questions.
+ const listeningPart=recommendation.listening.part??1,readingPart=recommendation.reading.part??5;
  const priorRecordings=data.recordings.filter(r=>dayKey(r.createdAt,timezone)<today);
  const oral=prompts[priorRecordings.length%prompts.length];
  const attempts=data.attempts.filter(a=>dayKey(a.createdAt,timezone)===today);
  const checkedTasks=[attempts.some(a=>parts.get(a.qid)===listeningPart),attempts.some(a=>parts.get(a.qid)===readingPart),!!oral&&data.recordings.some(r=>dayKey(r.createdAt,timezone)===today&&r.promptId===oral.id)];
- return {listeningPart,readingPart,oral,checkedTasks};
+ return {listeningPart,readingPart,oral,checkedTasks,recommendation};
 }
 export function reviewSchedule(attempts:Attempt[],now=Date.now()){
  const grouped=new Map<string,Attempt[]>();for(const a of attempts){const arr=grouped.get(a.qid)||[];arr.push(a);grouped.set(a.qid,arr);}

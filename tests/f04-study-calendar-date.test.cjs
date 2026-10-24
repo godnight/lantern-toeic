@@ -30,7 +30,7 @@ function hookHarness(h,data){
  };
  const imports={react,sonner:{toast:{error:value=>errors.push(value)}},'./study-model':model,'./study-backup':backup};
  const exports={};const code=ts.transpileModule(fs.readFileSync(path.join(root,'lib/use-study.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- vm.runInNewContext(code,{exports,require(name){assert.ok(name in imports,'Unexpected hook import '+name);return imports[name];},
+ vm.runInNewContext(code,{exports,require(name){if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports}).resolve(name,'lib/use-study.ts');return imports[name];},
   Date,Intl,Map,Set,Error,JSON,structuredClone,Blob,URL,AbortController,crypto:webcrypto,
   navigator:{onLine:false},window:{addEventListener(){},removeEventListener(){}},
   localStorage:{get length(){return storage.size;},key:i=>[...storage.keys()][i]??null,getItem:key=>storage.get(key)??null,setItem(key,value){writes.push(key);storage.set(key,String(value));},removeItem:key=>storage.delete(key)},

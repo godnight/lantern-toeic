@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "buildId": "release-practice-20261018-r2-cea0545b0af2",
-  "sourceInputsSha256": "cea0545b0af2af43e6b755a199ab7abc9df3943d994404ced2e0df43450592cf",
-  "inputCount": 1377,
+  "buildId": "v045-today-actions-20261024-r12-d19bfae193f1",
+  "sourceInputsSha256": "d19bfae193f111449cddf2c917b26e2cbaf49a60c1b69233816ea1407c0b162b",
+  "inputCount": 14138,
   "excludedSelf": "public/build-identity.json",
-  "versionName": "0.3.7",
-  "versionCode": 20040
+  "versionName": "0.4.5",
+  "versionCode": 20059
 }

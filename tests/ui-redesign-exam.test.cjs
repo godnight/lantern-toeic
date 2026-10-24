@@ -206,7 +206,7 @@ function controlledRepository() {
   const calls=[];
   const summary={key:model.examKey(exam),id:exam.id,version:exam.version,title:exam.title,source:exam.source,fingerprint,bytes:1000,importedAt:start};
   const commit=attempt=>{row={attempt,...(attempt.status==='submitted'?{result:model.gradeAttempt(exam,attempt)}:{})};return row;};
-  const repo={ownerId:'ui-test-owner',close(){calls.push(['close']);},async listPackages(){return [summary];},async listAttempts(){return [row];},async getPackage(){return exam;},
+  const repo={ownerId:'ui-test-owner',close(){calls.push(['close']);},async listPackages(){return [summary];},async listAttempts(){return [row];},async getPackage(){return exam;},async getDefinition(){return exam;},async getAssetBlob(_key,id){const asset=exam.assets.find(a=>a.id===id);assert.ok(asset,'Synthetic asset exists');return new Blob([Buffer.from(asset.base64,'base64')],{type:asset.mime});},
     async resumeAttempt(){calls.push(['resume']);return row;},
     async markInterrupted(id,reason,now,revision){calls.push(['interrupt',id,revision]);if(exitGate)await exitGate.promise;assert.equal(revision,row.attempt.revision);return commit(model.markInterrupted(row.attempt,reason,now));},
     async answer(id,number,choice,now,revision){calls.push(['answer',id,number,choice,revision]);if(answerGate)await answerGate.promise;assert.equal(revision,row.attempt.revision);return commit(model.answerQuestion(row.attempt,number,choice,now));},
@@ -310,7 +310,7 @@ test('actual owner: one keyed audio element remains under the same parent across
   control.repo.startAttempt=async key=>({attempt:model.createAttempt(control.exam,{id:'new-ui-synthetic-attempt',ownerId:control.repo.ownerId,fingerprint,ordinal:1,now:control.clock.now})});
   const view=ownerHarness(control);await view.drain();await view.click('音频预检与新考试');
   const before=view.find(node=>node.type===view.mod.ExamAudio);assert.ok(before);assert.equal(before.props.attempt,null);const beforeParent=parentOf(view.tree,before);assert.equal(beforeParent.type,'div');assert.match(beforeParent.props.className,/mock-preflight-layout/);
-  before.props.onPreflight(true,'blob:'+control.exam.listeningAudioId);await view.drain();
+  before.props.onPreflight(true,before.props.url);await view.drain();
   const confirmation=view.find(node=>node.type==='input'&&node.props.type==='checkbox');assert.ok(confirmation);confirmation.props.onChange({target:{checked:true}});await view.drain();
   await view.click('开始新考试 · 立即计时');
   const after=view.find(node=>node.type===view.mod.ExamAudio);assert.ok(after);assert.equal(after.key,before.key);assert.equal(after.props.url,before.props.url);assert.equal(after.props.attempt.status,'listening');

@@ -6,32 +6,44 @@ import {registerNativeBack} from '@/lib/native-host';
 import {useVocabulary} from '@/lib/use-vocabulary';
 import {vocabularyId,CATEGORIES,searchText,searchWords,type Word} from '@/lib/vocabulary-model';
 import wordData from '@/content/vocabulary.json';
-import questions from '@/content/questions.json';
+import legacyQuestions from '@/content/questions.json';
+import {QUESTIONS as questions} from '@/lib/question-catalog';
 import expansion from '@/content/vocabulary-expansion.json';
+import {B02_PRIVATE_WORDS} from '@/lib/vocabulary-content-catalog';
 import dictionaryMetadata from '@/content/dictionary-metadata.json';
 import {emptyVocabularyState,findDictionary,indexDictionary,mergeWordCatalog,vocabularyStates,type DictionaryEntry} from '@/lib/dictionary-model';
 import {loadDictionary} from '@/lib/load-dictionary';
+import {getWordMemberships,MEMBERSHIP_LABELS,MEMBER_WORDBOOKS,belongsToWordbook,isMemberWordbookId,WORDLIST_SOURCES,type MemberWordbookId} from '@/lib/wordbook-membership';
 import {bundledLessonAudio} from '@/lib/lesson-audio';
 import {SpeechPlayer} from './practice';
+import {getWordAudioBindingForSnapshot,isPrivateWordAudioBlocked,PRIVATE_AUDIO_LABEL} from '@/lib/word-audio-bindings-v040';
 import {InteractiveExample,type ExampleLookup} from './interactive-example';
+import {DictionaryPronunciation} from './dictionary-pronunciation';
+import './v041-vocabulary.css';
 
 const core=wordData as Word[];
 const questionWords:Word[]=[];
-for(const q of questions)for(const v of q.vocabulary||[])if(!core.some(w=>searchText(w.word)===searchText(v.word))&&!questionWords.some(w=>searchText(w.word)===searchText(v.word)))questionWords.push({id:'qv-'+v.word.toLowerCase().replace(/[^a-z0-9]+/g,'-'),word:v.word,pos:'词汇与表达',meaning:v.meaning,category:'questions',example:v.example,translation:'',collocation:''});
+for(const q of legacyQuestions)for(const v of q.vocabulary||[])if(!core.some(w=>searchText(w.word)===searchText(v.word))&&!questionWords.some(w=>searchText(w.word)===searchText(v.word)))questionWords.push({id:'qv-'+v.word.toLowerCase().replace(/[^a-z0-9]+/g,'-'),word:v.word,pos:'词汇与表达',meaning:v.meaning,category:'questions',example:v.example,translation:'',collocation:''});
 const extraWords:Word[]=expansion.map(w=>({...w,example:'',translation:'',collocation:'',source:'lantern-expansion'}));
-const learningWords=[...core,...questionWords,...extraWords];
+const legacyLearningWords=[...core,...questionWords,...extraWords];
+const learningWords=[...legacyLearningWords,...B02_PRIVATE_WORDS.filter(word=>!legacyLearningWords.some(old=>old.id===word.id))];
 const posLabel=(value:string)=>({noun:'名词',verb:'动词',adj:'形容词',adjective:'形容词',adv:'副词',adverb:'副词',pron:'代词',pronoun:'代词',prep:'介词',preposition:'介词',conj:'连词',conjunction:'连词',interj:'感叹词',interjection:'感叹词',unknown:'词性未标注',name:'专名',proper:'专名',phrase:'短语',num:'数词',number:'数词',determiner:'限定词',article:'冠词',abbrev:'缩略词',symbol:'符号',suffix:'后缀',prefix:'前缀'} as Record<string,string>)[value]||value;
 type Mode='learn'|'dictionary';
 type Filter='all'|'starred'|'due';
-type Snapshot={query:string;searchQuery:string;mode:Mode;category:string;filter:Filter;limit:number;scroll:number;selectedId:string|null;focusId:string|null};
+type Snapshot={memberBook?:'all'|MemberWordbookId;query:string;searchQuery:string;mode:Mode;category:string;filter:Filter;limit:number;scroll:number;selectedId:string|null;focusId:string|null};
 type VocabularyView={token:string;snapshot:Snapshot}&({view:'detail';selectedId:string}|{view:'session';words:string[];sessionId:string;index:number;revealed:boolean;answered:string[];gradeError:'again'|'remembered'|null});
-type Props={owner:string|null;onQuestion:(id:string)=>void;initialMode?:Mode;initialFilter?:Filter;initialQuery?:string;lookupOnly?:boolean;navigationBoundary?:'library'|'lookup';backLabel?:string;onBack?:()=>void;onFocusChange?:(focused:boolean)=>void;overlayBlocked?:boolean;onExampleLookup?:ExampleLookup;renderPlanAction?:(word:Word)=>ReactNode};
+type Props={owner:string|null;online?:boolean;onQuestion:(id:string)=>void;initialMode?:Mode;initialFilter?:Filter;initialQuery?:string;lookupOnly?:boolean;navigationBoundary?:'library'|'lookup';backLabel?:string;onBack?:()=>void;onFocusChange?:(focused:boolean)=>void;overlayBlocked?:boolean;onExampleLookup?:ExampleLookup;renderPlanAction?:(word:Word)=>ReactNode};
+
+function WordbookTags({word}:{word:string}){
+ const memberships=getWordMemberships(word);
+ return memberships.length?<span className="wordbook-tags" style={{display:'flex',flexWrap:'wrap',gap:6,marginBlock:8}} aria-label="词表成员标签">{memberships.map(member=><span key={member.listId} className="pill">{MEMBERSHIP_LABELS[member.listId]}</span>)}</span>:null;
+}
 
 function DictionarySources({word}:{word:string}){
  const variants=(dictionaryMetadata.headwordCaseVariants as Record<string,string[]>)[searchText(word)]||[word];
  return <p className="word-footnote">中文维基词典贡献者 · Kaikki 提取 · {variants.map(value=><span key={value}><a href={'https://zh.wiktionary.org/wiki/'+encodeURIComponent(value)} target="_blank" rel="noreferrer">{value} 原词条</a>（<a href={'https://zh.wiktionary.org/w/index.php?title='+encodeURIComponent(value)+'&action=history'} target="_blank" rel="noreferrer">编辑历史</a>） </span>)} · <a href={dictionaryMetadata.licenseUrl} target="_blank" rel="noreferrer">{dictionaryMetadata.license}</a>。词典释义为一般用法，不代表托业考纲；词源参考不等于记忆联想。</p>;
 }
-export function VocabularyEntry({onOpen}:{onOpen:()=>void}){return <button className="vocabulary-entry panel" onClick={onOpen}><span className="vocabulary-entry-icon"><BookOpen size={25}/></span><span><b>场景词与生词本</b><small>{core.length+extraWords.length} 个场景词 · 词卡复习与英汉查词</small></span><ArrowRight size={20}/></button>;}
+export function VocabularyEntry({onOpen}:{onOpen:()=>void}){return <button className="vocabulary-entry panel" onClick={onOpen}><span className="vocabulary-entry-icon"><BookOpen size={25}/></span><span><b>词库与生词本</b><small>查词 · 收藏 · 词卡复习</small></span><ArrowRight size={20}/></button>;}
 export function VocabularyReviewSummary({owner,onOpen}:{owner:string|null;onOpen:()=>void}){
  const store=useVocabulary(owner),[now,setNow]=useState(Date.now());
  const states=useMemo(()=>vocabularyStates(store.events),[store.events]);
@@ -40,11 +52,11 @@ export function VocabularyReviewSummary({owner,onOpen}:{owner:string|null;onOpen
  return <section className="vocab-review-summary panel" aria-label="生词与到期词卡"><div><span className="vocab-source-label">词卡复习</span><h2>{!store.ready?'正在读取词卡记录':store.error?'词卡记录暂未读入':due?`${due} 个到期词卡`:'今天没有到期词卡'}</h2>{!store.error&&store.ready&&<p>{starred} 个生词 · <span>{store.sync}</span></p>}</div>{store.error?<div className="vocab-alert" role="alert"><p>{store.error}</p><button className="text-button" onClick={store.retry}>重新读取词卡记录</button></div>:<button className="button secondary" disabled={!store.ready} onClick={onOpen}>查看词卡范围<ArrowRight size={16}/></button>}</section>;
 }
 
-export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',initialFilter='all',initialQuery='',lookupOnly=false,navigationBoundary='library',backLabel='返回来源页',onBack,onFocusChange,overlayBlocked=false,onExampleLookup,renderPlanAction}:Props){
+export default function VocabularyLibrary({owner,online=true,onQuestion,initialMode='learn',initialFilter='all',initialQuery='',lookupOnly=false,navigationBoundary='library',backLabel='返回来源页',onBack,onFocusChange,overlayBlocked=false,onExampleLookup,renderPlanAction}:Props){
  // An embedded Lookup is one parent-owned history lease, including its detail.
  // Only the explicit "返回结果" action navigates inside that boundary.
  const parentOwnsLookup=navigationBoundary==='lookup'&&!!onBack;
- const store=useVocabulary(owner);
+ const store=useVocabulary(owner,online);
  const instanceId=useId(),rootElement=useRef<HTMLElement>(null);
  const domId=(name:string)=>'vocab-'+instanceId+'-'+name;
  const dialogScrollHost=()=>rootElement.current?.closest<HTMLElement>('[role="dialog"]')||null;
@@ -52,12 +64,13 @@ export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',
  const writeScroll=(scroll:number)=>{const host=dialogScrollHost();if(host)host.scrollTop=scroll;else window.scrollTo(0,scroll);};
  const focusWithin=(id:string)=>{const target=rootElement.current?.querySelector<HTMLElement>('[id="'+id+'"]');if(!target||(target as HTMLButtonElement).disabled||target.matches?.(':disabled')||target.getAttribute?.('aria-disabled')==='true')return false;target.focus({preventScroll:true});return true;};
  const [query,setQuery]=useState(initialQuery),[searchQuery,setSearchQuery]=useState(initialQuery),[category,setCategory]=useState('all'),[filter,setFilter]=useState<Filter>(initialFilter),[limit,setLimit]=useState(24),[mode,setMode]=useState<Mode>(lookupOnly?'dictionary':initialMode);
+ const [memberBook,setMemberBook]=useState<'all'|MemberWordbookId>('all'),[memberLimit,setMemberLimit]=useState(24);
+ const selectedMemberBook=MEMBER_WORDBOOKS.find(book=>book.id===memberBook);
  const [dictionary,setDictionary]=useState<DictionaryEntry[]>([]),[dictionaryReady,setDictionaryReady]=useState(false),[dictionaryLoading,setDictionaryLoading]=useState(false),[dictionaryError,setDictionaryError]=useState(''),[dictionaryRetry,setDictionaryRetry]=useState(0);
  const [detailId,setDetailId]=useState<string|null>(null),[session,setSession]=useState<string[]|null>(null),[index,setIndex]=useState(0),[revealed,setRevealed]=useState(false),[now,setNow]=useState(Date.now()),[singleColumn,setSingleColumn]=useState(false);
  const [markError,setMarkError]=useState<{word:Word;starred:boolean}|null>(null),[gradeError,setGradeError]=useState<'again'|'remembered'|null>(null);
- const searchInput=useRef<HTMLInputElement>(null),backupInput=useRef<HTMLInputElement>(null),composing=useRef(false),answered=useRef(new Set<string>()),sessionId=useRef(''),ownerRef=useRef(owner);
+ const searchInput=useRef<HTMLInputElement>(null),composing=useRef(false),answered=useRef(new Set<string>()),sessionId=useRef(''),ownerRef=useRef(owner);
  ownerRef.current=owner;
- const activeStore=useRef(store);activeStore.current=store;
  const focusCallback=useRef(onFocusChange);focusCallback.current=onFocusChange;
  const snapshot=useRef<Snapshot|null>(null),restorePending=useRef<Snapshot|null>(null),innerHistory=useRef(false),consumeOwnedPop=useRef(false),historyToken=useRef(''),backHandler=useRef<()=>boolean>(()=>false);
  const activeView=useRef({detailId,session,singleColumn,overlayBlocked});activeView.current={detailId,session,singleColumn,overlayBlocked};
@@ -74,7 +87,7 @@ export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',
  // Browsing authored scenes does not read the 84,979-entry file. A query or unresolved
  // saved dictionary ID is the first demand; loadDictionary retains its hash validation.
  const privateReady=store.ready&&!store.error;
- const dictionaryWanted=(mode==='dictionary'&&!!searchText(searchQuery))||(privateReady&&filter!=='all'&&unresolved>0);
+ const dictionaryWanted=(mode==='dictionary'&&(!!searchText(searchQuery)||memberBook!=='all'))||(privateReady&&filter!=='all'&&unresolved>0);
  useEffect(()=>{
   if(!dictionaryWanted||dictionaryReady){setDictionaryLoading(false);if(!dictionaryWanted)setDictionaryError('');return;}
   let alive=true;setDictionaryLoading(true);setDictionaryError('');
@@ -86,19 +99,20 @@ export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',
   const media=window.matchMedia?.('(max-width: 1199px)');if(!media)return;
   const update=()=>setSingleColumn(media.matches);update();media.addEventListener('change',update);return()=>media.removeEventListener('change',update);
  },[]);
- useEffect(()=>{setSession(null);setDetailId(null);setFilter(initialFilter);setCategory('all');setQuery(initialQuery);setSearchQuery(initialQuery);setLimit(24);setMarkError(null);setGradeError(null);snapshot.current=null;restorePending.current=null;innerHistory.current=false;consumeOwnedPop.current=false;historyToken.current='';compactHistoryPending.current=false;focusedDetail.current=null;composing.current=false;answered.current.clear();sessionId.current='';pendingReturn.current=null;},[owner]);
+ useEffect(()=>{setSession(null);setDetailId(null);setFilter(initialFilter);setCategory('all');setMemberBook('all');setMemberLimit(24);setQuery(initialQuery);setSearchQuery(initialQuery);setLimit(24);setMarkError(null);setGradeError(null);snapshot.current=null;restorePending.current=null;innerHistory.current=false;consumeOwnedPop.current=false;historyToken.current='';compactHistoryPending.current=false;focusedDetail.current=null;composing.current=false;answered.current.clear();sessionId.current='';pendingReturn.current=null;},[owner]);
  useEffect(()=>{setMode(lookupOnly?'dictionary':initialMode);},[initialMode,lookupOnly]);
  useEffect(()=>{setFilter(initialFilter);},[initialFilter]);
  useEffect(()=>{focusCallback.current?.(!!session||!!detailId&&singleColumn);},[session,detailId,singleColumn]);
  useEffect(()=>()=>focusCallback.current?.(false),[]);
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;pendingReturn.current=null;};},[]);
 
- const filtered=useMemo(()=>{
-  if(filter==='all')return mode==='dictionary'?findDictionary(dictionaryIndex,deferredQuery):searchWords(learningWords,deferredQuery,category).map(w=>wordById.get(w.id)!);
+ const unscoped=useMemo(()=>{
+  if(filter==='all')return mode==='dictionary'?(!searchText(deferredQuery)&&memberBook!=='all'?words:findDictionary(dictionaryIndex,deferredQuery)):searchWords(learningWords,deferredQuery,category).map(w=>wordById.get(w.id)!);
   if(!privateReady)return [];
   const candidates=[...stateEvents].filter(([,s])=>filter==='starred'?s.starred:s.due>0&&s.due<=now).map(([id])=>wordById.get(id)).filter((w):w is Word=>!!w);
   return mode==='dictionary'?findDictionary(indexDictionary(candidates),deferredQuery||'') .concat(!searchText(deferredQuery)?candidates:[]):searchWords(candidates,deferredQuery,category);
- },[filter,mode,dictionaryIndex,deferredQuery,category,wordById,stateEvents,now,privateReady]);
+ },[filter,mode,dictionaryIndex,deferredQuery,category,wordById,stateEvents,now,privateReady,memberBook,words]);
+ const filtered=useMemo(()=>memberBook==='all'?unscoped:unscoped.filter(word=>belongsToWordbook(word.word,memberBook)),[unscoped,memberBook]);
  const exact=filtered.filter(w=>!!searchText(deferredQuery)&&searchText(w.word)===searchText(deferredQuery));
  const related=filtered.filter(w=>!exact.some(e=>e.id===w.id));
  const visible=[...exact,...related].slice(0,limit),detail=detailId?wordById.get(detailId):undefined;
@@ -106,7 +120,7 @@ export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',
  const updating=query!==deferredQuery;
  const frame=(callback:()=>void)=>{if(typeof requestAnimationFrame==='function')requestAnimationFrame(callback);else setTimeout(callback,0);};
  const practiceOwnsHistory=()=>!!window.history?.state?.lanternPracticeView&&!window.history?.state?.lanternPracticeLookup;
- const saveContext=(selectedId:string|null,focusId=selectedId?domId('word-result-'+selectedId):null)=>{snapshot.current={query,searchQuery,mode,category,filter,limit,scroll:readScroll(),selectedId,focusId};};
+ const saveContext=(selectedId:string|null,focusId=selectedId?domId('word-result-'+selectedId):null)=>{snapshot.current={memberBook,query,searchQuery,mode,category,filter,limit,scroll:readScroll(),selectedId,focusId};};
  const pushInnerHistory=(view:VocabularyView['view'],selectedId=detailId,words=session)=>{
   if(parentOwnsLookup||!window.history?.pushState||!snapshot.current||activeView.current.overlayBlocked||practiceOwnsHistory())return;
   if(!historyToken.current)historyToken.current=vocabularyId();
@@ -123,7 +137,7 @@ export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',
   if(focusedDetail.current!==detailId){writeScroll(0);focusWithin(domId('word-detail'));focusedDetail.current=detailId;}
  };
  ensureCompactRef.current=ensureCompactDetail;
- const restoreContext=(saved:Snapshot)=>{setQuery(saved.query);setSearchQuery(saved.searchQuery);setMode(saved.mode);setCategory(saved.category);setFilter(saved.filter);setLimit(saved.limit);snapshot.current=saved;};
+ const restoreContext=(saved:Snapshot)=>{setMemberBook(saved.memberBook||'all');setQuery(saved.query);setSearchQuery(saved.searchQuery);setMode(saved.mode);setCategory(saved.category);setFilter(saved.filter);setLimit(saved.limit);snapshot.current=saved;};
  const restoreList=(pop=!parentOwnsLookup)=>{
   const saved=snapshot.current;
   if(saved){restoreContext(saved);restorePending.current=saved;}
@@ -186,21 +200,22 @@ export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',
  const updateQuery=(value:string)=>{setQuery(value);if(!composing.current){setSearchQuery(value);reset();}};
  const changeMode=(value:Mode)=>{if(lookupOnly&&value!=='dictionary')return;setMode(value);setCategory('all');setFilter('all');reset();};
  const showStarred=()=>{restoreList();setFilter('starred');setLimit(24);};
- const saveBackup=()=>{try{const url=URL.createObjectURL(new Blob([JSON.stringify(store.backup(),null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='lantern-vocabulary-records.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);}catch{toast.error('备份无法读取，请保留浏览器数据后重试。');}};
- const meaning=(w:Word)=><div className="word-definition"><p><span className="word-pos">{posLabel(w.pos)}</span>{w.meaning}</p>{w.collocation&&<p className="word-collocation" lang="en">{w.collocation}</p>}{w.example&&<><blockquote lang="en"><InteractiveExample text={w.example} onLookup={lookupOnly?undefined:onExampleLookup} disabled={overlayBlocked}/></blockquote>{onExampleLookup&&!lookupOnly&&<p className="example-lookup-hint">点例句中的英文词查词，不会自动加入生词本或学习计划。</p>}{lookupOnly&&<p className="example-lookup-hint">查词窗口内的例句仅展示，返回后可继续点词。</p>}</>}{w.translation&&<p className="muted">{w.translation}</p>}{!!w.forms?.length&&<p><span className="word-pos">词形参考</span><span lang="en">{w.forms.join(' · ')}</span></p>}{!!w.senses?.length&&<section className="word-dictionary-detail"><h3>词典释义</h3><ol>{w.senses.map((s,i)=><li key={i}><span className="word-pos">{posLabel(s.pos)}</span>{s.meaning}</li>)}</ol>{w.etymology&&<><h3>词源参考</h3><p>{w.etymology}</p></>}<DictionarySources word={w.word}/></section>}</div>;
- const audio=(w:Word)=>typeof window!=='undefined'&&window.__LANTERN_HARMONY__&&!bundledLessonAudio(w.word)?<p className="word-footnote">此词暂无离线发音；已有场景词可离线播放。</p>:<SpeechPlayer key={w.id} text={w.word} label="听单词发音" sourceLabel={w.source==='wiktionary'?'词典词条':'场景词汇'}/>;
+ const meaning=(w:Word)=><div className="word-definition"><p><span className="word-pos">{posLabel(w.pos)}</span>{w.meaning}</p>{w.collocation&&<p className="word-collocation" lang="en">{w.collocation}</p>}{w.example&&<><blockquote lang="en"><InteractiveExample text={w.example} onLookup={lookupOnly?undefined:onExampleLookup} disabled={overlayBlocked}/></blockquote>{!isPrivateWordAudioBlocked(w)&&<SpeechPlayer mode="example" key={w.id+'-example'} text={w.example} {...(getWordAudioBindingForSnapshot(w,'example')||{materialId:w.id,segmentId:'example'})} label="听例句发音" sourceLabel={getWordAudioBindingForSnapshot(w,'example')?PRIVATE_AUDIO_LABEL:'词汇例句'}/>}</>}{w.translation&&<p className="muted">{w.translation}</p>}{!!w.forms?.length&&<p><span className="word-pos">词形参考</span><span lang="en">{w.forms.join(' · ')}</span></p>}{!!w.senses?.length&&<section className="word-dictionary-detail"><h3>词典释义</h3><ol>{w.senses.map((s,i)=><li key={i}><span className="word-pos">{posLabel(s.pos)}</span>{s.meaning}</li>)}</ol>{w.etymology&&<><h3>词源参考</h3><p>{w.etymology}</p></>}<details className="v041-source-details"><summary>词典来源</summary><DictionarySources word={w.word}/></details></section>}</div>;
+ const audio=(w:Word)=>{if(mode==='dictionary'||lookupOnly)return <DictionaryPronunciation key={w.id} word={w} disabled={overlayBlocked}/>;const binding=getWordAudioBindingForSnapshot(w,'headword'),selector=binding||{materialId:w.id,segmentId:'headword'};if(isPrivateWordAudioBlocked(w))return <p className="word-footnote">此词发音待核对，原学习记录保留。</p>;return typeof window!=='undefined'&&window.__LANTERN_HARMONY__&&!bundledLessonAudio(w.word,{assetKey:binding?.audioKey,...selector})?<p className="word-footnote">此词暂无离线发音；已有场景词可离线播放。</p>:<SpeechPlayer mode="word" key={w.id} text={w.word} {...selector} label="听单词发音" sourceLabel={binding?PRIVATE_AUDIO_LABEL:w.source==='wiktionary'?'词典词条':'场景词汇'}/>;};
  const markButton=(w:Word)=><div className="vocab-mark-actions"><button className={'button '+(wordState(w.id).starred?'secondary':'primary')} aria-pressed={wordState(w.id).starred} disabled={!store.ready||!!store.error||overlayBlocked} onClick={()=>mark(w,true)}>{wordState(w.id).starred?<Check size={17}/>:<Star size={17}/>} {wordState(w.id).starred?'已加入生词本':'加入生词本'}</button>{wordState(w.id).starred&&<><button className="text-button" disabled={!store.ready||!!store.error||overlayBlocked} onClick={()=>mark(w,false)}>移出生词本</button><button className="text-button" disabled={overlayBlocked} onClick={showStarred}>查看我的生词<ArrowRight size={16}/></button></>}{renderPlanAction?.(w)}</div>;
- const renderDetail=(w:Word)=><article id={domId('word-detail')} data-vocabulary-detail="true" className="vocab-detail" tabIndex={-1} aria-label={'词条详情：'+w.word}><button className="vocab-detail-back text-button" onClick={()=>restoreList()}><ArrowLeft size={17}/>返回结果</button><span className="vocab-source-label">{w.source==='wiktionary'?'通用词典 · 非托业专用词表':CATEGORIES[w.category]||'托业场景词'}</span><h2 className="vocab-word-title" lang="en">{w.word}</h2>{!!w.phonetics?.length&&<p className="word-phonetic" lang="en">{w.phonetics.join(' · ')}</p>}{audio(w)}{meaning(w)}{markButton(w)}{markError?.word.id===w.id&&<div className="vocab-alert" role="alert"><b>生词标记未保存</b><p>原标记保持。重试后再确认是否已加入。</p><button className="text-button" disabled={!store.ready||!!store.error} onClick={()=>mark(w,markError.starred)}>重试保存标记</button></div>}{!lookupOnly&&questions.some(q=>q.vocabulary?.some(v=>searchText(v.word)===searchText(w.word)))&&<section className="word-question-links"><h3>在练习里认识它</h3>{questions.filter(q=>q.vocabulary?.some(v=>searchText(v.word)===searchText(w.word))).map(q=><button key={q.id} className="text-button" onClick={()=>onQuestion(q.id)}>Part {q.part} · {q.title}<ArrowRight size={16}/></button>)}</section>}</article>;
- const initial=mode==='dictionary'&&filter==='all'&&!searchText(deferredQuery);
- const partial=mode==='dictionary'&&!!searchText(deferredQuery)&&!dictionaryReady;
+ const renderDetail=(w:Word)=><article id={domId('word-detail')} data-vocabulary-detail="true" className="vocab-detail" tabIndex={-1} aria-label={'词条详情：'+w.word}><button className="vocab-detail-back text-button" onClick={()=>restoreList()}><ArrowLeft size={17}/>返回结果</button><div className="v041-word-heading"><h2 className="vocab-word-title" lang="en">{w.word}</h2>{audio(w)}</div>{!!w.phonetics?.length&&<p className="word-phonetic" lang="en">{w.phonetics.join(' · ')}</p>}{meaning(w)}<details className="v041-source-details"><summary>词条信息</summary><p>{w.source==='wiktionary'?'通用词典 · 非托业专用词表':CATEGORIES[w.category]||'托业场景词'}</p><WordbookTags word={w.word}/></details>{markButton(w)}{markError?.word.id===w.id&&<div className="vocab-alert" role="alert"><b>生词标记未保存</b><p>原标记保持。重试后再确认是否已加入。</p><button className="text-button" disabled={!store.ready||!!store.error} onClick={()=>mark(w,markError.starred)}>重试保存标记</button></div>}{!lookupOnly&&questions.some(q=>q.vocabulary?.some(v=>searchText(v.word)===searchText(w.word)))&&<section className="word-question-links"><h3>在练习里认识它</h3>{questions.filter(q=>q.vocabulary?.some(v=>searchText(v.word)===searchText(w.word))).map(q=><button key={q.id} className="text-button" onClick={()=>onQuestion(q.id)}>Part {q.part} · {q.title}<ArrowRight size={16}/></button>)}</section>}</article>;
+ const initial=mode==='dictionary'&&filter==='all'&&memberBook==='all'&&!searchText(deferredQuery);
+ const partial=mode==='dictionary'&&(!!searchText(deferredQuery)||memberBook!=='all')&&!dictionaryReady;
  const blockingEmpty=partial||filter!=='all'&&(!privateReady||unresolved>0&&!dictionaryReady);
 
- return <section ref={rootElement} data-vocabulary-instance={instanceId} className={'vocabulary-library vocab-redesign '+(detail&&singleColumn?'vocab-detail-open ':'')+(session?'vocab-session-open':'')} aria-label="查词与场景词库" data-dictionary-ready={dictionaryReady} data-dictionary-loading={dictionaryLoading}>
+ return <section ref={rootElement} data-vocabulary-instance={instanceId} className={'vocabulary-library vocab-redesign v041-vocabulary '+(detail&&singleColumn?'vocab-detail-open ':'')+(session?'vocab-session-open':'')} aria-label="查词与场景词库" data-dictionary-ready={dictionaryReady} data-dictionary-loading={dictionaryLoading}>
   {!session&&!(detail&&singleColumn)&&<>
-   <header className="vocab-page-heading"><h1 id={domId('heading')} tabIndex={-1}>{mode==='dictionary'?'查词':'场景词与生词本'}</h1>{onBack&&<button className="text-button" onClick={returnToOrigin}><ArrowLeft size={17}/>{backLabel}</button>}</header>
+   <header className="vocab-page-heading"><h1 id={domId('heading')} tabIndex={-1}>{mode==='dictionary'?'查词':'词库'}</h1>{onBack&&<button className="text-button" onClick={returnToOrigin}><ArrowLeft size={17}/>{backLabel}</button>}</header>
    {!lookupOnly&&<div className="word-mode word-filters" aria-label="词汇范围"><button aria-pressed={mode==='learn'} onClick={()=>changeMode('learn')}>托业场景词</button><button aria-pressed={mode==='dictionary'} onClick={()=>changeMode('dictionary')}>英汉查词</button></div>}
    <div className="word-controls"><label className="word-search"><Search size={19} aria-hidden="true"/><input ref={searchInput} type="search" aria-label="搜索单词或中文释义" placeholder="输入单词或中文释义" value={query} autoCapitalize="off" autoComplete="off" spellCheck={false} enterKeyHint="search" onCompositionStart={()=>{composing.current=true;}} onCompositionEnd={e=>{composing.current=false;setQuery(e.currentTarget.value);setSearchQuery(e.currentTarget.value);reset();}} onChange={e=>updateQuery(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing&&!composing.current){setSearchQuery(query);reset();}}}/>{query&&<button type="button" aria-label="清空查询" onClick={()=>{composing.current=false;setQuery('');setSearchQuery('');reset();searchInput.current?.focus();}}><X size={18}/></button>}</label>{mode==='learn'&&<label className="vocab-category">场景<select aria-label="词汇场景" value={category} onChange={e=>{setCategory(e.target.value);reset();}}><option value="all">全部场景</option>{Object.entries(CATEGORIES).map(([id,label])=><option value={id} key={id}>{label}</option>)}</select></label>}</div>
-   <div className="vocab-filter-line"><div className="word-filters" aria-label="词库筛选">{([['all','全部'],['starred','我的生词'],['due','到期复习']] as const).map(([id,label])=><button key={id} aria-pressed={filter===id} onClick={()=>{setFilter(id);reset();}}>{label}</button>)}</div><span className="vocab-catalog-count">{mode==='dictionary'?`${dictionaryMetadata.count.toLocaleString()} 条 · 通用词典`:`${core.length+extraWords.length} 场景词 + ${questionWords.length} 题内表达`}</span></div>
+   {!lookupOnly&&<label className="vocab-category">词表范围<select aria-label="词表范围" value={memberBook} onChange={event=>{const value=event.target.value;if(value==='all'||isMemberWordbookId(value)){setMemberBook(value);setMemberLimit(24);reset();}}}><option value="all">全部词条</option>{MEMBER_WORDBOOKS.map(book=><option key={book.id} value={book.id}>{book.title} · {book.count} 成员</option>)}</select></label>}
+   {selectedMemberBook&&<details className="word-notes"><summary>词表成员 · {selectedMemberBook.count}</summary><p className="word-footnote">{selectedMemberBook.count} 个词表成员；结果区只列已有释义的匹配词条，未匹配成员不编造释义。词表成员不等于完整教学词卡，也不代表ETS官方必考范围。</p><ul>{selectedMemberBook.lemmas.slice(0,memberLimit).map(lemma=><li key={lemma}><span lang="en">{lemma}</span> <button type="button" className="text-button" style={{minWidth:44,minHeight:44}} aria-label={'查词：'+lemma} onClick={()=>{setQuery(lemma);setSearchQuery(lemma);reset();}}>查词</button></li>)}</ul>{memberLimit<selectedMemberBook.count&&<button type="button" className="button secondary" onClick={()=>setMemberLimit(value=>value+24)}>再显示24个成员</button>}</details>}
+   <div className="vocab-filter-line"><div className="word-filters" aria-label="词库筛选">{([['all','全部'],['starred','我的生词'],['due','到期复习']] as const).map(([id,label])=><button key={id} aria-pressed={filter===id} onClick={()=>{setFilter(id);reset();}}>{label}</button>)}</div></div>
   </>}
   {store.error&&<div className="vocab-alert" role="alert"><b>词库记录暂时无法读取</b><p>{store.error}</p><button className="text-button" onClick={store.retry}>重新读取</button></div>}
   {!store.ready&&<p className="vocab-status" role="status">正在读取词库记录…</p>}
@@ -223,8 +238,28 @@ export default function VocabularyLibrary({owner,onQuestion,initialMode='learn',
     {detail?renderDetail(detail):<div className="vocab-detail vocab-detail-placeholder"><BookOpen size={30}/><h2>选择词条查看完整释义</h2><p>加入生词本后，再按自己的节奏复习。</p></div>}
    </div>
    {markError&&!(detail&&singleColumn)&&detail?.id!==markError.word.id&&<div className="vocab-alert" role="alert"><b>{markError.word.word} 的生词标记未保存</b><button className="text-button" disabled={!store.ready||!!store.error} onClick={()=>mark(markError.word,markError.starred)}>重试保存标记</button></div>}
-   {!(detail&&singleColumn)&&<div className="vocab-study-actions"><span>{!store.ready?'正在读取生词与到期记录':store.error?'生词与到期记录暂不可读':<>生词 {starred} · 到期 {due} <small>{store.sync}</small></>}</span>{!lookupOnly&&<button id={domId('self-test')} className="button secondary" disabled={!filtered.length||!privateReady||initial} onClick={start}>词卡自测{privateReady&&` · ${Math.min(20,filtered.length)} 词`}<ArrowRight size={16}/></button>}</div>}
+   {!(detail&&singleColumn)&&<div className="vocab-study-actions"><span>{!store.ready?'正在读取生词与到期记录':store.error?'生词与到期记录暂不可读':<>生词 {starred} · 到期 {due}</>}</span>{!lookupOnly&&<button id={domId('self-test')} className="button secondary" disabled={!filtered.length||!privateReady||initial} onClick={start}>词卡自测{privateReady&&` · ${Math.min(20,filtered.length)} 词`}<ArrowRight size={16}/></button>}</div>}
   </>}
-  {!(detail&&singleColumn)&&!session&&<details className="word-notes"><summary>词库来源与记录备份</summary><p>{core.length+extraWords.length} 个场景词和 {questionWords.length} 个题内表达。场景释义为项目原创整理（含 AI 辅助），按 CC BY 4.0 分享；新增词没有现有例句时不生成。通用查词数据来自中文维基词典与 Kaikki，按 CC BY-SA 4.0 使用；已简体转换、归并和节选，未复制第三方音频或例句。两部分不是 ETS 官方词表。</p><p>{owner?'本机保留离线副本，联网后同步到当前账号。':'生词与词卡记录保存在本机，当前未接入账号同步。'}词库备份与听读、录音及模考备份分开。</p><div className="button-row"><button className="button secondary" disabled={!store.ready||!!store.error} onClick={saveBackup}><Download size={16}/>导出词库记录</button><button className="button secondary" disabled={!store.ready||!!store.error} onClick={()=>backupInput.current?.click()}><Upload size={16}/>导入词库记录</button><button className="text-button" onClick={store.retry}>重新同步</button></div><input ref={backupInput} type="file" accept="application/json,.json" hidden onChange={async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;const importingOwner=owner;try{if(file.size>20000000)throw Error('备份文件超过 20 MB。');const payload=JSON.parse(await file.text());if(ownerRef.current!==importingOwner)throw Error('账号已切换，未导入这份备份。');if(!activeStore.current.ready||activeStore.current.error)throw Error('词库记录暂未读入，未导入这份备份。');if(activeStore.current.restore(payload))toast.success('词库记录已合并，原记录已保留。');}catch(error){toast.error(error instanceof Error?error.message:'导入失败，原记录已保留。');}}}/></details>}
+  {!(detail&&singleColumn)&&!session&&<details className="word-notes"><summary>来源与许可</summary><p>{core.length+extraWords.length} 个场景词和 {questionWords.length} 个题内表达。场景释义为项目原创整理（含 AI 辅助），按 CC BY 4.0 分享；新增词没有现有例句时不生成。通用查词数据来自中文维基词典与 Kaikki，按 CC BY-SA 4.0 使用；已简体转换、归并和节选，未复制第三方音频或例句。两部分不是 ETS 官方词表。</p><p>NGSL 1.2：Charles Browne、Brent Culligan、Joseph Phillips；TSL 1.2：Charles Browne、Brent Culligan。成员表与聚合视图按 <a href={WORDLIST_SOURCES.licenseUrl} target="_blank" rel="noreferrer">CC BY-SA 4.0</a> 保留，已做词头规范化与成员归并；释义来源独立标注。<a href="https://www.newgeneralservicelist.com/new-general-service-list" target="_blank" rel="noreferrer">NGSL来源</a> · <a href="https://www.newgeneralservicelist.com/toeic-service-list" target="_blank" rel="noreferrer">TSL来源</a>。</p></details>}
  </section>;
+}
+
+/** Management-only reuse of the original validated vocabulary event backup. */
+export function VocabularyRecordData({owner,online=true}:{owner:string|null;online?:boolean}){
+ const store=useVocabulary(owner,online),latest=useRef(store),ownerRef=useRef(owner),mounted=useRef(true),generation=useRef(0),input=useRef<HTMLInputElement>(null),pending=useRef(false);
+ const [busy,setBusy]=useState(false),[message,setMessage]=useState('');
+ latest.current=store;ownerRef.current=owner;
+ useEffect(()=>{generation.current++;pending.current=false;setBusy(false);setMessage('');},[owner]);
+ useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;generation.current++;};},[]);
+ const blocked=busy||!store.ready||!!store.error;
+ const saveBackup=()=>{if(blocked)return;try{const url=URL.createObjectURL(new Blob([JSON.stringify(store.backup(),null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='lantern-vocabulary-records.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);setMessage('词卡备份已生成，请确认文件已保存。');}catch{setMessage('备份无法读取，请保留浏览器数据后重试。');}};
+ const restore=async(file:File|undefined)=>{
+  if(!file||blocked||pending.current)return;
+  const importingOwner=owner,token=generation.current;pending.current=true;setBusy(true);setMessage('');
+  const current=()=>mounted.current&&generation.current===token&&ownerRef.current===importingOwner;
+  try{if(file.size>20000000)throw Error('备份文件超过 20 MB。');const payload=JSON.parse(await file.text());if(!current())return;if(!latest.current.ready||latest.current.error)throw Error('词库记录暂未读入，未导入这份备份。');if(latest.current.restore(payload))setMessage('词库记录已合并，原记录已保留。');}
+  catch(error){if(current())setMessage(error instanceof Error?error.message:'导入失败，原记录已保留。');}
+  finally{if(current()){pending.current=false;setBusy(false);}}
+ };
+ return <section className="v041-vocabulary-data" aria-label="词卡记录备份与恢复"><h2>词卡记录</h2><p>收藏与词卡反馈。{owner&&online?'联网后同步到当前账号。':'保存在当前本机分区。'}</p>{store.error&&<p role="alert">{store.error}</p>}<div className="button-row"><button type="button" className="button secondary" disabled={blocked} onClick={saveBackup}><Download size={16}/>备份词卡记录</button><button type="button" className="button secondary" disabled={blocked} onClick={()=>input.current?.click()}><Upload size={16}/>恢复词卡记录</button><button type="button" className="text-button" disabled={busy} onClick={store.retry}>重新读取</button></div><input ref={input} type="file" accept="application/json,.json" hidden disabled={blocked} aria-label="选择词库记录备份" onChange={event=>{const file=event.currentTarget.files?.[0];event.currentTarget.value='';void restore(file);}}/>{message&&<p role="status">{message}</p>}</section>;
 }
