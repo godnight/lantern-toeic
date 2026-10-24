@@ -2,6 +2,7 @@
 import React, {useEffect, useRef, useState} from '__QA_REACT__';
 import {createRoot} from '__QA_REACT_DOM__';
 import {VocabularyStudyCard} from '@/app/learn/vocabulary-plan';
+import referenceData from '@/content/word-card-reference.json';
 import {WorkspaceShell} from '@/app/learn/workspace-shell';
 import {applyDocumentTheme} from '@/lib/ui-theme';
 import '@/app/globals.css';
@@ -21,6 +22,7 @@ const terms = ['quiet', 'internationalization', 'a', 'acknowledgement', 'confere
 const WORDS = terms.map((word, index) => ({
   id: `qa-v045-word-${index}`, word, pos: index % 2 ? 'n.' : 'adj.',
   phonetics: index === 2 ? [] : index % 3 ? [`/${word}/`] : [`/${word}/`, `/${word} alternative/`],
+  etymology: index === 2 ? undefined : `合成构词参考_${index}。${index === 1 ? '这段合成构词参考仅验证换行、完整阅读和滚动，不属于真实词源资料。'.repeat(12) : '此处是用于布局验证的合成构词参考。'}`,
   meaning: `未揭义答案_${index}。${index % 3 === 1 ? '这是一段用于验证完整阅读的长释义，包含多个意思、搭配使用条件和相近语境。'.repeat(28) : '用于验证短释义不会使操作位置上移。'}`,
   collocation: index % 2 ? `${word} in a professional context; ${word} during a scheduled meeting` : '',
   example: index % 4 === 2 ? '' : index % 3 === 1
@@ -89,7 +91,9 @@ function Fixture() {
           pendingRating: value.pendingRating, attempts: value.attempts, saved: value.saved,
           next: value.next, blockedAlternateCalls: value.blockedAlternateCalls,
           words: WORDS.map((word, index) => ({word: word.word, answerMarker: `未揭义答案_${index}`,
-            finalMarker: `教学末尾_${index}`, long: index % 3 === 1}))};
+            finalMarker: `教学末尾_${index}`, long: index % 3 === 1,
+            phonetics: word.phonetics.length ? word.phonetics : referenceData.entries[word.word]?.phonetics || [],
+            etymology: word.etymology || referenceData.entries[word.word]?.etymology || ''}))};
       },
       settle(outcome = 'success') {
         if (!state.current.pending) throw new Error('No pending synthetic save to settle');

@@ -12,6 +12,7 @@ import {SpeechPlayer} from './practice';
 import {getWordAudioBindingForSnapshot,isPrivateWordAudioBlocked,PRIVATE_AUDIO_LABEL} from '@/lib/word-audio-bindings-v040';
 import {naturalAudioRegistry,subscribeProductLessonAudio,productLessonAudioState} from '@/lib/lesson-audio';
 import {ThemeScene} from './ui-theme';
+import {getWordCardReference} from './word-card-reference';
 import './v041-vocabulary.css';
 
 type Workflow=VocabularyWorkflowController;
@@ -211,6 +212,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   </section>;
   if(!step)return <WorkflowNotice workflow={workflow}/>;
   const revealed=!!step.receipt;
+  const reference=getWordCardReference(step.word);
   const headwordAudio=getWordAudioBindingForSnapshot(step.word,'headword'),exampleAudio=getWordAudioBindingForSnapshot(step.word,'example'),audioHeld=isPrivateWordAudioBlocked(step.word);
   const intent=step.intent==='new'?'新词':step.intent==='reinforcement'?'巩固':step.intent==='manual-review'?'主动复习':'到期复习';
   return <section className="phase2-vocabulary-session" aria-label="单词学习">
@@ -224,12 +226,14 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
           <header className="phase2-word-header">
             <div className="v041-word-heading"><h2 ref={wordHeading} tabIndex={-1} className="phase2-current-word" lang="en">{step.word.word}</h2>
             {audioHeld?<p className="word-footnote">此词发音待核对，原学习记录保留。</p>:<SpeechPlayer mode="word" key={step.id} text={step.word.word} {...(headwordAudio||{materialId:step.word.id,segmentId:'headword'})} label="听单词发音" sourceLabel={headwordAudio?PRIVATE_AUDIO_LABEL:'单词学习'}/>}</div>
-            <p className="word-phonetic" lang="en">{step.word.phonetics?.join(' · ')||'\u00a0'}</p>
+            <p className="word-phonetic" lang={reference.phonetics.length?'en':undefined} aria-label="音标">{reference.phonetics.length?reference.phonetics.join(' · '):'暂无音标'}</p>
           </header>
           <div className="phase2-word-body">
             <WorkflowNotice workflow={workflow}/>
             {revealed?<div className="phase2-word-meaning"><p><span className="word-pos">{step.word.pos}</span>{step.word.meaning}</p>
               {step.word.collocation&&<p lang="en">{step.word.collocation}</p>}
+              {reference.etymology&&<section className="phase2-word-etymology" aria-label="词源与构词参考"><h3>词源与构词参考</h3><p>{reference.etymology}</p></section>}
+              {!!reference.sources.length&&<details className="v041-source-details phase2-word-reference-sources"><summary>参考来源</summary>{reference.sources.map(source=><p key={source.id}><a href={source.href} target="_blank" rel="noreferrer">{source.label}</a>{source.license&&<> · {source.licenseUrl?<a href={source.licenseUrl} target="_blank" rel="noreferrer">{source.license}</a>:source.license}</>}{source.attribution&&<span> · {source.attribution}</span>}</p>)}</details>}
               {step.word.example&&<><blockquote><InteractiveExample text={step.word.example} onLookup={onExampleLookup} disabled={overlayBlocked}/></blockquote>{!audioHeld&&<SpeechPlayer mode="example" key={step.id+'-example'} text={step.word.example} {...(exampleAudio||{materialId:step.word.id,segmentId:'example'})} label="听例句发音" sourceLabel={exampleAudio?PRIVATE_AUDIO_LABEL:'单词学习'}/>}</>}
               {step.word.translation&&<p className="muted">{step.word.translation}</p>}
             </div>:null}
