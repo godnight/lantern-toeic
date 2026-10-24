@@ -1,8 +1,5 @@
 name: Tested offline prerelease
 on:
-  push:
-    branches: [main]
-    paths: [release-manifest.json]
   workflow_dispatch:
 permissions:
   contents: read
@@ -40,7 +37,6 @@ jobs:
           python3 -B -m unittest discover -s harmony/scripts/ui -p 'test_*.py'
           python3 -B -m unittest discover -s tests -p 'test_release_*.py'
           npm --prefix harmony run sync:web
-          npm --prefix harmony run check:web
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'

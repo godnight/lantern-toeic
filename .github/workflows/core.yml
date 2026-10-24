@@ -16,28 +16,78 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          fetch-depth: 0
           persist-credentials: false
+      - name: Classify cumulative PR changes (main and manual runs are full)
+        id: scope
+        run: node .github/scripts/change-scope.mjs
+      - name: Verify CI classifier and workflow contracts
+        if: steps.scope.outputs.tooling == 'true' || steps.scope.outputs.full == 'true'
+        run: node --test .github/tests/*.test.mjs
+      - name: Verify isolated Harmony release tools (no SDK or signing keys)
+        if: steps.scope.outputs.signing == 'true' || steps.scope.outputs.full == 'true'
+        working-directory: tools/harmony-release
+        run: |
+          python3 -B test_verify_request.py
+          python3 -B -m unittest test_entrypoint test_signed_payload
       - uses: actions/setup-node@v7
+        if: steps.scope.outputs.ui == 'true' || steps.scope.outputs.theme_web == 'true' || steps.scope.outputs.full == 'true'
         with:
           node-version: '22'
           cache: npm
+      - name: Install dependencies for affected UI or browser checks
+        if: steps.scope.outputs.ui == 'true' || steps.scope.outputs.theme_web == 'true'
+        run: npm ci --no-audit --no-fund
+      - name: Check presentation UI types and component contracts
+        if: steps.scope.outputs.ui == 'true'
+        run: |
+          npm run typecheck
+          node --test tests/ui-redesign-owner-shell.test.cjs tests/ui-redesign-hook-contract.test.cjs tests/theme-atmosphere.test.cjs
+          node --test --test-name-pattern='daily|practicing other Parts' tests/repo-review-regressions.test.cjs
+      - name: Install Chromium for the changed Web theme test
+        if: steps.scope.outputs.theme_web == 'true'
+        run: node node_modules/playwright/cli.js install --with-deps chromium
+      - name: Verify the changed Web theme browser test
+        if: steps.scope.outputs.theme_web == 'true'
+        env:
+          LANTERN_THEME_QA_DIR: ${{ runner.temp }}/lantern-theme-web-browser-qa
+        run: npm run test:themes:web:browser
+      - name: Retain targeted Web theme QA evidence
+        if: always() && steps.scope.outputs.theme_web == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: theme-web-qa-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/lantern-theme-web-browser-qa/result.json
+            ${{ runner.temp }}/lantern-theme-web-browser-qa/*.png
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Initialize dependencies and verify core behavior (shared with Codex)
+        if: steps.scope.outputs.full == 'true'
         run: bash scripts/codex-setup.sh
       - name: Verify hosted media proxy and deployment projection
+        if: steps.scope.outputs.full == 'true'
         run: node --test tests/web-natural-media-proxy.test.cjs tests/web-hosted-prune.test.cjs
       - name: Verify bounded build cleanup
+        if: steps.scope.outputs.full == 'true'
         run: node --test tests/build-timeout.test.cjs
       - run: npm run build
+        if: steps.scope.outputs.full == 'true'
       - name: Verify built HTML and UI component contracts
+        if: steps.scope.outputs.full == 'true'
         run: node --test tests/*.test.mjs
       - uses: actions/setup-python@v6
+        if: steps.scope.outputs.full == 'true'
         with:
           python-version: '3.12'
       - name: Verify release preparation and version-code checks
+        if: steps.scope.outputs.full == 'true'
         run: python -B -m unittest discover -s tests -p 'test_release_*.py'
       - name: Prepare bounded Ubuntu downloads from the official archive
+        if: steps.scope.outputs.full == 'true'
         run: sudo --preserve-env=GITHUB_ACTIONS python3 .github/scripts/ci-ubuntu-mirror.py --expected-codename noble
       - name: Convert an original printable-protected PDF through real Poppler
+        if: steps.scope.outputs.full == 'true'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y poppler-utils
@@ -45,17 +95,20 @@ jobs:
           python tests/fixtures/create-page-packer-fixture.py --out-dir "$RUNNER_TEMP/lantern-page-pack-qa" --printable-protected
           node scripts/pack-exam-pages.cjs --recipe "$RUNNER_TEMP/lantern-page-pack-qa/recipe.json"
       - name: Build shared app for real-browser regression
+        if: steps.scope.outputs.full == 'true'
         run: npm --prefix mobile run build
       - name: Install Chromium with all required system dependencies
+        if: steps.scope.outputs.full == 'true'
         run: node node_modules/playwright/cli.js install --with-deps chromium
       - name: Verify continuous word-card layout and reading accessibility
+        if: steps.scope.outputs.full == 'true'
         env:
           LANTERN_WORDCARD_QA_DIR: ${{ runner.temp }}/lantern-word-card-layout-qa
         run: |
           node --test tests/phase2-vocabulary-ui.test.cjs
           node tests/browser/word-card-layout.cjs
       - name: Retain continuous word-card QA evidence
-        if: always()
+        if: always() && steps.scope.outputs.full == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: word-card-qa-${{ github.run_id }}-${{ github.run_attempt }}
@@ -65,6 +118,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
       - name: Run real-browser mock-exam, dictionary and theme regressions
+        if: steps.scope.outputs.full == 'true'
         env:
           LANTERN_BROWSER_QA_DIR: ${{ runner.temp }}/lantern-browser-qa
           LANTERN_DICTIONARY_QA_DIR: ${{ runner.temp }}/lantern-dictionary-browser-qa
@@ -76,7 +130,7 @@ jobs:
           npm run test:themes:browser
           LANTERN_THEME_QA_DIR="$RUNNER_TEMP/lantern-theme-web-browser-qa" npm run test:themes:web:browser
       - name: Retain synthetic browser QA evidence
-        if: always()
+        if: always() && steps.scope.outputs.full == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: browser-qa-${{ github.run_id }}-${{ github.run_attempt }}
@@ -92,6 +146,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
       - name: Apply migrations to an empty local SQLite database
+        if: steps.scope.outputs.full == 'true'
         run: |
           python3 - <<'PY'
           import pathlib, sqlite3
