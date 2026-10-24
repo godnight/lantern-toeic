@@ -31,6 +31,9 @@ const report = {
     'Desktop Chromium source-fixture geometry does not prove physical phone, keyboard/IME or ArkWeb behavior.',
     'Audio cases append explicit synthetic status text to the actual SpeechPlayer feedback element; no playback or microphone acceptance is claimed.',
     'The actual WorkspaceShell is used; Today hierarchy and complete blue-lake rendering remain outside this focused fixture.',
+    'Input traces observe document capture only. Intercepted trial input may not reach those listeners; missing down/click events do not prove no native input. Trial may affect hover and is not a pure CDP experiment.',
+    'Each page records at most1000 events; these bounded observations are not an exhaustive native input trace.',
+    'The2CSSpx acceptance applies to recorded geometry samples, not continuous per-frame proof that every transient position stays inside that range.',
   ],
 };
 let OUT, origin, preview, browser, context, page;
@@ -219,6 +222,71 @@ async function reachControls() {
   });
   assert.ok(hit.visible && hit.hit, 'Action unreachable or under fixed navigation: ' + JSON.stringify(hit));
 }
+async function visiblePointerClick(locator,condition,wordIndex,phase,reference) {
+  const before=await snapshot(condition,wordIndex,`${phase}-neutral-preclick`);
+  stable(reference,before);
+  const hit = await locator.evaluate(element => {
+    const r = element.getBoundingClientRect(), nav = document.querySelector('.workspace-mobile-nav');
+    const n = nav?.getBoundingClientRect();
+    const header=document.querySelector('.workspace-topbar'),headerRect=header?.getBoundingClientRect();
+    const usableTop=headerRect&&headerRect.height>0?Math.max(0,headerRect.bottom):0;
+    const boundary = n && n.height > 0 && getComputedStyle(nav).position === 'fixed' ? Math.min(innerHeight, n.top) : innerHeight;
+    const position={x:element.clientWidth/2,y:element.clientHeight/2};
+    const point={x:r.left+element.clientLeft+position.x,y:r.top+element.clientTop+position.y};
+    const target = document.elementFromPoint(point.x,point.y);
+    return {visible: r.left >= 0 && r.right <= innerWidth && r.top >= usableTop-1 && r.bottom <= boundary + 1,
+      hit: target === element || element.contains(target),rect:{x:r.x,y:r.y,width:r.width,height:r.height},position,point,usableTop,boundary};
+  });
+  assert.ok(hit.rect.width>=44&&hit.rect.height>=44,'Pointer target below44px: '+JSON.stringify(hit));
+  assert.ok(hit.visible && hit.hit, 'Real pointer target is not fully reachable: ' + JSON.stringify(hit));
+  // The target is already reachable. Keep normal actionability/hit checks and
+  // actual mouse events, without Playwright's extra pre-action scroll command.
+  // Native browser focus scrolling remains enabled and is still measured.
+  const start=await page.evaluate(()=>window.__wordCardInputEvents.length);
+  await locator.click({scroll:'none',position:hit.position});
+  await settleFrames();
+  report.pointerActions ||= [];
+  const events=await page.evaluate(start=>window.__wordCardInputEvents.slice(start),start);
+  const down=events.find(event=>event.type==='pointerdown'||event.type==='mousedown');
+  assert.ok(down&&down.isTrusted,'No trusted real pointer event observed');
+  assert.ok(Math.abs(down.clientX-hit.point.x)<=1&&Math.abs(down.clientY-hit.point.y)<=1,'Real pointer point differs from verified hit point');
+  report.pointerActions.push({condition:condition.id,wordIndex,phase,input:'locator.click({scroll:none,position:verifiedPaddingCenter})',hit,events});
+}
+async function inputPreparationControl(condition) {
+  const read = () => page.evaluate(() => {
+    const card = document.querySelector('.v045-stable-word-card'), button = document.querySelector('.phase2-rating-actions button');
+    const r = card.getBoundingClientRect(), b = button.getBoundingClientRect();
+    return {scrollX, scrollY, documentMaxScroll: document.scrollingElement.scrollHeight - document.scrollingElement.clientHeight,
+      viewport:{width:innerWidth,height:innerHeight,visualHeight:visualViewport?.height??innerHeight},
+      focus:{tag:document.activeElement?.tagName,className:document.activeElement?.className??null},
+      hovered:[...document.querySelectorAll(':hover')].map(e=>({tag:e.tagName,className:typeof e.className==='string'?e.className:null})),
+      card: {x: r.x, y: r.y, documentY: r.y + scrollY, width: r.width, height: r.height},
+      button: {top: b.top, bottom: b.bottom, scrollMarginTop: getComputedStyle(button).scrollMarginTop, scrollMarginBottom: getComputedStyle(button).scrollMarginBottom},
+      rootScrollPaddingBottom: getComputedStyle(document.documentElement).scrollPaddingBottom};
+  });
+  const before = await read(), factsBefore = await state();
+  const eventStart=await page.evaluate(()=>window.__wordCardInputEvents.length);
+  // A Playwright trial may send intercepted pointer input and change hover.
+  // It is not a pure CDP experiment and lives in its own disposable context.
+  await page.getByRole('button', {name: LABELS.known, exact: true}).click({trial: true});
+  await settleFrames();
+  const afterTrial = await read();
+  const factsAfter=await state();
+  assert.deepEqual(factsAfter, factsBefore, 'Trial preparation called the learning workflow');
+  assert.equal(afterTrial.card.documentY, before.card.documentY);
+  assert.equal(afterTrial.card.width, before.card.width); assert.equal(afterTrial.card.height, before.card.height);
+  report.inputPreparationControls ||= [];
+  const control={condition: condition.id, phase: 'AUTOMATION_PREPARATION_ONLY_NOT_USER_STATE', before, afterTrial,
+    observedScrollDelta: afterTrial.scrollY - before.scrollY, noLearningCallback: true,
+    learningBefore:{cursor:factsBefore.cursor,attempts:factsBefore.attempts.length,saved:factsBefore.saved.length,next:factsBefore.next.length},
+    learningAfterTrial:{cursor:factsAfter.cursor,attempts:factsAfter.attempts.length,saved:factsAfter.saved.length,next:factsAfter.next.length},
+    events:await page.evaluate(start=>window.__wordCardInputEvents.slice(start),eventStart),
+    trialMaySendInterceptedPointerInput:true,separateFreshContext:true,
+    matrixInput:'Separate fresh contexts;visible hit-tested locator.click({scroll:none,position:verifiedPaddingCenter});realmouse/focus retained'};
+  report.inputPreparationControls.push(control);
+  control.scrollRestoration='NONE_CONTEXT_IS_DISCARDED';
+  return control;
+}
 async function audioStatusPressure(condition, wordIndex, reference, expectedReadingScroll = null) {
   const feedback = page.locator('.v041-word-heading .speech-audio-feedback');
   assert.equal(await feedback.count(), 1, 'Actual SpeechPlayer status slot missing');
@@ -232,10 +300,11 @@ async function audioStatusPressure(condition, wordIndex, reference, expectedRead
     if (expectedReadingScroll !== null) assert.ok(Math.abs(actual.content.scrollTop - expectedReadingScroll) <= 2,
       'Audio status pressure reset the current reading position');
     await feedback.locator('[data-qa-synthetic-audio]').evaluateAll(elements => elements.forEach(element => element.remove()));
+    const neutral=await snapshot(condition,wordIndex,`synthetic-audio-${phase}-cleared-neutral`,{syntheticAudioStateOnly:true});
+    stable(reference,neutral);
   }
 }
-async function runCondition(config) {
-  const condition = {...config, status: 'RUNNING', geometry: [], flow: []}; report.conditions.push(condition);
+async function openFixturePage(config) {
   context = await browser.newContext({viewport: {width: config.width, height: config.height}, deviceScaleFactor: 1,
     serviceWorkers: 'block', acceptDownloads: false, permissions: []});
   await context.route('**/*', route => {
@@ -246,6 +315,15 @@ async function runCondition(config) {
   });
   await context.addInitScript(() => {
     if (navigator.mediaDevices) Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {value: () => {throw new Error('Microphone disabled in synthetic layout QA');}});
+    window.__wordCardInputEvents=[];
+    for(const type of ['pointermove','mousemove','pointerdown','pointerup','mousedown','mouseup','focusin','focusout','click','scroll'])document.addEventListener(type,event=>{
+      const card=document.querySelector('.v045-stable-word-card'),r=card?.getBoundingClientRect(),target=event.target;
+      const events=window.__wordCardInputEvents;
+      if(events.length>=1000)return;
+      events.push({type,time:performance.now(),isTrusted:event.isTrusted,clientX:typeof event.clientX==='number'?event.clientX:null,clientY:typeof event.clientY==='number'?event.clientY:null,scrollX,scrollY,card:r?{y:r.y,documentY:r.y+scrollY,width:r.width,height:r.height}:null,
+        target:{tag:target?.tagName??null,className:typeof target?.className==='string'?target.className:null},
+        focus:{tag:document.activeElement?.tagName,className:document.activeElement?.className??null}});
+    },{capture:true,passive:true});
   });
   page = await context.newPage();
   page.setDefaultTimeout(15000); page.setDefaultNavigationTimeout(60000);
@@ -254,6 +332,15 @@ async function runCondition(config) {
   await page.waitForFunction(() => !!window.__wordCardQA);
   await page.locator('.v045-stable-word-card').waitFor({state: 'visible'});
   await reachControls();
+}
+async function runFreshPreparationControl(){
+  let control;
+  try{await openFixturePage({...CONDITIONS[0],id:'paper-320-independent-trial'});control=await inputPreparationControl({id:'paper-320-independent-trial'});}
+  finally{await context?.close();context=null;page=null;if(control)control.contextClosedBeforeMatrix=true;}
+}
+async function runCondition(config) {
+  const condition = {...config, status: 'RUNNING', geometry: [], flow: []}; report.conditions.push(condition);
+  await openFixturePage(config);
   const first = await snapshot(condition, 0, 'before');
   await screenshot(condition, 'before');
   await audioStatusPressure(condition, 0, first);
@@ -264,7 +351,7 @@ async function runCondition(config) {
     assert.equal(await page.locator('.phase2-word-meaning').count(), 0);
     const before = index === 0 ? first : await snapshot(condition, index, 'before'); stable(first, before);
     const savedBefore = beforeState.saved.length, attemptBefore = beforeState.attempts.length;
-    await page.getByRole('button', {name: label, exact: true}).click();
+    await visiblePointerClick(page.getByRole('button', {name: label, exact: true}),condition,index,'rating',first);
     await page.waitForFunction(() => window.__wordCardQA.read().pending);
     assert.equal(await page.getByText(/待确认：|请重试原反馈/).count(), 0, 'Normal pending rendered recovery text');
     assert.equal(await page.locator('.phase2-word-meaning').count(), 0);
@@ -280,7 +367,7 @@ async function runCondition(config) {
       for (const other of RATINGS.filter(value => value !== rating)) assert.equal(await page.getByRole('button', {name: LABELS[other], exact: true}).isDisabled(), true);
       stable(first, await snapshot(condition, index, 'save-failure'));
       await screenshot(condition, 'save-failure');
-      await page.getByRole('button', {name: label, exact: true}).click();
+      await visiblePointerClick(page.getByRole('button', {name: label, exact: true}),condition,index,'retry',first);
       await page.waitForFunction(() => window.__wordCardQA.read().pending);
       const pending = await state();
       assert.deepEqual(pending.attempts.slice(-2).map(item => item.rating), [rating, rating]);
@@ -314,7 +401,7 @@ async function runCondition(config) {
     }
     condition.flow.push({wordIndex: index, rating, saveAttempts: saved.attempts.filter(item => item.cursor === index).length, savedOnce: true, reading});
     const next = page.locator('.phase2-next-word');
-    await next.click();
+    await visiblePointerClick(next,condition,index,'next',first);
     if (index < 9) {
       await page.waitForFunction(expected => window.__wordCardQA.read().cursor === expected, index + 1);
       await settleFrames();
@@ -339,6 +426,7 @@ async function main() {
   await fs.access(chromium.executablePath()); // Never install a browser here.
   browser = await chromium.launch({headless: true});
   report.browser = {playwright: repoRequire('playwright/package.json').version, executable: chromium.executablePath()};
+  await runFreshPreparationControl();
   for (const condition of CONDITIONS) await runCondition(condition);
   const ordinary = report.conditions.find(condition => condition.id === 'hollow-390').geometry.find(row => row.typography.meaning);
   const enlarged = report.conditions.find(condition => condition.id === 'hollow-font200').geometry.find(row => row.typography.meaning);

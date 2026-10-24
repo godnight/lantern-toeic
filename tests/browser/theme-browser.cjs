@@ -163,10 +163,11 @@ async function eventually(check,message,timeout=15000){const end=Date.now()+time
 async function screenshot(name,{fullPage=true}={}){const file=path.join(OUT,name+'.png');await page.screenshot({path:file,fullPage,animations:'disabled'});report.screenshots.push(file);return file;}
 async function blueLakeViewportScreenshot(){
  const scene=page.locator('[data-scene="blue-lake"][data-scene-source="hollow-lake"]');
- const saved=await page.evaluate(()=>({x:scrollX,y:scrollY}));
- await scene.locator('img').evaluate(image=>image.decode());
+ const saved=await page.evaluate(()=>({x:scrollX,y:scrollY})),originalViewport=page.viewportSize();
  const frames=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  try{
+  await page.setViewportSize({width:390,height:844});await frames();
+  await scene.locator('img').evaluate(image=>image.decode());
   await scene.scrollIntoViewIfNeeded();
   await scene.evaluate(element=>{
    const rect=element.getBoundingClientRect(),header=document.querySelector('.workspace-topbar'),nav=document.querySelector('.workspace-mobile-nav');
@@ -188,7 +189,26 @@ async function blueLakeViewportScreenshot(){
   const file=await screenshot('hollow-blue-lake-viewport-390',{fullPage:false});
   report.blueLakeViewports??=[];report.blueLakeViewports.push({file,fullPage:false,geometry});
   return geometry;
- }finally{await page.evaluate(saved=>scrollTo({left:saved.x,top:saved.y,behavior:'instant'}),saved);await frames();}
+ }finally{await page.setViewportSize(originalViewport);await page.evaluate(saved=>scrollTo({left:saved.x,top:saved.y,behavior:'instant'}),saved);await frames();}
+}
+async function homeViewportScreenshot(id,width,height){
+ const originalViewport=page.viewportSize(),saved=await page.evaluate(()=>({x:scrollX,y:scrollY}));
+ const frames=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ try{
+  await page.setViewportSize({width,height});await page.evaluate(()=>scrollTo({top:0,left:0,behavior:'instant'}));await frames();
+  await eventually(async()=>await page.locator('.workflow-resume .button.primary,.v040-word-action .button.primary').count()>0,'Today primary learning action did not mount');
+  const geometry=await page.evaluate(()=>{
+   const box=e=>{if(!e)return null;const r=e.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height,top:r.top,bottom:r.bottom,left:r.left,right:r.right};};
+   const nav=document.querySelector('.workspace-mobile-nav'),header=document.querySelector('.workspace-topbar');
+   const top=Math.max(0,header?.getBoundingClientRect().bottom??0),bottom=nav&&getComputedStyle(nav).position==='fixed'?Math.min(innerHeight,nav.getBoundingClientRect().top):innerHeight;
+   const actions=[...document.querySelectorAll('.workflow-resume .button.primary,.v040-word-action .button.primary')].filter(e=>e.getClientRects().length&&!e.disabled).map(e=>{const r=e.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return{text:e.textContent.trim(),rect:box(e),reachable:hit===e||e.contains(hit)};});
+   return{viewport:{width:innerWidth,height:innerHeight},scrollX,scrollY,header:box(header),nav:box(nav),usableTop:top,usableBottom:bottom,actions};
+  });
+  assert.equal(geometry.viewport.width,width);assert.equal(geometry.viewport.height,height);assert.equal(geometry.scrollY,0);
+  assert.ok(geometry.actions.some(action=>action.rect.top>=geometry.usableTop-1&&action.rect.bottom<=geometry.usableBottom+1&&action.rect.height>=44&&action.reachable),'No primary learning entry reachable in the initial viewport: '+JSON.stringify(geometry));
+  const file=await screenshot(`today-viewport-${id}-${width}x${height}`,{fullPage:false});
+  report.homeViewports??=[];report.homeViewports.push({file,fullPage:false,theme:id,geometry});return geometry;
+ }finally{await page.setViewportSize(originalViewport);await page.evaluate(saved=>scrollTo({left:saved.x,top:saved.y,behavior:'instant'}),saved);await frames();}
 }
 function webState(){return{owner:QA_OWNER,schemaVersion:2,profile:{name:'Synthetic theme QA',lrGoal:650,speakingGoal:0,examDate:'2026-12-20',dailyMinutes:25,timezone:'Asia/Shanghai',theme:'hollow',weeklyTarget:4,onboarded:true},hasProfile:true,attempts:[],checkins:[],recordings:[],questionMarks:[],resourceTasks:[]};}
 async function freshPage(width){
@@ -306,7 +326,7 @@ async function colors(id,width){const sample=await page.locator('body').evaluate
   for(const [index,id] of PALETTES.entries()){
    const before=await facts();
    await step(`${width}px: ${id} selection via ${['preview','caption','enter','space'][index]} persists without changing learning facts`,async()=>{await choose(id,['preview','caption','enter','space'][index]);const sample=await colors(id,width);await page.reload({waitUntil:'networkidle'});await ready();await rootTheme(id);assert.deepEqual(await colors(id,width),sample);assert.deepEqual(await facts(),before,'Theme switch changed learning facts or goals');return{sample,layout:await layout('reloaded-'+id)};});
-   await step(`${width}px: ${id} artwork and all six route layouts`,async()=>{const art=await artwork(id);const layouts=[];for(const label of NAV){await navigate(label);await accessibleControl(navigation().getByRole('button',{name:label,exact:true}));await rootTheme(id);layouts.push({label,...await layout(id+'-'+label)});}await navigate('今日');const screenshotArt=await sceneScreenshotReady(id);await screenshot(`${id}-${width}`);const lakeViewport=id==='hollow'&&width===390?await blueLakeViewportScreenshot():null;assert.deepEqual(await facts(),before);return{art,layouts,screenshotArt,lakeViewport};});
+   await step(`${width}px: ${id} artwork and all six route layouts`,async()=>{const art=await artwork(id);const layouts=[];for(const label of NAV){await navigate(label);await accessibleControl(navigation().getByRole('button',{name:label,exact:true}));await rootTheme(id);layouts.push({label,...await layout(id+'-'+label)});}await navigate('今日');const screenshotArt=await sceneScreenshotReady(id);await screenshot(`${id}-${width}`);const homeViewport=width===390?await homeViewportScreenshot(id,390,844):id==='paper'&&width===320?await homeViewportScreenshot(id,320,640):null;const lakeViewport=id==='hollow'&&width===390?await blueLakeViewportScreenshot():null;assert.deepEqual(await facts(),before);return{art,layouts,screenshotArt,homeViewport,lakeViewport};});
    await step(`${width}px: ${id} real practice dialog remains readable and closes without writing an answer`,async()=>{await navigate('练习');await page.getByRole('button',{name:/^Part 5 ·/}).click();const dialog=page.getByRole('dialog').filter({has:page.locator('.practice-footer')});await dialog.waitFor({state:'visible'});assert.ok(await dialog.getByRole('radio').count()>=3);const control=dialog.getByRole('button',{name:'确认答案',exact:true});assert.equal(await control.isDisabled(),true);await accessibleControl(control);const dimensions=await layout('practice-'+id);await screenshot(`practice-${id}-${width}`);await page.keyboard.press('Escape');const confirmation=page.getByRole('dialog',{name:'先结束这组练习？',exact:true});await confirmation.waitFor({state:'visible'});await confirmation.getByRole('button',{name:'保存并返回',exact:true}).click();await eventually(()=>page.getByRole('dialog').count().then(n=>n===0),'Practice did not close');assert.deepEqual(await facts(),before);return dimensions;});
   }
   await step(`${width}px: four distinct rendered palettes and reduced motion respected`,async()=>{const samples=paletteSamples.filter(x=>x.width===width);assert.equal(new Set(samples.map(x=>x.background)).size,4);assert.equal(new Set(samples.map(x=>x.foreground)).size,4);await page.emulateMedia({reducedMotion:'reduce'});const running=await page.evaluate(()=>document.getAnimations().filter(a=>a.playState==='running'&&Number(a.effect?.getComputedTiming().duration)>1).map(a=>({name:a.animationName,duration:a.effect.getComputedTiming().duration})));assert.deepEqual(running,[],'Reduced-motion preference left a long running animation');await page.reload({waitUntil:'networkidle'});await ready();await rootTheme('silk');await page.emulateMedia({reducedMotion:'no-preference'});return{palettes:4,reducedMotion:true};});
