@@ -105,6 +105,61 @@ test('a recovered prepared command displays its original rating and cannot switc
  const h=harness('VocabularyStudyCard',{workflow,theme:'hollow'});assert.equal(h.button('认识').props.disabled,true);assert.equal(h.button('模糊').props.disabled,true);assert.equal(h.button('忘记').props.disabled,false);assert.match(text(h.tree),/待确认：忘记/);h.click('认识');await h.flush();assert.equal(calls.length,0);h.click('忘记');await h.flush();assert.deepEqual(calls,['forgotten']);assert.doesNotMatch(text(h.tree),/安静的；轻声的/);h.unmount();
 });
 
+test('normal pending save keeps rating labels stable and never asks for a retry before the result',async()=>{
+ const active=session(),calls=[];let confirm;
+ const workflow=controller({activeSession:active,submitRating:rating=>{calls.push(rating);return new Promise(resolve=>{confirm=()=>{active.currentStep.receipt={...receipt,rawRating:rating};resolve({status:'applied'});};});}});
+ const h=harness('VocabularyStudyCard',{workflow,theme:'paper'});
+ h.click('认识');h.render();
+ assert.deepEqual(calls,['known']);assert.match(text(h.tree),/正在保存反馈/);
+ assert.doesNotMatch(text(h.tree),/待确认|请重试|安静的；轻声的/);
+ assert.equal(h.button('认识').props['aria-busy'],true);
+ for(const label of ['认识','模糊','忘记'])assert.equal(h.button(label).props.disabled,true);
+ h.click('认识');assert.equal(calls.length,1);
+ confirm();await h.flush();assert.match(text(h.tree),/安静的；轻声的/);
+ assert.doesNotMatch(text(h.tree),/正在保存反馈|待确认|请重试/);h.unmount();
+});
+
+test('reading position survives same-word save and retry; only the next word resets it',async()=>{
+ const active=session();let tries=0;
+ const workflow=controller({activeSession:active,submitRating:async rating=>{if(++tries===1)return {status:'pending'};active.currentStep.receipt={...receipt,rawRating:rating};return {status:'applied'};}});
+ const h=harness('VocabularyStudyCard',{workflow,theme:'hollow'});
+ const content=nodes(h.tree,node=>node.props?.className==='phase2-word-content')[0].props.ref;
+ const heading=nodes(h.tree,node=>node.type==='h2'&&node.props.className==='phase2-current-word')[0].props.ref;
+ let revealFocusCalls=0;content.current={scrollTop:137,focus:()=>{revealFocusCalls++;}};let focusCalls=0;heading.current={focus:()=>{focusCalls++;}};
+ h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);
+ h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);assert.equal(focusCalls,0);assert.equal(revealFocusCalls,1);
+ active.currentStep={...active.currentStep,id:'next-word',word:{...word,id:'available',word:'available',meaning:'可用的'},receipt:undefined};
+ h.render();assert.equal(content.current.scrollTop,0);assert.equal(focusCalls,1);
+ assert.doesNotMatch(text(h.tree),/安静的；轻声的|可用的/);h.unmount();
+});
+
+test('late result from the previous word cannot clear the current word save or display its error',async()=>{
+ const active=session(),first=active.currentStep,calls=[];let finishFirst,finishSecond;
+ const workflow=controller({activeSession:active,submitRating:rating=>{const target=active.currentStep;calls.push({step:target.id,rating});return new Promise(resolve=>{if(target===first)finishFirst=()=>resolve({status:'blocked',reason:'上一词迟到的失败'});else finishSecond=()=>{target.receipt={...receipt,commandId:'second',rawRating:rating};resolve({status:'applied'});};});}});
+ const h=harness('VocabularyStudyCard',{workflow,theme:'paper'});
+ h.click('认识');h.render();
+ active.currentStep={...first,id:'step-2',word:{...word,id:'available',word:'available',meaning:'可用的'}};h.update({workflow});
+ h.click('模糊');h.render();assert.equal(calls.length,2);assert.equal(h.button('模糊').props['aria-busy'],true);
+ finishFirst();await h.flush();
+ assert.equal(h.button('模糊').props['aria-busy'],true);assert.equal(h.button('模糊').props.disabled,true);
+ assert.doesNotMatch(text(h.tree),/上一词迟到的失败/);
+ h.click('模糊');assert.equal(calls.length,2,'Old finally reopened the current pending callback');
+ finishSecond();await h.flush();assert.match(text(h.tree),/可用的/);assert.doesNotMatch(text(h.tree),/安静的；轻声的|上一词迟到的失败/);h.unmount();
+});
+
+test('returning to the same word target still rejects an older attempt catch and finally',async()=>{
+ const active=session(),first=active.currentStep,calls=[];let failOld,finishCurrent;
+ const workflow=controller({activeSession:active,submitRating:rating=>{calls.push(rating);return new Promise((resolve,reject)=>{if(calls.length===1)failOld=()=>reject(Error('旧请求迟到异常'));else finishCurrent=()=>{active.currentStep.receipt={...receipt,rawRating:rating};resolve({status:'applied'});};});}});
+ const h=harness('VocabularyStudyCard',{workflow,theme:'hollow'});
+ h.click('认识');h.render();
+ active.currentStep={...first,id:'temporary-step'};h.render();active.currentStep=first;h.render();
+ h.click('忘记');h.render();assert.equal(calls.length,2);assert.equal(h.button('忘记').props['aria-busy'],true);
+ failOld();await h.flush();
+ assert.equal(h.button('忘记').props['aria-busy'],true);assert.equal(h.button('忘记').props.disabled,true);assert.doesNotMatch(text(h.tree),/旧请求迟到异常/);
+ h.click('忘记');assert.equal(calls.length,2);
+ finishCurrent();await h.flush();assert.match(text(h.tree),/已保存：忘记/);h.unmount();
+});
+
 test('restored workflow without original word-card references cannot reveal, advance or rewrite a review',async()=>{
  const active=session();active.blockedReason='备份引用的旧词卡事件缺失';let writes=0,next=0,reads=0;
  const workflow=controller({activeSession:active,submitRating:async()=>{writes++;return {status:'applied'};},nextStep:async()=>{next++;return {status:'applied'};},refresh:async()=>{reads++;}});

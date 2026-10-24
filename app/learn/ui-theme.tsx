@@ -53,8 +53,8 @@ export function ThemeScene({theme,scene='blue-lake',caption,className='',loading
     data-scene={scene} data-scene-source={asset.id} data-scene-status={failed?'unavailable':'available'} aria-hidden={caption?undefined:true}
     style={{'--scene-position':asset.position} as CSSProperties}>
     {failed?<div className="v041-scene-placeholder" aria-hidden="true"><span/></div>:<img
-      src={`/design-r1/${asset.id}.png`} width={1672} height={941} alt=""
-      loading={loading??(scene==='home'?'eager':'lazy')} decoding="async"
+      src={`/design-r1/${asset.id}.webp`} width={1672} height={941} alt=""
+      loading={loading??(scene==='home'?'eager':'lazy')} fetchPriority={scene==='home'?'high':'auto'} decoding="async"
       onError={()=>setFailed(true)}/>}
     {caption&&scene!=='blue-lake'&&<figcaption>{caption}</figcaption>}
   </figure>;
@@ -77,7 +77,7 @@ export function ThemeChooser({theme,onChange,disabled=false}:ThemeChooserProps){
         aria-label={`${NAMES[candidate]}${selected?'，正在使用':''}`}
         onClick={()=>{if(!selected)onChange(candidate);}}>
         <span className={`v041-theme-thumb v041-theme-thumb--${candidate}`} aria-hidden="true">
-          {art&&<img src={`/design-r1/${art.id}.png`} style={{objectPosition:art.position}} width={1672} height={941} alt="" loading="lazy" decoding="async" onError={event=>{event.currentTarget.style.visibility='hidden';}}/>}
+          {art&&<img src={`/design-r1/${art.id}.webp`} style={{objectPosition:art.position}} width={1672} height={941} alt="" loading="lazy" decoding="async" onError={event=>{event.currentTarget.style.visibility='hidden';}}/>}
         </span>
         <span className="v041-theme-option-name"><strong>{NAMES[candidate]}</strong><span className="v041-theme-check" aria-hidden="true">{selected&&<Check size={18}/>}</span></span>
       </button>;

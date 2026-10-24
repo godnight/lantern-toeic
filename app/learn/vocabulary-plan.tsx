@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
-import {ArrowRight,BookOpen,CalendarDays,Check,CheckCircle2,ChevronLeft,ChevronRight,Download,Plus,RefreshCw,Settings2,Upload} from 'lucide-react';
+import {ArrowRight,BookOpen,CalendarDays,Check,CheckCircle2,ChevronLeft,ChevronRight,Download,LoaderCircle,Plus,RefreshCw,Settings2,Upload} from 'lucide-react';
 import type {Theme} from '@/lib/study-model';
 import type {Word} from '@/lib/vocabulary-model';
 import {getWorkflowBook,getCandidateLearningWord,CANDIDATE_CONTENT_PENDING,type WorkflowBookId} from '@/lib/workflow-catalog';
@@ -168,20 +168,40 @@ export function TodayVocabularyTask({workflow,onOpen,onOpenStudy,disabled=false,
 export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlocked=false,onFinish}:{workflow:Workflow;theme:Theme;onExampleLookup?:ExampleLookup;overlayBlocked?:boolean;onFinish?:()=>void}){
   const session=workflow.activeSession,step=session?.currentStep;
   const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[selected,setSelected]=useState<RawVocabularyRating|null>(null);
+  const contentRoot=useRef<HTMLDivElement>(null),wordHeading=useRef<HTMLHeadingElement>(null),previousWord=useRef<string|null>(null),focusedReceipt=useRef<string|null>(null);
+  const targetKey=JSON.stringify([workflow.scopeKey,session?.id??null,step?.id??null]);
+  const currentTarget=useRef(targetKey),attempt=useRef(0);currentTarget.current=targetKey;
   const pending=useRef(false),scope=useRef(workflow.scopeKey);scope.current=workflow.scopeKey;
-  useEffect(()=>{setMessage('');setSelected(null);setBusy(false);pending.current=false;},[workflow.scopeKey,step?.id]);
+  useEffect(()=>{++attempt.current;setMessage('');setSelected(null);setBusy(false);pending.current=false;},[targetKey]);
+  useEffect(()=>{
+    const wordKey=step?JSON.stringify([workflow.scopeKey,step.id]):null;
+    if(contentRoot.current)contentRoot.current.scrollTop=0;
+    if(previousWord.current&&wordKey&&previousWord.current!==wordKey&&!overlayBlocked)wordHeading.current?.focus({preventScroll:true});
+    previousWord.current=wordKey;
+    // Reading position changes only when the word/scope changes, not on save,
+    // retry, audio status or the reveal of this same word.
+  },[workflow.scopeKey,step?.id]);
+  useEffect(()=>{
+    if(!step?.receipt)return;
+    const receiptKey=JSON.stringify([workflow.scopeKey,step.id,step.receipt.commandId]);
+    if(focusedReceipt.current===receiptKey)return;
+    focusedReceipt.current=receiptKey;
+    if(!overlayBlocked)contentRoot.current?.focus({preventScroll:true});
+  },[workflow.scopeKey,step?.id,step?.receipt?.commandId]);
   const fixedRating=workflow.pendingRating||selected;
   const blocked=overlayBlocked||!workflow.ready||!!workflow.error||!!session?.blockedReason||busy;
   const run=async(rating?:RawVocabularyRating)=>{
     if(blocked||pending.current||!step)return;
     if(rating&&fixedRating&&fixedRating!==rating)return;
-    const key=workflow.scopeKey;pending.current=true;setBusy(true);setMessage('');
+    const key=workflow.scopeKey,request=++attempt.current,target=targetKey;
+    const isCurrent=()=>scope.current===key&&currentTarget.current===target&&attempt.current===request;
+    pending.current=true;setBusy(true);setMessage('');
     if(rating)setSelected(rating);
     try{
       const result=rating?await workflow.submitRating(rating):await workflow.nextStep();
-      if(scope.current===key)setMessage(resultMessage(result,''));
-    }catch(error){if(scope.current===key)setMessage(error instanceof Error?error.message:'反馈尚未保存，请重试原操作。');}
-    finally{if(scope.current===key){pending.current=false;setBusy(false);}}
+      if(isCurrent())setMessage(resultMessage(result,''));
+    }catch(error){if(isCurrent())setMessage(error instanceof Error?error.message:'反馈尚未保存，请重试原操作。');}
+    finally{if(isCurrent()){pending.current=false;setBusy(false);}}
   };
   if(!session)return null;
   if(session.status==='completed')return <section className="phase2-word-finished panel" aria-label="词组完成">
@@ -196,29 +216,36 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   return <section className="phase2-vocabulary-session" aria-label="单词学习">
     <div className="phase2-word-session-heading"><span>{intent} · {session.cursor+1} / {session.queue.length}</span><span title={session.dayWindow.timezone}>{session.dayWindow.localDate}</span></div>
     {session.blockedReason&&<div className="phase2-vocab-alert" role="alert"><b>原词卡记录尚未确认</b><p>{session.blockedReason}</p><p>请先恢复独立的词库记录备份，再重新读取计划。此状态不计为整组完成，也不会补写学习事件。</p><button type="button" className="text-button" disabled={overlayBlocked||busy} onClick={()=>void workflow.refresh()}><RefreshCw size={15}/>重新核对词卡记录</button></div>}
-    <article className="phase2-word-card panel" tabIndex={-1}>
+    <article className="phase2-word-card panel v045-stable-word-card" tabIndex={-1}>
       <fieldset disabled={blocked} className="phase2-word-fieldset">
         <legend className="sr-only">先回想，再反馈</legend>
-        <div className="v041-word-heading"><h2 className="phase2-current-word" lang="en">{step.word.word}</h2>
-        {audioHeld?<p className="word-footnote">此词发音待核对，原学习记录保留。</p>:<SpeechPlayer mode="word" key={step.id} text={step.word.word} {...(headwordAudio||{materialId:step.word.id,segmentId:'headword'})} label="听单词发音" sourceLabel={headwordAudio?PRIVATE_AUDIO_LABEL:'单词学习'}/>}</div>
-        {!!step.word.phonetics?.length&&<p className="word-phonetic" lang="en">{step.word.phonetics.join(' · ')}</p>}
-        <WorkflowNotice workflow={workflow}/>
-        {!revealed?<>
-          <div className="phase2-rating-actions" role="group" aria-label="回想反馈">
-            {(['known','fuzzy','forgotten'] as const).map(rating=><button key={rating} type="button" className={`button ${rating==='known'?'primary':'secondary'}`} disabled={blocked||!!fixedRating&&fixedRating!==rating} aria-pressed={fixedRating===rating} onClick={()=>void run(rating)}>{busy&&fixedRating===rating?'正在保存…':RATING_NAMES[rating]}</button>)}
+        <div className="phase2-word-layout">
+          <div ref={contentRoot} className="phase2-word-content" role="region" aria-label="单词内容" tabIndex={0}>
+          <header className="phase2-word-header">
+            <div className="v041-word-heading"><h2 ref={wordHeading} tabIndex={-1} className="phase2-current-word" lang="en">{step.word.word}</h2>
+            {audioHeld?<p className="word-footnote">此词发音待核对，原学习记录保留。</p>:<SpeechPlayer mode="word" key={step.id} text={step.word.word} {...(headwordAudio||{materialId:step.word.id,segmentId:'headword'})} label="听单词发音" sourceLabel={headwordAudio?PRIVATE_AUDIO_LABEL:'单词学习'}/>}</div>
+            <p className="word-phonetic" lang="en">{step.word.phonetics?.join(' · ')||'\u00a0'}</p>
+          </header>
+          <div className="phase2-word-body">
+            <WorkflowNotice workflow={workflow}/>
+            {revealed?<div className="phase2-word-meaning"><p><span className="word-pos">{step.word.pos}</span>{step.word.meaning}</p>
+              {step.word.collocation&&<p lang="en">{step.word.collocation}</p>}
+              {step.word.example&&<><blockquote><InteractiveExample text={step.word.example} onLookup={onExampleLookup} disabled={overlayBlocked}/></blockquote>{!audioHeld&&<SpeechPlayer mode="example" key={step.id+'-example'} text={step.word.example} {...(exampleAudio||{materialId:step.word.id,segmentId:'example'})} label="听例句发音" sourceLabel={exampleAudio?PRIVATE_AUDIO_LABEL:'单词学习'}/>}</>}
+              {step.word.translation&&<p className="muted">{step.word.translation}</p>}
+            </div>:<p className="phase2-word-prompt">回想词义后，选择下方反馈。</p>}
+            {message&&<p className="phase2-vocab-message" role="alert">{message}</p>}
           </div>
-          {fixedRating&&<p className="phase2-fixed-feedback">待确认：{RATING_NAMES[fixedRating]}，请重试原反馈。</p>}
-        </>:<>
-          <div className="phase2-feedback-saved" role="status"><CheckCircle2 size={17}/>已保存：{RATING_NAMES[step.receipt!.rawRating]}</div>
-          <div className="phase2-word-meaning"><p><span className="word-pos">{step.word.pos}</span>{step.word.meaning}</p>
-            {step.word.collocation&&<p lang="en">{step.word.collocation}</p>}
-            {step.word.example&&<><blockquote><InteractiveExample text={step.word.example} onLookup={onExampleLookup} disabled={overlayBlocked}/></blockquote>{!audioHeld&&<SpeechPlayer mode="example" key={step.id+'-example'} text={step.word.example} {...(exampleAudio||{materialId:step.word.id,segmentId:'example'})} label="听例句发音" sourceLabel={exampleAudio?PRIVATE_AUDIO_LABEL:'单词学习'}/>}</>}
-            {step.word.translation&&<p className="muted">{step.word.translation}</p>}
           </div>
-          <button type="button" className="button primary phase2-next-word" disabled={blocked} onClick={()=>void run()}>{session.cursor===session.queue.length-1?'完成这一组':'下一词'}<ArrowRight size={17}/></button>
-        </>}
+          <footer className="phase2-word-controls">
+            <div className="phase2-word-status" role="status" aria-live="polite" aria-atomic="true">
+              {busy?<span>正在保存反馈…</span>:revealed?<span className="phase2-feedback-saved"><CheckCircle2 size={17}/>已保存：{RATING_NAMES[step.receipt!.rawRating]}</span>:fixedRating?<span className="phase2-fixed-feedback">待确认：{RATING_NAMES[fixedRating]}，请重试。</span>:null}
+            </div>
+            {!revealed?<div className="phase2-rating-actions" role="group" aria-label="回想反馈">
+              {(['known','fuzzy','forgotten'] as const).map(rating=><button key={rating} type="button" className={`button ${rating==='known'?'primary':'secondary'}`} disabled={blocked||!!fixedRating&&fixedRating!==rating} aria-pressed={fixedRating===rating} aria-busy={busy&&fixedRating===rating} onClick={()=>void run(rating)}><span>{RATING_NAMES[rating]}</span>{busy&&fixedRating===rating&&<LoaderCircle className="phase2-rating-spinner" size={16} aria-hidden="true"/>}</button>)}
+            </div>:<button type="button" className="button primary phase2-next-word" disabled={blocked} aria-busy={busy} onClick={()=>void run()}>{session.cursor===session.queue.length-1?'完成这一组':'下一词'}<ArrowRight size={17}/></button>}
+          </footer>
+        </div>
       </fieldset>
-      {message&&<p className="phase2-vocab-message" role="status">{message}</p>}
     </article>
   </section>;
 }
