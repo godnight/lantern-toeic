@@ -232,10 +232,9 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
             <WorkflowNotice workflow={workflow}/>
             {revealed?<div className="phase2-word-meaning"><p><span className="word-pos">{step.word.pos}</span>{step.word.meaning}</p>
               {step.word.collocation&&<p lang="en">{step.word.collocation}</p>}
-              {reference.etymology&&<section className="phase2-word-etymology" aria-label="词源与构词参考"><h3>词源与构词参考</h3><p>{reference.etymology}</p></section>}
-              {!!reference.sources.length&&<details className="v041-source-details phase2-word-reference-sources"><summary>参考来源</summary>{reference.sources.map(source=><p key={source.id}><a href={source.href} target="_blank" rel="noreferrer">{source.label}</a>{source.license&&<> · {source.licenseUrl?<a href={source.licenseUrl} target="_blank" rel="noreferrer">{source.license}</a>:source.license}</>}{source.attribution&&<span> · {source.attribution}</span>}</p>)}</details>}
-              {step.word.example&&<><blockquote><InteractiveExample text={step.word.example} onLookup={onExampleLookup} disabled={overlayBlocked}/></blockquote>{!audioHeld&&<SpeechPlayer mode="example" key={step.id+'-example'} text={step.word.example} {...(exampleAudio||{materialId:step.word.id,segmentId:'example'})} label="听例句发音" sourceLabel={exampleAudio?PRIVATE_AUDIO_LABEL:'单词学习'}/>}</>}
+              {step.word.example&&<div className={`phase2-word-example${audioHeld?' phase2-word-example--silent':''}`}><blockquote><InteractiveExample text={step.word.example} onLookup={onExampleLookup} disabled={overlayBlocked}/></blockquote>{!audioHeld&&<SpeechPlayer mode="example" key={step.id+'-example'} text={step.word.example} {...(exampleAudio||{materialId:step.word.id,segmentId:'example'})} label="听例句发音" sourceLabel={exampleAudio?PRIVATE_AUDIO_LABEL:'单词学习'}/>}</div>}
               {step.word.translation&&<p className="muted">{step.word.translation}</p>}
+              {reference.etymology&&<section className="phase2-word-etymology" aria-label="词源与构词参考"><h3>词源与构词参考</h3><p>{reference.etymology}</p></section>}
             </div>:null}
             {message&&<p className="phase2-vocab-message" role="alert">{message}</p>}
           </div>
