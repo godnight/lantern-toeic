@@ -2,6 +2,8 @@
 
 核查日期：2026-10-24。`content/word-card-reference.json` 是单词卡的展示补充，不改变教学词条、学习快照、评分、入库资格或音频绑定。前后两种卡片状态可以共用音标；词源只在揭示释义后显示。
 
+2026-10-26 界面调整：按用户要求移除词卡内“参考来源”入口，音标与词源正文继续显示。来源、固定词条链接、作者及许可仍保存在本说明和参考数据中，不改变或删除底层归属信息。
+
 ## 范围与实际覆盖
 
 | 范围 | 词头 | 有音标 | 有词源 |
@@ -18,7 +20,7 @@
 
 1. **中文维基词典 / Kaikki**：优先复用既有 `public/dictionaries/zh-en-63cf606ec4d0.json` 中精确词头的音标和词源。版本、原始提取和摘要在 `content/dictionary-metadata.json`；署名沿用中文维基词典贡献者、Tatu Ylönen / Wiktextract / Kaikki.org，以及微光托业的筛选整理。该部分及其衍生内容采用 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)。原词条与编辑历史可从 `https://zh.wiktionary.org/wiki/{词头}` 进入。本次仅裁取已有资料，不重新翻译或生成词源。
 2. **ECDICT**：仅补既有音标缺失的精确词头。固定提交 [ab22ad36302cafc6349a050e2b60894855208055](https://github.com/skywind3000/ECDICT/tree/ab22ad36302cafc6349a050e2b60894855208055)，使用 `ecdict.csv` 的 `phonetic` 字段；CSV SHA-256 为 `d1ecbdf9ee2b920afb6f430ca6b6bb9f559588cf0dff86e04bd255f9390843cc`。上游说明音标以英音为主，保留原有符号，不按词尾推导、不去重音、不替换成其他词的读音。[原许可证](https://github.com/skywind3000/ECDICT/blob/ab22ad36302cafc6349a050e2b60894855208055/LICENSE)为 MIT，版权及完整许可文本保存在生成 JSON 的 `sources.ecdict.licenseText` 和本页下方。
-3. **英文维基词典**：只对本次缺失的 27 个教学词进行有界查阅，补到 21 个，另核对 `resume` 的已知名词/动词歧义。仅取 English Pronunciation 下完整的 IPA，不取法语等其他语言。每词固定 `oldid`、来源 URL 和取回内容摘要记录在 `content/word-card-phonetic-supplement.json`；作者为 English Wiktionary contributors，采用 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)。应用来源链接优先打开对应固定版本。
+3. **英文维基词典**：只对本次缺失的 27 个教学词进行有界查阅，补到 21 个，另核对 `resume` 的已知名词/动词歧义。仅取 English Pronunciation 下完整的 IPA，不取法语等其他语言。每词固定 `oldid`、来源 URL 和取回内容摘要记录在 `content/word-card-phonetic-supplement.json`；作者为 English Wiktionary contributors，采用 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)。来源数据中的词条链接指向对应固定版本。
 
 `resume` 是明确的特例：当前 `v-resume` 教学卡指“简历”。既有通用词典只提供动词 IPA，词源又合并名词和动词。本表改取 [resume，revision 93719176，Etymology 2](https://en.wiktionary.org/w/index.php?title=resume&oldid=93719176#Etymology_2) 的名词音标，并只保留既有中文词源中对应名词的那一段。`partOfSpeech: "noun"` 与 `overrideWordIds: ["v-resume"]` 要求展示层核对词性及简历语义；动词或混合词性不能应用这个参考，也不修改任何已存快照。`résumé` 仍按独立精确词头查询其 English 读法，不从 `resume` 自动去重音匹配。
 

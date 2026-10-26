@@ -107,8 +107,8 @@ test('all reference phonetics stay visible before and after each rating; etymolo
   h.click(label);await h.flush();
   assert.deepEqual(calls,[rating]);assert.equal(text(phonetic()),'/qa-primary/ · /qa-variant/');
   assert.match(text(h.tree),/词源与构词参考.*合成构词资料_QUIET/);
-  assert.equal(nodes(h.tree,node=>node.type==='a'&&node.props.href==='https://example.test/word/quiet?oldid=123').length,1);
-  assert.equal(nodes(h.tree,node=>node.type==='a'&&node.props.href==='https://example.test/license').length,1);
+  assert.doesNotMatch(text(h.tree),/参考来源|合成词典来源|合成测试来源/);
+  assert.equal(nodes(h.tree,node=>node.type==='details'&&node.props.className?.includes('phase2-word-reference-sources')).length,0);
   assert.equal(JSON.stringify(active.currentStep.word),snapshot,'Display enrichment changed the saved word');
   h.unmount();
  }
