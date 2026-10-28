@@ -52,3 +52,15 @@ test('dailyNew boundaries and covered goal with no weekdays retain the existing 
 test('overview blocks unreadable summaries and never manufactures sync or a plan',()=>{
  const h=harness('LearningPlanOverview',{workflow:workflow(),profile,readable:false,savingScope:'本机',onWord(){},onGoals(){}});assert.doesNotMatch(text(h.tree),/已学 0|听读 650/);assert.equal(h.button('制定单词安排').props.disabled,true);h.unmount();
 });
+test('shared footer keeps explicit save locks while unconfirmed results allow safe return',async()=>{
+ const h=harness('VocabularyPlanEditor',{workflow:workflow({savePlan:()=>new Promise(()=>{})}),onLeave(){},onSaved(){}});
+ h.submit();assert.equal(h.button('保存中…').props.disabled,true);assert.equal(h.button('返回').props.disabled,true);
+ h.timeout();assert.equal(h.button('保存计划').props.disabled,true);assert.equal(h.button('返回').props.disabled,false);h.click('返回');assert.equal(h.button('返回').props.disabled,true);h.unmount();
+ const p=harness('ProfilePlanEditor',{profile,readable:false,saveProfile(){throw Error('Unreadable');},onLeave(){},onSaved(){}});assert.equal(p.button('保存目标').props.disabled,true);assert.equal(p.button('返回').props.disabled,false);p.unmount();
+});
+test('overview stays compact, preserves legacy names and only summarizes actual learning days',()=>{
+ const w=workflow(),props={workflow:w,profile,readable:true,savingScope:'本机保存',onWord(){},onGoals(){}},h=harness('LearningPlanOverview',props);
+ assert.match(text(h.tree),/旧场景词本 · 已学 0 \/ 2/);assert.match(text(h.tree),/周一至五/);assert.doesNotMatch(text(h.tree),/正在按计划学习|学习时区|当前词组/);
+ w.projection.plan.bookId='general-base-1.2';w.projection.plan.weekdays=[7,6];h.render();assert.match(text(h.tree),/通用基础/);assert.match(text(h.tree),/周六、日/);
+ w.projection.plan.weekdays=[];h.render();assert.match(text(h.tree),/未安排新词日/);h.unmount();
+});

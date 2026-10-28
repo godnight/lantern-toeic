@@ -13,7 +13,7 @@ import {getWordAudioBindingForSnapshot,isPrivateWordAudioBlocked,PRIVATE_AUDIO_L
 import {naturalAudioRegistry,subscribeProductLessonAudio,productLessonAudioState} from '@/lib/lesson-audio';
 import {ThemeScene} from './ui-theme';
 import {getWordCardReference} from './word-card-reference';
-import {PLAN_SAVE_WAIT_MS,PlanExitPrompt,usePlanEditorExit,type PlanBackRef} from './plan-editor-state';
+import {PLAN_SAVE_WAIT_MS,PlanEditorActions,PlanExitPrompt,usePlanEditorExit,type PlanBackRef} from './plan-editor-state';
 import './v041-vocabulary.css';
 
 type Workflow=VocabularyWorkflowController;
@@ -106,13 +106,12 @@ export function VocabularyPlanEditor({workflow,onLeave,onSaved,backRef,onPending
         <fieldset className="phase2-weekday-field"><legend>每周学习日</legend><div className="phase2-weekday-picker">{WEEKDAYS.map(day=><label key={day}><input type="checkbox" checked={draft.weekdays.includes(day)} onChange={event=>setDraft({...draft,weekdays:event.target.checked?[...draft.weekdays,day]:draft.weekdays.filter(value=>value!==day)})}/><span>周{DAY_NAMES[day%7]}</span></label>)}</div></fieldset>
         {estimate&&<div className="phase2-plan-estimate" role="status"><b>{estimate.title}</b><p>{estimate.detail}</p></div>}
         <p className="phase2-vocab-note">保存后更新计划和预计安排；当前词组和已学记录保留，下一组采用新设置。</p>
-        <button type="submit" className="button primary" disabled={!estimate?.valid}>{phase==='waiting'?'保存中…':'保存计划'}<Check size={17}/></button>
       </fieldset>
-    </form>
     {message&&<div className="lp-save-notice" role="status"><p>{message}</p>{resultId&&<small>核对标识：{resultId}</small>}
       {phase==='review'&&<><button type="button" className="button secondary" disabled={!enabled||exit.confirm} onClick={()=>void refresh()}>重新读取核对</button>{readback&&ready&&projection&&<><p>当前读回：{projection.plan?`${planName(projection.plan.bookId)} · 目标 ${projection.plan.goal} · 每日 ${projection.plan.dailyNew} 个新词`:'尚无已保存计划'}</p><button type="button" className="button secondary" disabled={!ready||exit.confirm} onClick={()=>{if(!ready)return;generation.current++;revision.current=workflow.projection?.plan?.revision??null;setPhase('idle');setReadback(false);setMessage('已采用当前版本继续编辑；再次保存将发起一次新的修改。');}}>已核对，继续修改</button></>}</>}
     </div>}
-    <div className="button-row"><button type="button" className="button secondary" disabled={phase==='waiting'||exit.confirm} onClick={exit.request}>返回</button></div>
+      <PlanEditorActions onBack={exit.request} backDisabled={phase==='waiting'||exit.confirm} saveDisabled={locked||!estimate?.valid} saveLabel={phase==='waiting'?'保存中…':'保存计划'}/>
+    </form>
     <PlanExitPrompt exit={exit}/>
   </section>;
 }

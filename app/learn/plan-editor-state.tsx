@@ -2,6 +2,11 @@
 
 import {useEffect,useRef,useState} from 'react';
 import type {MutableRefObject} from 'react';
+import {Check} from 'lucide-react';
+
+export function PlanEditorActions({onBack,backDisabled,saveDisabled,saveLabel}:{onBack:()=>void;backDisabled:boolean;saveDisabled:boolean;saveLabel:string}){
+  return <div className="lp-editor-actions"><button type="button" className="button lp-return" disabled={backDisabled} onClick={onBack}>返回</button><button type="submit" className="button primary lp-save" disabled={saveDisabled}>{saveLabel}<Check size={17} aria-hidden="true"/></button></div>;
+}
 
 export type PlanBackRef=MutableRefObject<(()=>void)|null>;
 /** Presentation only: leaving never cancels a command or rolls back storage. */

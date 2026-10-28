@@ -41,7 +41,7 @@ function Fixture(){
     {state.nav==='today'?<TodayVocabularyTask compact workflow={workflow} onPlanOverview={()=>open('overview')} onOpen={()=>open('word')} onOpenStudy={()=>{state.nav='vocabulary';update();}}/>:state.nav==='profile'?<PersonalSettings name={state.profile.name} scope="合成验证分区" theme={theme} dailyNewLabel="每日15词" accountLabel="尚未开放" syncLabel="本机保存" onPlan={()=>open('overview')} onPreferences={()=>open('goals')} onThemes={()=>{}} onAccount={()=>{}} onBackups={()=>{}} onRecordings={()=>{}} onAbout={()=>{}} onSync={()=>{}}/>:<button onClick={()=>open('word')}>调整单词安排</button>}
     <PublicInfoLinks/>
   </WorkspaceShell>
-  {state.route&&<LearningPlanDialog key={state.scope+state.route.id} initial={state.route.initial} workflow={workflow} profile={state.profile} readable savingScope="备考目标保存在本机" saveProfile={profile=>{if(!state.profileOk)return false;state.profile=profile;update();return true;}} backRef={back} onClose={close} onRestoreFocus={event=>{event.preventDefault();requestAnimationFrame(()=>{window.scrollTo(0,scroll.current);if(trigger.current?.isConnected)trigger.current.focus({preventScroll:true});});}}/>}
+  {state.route&&<LearningPlanDialog key={state.scope+state.route.id} initial={state.route.initial} workflow={workflow} profile={state.profile} readable savingScope="本机保存" saveProfile={profile=>{if(!state.profileOk)return false;state.profile=profile;update();return true;}} backRef={back} onClose={close} onRestoreFocus={event=>{event.preventDefault();requestAnimationFrame(()=>{window.scrollTo(0,scroll.current);if(trigger.current?.isConnected)trigger.current.focus({preventScroll:true});});}}/>}
   </PublicInfoBoundary>;
 }
 createRoot(document.getElementById('root')).render(<Fixture/>);

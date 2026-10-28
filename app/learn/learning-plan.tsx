@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useRef,useState} from 'react';
-import {ArrowLeft,ArrowRight,Check} from 'lucide-react';
+import {ArrowLeft,ArrowRight} from 'lucide-react';
 import {Dialog,DialogContent,DialogDescription,DialogTitle} from '@/components/ui/dialog';
 import {registerNativeBack} from '@/lib/native-host';
 import {isSupportedStudyTimezone,studyTimezoneChoices} from '@/lib/study-format';
@@ -9,40 +9,46 @@ import {getWorkflowBook} from '@/lib/workflow-catalog';
 import type {Profile} from '@/lib/study-model';
 import type {VocabularyWorkflowController} from '@/lib/use-vocabulary-workflow';
 import {VocabularyPlanEditor} from './vocabulary-plan';
-import {PlanExitPrompt,usePlanEditorExit,type PlanBackRef} from './plan-editor-state';
+import {PlanEditorActions,PlanExitPrompt,usePlanEditorExit,type PlanBackRef} from './plan-editor-state';
 import './learning-plan.css';
 
 export type LearningPlanPage='overview'|'word'|'goals';
+function learningDays(weekdays:number[]){
+  const days=[...new Set(weekdays)].sort((a,b)=>a-b),names='一二三四五六日',parts:string[]=[];
+  if(!days.length)return '未安排新词日';
+  if(days.length===7)return '每天';
+  for(let i=0;i<days.length;){let end=i;while(end+1<days.length&&days[end+1]===days[end]+1)end++;parts.push(end-i>=2?`周${names[days[i]-1]}至${names[days[end]-1]}`:`周${days.slice(i,end+1).map(day=>names[day-1]).join('、')}`);i=end+1;}
+  return parts.join('、');
+}
 export function LearningPlanOverview({workflow,profile,readable,savingScope,onWord,onGoals}:{workflow:VocabularyWorkflowController;profile:Profile;readable:boolean;savingScope:string;onWord:()=>void;onGoals:()=>void}){
   const projection=readable&&workflow.ready&&!workflow.error?workflow.projection:null,plan=projection?.plan;
-  const status=!projection?'正在读取计划':!plan?'尚未设置':projection.counts.learned>=plan.goal?'总目标已覆盖':!projection.daily.isLearningDay?'今日休息，仍可复习或加练':projection.daily.newRemaining===0?'今日新词目标已完成':'正在按计划学习';
+  const status=!projection?'正在读取计划':!plan?'尚未设置':projection.counts.learned>=plan.goal?'总目标已覆盖':!projection.daily.isLearningDay?'今日休息，仍可复习或加练':projection.daily.newRemaining===0?'今日新词目标已完成':'';
+  const bookName=plan?(plan.bookId==='general-base-1.2'?'通用基础':plan.bookId==='combined-with-supplement-1.2'?'托业备考':getWorkflowBook(plan.bookId).name):'';
   return <div className="lp-overview-grid">
     <section className="lp-overview-card"><h3>单词安排</h3>
-      <p>{workflow.error||status}</p>
-      {plan&&projection&&<><p>{getWorkflowBook(plan.bookId).name}</p><p>已学 {projection.counts.learned} / 目标 {plan.goal}</p><p>每天 {plan.dailyNew} 个新词 · {plan.weekdays.length?plan.weekdays.map(day=>`周${'一二三四五六日'[day-1]}`).join('、'):'无新词学习日'}</p><small>当前词组和已学记录保留，新组采用已保存设置。</small></>}
-      <p className="lp-scope">单词安排与词卡进度保存在本机。</p>
-      <button type="button" disabled={!readable||!projection} onClick={onWord}>{plan?'调整单词安排':'制定单词安排'}<ArrowRight size={18} aria-hidden="true"/></button>
-      {workflow.error&&<button type="button" onClick={()=>void workflow.refresh()}>重新读取计划</button>}
+      {(workflow.error||status)&&<p>{workflow.error||status}</p>}
+      {plan&&projection&&<><p>{bookName} · 已学 {projection.counts.learned} / {plan.goal}</p><p>每天 {plan.dailyNew} 个新词 · {learningDays(plan.weekdays)}</p></>}
+      <div className="lp-overview-actions"><p className="lp-scope">本机保存</p><button type="button" disabled={!readable||!projection} onClick={onWord}>{plan?'调整单词安排':'制定单词安排'}<ArrowRight size={18} aria-hidden="true"/></button>
+      {workflow.error&&<button type="button" onClick={()=>void workflow.refresh()}>重新读取计划</button>}</div>
     </section>
     <section className="lp-overview-card"><h3>备考目标</h3>
-      {readable?<><p>听读 {profile.lrGoal} · 口语 {profile.speakingGoal}</p><p>考期：{profile.examDate||'未设置'}</p><p>每天 {profile.dailyMinutes} 分钟 · 每周启动 {profile.weeklyTarget} 天</p><p>学习时区：{profile.timezone}</p></>:<p>正在读取备考目标</p>}
-      <p className="lp-scope">{savingScope}；此状态不代表单词安排已云同步。</p>
-      <button type="button" disabled={!readable} onClick={onGoals}>调整备考目标<ArrowRight size={18} aria-hidden="true"/></button>
+      {readable?<><p>听读 {profile.lrGoal} · 口语 {profile.speakingGoal}</p><p>考期：{profile.examDate||'未设置'}</p><p>每天 {profile.dailyMinutes} 分钟 · 每周 {profile.weeklyTarget} 天</p></>:<p>正在读取备考目标</p>}
+      <div className="lp-overview-actions"><p className="lp-scope">{savingScope}</p><button type="button" disabled={!readable} onClick={onGoals}>调整备考目标<ArrowRight size={18} aria-hidden="true"/></button></div>
     </section>
   </div>;
 }
 
 export function ProfilePlanEditor({profile,readable,saveProfile,onLeave,onSaved,backRef}:{profile:Profile;readable:boolean;saveProfile:(profile:Profile)=>boolean;onLeave:()=>void;onSaved:()=>void;backRef?:PlanBackRef}){
   const initial=useRef({...profile});
-  const [draft,setDraft]=useState<Profile>(()=>({...profile})),[more,setMore]=useState(false),[message,setMessage]=useState(''),[attempted,setAttempted]=useState(false);
-  const form=useRef<HTMLFormElement>(null),zone=useRef<HTMLInputElement>(null),successful=useRef(false);
+  const [draft,setDraft]=useState<Profile>(()=>({...profile})),[more,setMore]=useState(false),[message,setMessage]=useState(''),[zoneError,setZoneError]=useState(''),[attempted,setAttempted]=useState(false);
+  const form=useRef<HTMLFormElement>(null),zone=useRef<HTMLInputElement>(null),zoneField=useRef<HTMLDivElement>(null),successful=useRef(false);
   const exit=usePlanEditorExit({dirty:JSON.stringify(draft)!==JSON.stringify(initial.current),attempted,pending:false,onLeave,backRef});
   const submit=()=>{
     if(!readable||exit.confirm||successful.current)return;
-    setMessage('');
+    setMessage('');setZoneError('');
     const invalid=form.current?.querySelector<HTMLInputElement>('input:invalid,select:invalid');
-    if(invalid){if(invalid.closest('details'))setMore(true);setMessage('请检查填写内容，其他输入已保留。');requestAnimationFrame(()=>{if(invalid.isConnected){invalid.focus();invalid.reportValidity();}});return;}
-    if(!isSupportedStudyTimezone(draft.timezone)){setMore(true);setMessage('请输入有效的 IANA 学习时区，例如 Asia/Shanghai。');requestAnimationFrame(()=>zone.current?.focus());return;}
+    if(invalid){if(invalid.closest('details'))setMore(true);if(invalid===zone.current)setZoneError('请输入学习时区。');else setMessage('请检查填写内容，其他输入已保留。');requestAnimationFrame(()=>{if(invalid.isConnected&&!invalid.matches(':disabled')){invalid.focus({preventScroll:true});invalid.reportValidity();if(invalid===zone.current)zoneField.current?.scrollIntoView({block:'center',behavior:'auto'});}});return;}
+    if(!isSupportedStudyTimezone(draft.timezone)){setMore(true);setZoneError('请输入有效时区，例如 Asia/Shanghai。');requestAnimationFrame(()=>{const input=zone.current;if(input?.isConnected&&!input.matches(':disabled')){input.focus({preventScroll:true});zoneField.current?.scrollIntoView({block:'center',behavior:'auto'});}});return;}
     setAttempted(true);
     try{if(saveProfile({...draft,name:draft.name.trim(),onboarded:true})===true){successful.current=true;onSaved();return;}}catch{/* The boolean contract does not promise rollback on failure. */}
     setMessage('偏好尚未确认完整保存，填写内容已保留。已发操作不会因返回而撤销。');
@@ -56,13 +62,12 @@ export function ProfilePlanEditor({profile,readable,saveProfile,onLeave,onSaved,
         <div className="form-grid"><label className="field">每天可用时间<select value={draft.dailyMinutes} onChange={event=>setDraft({...draft,dailyMinutes:Number(event.target.value)})}>{choices([5,15,25,45,60],draft.dailyMinutes).map(value=><option key={value} value={value}>{value} 分钟</option>)}</select></label><label className="field">每周启动目标<select value={draft.weeklyTarget} onChange={event=>setDraft({...draft,weeklyTarget:Number(event.target.value)})}>{choices([3,4,5,6,7],draft.weeklyTarget).map(value=><option key={value} value={value}>{value} 天</option>)}</select></label></div>
         <details className="lp-editor-more" open={more} onToggle={event=>setMore(event.currentTarget.open)}><summary>更多设置</summary>
           <label className="field">称呼<input required maxLength={40} value={draft.name} onChange={event=>setDraft({...draft,name:event.target.value})}/></label>
-          <label className="field">学习时区<input ref={zone} required list="plan-study-timezones" value={draft.timezone} onChange={event=>setDraft({...draft,timezone:event.target.value})}/><datalist id="plan-study-timezones">{studyTimezoneChoices(draft.timezone).map(value=><option key={value} value={value}/>)}</datalist><small>沿用当前学习时区计算日期，不改写历史练习时间。</small></label>
+          <div ref={zoneField} className="field lp-timezone-field"><label>学习时区<input ref={zone} required list="plan-study-timezones" aria-invalid={!!zoneError||undefined} aria-describedby={zoneError?'plan-study-timezone-error':undefined} value={draft.timezone} onChange={event=>{setDraft({...draft,timezone:event.target.value});setZoneError('');}}/></label>{zoneError&&<small id="plan-study-timezone-error" className="lp-field-error" role="alert">{zoneError}</small>}<datalist id="plan-study-timezones">{studyTimezoneChoices(draft.timezone).map(value=><option key={value} value={value}/>)}</datalist><small>沿用当前学习时区计算日期，不改写历史练习时间。</small></div>
         </details>
-        <button type="submit" className="button primary">保存目标<Check size={17}/></button>
       </fieldset>
+      {message&&<p className="lp-save-notice" role="alert">{message}</p>}
+      <PlanEditorActions onBack={exit.request} backDisabled={exit.confirm} saveDisabled={!readable||exit.confirm} saveLabel="保存目标"/>
     </form>
-    {message&&<p className="lp-save-notice" role="alert">{message}</p>}
-    <div className="button-row"><button type="button" className="button secondary" disabled={exit.confirm} onClick={exit.request}>返回</button></div>
     <PlanExitPrompt exit={exit}/>
   </section>;
 }
