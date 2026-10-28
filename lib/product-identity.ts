@@ -25,16 +25,16 @@ export function parseProductCapabilities(value:unknown):ProductCapabilities|null
 }
 
 export type ProductCredentials={username:string;password:string};
-export type CredentialValidation={ok:true;credentials:ProductCredentials}|{ok:false;message:string};
+export type CredentialValidation={ok:true;credentials:ProductCredentials}|{ok:false;field:'username'|'password'|'confirmation';message:string};
 
 export function validateProductCredentials(username:string,password:string,confirmation?:string):CredentialValidation {
-  if(/[^\x00-\x7f]/.test(username)||!/^[a-zA-Z0-9_]{3,32}$/.test(username.trim()))return {ok:false,
+  if(/[^\x00-\x7f]/.test(username)||!/^[a-zA-Z0-9_]{3,32}$/.test(username.trim()))return {ok:false,field:'username',
     message:'用户名须为 3–32 个英文字母、数字或下划线，大小写不区分，首尾空白会去除。'};
   const length=[...password].length;
   let bytes=0,wellFormed=true;
   for(let i=0;i<password.length;i++){const code=password.charCodeAt(i);if(code>=0xd800&&code<=0xdbff){const next=password.charCodeAt(++i);if(!(next>=0xdc00&&next<=0xdfff)){wellFormed=false;break;}}else if(code>=0xdc00&&code<=0xdfff){wellFormed=false;break;}}
   for(const point of password){const code=point.codePointAt(0)!;bytes+=code<=0x7f?1:code<=0x7ff?2:code<=0xffff?3:4;}
-  if(length<15||length>128||password.length>256||password.includes('\0')||!wellFormed||bytes>512)return {ok:false,message:'密码须为 15–128 个有效字符，不含空字符；首尾空白属于密码。'};
-  if(confirmation!==undefined&&password!==confirmation)return {ok:false,message:'两次输入的密码不一致。'};
+  if(length<15||length>128||password.length>256||password.includes('\0')||!wellFormed||bytes>512)return {ok:false,field:'password',message:'密码须为 15–128 个有效字符，不含空字符；首尾空白属于密码。'};
+  if(confirmation!==undefined&&password!==confirmation)return {ok:false,field:'confirmation',message:'两次输入的密码不一致。'};
   return {ok:true,credentials:{username:username.trim().toLowerCase(),password}};
 }

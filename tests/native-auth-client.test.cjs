@@ -240,6 +240,6 @@ test('actual React server render of the real NativeAccountRoot stays behind the 
       performance,DOMException,ReadableStream},{filename:file});return exports;
   }
   const Root=sourceModule(path.join(ROOT,'mobile/src/NativeAccountRoot.tsx')).default;
-  const html=renderToStaticMarkup(React.createElement(Root));assert(html.includes('正在核对'));
+  const html=renderToStaticMarkup(React.createElement(Root));assert(html.includes('正在确认账号'));
   assert(!html.includes('workspace-mobile-nav'));assert(!html.includes('当前未登录'));assert(!html.includes('synthetic_a'));
 });

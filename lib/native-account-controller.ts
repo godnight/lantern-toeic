@@ -57,7 +57,7 @@ export class NativeAccountController {
       if(proof.user)this.everAuthenticated=true;
       const deadline=proof.user?new SessionDeadline(proof.validForMs!,()=>{if(this.current(generation)){this.begin('会话已到期，学习分区已锁定。',true);this.update({status:'blocked',message:'会话有效期已结束，原数据保留。请联网重新核对账号。'},true);}},this.clock):null;
       this.deadline=deadline;
-      const access:AccountAccess=deadline?{owner:proof.user!.id,epoch:generation,canAccess:deadline.canAccess,assertAccess:deadline.assertAccess}:publicLocalAccess(null,generation);
+      const access:AccountAccess=deadline?{user:proof.user!,owner:proof.user!.id,epoch:generation,canAccess:deadline.canAccess,assertAccess:deadline.assertAccess}:publicLocalAccess(null,generation);
       if(deadline&&!deadline.canAccess()){deadline.assertAccess();return;}
       this.update({status:'ready',user:proof.user,capabilities:proof.capabilities,unavailable:proof.unavailable,access,message:warning==='已退出本机。'&&proof.user?'原退出结果未确认；当前显示的是重新核对的账号。':warning});
     }catch{

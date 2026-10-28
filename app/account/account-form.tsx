@@ -5,7 +5,7 @@ import {NativeAccountController,INITIAL_NATIVE_ACCOUNT_STATE,type NativeAccountS
 import {createWebAuthTransport,authResultHeld,setAuthResultHold,watchAuthHold} from '@/lib/web-auth-transport';
 import {AccountPanel} from './account-panel';
 
-export default function AccountForm({initialMode='register'}:{initialMode?:'register'|'login'}={}){
+export default function AccountForm({initialMode='register',returnOwner=null}:{initialMode?:'register'|'login';returnOwner?:string|null}={}){
  const [state,setState]=useState<NativeAccountState>(INITIAL_NATIVE_ACCOUNT_STATE),controller=useRef<NativeAccountController|null>(null),mutating=useRef(false),explicit=useRef(false);
  useEffect(()=>{
   const value=new NativeAccountController(createWebAuthTransport());controller.current=value;
@@ -17,5 +17,7 @@ export default function AccountForm({initialMode='register'}:{initialMode?:'regi
   return()=>{off();notice();value.dispose();controller.current=null;window.removeEventListener('pagehide',hide);window.removeEventListener('pageshow',show);window.removeEventListener('focus',show);document.removeEventListener('visibilitychange',visibility);};
  },[]);
  const panelState:NativeAccountState=state.status==='ready'&&state.user&&!state.access.canAccess()?{status:'blocked',message:'会话有效期已结束，原分区已锁定。请联网重新核对账号。'}:state;
- return <AccountPanel state={panelState} initialMode={initialMode} onSubmit={async(mode,credentials)=>{mutating.current=true;try{await controller.current?.mutate(mode,credentials);}finally{mutating.current=false;}}} onLogout={()=>{mutating.current=true;void controller.current?.mutate('logout').finally(()=>{mutating.current=false;});}} onRecheck={()=>{explicit.current=true;setAuthResultHold(false,false,false);controller.current?.recheck();}} onEnter={()=>{if(state.status==='ready'&&state.access.assertAccess())window.location.assign('/');}} onBack={()=>window.location.assign('/')}/>;
+ const enter=()=>{if(state.status==='ready'&&state.user&&controller.current?.getSnapshot()===state&&state.access.owner===state.user.id&&state.access.assertAccess())window.location.assign('/');};
+ const canReturn=state.status==='ready'&&!!state.user&&state.user.id===returnOwner&&state.access.owner===returnOwner&&state.access.canAccess();
+ return <AccountPanel state={panelState} initialMode={initialMode} onSubmit={async(mode,credentials)=>{mutating.current=true;try{await controller.current?.mutate(mode,credentials);}finally{mutating.current=false;}}} onLogout={()=>{mutating.current=true;void controller.current?.mutate('logout').finally(()=>{mutating.current=false;});}} onRecheck={()=>{explicit.current=true;setAuthResultHold(false,false,false);controller.current?.recheck();}} onEnter={enter} onBack={canReturn?enter:undefined}/>;
 }

@@ -19,7 +19,7 @@ export function readSessionProof(value:unknown,kind:'http'|'native',elapsedMs:nu
 }
 export type SessionClock={now:()=>number;set:(fn:()=>void,ms:number)=>unknown;clear:(timer:unknown)=>void};
 export const sessionClock:SessionClock={now:monotonicNow,set:(fn,ms)=>{const timer=setTimeout(fn,ms);(timer as unknown as {unref?:()=>void}).unref?.();return timer;},clear:timer=>clearTimeout(timer as ReturnType<typeof setTimeout>)};
-export type AccountAccess={owner:string|null;epoch:number;canAccess:()=>boolean;assertAccess:()=>boolean};
+export type AccountAccess={user?:ProductIdentity;owner:string|null;epoch:number;canAccess:()=>boolean;assertAccess:()=>boolean};
 /** A single proof's in-memory budget. Closing an old proof never affects a new one. */
 export class SessionDeadline {
   private end:number;private last:number;private closed=false;private notified=false;private timer:unknown;

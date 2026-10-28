@@ -30,7 +30,7 @@ exports.createSourceLoader=({root,imports={},globals={},allowedFiles,permitLearn
  function resolve(name,from){
   if(Object.hasOwn(imports,name))return imports[name];
   // Explicit authority seam for older business-only fixtures, never a product default.
-  if(permitLearningAccess&&(name==='@/lib/learning-access'||name==='./learning-access'))return {useLearningAccess:()=>explicitLearningPermit,LearningAccessContext:{Provider:'ExplicitTestLearningAccess'}};
+  if(permitLearningAccess&&(name==='@/lib/learning-access'||name==='./learning-access'))return {useLearningAccess:()=>explicitLearningPermit,useVerifiedLearningAccount:owner=>owner?{user:{id:owner,username:'test_learner'},epoch:1}:null,LearningAccessContext:{Provider:'ExplicitTestLearningAccess'}};
   if(name.startsWith('node:'))return fromRoot(name);
   if(!name.startsWith('.')&&!name.startsWith('@/')){
    assert(['zod','drizzle-orm','drizzle-orm/sqlite-core','drizzle-orm/sqlite-proxy','react-dom'].includes(name),'Unexpected external source dependency: '+name);return fromRoot(name);

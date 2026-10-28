@@ -10,7 +10,7 @@ import {INITIAL_NATIVE_ACCOUNT_STATE,NativeAccountController,type NativeAccountS
 import {applyDocumentTheme} from '@/lib/ui-theme';
 
 export default function NativeAccountRoot(){
- const [state,setState]=useState<NativeAccountState>(INITIAL_NATIVE_ACCOUNT_STATE),[accountOpen,setAccountOpen]=useState(false),[legacy,setLegacy]=useState(false);
+ const [state,setState]=useState<NativeAccountState>(INITIAL_NATIVE_ACCOUNT_STATE),[accountOpen,setAccountOpen]=useState(false),[legacy,setLegacy]=useState(false),[returnOwner,setReturnOwner]=useState<string|null>(null);
  const controller=useRef<NativeAccountController|null>(null);
  useEffect(()=>{
   const value=new NativeAccountController(createNativeAuthTransport());controller.current=value;
@@ -24,9 +24,11 @@ export default function NativeAccountRoot(){
   if(!document.documentElement.dataset.uiTheme)applyDocumentTheme('paper');
   return()=>{off();native();value.dispose();controller.current=null;window.removeEventListener('pagehide',hide);window.removeEventListener('pageshow',show);window.removeEventListener('focus',show);document.removeEventListener('visibilitychange',visibility);};
  },[]);
- useEffect(()=>registerNativeBack(()=>{if(legacy){setLegacy(false);return true;}if(accountOpen){setAccountOpen(false);return true;}return false;},100),[accountOpen,legacy]);
+ const canReturn=accountOpen&&state.status==='ready'&&!!state.user&&state.user.id===returnOwner&&state.access.owner===returnOwner&&state.access.canAccess();
+ const enter=()=>{if(state.status!=='ready'||!state.user||controller.current?.getSnapshot()!==state||state.access.owner!==state.user.id||!state.access.assertAccess())return false;setAccountOpen(false);return true;};
+ useEffect(()=>registerNativeBack(()=>{if(legacy){setLegacy(false);return true;}return canReturn?enter():false;},100),[canReturn,state,legacy]);
  if(legacy)return <GuestDataRecovery nativeMode onBack={()=>setLegacy(false)}/>;
- if(state.status==='ready'&&state.user&&!accountOpen&&state.access.canAccess())return <StudyApp key={state.user.id+':'+state.access.epoch} owner={state.user.id} nativeMode access={state.access} onAccount={()=>setAccountOpen(true)}/>;
+ if(state.status==='ready'&&state.user&&!accountOpen&&state.access.canAccess())return <StudyApp key={state.user.id+':'+state.access.epoch} owner={state.user.id} nativeMode access={state.access} onAccount={()=>{setReturnOwner(state.user!.id);setAccountOpen(true);}}/>;
  const panelState:NativeAccountState=state.status==='ready'&&state.user&&!state.access.canAccess()?{status:'blocked',message:'会话有效期已结束，原分区已锁定。请联网重新核对账号。'}:state;
- return <AccountPanel state={panelState} onSubmit={async(mode,credentials)=>{await controller.current?.mutate(mode,credentials);setAccountOpen(true);}} onLogout={()=>{void controller.current?.mutate('logout');}} onRecheck={()=>controller.current?.recheck()} onEnter={()=>{if(state.status==='ready'&&state.access.assertAccess())setAccountOpen(false);}} onBack={()=>setAccountOpen(false)} onLegacy={()=>setLegacy(true)}/>;
+ return <AccountPanel state={panelState} onSubmit={async(mode,credentials)=>{await controller.current?.mutate(mode,credentials);setAccountOpen(true);}} onLogout={()=>{void controller.current?.mutate('logout');}} onRecheck={()=>controller.current?.recheck()} onEnter={enter} onBack={canReturn?enter:undefined} onLegacy={()=>setLegacy(true)}/>;
 }
