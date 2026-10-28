@@ -22,7 +22,7 @@
 .lp-editor button,.lp-editor summary{min-width:44px;min-height:44px;white-space:normal;}
 .lp-editor .button-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}
 .lp-editor .button-row .button{flex:1;min-width:min(100%,8rem);}
-.lp-editor-actions{display:flex;flex-wrap:wrap;align-items:stretch;justify-content:flex-start;gap:12px;width:min(100%,16rem);margin:20px 0 0 auto;}
+.lp-editor-actions{display:flex;flex-wrap:wrap;align-items:stretch;justify-content:flex-start;gap:8px;width:min(100%,16rem);margin:20px 0 0 auto;}
 .lp-editor .lp-editor-actions>.button{min-height:48px;min-width:min(100%,6rem);margin:0;}
 .lp-editor-actions>.lp-return{flex:0 1 6rem;background:transparent;border-color:transparent;box-shadow:none;color:var(--muted-foreground);}
 .lp-editor-actions>.lp-save{flex:1 1 8rem;min-width:min(100%,8rem);}
