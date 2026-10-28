@@ -17,7 +17,7 @@ test('anonymous form has one title, short action and rules in account explanatio
 });
 test('unknown notice protects data without internal terminology or a success claim',()=>{
  const state={status:'blocked',message:'账号操作结果尚未确认，本机分区已锁定。请显式联网重新核对；不会自动重发。'};
- const html=renderToStaticMarkup(React.createElement(AccountPanel,{...props,state}));assert.match(html,/未登录不代表注册失败/);assert.match(html,/重新核对账号/);assert(!/分区|显式|已成功/.test(html));assert.equal(accountNotice({...ready,user:A,message:'当前身份已重新核对；这不确认原账号操作结果。'},'register'),'已确认当前账号；之前操作的结果仍未确认。');
+ const html=renderToStaticMarkup(React.createElement(AccountPanel,{...props,state}));assert.match(html,/上次操作的结果还未确认，请重新核对账号后继续/);assert(!html.includes('注册失败'));assert.match(html,/重新核对账号/);assert(!/分区|显式|已成功/.test(html));assert.equal(accountNotice({...ready,user:A,message:'当前身份已重新核对；这不确认原账号操作结果。'},'register'),'已确认当前账号；之前操作的结果仍未确认。');
 });
 test('verified identity metadata is matching proof memory only, never a raw owner or nickname',()=>{
  let current=null;const l=createSourceLoader({root,imports:{react:{createContext:initial=>({initial}),useContext:()=>current}}}),m=l.load('lib/learning-access.tsx');assert.equal(m.useVerifiedLearningAccount(A.id),null);

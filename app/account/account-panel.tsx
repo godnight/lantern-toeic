@@ -37,7 +37,7 @@ export function AccountPanel({state,initialMode='register',onSubmit,onRecheck,on
   <p style={{margin:0}}>学习记录保存在本机，不自动上传。</p>
   {notice&&<p role="status" aria-live="polite" style={{margin:0}}>{notice}</p>}
   {state.status==='ready'&&state.user&&<><p style={{margin:0}}>当前账号：<strong>{state.user.username}</strong></p><div className="button-row"><button style={{fontSize:'1rem'}} className="button primary" type="button" onClick={onBack??onEnter}>{onBack?'返回学习':'进入本机学习'}</button><button style={{fontSize:'1rem'}} className="button secondary" type="button" onClick={()=>{clear();setSwitching(true);setMode('login');}}>切换账号</button><button style={{fontSize:'1rem'}} className="button secondary" type="button" onClick={()=>{clear();onLogout();}}>退出本机</button></div></>}
-  {state.status==='blocked'&&<><p style={{margin:0}}>{resultUnknown?'未登录不代表注册失败。请先重新核对，再尝试登录同一账号。':'请联网重新核对账号后继续。'}</p><button style={{fontSize:'1rem'}} className="button primary" type="button" onClick={()=>{clear();onRecheck();}}>重新核对账号</button></>}
+  {state.status==='blocked'&&<><p style={{margin:0}}>{resultUnknown?'上次操作的结果还未确认，请重新核对账号后继续。':'请联网重新核对账号后继续。'}</p><button style={{fontSize:'1rem'}} className="button primary" type="button" onClick={()=>{clear();onRecheck();}}>重新核对账号</button></>}
   {state.status==='ready'&&state.unavailable&&<p role="alert">账号服务尚未启用或当前设备不支持，暂时不能注册、登录。</p>}
   {formOpen&&<form noValidate onSubmit={event=>void submit(event)} style={{display:'grid',gap:16,minWidth:0}}>
    {field('username','用户名',username)}{field('password','密码',password)}
