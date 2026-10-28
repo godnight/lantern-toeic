@@ -23,14 +23,14 @@ const {NativeAccountController}=load('lib/native-account-controller.ts');
 const A={id:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'};
 const B={id:'usr_bbbbbbbb-2222-4222-8222-222222222222',username:'synthetic_b'};
 const caps={passwordLogin:true,phoneLogin:false};
-const session=user=>({status:200,body:{user,capabilities:caps}});
+const session=user=>({status:200,body:{user,capabilities:caps,session:{validForMs:3600000}}});
 const guest={status:401,body:{code:'unauthenticated'}};
 const closed={status:503,body:{code:'native-auth-unavailable',capabilities:{passwordLogin:false,phoneLogin:false}}};
 const credentials={username:'synthetic_b',password:'only-synthetic-test-password'};
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function clock(){
   let now=0,next=0;const pending=new Map();
-  return {set(fn,ms){const id=++next;pending.set(id,{fn,at:now+ms});return id;},clear(id){pending.delete(id);},
+  return {now:()=>now,set(fn,ms){const id=++next;pending.set(id,{fn,at:now+ms});return id;},clear(id){pending.delete(id);},
     advance(ms){now+=ms;for(const [id,item] of [...pending])if(item.at<=now){pending.delete(id);item.fn();}},get size(){return pending.size;}};
 }
 function bridge(options={}){
@@ -38,15 +38,26 @@ function bridge(options={}){
   target.self=target;target.top=options.frame?{}:target;
   if(!options.missing)target.LanternAuthHost={request(raw){const request=JSON.parse(raw);calls.push(request);options.onCall?.(request);}};
   const transport=transportModule.createNativeAuthTransport(target,timer);
-  function reply(index,value){const request=calls[index];assert(request,'Expected pending native request');target.__lanternAuthReceive?.({id:request.id,...plain(value)});}
+  function reply(index,value){const request=calls[index];assert(request,'Expected pending native request');const result=plain(value);if(request.version!==2&&result.body?.session)delete result.body.session;target.__lanternAuthReceive?.({id:request.id,...request.version===2?{version:2}:{},...result});}
   return {target,transport,calls,timer,reply};
 }
 function controller(options={}){
-  const harness=bridge(options),value=new NativeAccountController(harness.transport),states=[];
+  const harness=bridge(options),value=new NativeAccountController(harness.transport,harness.timer),states=[];
   value.subscribe((state,synchronous)=>states.push({state:plain(state),synchronous}));
   return {...harness,value,states};
 }
 async function initial(h,value=session(A)){h.value.start();h.reply(0,value);await tick();return h.value.getSnapshot();}
+
+test('v2 old-host silence and missing metadata fail closed without fallback',async()=>{
+ const old=controller();old.value.start();assert.equal(old.calls[0].version,2);old.timer.advance(15000);await tick();assert.equal(old.value.getSnapshot().status,'blocked');assert.equal(old.calls.length,1);old.value.dispose();
+ const missing=controller();missing.value.start();missing.reply(0,{status:200,body:{user:A,capabilities:caps}});await tick();assert.equal(missing.value.getSnapshot().status,'blocked');missing.value.dispose();
+});
+
+test('unknown mutation hold survives lifecycle; explicit proof opens B while old A access stays closed',async()=>{
+ const h=controller();const state=await initial(h),oldAccess=state.access;const pending=h.value.mutate('login',credentials);h.reply(1,{status:503,body:{code:'auth-state-unknown'}});await pending;
+ h.value.suspend();h.value.resume();await tick();assert.equal(h.calls.length,2);assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(oldAccess.assertAccess(),false);
+ h.value.recheck();h.reply(2,session(B));await tick();const next=h.value.getSnapshot();assert.equal(next.user.id,B.id);assert(next.access.canAccess());assert.equal(oldAccess.assertAccess(),false);assert.equal(h.value.getSnapshot().user.id,B.id);h.value.dispose();
+});
 
 test('public identity is canonical usr_UUIDv4 and contains no editable owner or secret fields',()=>{
   assert.deepEqual(plain(identity.parseProductIdentity(A)),A);
@@ -229,6 +240,6 @@ test('actual React server render of the real NativeAccountRoot stays behind the 
       performance,DOMException,ReadableStream},{filename:file});return exports;
   }
   const Root=sourceModule(path.join(ROOT,'mobile/src/NativeAccountRoot.tsx')).default;
-  const html=renderToStaticMarkup(React.createElement(Root));assert(html.includes('核对账号状态'));
+  const html=renderToStaticMarkup(React.createElement(Root));assert(html.includes('正在核对'));
   assert(!html.includes('workspace-mobile-nav'));assert(!html.includes('当前未登录'));assert(!html.includes('synthetic_a'));
 });

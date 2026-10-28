@@ -1,4 +1,5 @@
 'use client';
+import {useLearningAccess} from './learning-access';
 import type {TrainingWrite} from './practice-training';
 import {useEffect,useRef,useState} from 'react';
 import {workflowScopeKey,type WorkflowScope} from './learning-domain-repository';
@@ -16,24 +17,25 @@ export type PracticeWorkflowController={
 };
 type Snapshot={key:string;ready:boolean;error:string;projection:PracticeProjection|null};
 export function usePracticeWorkflow(options:PracticeWorkflowHookOptions):PracticeWorkflowController {
+ const accountAccess=useLearningAccess(options.owner),canRead=useLearningAccess(options.owner,true);
  const scope:WorkflowScope=options.nativeMode?(options.owner?{kind:'harmony-owner',ownerId:options.owner}:{kind:'harmony-device',partition:'existing-device'}):options.owner===null?{kind:'web-local',partition:'existing-device'}:{kind:'web-owner',ownerId:options.owner};
  const key=workflowScopeKey(scope),catalogVersion=practiceCatalogVersion(options.questions),compatibleCatalogVersions=(options.compatibleQuestionCatalogs??[]).map(practiceCatalogVersion).join('|'),latest=useRef(options);latest.current=options;
  const activeKey=useRef(key);activeKey.current=key;
  const generation=useRef(0),requestId=useRef(0),operationCount=useRef(0),operationTail=useRef<Promise<void>>(Promise.resolve()),readable=useRef(false);
  const service=useRef<{key:string;generation:number;value:PracticeWorkflow}|null>(null),notify=useRef<(()=>void)|null>(null);
  const [snapshot,setSnapshot]=useState<Snapshot>({key,ready:false,error:'',projection:null}),[visible,setVisible]=useState<{key:string;id:string|null}>({key,id:null}),[busy,setBusy]=useState(false),[initializationAttempt,setInitializationAttempt]=useState(0);
- const current=snapshot.key===key?snapshot:{key,ready:false,error:'',projection:null};
+ const current=snapshot.key===key&&canRead()?snapshot:{key,ready:false,error:'',projection:null};
  const session=(visible.key===key&&visible.id?current.projection?.sessions.find(item=>item.id===visible.id):null)??null;
  async function refreshSnapshot(){
-  const instance=service.current;if(!instance||instance.key!==activeKey.current||!latest.current.ready)return;
+  const instance=service.current;if(!accountAccess()||!instance||instance.key!==activeKey.current||!latest.current.ready)return;
   const request=++requestId.current;
-  try{const projection=await instance.value.readProjection();if(service.current!==instance||instance.key!==activeKey.current||request!==requestId.current||!latest.current.ready)return;readable.current=true;setSnapshot({key:instance.key,ready:true,error:'',projection});}
-  catch(error){if(service.current!==instance||instance.key!==activeKey.current||request!==requestId.current)return;readable.current=false;setSnapshot(previous=>({key:instance.key,ready:false,error:error instanceof Error?error.message:'练习会话读取失败，原记录保留。',projection:previous.key===instance.key?previous.projection:null}));}
+  try{const projection=await instance.value.readProjection();if(!accountAccess()||service.current!==instance||instance.key!==activeKey.current||request!==requestId.current||!latest.current.ready)return;readable.current=true;setSnapshot({key:instance.key,ready:true,error:'',projection});}
+  catch(error){if(!accountAccess()||service.current!==instance||instance.key!==activeKey.current||request!==requestId.current)return;readable.current=false;setSnapshot(previous=>({key:instance.key,ready:false,error:error instanceof Error?error.message:'练习会话读取失败，原记录保留。',projection:previous.key===instance.key?previous.projection:null}));}
  }
  useEffect(()=>{
   const id=++generation.current;let cancelled=false;readable.current=false;
-  if(!options.ready){service.current=null;setSnapshot(previous=>({key,ready:false,error:'',projection:previous.key===key?previous.projection:null}));return;}
-  const stillCurrent=()=>!cancelled&&generation.current===id&&activeKey.current===key&&latest.current.ready;
+  if(!accountAccess()||!options.ready){service.current=null;setSnapshot(previous=>({key,ready:false,error:'',projection:previous.key===key?previous.projection:null}));return;}
+  const stillCurrent=()=>accountAccess()&&!cancelled&&generation.current===id&&activeKey.current===key&&latest.current.ready;
   setSnapshot(previous=>({key,ready:false,error:'',projection:previous.key===key?previous.projection:null}));
   void createPracticeWorkflow({scope,questions:options.questions,compatibleQuestionCatalogs:options.compatibleQuestionCatalogs,timezone:options.timezone,isCurrent:stillCurrent,seenQuestionIds:()=>latest.current.attempts?.map(attempt=>attempt.qid)??[],legacy:{
    addAttempt:attempt=>{if(!stillCurrent())throw Error('scope-changed');return latest.current.legacy.addAttempt(attempt);},
@@ -54,14 +56,14 @@ export function usePracticeWorkflow(options:PracticeWorkflowHookOptions):Practic
   return()=>{notify.current=null;channel?.close();window.removeEventListener('focus',invalidate);window.removeEventListener('storage',invalidate);};
  },[key]);
  async function run(action:(value:PracticeWorkflow)=>Promise<PracticeResult>,show=false):Promise<PracticeResult>{
-  const instance=service.current;if(!instance||instance.key!==key||!current.ready)return {status:'blocked',reason:current.error||'练习持久记录尚未就绪。'};
+  const instance=service.current;if(!accountAccess()||!instance||instance.key!==key||!current.ready)return {status:'blocked',reason:current.error||'练习持久记录尚未就绪。'};
   operationCount.current++;setBusy(true);
   const task=operationTail.current.then(async():Promise<PracticeResult>=>{
-   if(service.current!==instance||activeKey.current!==key||!latest.current.ready)return {status:'blocked',reason:'scope-changed'};
+   if(!accountAccess()||service.current!==instance||activeKey.current!==key||!latest.current.ready)return {status:'blocked',reason:'scope-changed'};
    if(!readable.current)return {status:'blocked',reason:'practice-read-unavailable'};
    try{
     const result=await action(instance.value);
-    if(service.current!==instance||activeKey.current!==key||!latest.current.ready)return {status:'blocked',reason:'scope-changed'};
+    if(!accountAccess()||service.current!==instance||activeKey.current!==key||!latest.current.ready)return {status:'blocked',reason:'scope-changed'};
     if(show&&'sessionId'in result&&result.sessionId&&(result.status==='started'||result.status==='restored'||result.status==='replayed'))setVisible({key,id:result.sessionId});
     notify.current?.();await refreshSnapshot();return result;
    }catch(error){await refreshSnapshot();return {status:'blocked',reason:error instanceof Error?error.message:'练习操作未完成，原记录保留。'};}
@@ -72,7 +74,8 @@ export function usePracticeWorkflow(options:PracticeWorkflowHookOptions):Practic
  // Public retry explicitly replaces the failed/open service. Broadcast and ordinary invalidation
  // only read the current instance, so unavailable storage cannot cause an automatic reopen loop.
  async function refresh(){
-  if(!latest.current.ready||activeKey.current!==key)return;
+  if(!accountAccess())return;
+  if(!accountAccess()||!latest.current.ready||activeKey.current!==key)return;
   generation.current++;requestId.current++;readable.current=false;service.current?.value.close();service.current=null;
   setSnapshot(previous=>({key,ready:false,error:'',projection:previous.key===key?previous.projection:null}));setInitializationAttempt(attempt=>attempt+1);
  }

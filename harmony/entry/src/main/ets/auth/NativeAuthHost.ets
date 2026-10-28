@@ -1,15 +1,17 @@
 import { webview } from '@kit.ArkWeb';
 import http from '@ohos.net.http';
 import deviceInfo from '@ohos.deviceInfo';
+import { systemDateTime } from '@kit.BasicServicesKit';
 import { AuthSessionStore } from './AuthSessionStore';
 import { AUTH_API_ORIGIN } from './AuthConfiguration';
 import { AuthRequest, AuthBody, AuthReply, AuthUser, AuthCookie, AuthRoute, COOKIE_NAME,
   AUTH_TIMEOUT_MS, MAX_RESPONSE_BYTES, trustedFrame, configuredOrigin, parseAuthRequest,
   utf8Length, capabilities, unavailableBody, unknownBody, unauthenticatedBody,
   parseResponseBody, publicUser, publicFailure, sessionCookie, authRoute, phoneAction,
-  operationUnknownBody, phoneStatus, phoneChallenge, phoneFailure, phoneSuccessCapabilities } from './AuthPolicy';
+  operationUnknownBody, phoneStatus, phoneChallenge, phoneFailure, phoneSuccessCapabilities, sessionProofBudget } from './AuthPolicy';
 
 interface Operation {
+  version?: number;
   id: string;
   action: string;
   epoch: number;
@@ -38,6 +40,7 @@ export class NativeAuthHost {
   // settling. Its lock/quarantine belongs to the process, not to that page.
   private static busy: boolean = false;
   private static quarantined: boolean = false;
+  private static retryAt: number = 0;
   private seen: string[] = [];
   private network: http.HttpRequest | undefined = undefined;
 
@@ -85,20 +88,27 @@ export class NativeAuthHost {
     // Never send a duplicate id that could overwrite the original operation's reply.
     if (this.seen.includes(input.id)) return;
     if (this.seen.length >= 256) {
-      this.send(input.id, 429, { code: 'too-many-attempts', error: '请稍后重新打开账号页。' }, epoch);
+      this.send(input.id, 429, { code: 'too-many-attempts', error: '请稍后重新打开账号页。' }, epoch, input.version);
       return;
     }
     this.seen.push(input.id);
     if (!this.available()) {
-      this.send(input.id, 503, unavailableBody(input.action), epoch);
+      this.send(input.id, 503, unavailableBody(input.action), epoch, input.version);
       return;
     }
+    if (input.action !== 'session' && input.action !== 'phone-status') {
+      const now: number = systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false);
+      if (Number.isFinite(now) && now < NativeAuthHost.retryAt) {
+        this.send(input.id, 429, { code: 'too-many-attempts', error: '请稍后重试。' }, epoch, input.version);
+        return;
+      }
+    }
     if (NativeAuthHost.busy) {
-      this.send(input.id, 503, operationUnknownBody(input.action), epoch);
+      this.send(input.id, 503, operationUnknownBody(input.action), epoch, input.version);
       return;
     }
     NativeAuthHost.busy = true;
-    const operation: Operation = { id: input.id, action: input.action, epoch: epoch, timedOut: false, replied: false, sessionMayHaveChanged: false };
+    const operation: Operation = { id: input.id, action: input.action, version: input.version, epoch: epoch, timedOut: false, replied: false, sessionMayHaveChanged: false };
     this.run(input, operation).catch(() => { /* run publishes only sanitized failures. */ });
   }
 
@@ -116,9 +126,10 @@ export class NativeAuthHost {
     return !operation.timedOut && this.live(operation.epoch);
   }
 
-  private send(id: string, status: number, body: AuthBody, epoch: number): void {
+  private send(id: string, status: number, body: AuthBody, epoch: number, version?: number): void {
     if (!this.live(epoch)) return;
     const reply: AuthReply = { id: id, status: status, body: body };
+    if (version === 2) reply.version = 2;
     const safe: string = JSON.stringify(reply).replace(/</g, '\\u003c');
     try {
       this.controller.runJavaScript('(function(){if(typeof window.__lanternAuthReceive==="function")' +
@@ -129,7 +140,7 @@ export class NativeAuthHost {
   private finish(operation: Operation, status: number, body: AuthBody): void {
     if (operation.replied || !this.current(operation)) return;
     operation.replied = true;
-    this.send(operation.id, status, body, operation.epoch);
+    this.send(operation.id, status, body, operation.epoch, operation.version);
   }
 
   private cookieHeaders(response: http.HttpResponse): string[] {
@@ -166,6 +177,7 @@ export class NativeAuthHost {
     const route: AuthRoute | undefined = authRoute(action);
     if (route === undefined) throw new Error('Unconfirmed');
     const headers: Record<string, string> = { 'Accept': 'application/json', 'Origin': AUTH_API_ORIGIN };
+    if (action === 'session' && operation.version === 2) headers['X-Lantern-Session-Proof'] = '2';
     if (route.method === 'POST') headers['Content-Type'] = 'application/json';
     if (token !== undefined) {
       if (!/^[a-f0-9]{64}$/.test(token)) throw new Error('Unconfirmed');
@@ -199,7 +211,7 @@ export class NativeAuthHost {
       operation.replied = true;
       // A UI deadline is not HTTP completion. Keep the operation slot until the
       // real native request/Asset operation settles, even after publishing 503.
-      this.send(operation.id, 503, operationUnknownBody(input.action), operation.epoch);
+      this.send(operation.id, 503, operationUnknownBody(input.action), operation.epoch, operation.version);
     }, AUTH_TIMEOUT_MS);
     try {
       let token: string | undefined = undefined;
@@ -234,9 +246,21 @@ export class NativeAuthHost {
       const body: string = input.body === undefined ? '{}' : JSON.stringify(input.body);
       const identityMutation: boolean = ['register', 'login', 'logout', 'phone-bind', 'phone-login'].includes(input.action);
       if (identityMutation) operation.sessionMayHaveChanged = true;
+      const started: number = input.version === 2 ? systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false) : 0;
+      if (input.version === 2 && (!Number.isFinite(started) || started < 0)) throw new Error('Unconfirmed');
       const response: http.HttpResponse = await this.fetch(input.action, body, token, operation);
       const lines: string[] = this.cookieHeaders(response);
       const payload: AuthBody = parseResponseBody(response.result as string);
+      if (response.responseCode === 429) {
+        const headers: Record<string, string | string[]> = response.header as Record<string, string | string[]>;
+        const names: string[] = Object.keys(headers).filter((key: string) => key.toLowerCase() === 'retry-after');
+        const value: string | string[] | undefined = names.length === 1 ? headers[names[0]] : undefined;
+        if (typeof value === 'string' && /^[0-9]{1,5}$/.test(value)) {
+          const seconds: number = Number(value);
+          const now: number = systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false);
+          if (Number.isSafeInteger(seconds) && seconds > 0 && seconds <= 86400 && Number.isFinite(now) && now >= 0) NativeAuthHost.retryAt = now + seconds * 1000;
+        }
+      }
       // The fixed backend never rotates cookies on session/rejection. Treat an
       // unexpected rotation as unknown instead of proving an obsolete token.
       const cookieAllowed: boolean = response.responseCode === 200 && ['register', 'login', 'logout', 'phone-login'].includes(input.action);
@@ -284,6 +308,16 @@ export class NativeAuthHost {
       let user: AuthUser | undefined = publicUser(payload);
       if (!user || payload.capabilities?.passwordLogin !== true) throw new Error('Unconfirmed');
       if (input.action === 'session' && token === undefined) throw new Error('Unconfirmed');
+      if (input.version === 2) {
+        const remaining: number = sessionProofBudget(payload);
+        const ended: number = systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false);
+        const validForMs: number = Math.floor(remaining - (ended - started));
+        if (!Number.isFinite(ended) || ended < started || !Number.isSafeInteger(validForMs) || validForMs <= 0 || validForMs > 43200000) throw new Error('Unconfirmed');
+        operation.sessionMayHaveChanged = false;
+        NativeAuthHost.quarantined = false;
+        this.finish(operation, 200, { user: user, capabilities: capabilities(true), session: { validForMs: validForMs } });
+        return;
+      }
       if (input.action === 'phone-bind') {
         if (!bindingUser || user.id !== bindingUser.id || payload.ok !== true || payload.phone !== input.body?.phone) throw new Error('Unconfirmed');
         const proof: http.HttpResponse = await this.fetch('session', '', token, operation);

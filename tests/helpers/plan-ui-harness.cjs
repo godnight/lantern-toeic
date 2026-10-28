@@ -16,7 +16,7 @@ function harness(name,initial){
  const catalog={getWorkflowBook:id=>books.find(book=>book.id===id),getWorkflowCatalog:()=>words,getCandidateLearningWord:()=>null,WORKFLOW_BOOKS:books};
  const imports={react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':new Proxy({},{get:()=>function Icon(){}}),'@/components/ui/dialog':{Dialog:'Dialog',DialogContent:'DialogContent',DialogTitle:'DialogTitle',DialogDescription:'DialogDescription'},'@/lib/workflow-catalog':catalog,'./workflow-catalog':catalog,'@/lib/vocabulary-model':{},'./interactive-example':{},'./practice':{},'@/lib/word-audio-bindings-v040':{},'@/lib/lesson-audio':{},'./ui-theme':{},'./word-card-reference':{},'@/lib/native-host':{registerNativeBack:()=>()=>{}}};
  const globals={document:{activeElement:null},HTMLElement:class HTMLElement{},requestAnimationFrame:fn=>fn(),setTimeout:(fn,ms)=>{const id=++timerId;timers.set(id,{fn,ms});return id;},clearTimeout:id=>timers.delete(id)};
- const loader=createSourceLoader({root,imports,globals});
+ const loader=createSourceLoader({permitLearningAccess:true,root,imports,globals});
  const file=name==='VocabularyPlanEditor'?'app/learn/vocabulary-plan.tsx':'app/learn/learning-plan.tsx';
  const component=loader.load(file)[name];
  const render=()=>{cursor=0;tree=component(props);const pending=effects;effects=[];pending.forEach(fn=>fn());return tree;};

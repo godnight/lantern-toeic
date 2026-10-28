@@ -1,4 +1,5 @@
 'use client';
+import {useLearningAccess} from '@/lib/learning-access';
 
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {ArrowLeft, Check, CircleAlert, Headphones, Image as ImageIcon, Upload, Download, ArrowUpRight} from 'lucide-react';
@@ -40,6 +41,7 @@ async function readCatalog(repo: ExamRepository): Promise<Catalog> {
 }
 
 export function MockExamOwner({ownerId, onClose,cloudEnabled=true,managementOnly=false}: {ownerId: string; onClose: () => void;cloudEnabled?:boolean;managementOnly?:boolean}) {
+  const accountAccess=useLearningAccess();
   const [catalog, setCatalog] = useState<Catalog>({packages: [], attempts: []});
   const [ready, setReady] = useState(false), [busy, setBusy] = useState(false);
   const [error, setError] = useState(''), [notice, setNotice] = useState('');
@@ -110,13 +112,15 @@ export function MockExamOwner({ownerId, onClose,cloudEnabled=true,managementOnly
   }
   async function perform<T>(work: (repo: ExamRepository) => Promise<T>, done: (value: T) => void, user = true): Promise<T> {
     const owner = session.current;
-    if (!owner) throw new StaleExamOwner();
+    if (!accountAccess() || !owner) throw new StaleExamOwner();
     if (user && userLock.current) throw new Error('正在保存，请稍候');
     if (user) { userLock.current = true; setBusy(true); clearError(); setNotice(''); }
     pending.current++;
     try {
       return await owner.run(async repo => {
+        if (!accountAccess()) throw new StaleExamOwner();
         const value = await work(repo);
+        if (!accountAccess()) throw new StaleExamOwner();
         owner.assertActive();
         if (session.current !== owner) throw new StaleExamOwner();
         // Update the ref before the next queued action reads its expected revision.
@@ -136,6 +140,7 @@ export function MockExamOwner({ownerId, onClose,cloudEnabled=true,managementOnly
   useEffect(() => {
     let cancelled = false;
     let opened: ExamUiSession | null = null;
+    if (!accountAccess()) return;
     void openExamRepository(ownerId).then(repo => {
       if (cancelled) { repo.close(); return; }
       opened = new ExamUiSession(repo, ownerId); session.current = opened;
@@ -155,9 +160,9 @@ export function MockExamOwner({ownerId, onClose,cloudEnabled=true,managementOnly
     if (!exam) {setAssetSession(null); return;}
     const owner = session.current;
     const leases = new ExamAssetLeases(async id => {
-      if (!owner) throw new StaleExamOwner(); owner.assertActive();
+      if (!accountAccess() || !owner) throw new StaleExamOwner(); owner.assertActive();
       const blob = await owner.repository.getAssetBlob(examKey(exam), id);
-      owner.assertActive(); return blob;
+      if (!accountAccess()) throw new StaleExamOwner(); owner.assertActive(); return blob;
     });
     setAssetSession({exam, leases});
     return () => {precheckController.current?.abort(); leases.close();};
@@ -165,10 +170,10 @@ export function MockExamOwner({ownerId, onClose,cloudEnabled=true,managementOnly
 
   useEffect(() => {
     setAudioSource({exam: null, url: ''});
-    if (!exam || assetSession?.exam !== exam || !audioActive) return;
+    if (!accountAccess() || !exam || assetSession?.exam !== exam || !audioActive) return;
     let cancelled = false, lease: ExamAssetLease | null = null;
     void assetSession.leases.acquire(exam.listeningAudioId).then(value => {
-      if (cancelled) {value.release(); return;}
+      if (cancelled || !accountAccess()) {value.release(); return;}
       lease = value; setAudioSource({exam, url: value.url});
     }).catch(cause => {if (!cancelled && !(cause instanceof StaleExamOwner)) fail(cause);});
     return () => {cancelled = true; if (lease) releaseExamAssetLease(lease);};
@@ -177,16 +182,16 @@ export function MockExamOwner({ownerId, onClose,cloudEnabled=true,managementOnly
 
   useEffect(() => {
     setImageSources({exam: null, groupId: '', urls: {}}); setImagePreview(null);
-    if (!exam || assetSession?.exam !== exam || !group) return;
+    if (!accountAccess() || !exam || assetSession?.exam !== exam || !group) return;
     let cancelled = false;
     const acquired: ExamAssetLease[] = [], selected: Record<string, string> = {};
     void (async () => {
       for (const id of group.imageIds) {
-        const lease = await assetSession.leases.acquire(id);
-        if (cancelled) {lease.release(); return;}
+        const lease = await (accountAccess() ? assetSession.leases.acquire(id) : Promise.reject(new StaleExamOwner()));
+        if (cancelled || !accountAccess()) {lease.release(); return;}
         acquired.push(lease); selected[id] = lease.url;
       }
-      if (!cancelled) setImageSources({exam, groupId: group.id, urls: selected});
+      if (!cancelled && accountAccess()) setImageSources({exam, groupId: group.id, urls: selected});
     })().catch(cause => {
       acquired.splice(0).forEach(lease => lease.release());
       if (!cancelled && !(cause instanceof StaleExamOwner)) {setImageCheck({exam, state: 'error'}); fail(cause);}
@@ -195,20 +200,20 @@ export function MockExamOwner({ownerId, onClose,cloudEnabled=true,managementOnly
   }, [exam, assetSession, group?.id]);
 
   useEffect(() => {
-    if (!exam || assetSession?.exam !== exam) return;
+    if (!accountAccess() || !exam || assetSession?.exam !== exam) return;
     const controller = new AbortController(); precheckController.current = controller;
     let cancelled = false;
     setImageCheck({exam, state: 'pending'});
     void (async () => {
       // Decode one image, detach its decoder and release its lease before the next.
       for (const asset of exam.assets.filter(value => value.mime.startsWith('image/'))) {
-        const lease = await assetSession.leases.acquire(asset.id);
+        const lease = await (accountAccess() ? assetSession.leases.acquire(asset.id) : Promise.reject(new StaleExamOwner()));
         try {
-          if (cancelled) return;
+          if (cancelled || !accountAccess()) return;
           await verifyExamImage(lease.url, controller.signal);
         } finally {lease.release();}
       }
-      if (!cancelled) setImageCheck({exam, state: 'ready'});
+      if (!cancelled && accountAccess()) setImageCheck({exam, state: 'ready'});
     })().catch(cause => {
       if (!cancelled && !(cause instanceof StaleExamOwner)) {setImageCheck({exam, state: 'error'}); fail(cause);}
     });
@@ -284,7 +289,7 @@ export function MockExamOwner({ownerId, onClose,cloudEnabled=true,managementOnly
   }
   async function start() {
     const matchesMedia = () => !!exam && preflightRef.current.ready && preflightRef.current.url === urls[exam.listeningAudioId];
-    if (!exam || !preflight || !matchesMedia() || !heard || !imagesReady || document.hidden || !isNativeForeground()) return;
+    if (!accountAccess() || !exam || !preflight || !matchesMedia() || !heard || !imagesReady || document.hidden || !isNativeForeground()) return;
     await perform(repo => {
       // Recheck after the FIFO wait: durationchange/error may have invalidated this source.
       if (!matchesMedia() || document.hidden || !isNativeForeground()) throw new Error('音频预检状态已变化，请重新试听后开始。');
@@ -527,6 +532,7 @@ export function ExamAudio({url, declaredListeningDurationMs, effectiveListeningD
   onPreflight: (ready: boolean, url: string) => void; onInterruption: (reason: InterruptionReason) => Promise<void>;
   onRefresh: () => Promise<void>; busy: boolean;
 }) {
+  const accountAccess=useLearningAccess();
   const audio = useRef<HTMLAudioElement | null>(null), mounted = useRef(false), generation = useRef(0);
   const latest = useRef({url, declaredListeningDurationMs, effectiveListeningDurationMs, attempt, onPreflight, onInterruption, onRefresh});
   latest.current = {url, declaredListeningDurationMs, effectiveListeningDurationMs, attempt, onPreflight, onInterruption, onRefresh};
@@ -547,7 +553,7 @@ export function ExamAudio({url, declaredListeningDurationMs, effectiveListeningD
   }
   async function playAligned() {
     const player = audio.current, snapshot = latest.current.attempt;
-    if (!player || !snapshot || snapshot.status !== 'listening' || document.hidden || !isNativeForeground()) return;
+    if (!accountAccess() || !player || !snapshot || snapshot.status !== 'listening' || document.hidden || !isNativeForeground()) return;
     const ticket = ++generation.current;
     try {
       const check = durationCheck(player);
@@ -555,17 +561,17 @@ export function ExamAudio({url, declaredListeningDurationMs, effectiveListeningD
       const target = audioOffsetSeconds(snapshot, Date.now(), player.duration);
       if (Math.abs(player.currentTime - target) > 1) {
         await latest.current.onInterruption('audio-seek');
-        if (!mounted.current || generation.current !== ticket) return;
+        if (!accountAccess() || !mounted.current || generation.current !== ticket) return;
         controlledSeek.current = true;
         player.currentTime = audioOffsetSeconds(snapshot, Date.now(), player.duration);
       }
-      if (!mounted.current || generation.current !== ticket || latest.current.attempt?.status !== 'listening') return;
+      if (!accountAccess() || !mounted.current || generation.current !== ticket || latest.current.attempt?.status !== 'listening') return;
       const alignedCheck = durationCheck(player);
       if (!alignedCheck.ready) throw new Error(alignedCheck.error);
       if (player.currentTime >= player.duration - 0.05) {setState('ended'); return;}
       intentionalPause.current = false; playbackWanted.current = true; setError('');
       await player.play();
-      if (!mounted.current || generation.current !== ticket || latest.current.attempt?.status !== 'listening' || document.hidden || !isNativeForeground()) {player.pause(); return;}
+      if (!accountAccess() || !mounted.current || generation.current !== ticket || latest.current.attempt?.status !== 'listening' || document.hidden || !isNativeForeground()) {player.pause(); return;}
       const playingCheck = durationCheck(player);
       if (!playingCheck.ready) throw new Error(playingCheck.error);
       failureLogged.current = false; setState('playing');
@@ -585,6 +591,7 @@ export function ExamAudio({url, declaredListeningDurationMs, effectiveListeningD
     latest.current.onPreflight(false, latest.current.url);
   }
   function readDuration(player: HTMLAudioElement) {
+    if (!accountAccess()) {stop(); clearPreflight(); setState('paused'); return false;}
     if (player !== audio.current || player.getAttribute('src') !== latest.current.url) return false;
     if (!Object.is(metadataDuration.current, player.duration)) {
       // A changed measurement needs a new successful play; a prior preview cannot certify it.

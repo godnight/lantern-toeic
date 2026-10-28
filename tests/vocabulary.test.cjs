@@ -19,7 +19,7 @@ function load(file, imports = {}, globals = {}) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
   vm.runInNewContext(code, { exports, require(name) {
-    if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals}).resolve(name,file);
+    if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({permitLearningAccess:true,root,imports,globals:globals}).resolve(name,file);
     return imports[name];
   }, Date, Intl, Map, Set, Error, JSON, structuredClone, Request, Response, Headers,
     AbortController, crypto: crypto.webcrypto, ...globals }, { filename: file });

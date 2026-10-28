@@ -1,4 +1,5 @@
 'use client';
+import {useLearningAccess} from '@/lib/learning-access';
 import {useState,useEffect,useRef} from 'react';
 import type {ReactNode} from 'react';
 import {canonicalHash} from '@/lib/domain-command';
@@ -20,6 +21,7 @@ import {registerNativeBack,subscribeNativeState} from '@/lib/native-host';
 // Paused players remain mounted. Only the most recently started player owns the checkpoint.
 let checkpointOwner:object|null=null;
 export function SpeechPlayer({text,label='播放音频',trackId='question',checkpoint,onCheckpoint,audioKey,materialId,segmentId,voiceProfileId,contextHash,naturalOnly=false,mode='listening',className='',disabled=false}:{text:string;label?:string;sourceLabel?:string;trackId?:string;checkpoint?:TrainingAudio|null;onCheckpoint?:(value:TrainingAudio,urgent?:boolean)=>void;audioKey?:string;materialId?:string;segmentId?:string;voiceProfileId?:string;contextHash?:string;naturalOnly?:boolean;mode?:'listening'|'word'|'example';className?:string;disabled?:boolean}){
+ const accountAccess=useLearningAccess();
  const compact=mode!=='listening',effectiveRate=(value:number)=>compact?1:value;
  const [,audioRevision]=useState(0);
  useEffect(()=>{const unsubscribe=subscribeProductLessonAudio(()=>audioRevision(value=>value+1));audioRevision(value=>value+1);return unsubscribe;},[]);
@@ -86,14 +88,14 @@ export function SpeechPlayer({text,label='播放音频',trackId='question',check
   };
  },[text,clip,sourceId,trackId,mode]);
  const play=async(restart=false)=>{
-  if(disabled)return;
+  if(!accountAccess()||disabled)return;
   if(playingRef.current&&!restart){pause();return;}
   if(!clip){setPrepareError('这段音频尚未准备。');return;}
   const replay=restart||replayNext.current||(mode==='word'&&!played.current);
   stopLessonAudio();const token=++generation.current;setPrepareError('');setPreparing(true);
   try{
    const player=await prepareController.current?.();
-   if(token!==generation.current)return;
+   if(!accountAccess()||token!==generation.current)return;
    setPreparing(false);
    if(!player){setPrepareError('这段音频暂时不可用，请重试。');return;}
    rateRef.current=effectiveRate(rateRef.current);

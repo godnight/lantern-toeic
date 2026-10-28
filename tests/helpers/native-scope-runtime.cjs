@@ -12,6 +12,7 @@ const idb = req('fake-indexeddb');
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const plain = value => JSON.parse(JSON.stringify(value));
 const allPins = new Map();
+const explicitLearningPermit=()=>true;
 
 function createRuntime({ react, globals = {} } = {}) {
   const cache = new Map();
@@ -31,6 +32,7 @@ function createRuntime({ react, globals = {} } = {}) {
     const compiled = ts.transpileModule(bytes.toString('utf8'), { fileName: file, compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true, jsx: ts.JsxEmit.ReactJSX }, reportDiagnostics: true });
     assert.equal(compiled.diagnostics?.some(value => value.category === ts.DiagnosticCategory.Error) || false, false, 'Actual TypeScript transpiles');
     function imports(name) {
+      if (name === './learning-access' || name === '@/lib/learning-access') return {useLearningAccess:()=>explicitLearningPermit};
       if (name === 'react') { assert.ok(react, 'React hook harness must be explicit'); return react; }
       if (name === 'sonner') return { toast: { error() {}, success() {}, message() {} } };
       if (!name.startsWith('.') && !name.startsWith('@/')) return req(name);

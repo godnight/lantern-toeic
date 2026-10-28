@@ -1,4 +1,5 @@
 'use client';
+import {useLearningAccess} from '@/lib/learning-access';
 import {useDeferredValue,useEffect,useId,useMemo,useRef,useState,type ReactNode} from 'react';
 import {ArrowLeft,ArrowRight,BookOpen,Check,Download,Search,Star,Upload,X} from 'lucide-react';
 import {toast} from 'sonner';
@@ -44,8 +45,8 @@ function DictionarySources({word}:{word:string}){
  return <p className="word-footnote">中文维基词典贡献者 · Kaikki 提取 · {variants.map(value=><span key={value}><a href={'https://zh.wiktionary.org/wiki/'+encodeURIComponent(value)} target="_blank" rel="noreferrer">{value} 原词条</a>（<a href={'https://zh.wiktionary.org/w/index.php?title='+encodeURIComponent(value)+'&action=history'} target="_blank" rel="noreferrer">编辑历史</a>） </span>)} · <a href={dictionaryMetadata.licenseUrl} target="_blank" rel="noreferrer">{dictionaryMetadata.license}</a>。词典释义为一般用法，不代表托业考纲；词源参考不等于记忆联想。</p>;
 }
 export function VocabularyEntry({onOpen}:{onOpen:()=>void}){return <button className="vocabulary-entry panel" onClick={onOpen}><span className="vocabulary-entry-icon"><BookOpen size={25}/></span><span><b>词库与生词本</b><small>查词 · 收藏 · 词卡复习</small></span><ArrowRight size={20}/></button>;}
-export function VocabularyReviewSummary({owner,onOpen}:{owner:string|null;onOpen:()=>void}){
- const store=useVocabulary(owner),[now,setNow]=useState(Date.now());
+export function VocabularyReviewSummary({owner,onOpen,online=false}:{owner:string|null;onOpen:()=>void;online?:boolean}){
+ const store=useVocabulary(owner,online),[now,setNow]=useState(Date.now());
  const states=useMemo(()=>vocabularyStates(store.events),[store.events]);
  useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),60000);return()=>clearInterval(timer);},[]);
  const starred=[...states.values()].filter(s=>s.starred).length,due=[...states.values()].filter(s=>s.due>0&&s.due<=now).length;
@@ -246,20 +247,23 @@ export default function VocabularyLibrary({owner,online=true,onQuestion,initialM
 
 /** Management-only reuse of the original validated vocabulary event backup. */
 export function VocabularyRecordData({owner,online=true}:{owner:string|null;online?:boolean}){
+ const accountAccess=useLearningAccess(owner);
+ const [pendingImport,setPendingImport]=useState<{payload:unknown;owner:string|null;generation:number}|null>(null);
  const store=useVocabulary(owner,online),latest=useRef(store),ownerRef=useRef(owner),mounted=useRef(true),generation=useRef(0),input=useRef<HTMLInputElement>(null),pending=useRef(false);
  const [busy,setBusy]=useState(false),[message,setMessage]=useState('');
  latest.current=store;ownerRef.current=owner;
- useEffect(()=>{generation.current++;pending.current=false;setBusy(false);setMessage('');},[owner]);
+ useEffect(()=>{generation.current++;pending.current=false;setBusy(false);setMessage('');setPendingImport(null);},[owner]);
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;generation.current++;};},[]);
- const blocked=busy||!store.ready||!!store.error;
- const saveBackup=()=>{if(blocked)return;try{const url=URL.createObjectURL(new Blob([JSON.stringify(store.backup(),null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='lantern-vocabulary-records.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);setMessage('词卡备份已生成，请确认文件已保存。');}catch{setMessage('备份无法读取，请保留浏览器数据后重试。');}};
+ const blocked=busy||pendingImport!==null||!store.ready||!!store.error;
+ const saveBackup=()=>{if(!accountAccess()||blocked)return;try{const url=URL.createObjectURL(new Blob([JSON.stringify(store.backup(),null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='lantern-vocabulary-records.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);setMessage('词卡备份已生成，请确认文件已保存。');}catch{setMessage('备份无法读取，请保留浏览器数据后重试。');}};
  const restore=async(file:File|undefined)=>{
   if(!file||blocked||pending.current)return;
   const importingOwner=owner,token=generation.current;pending.current=true;setBusy(true);setMessage('');
-  const current=()=>mounted.current&&generation.current===token&&ownerRef.current===importingOwner;
-  try{if(file.size>20000000)throw Error('备份文件超过 20 MB。');const payload=JSON.parse(await file.text());if(!current())return;if(!latest.current.ready||latest.current.error)throw Error('词库记录暂未读入，未导入这份备份。');if(latest.current.restore(payload))setMessage('词库记录已合并，原记录已保留。');}
+  const current=()=>accountAccess()&&mounted.current&&generation.current===token&&ownerRef.current===importingOwner;
+  try{if(file.size>20000000)throw Error('备份文件超过 20 MB。');const payload:unknown=JSON.parse(await file.text());if(!current())return;if(!latest.current.ready||latest.current.error)throw Error('词库记录暂未读入，未导入这份备份。');setPendingImport({payload,owner:importingOwner,generation:token});}
   catch(error){if(current())setMessage(error instanceof Error?error.message:'导入失败，原记录已保留。');}
   finally{if(current()){pending.current=false;setBusy(false);}}
  };
- return <section className="v041-vocabulary-data" aria-label="词卡记录备份与恢复"><h2>词卡记录</h2><p>收藏与词卡反馈。{owner&&online?'联网后同步到当前账号。':'保存在当前本机分区。'}</p>{store.error&&<p role="alert">{store.error}</p>}<div className="button-row"><button type="button" className="button secondary" disabled={blocked} onClick={saveBackup}><Download size={16}/>备份词卡记录</button><button type="button" className="button secondary" disabled={blocked} onClick={()=>input.current?.click()}><Upload size={16}/>恢复词卡记录</button><button type="button" className="text-button" disabled={busy} onClick={store.retry}>重新读取</button></div><input ref={input} type="file" accept="application/json,.json" hidden disabled={blocked} aria-label="选择词库记录备份" onChange={event=>{const file=event.currentTarget.files?.[0];event.currentTarget.value='';void restore(file);}}/>{message&&<p role="status">{message}</p>}</section>;
+ const confirmImport=()=>{const selected=pendingImport;if(!selected)return;setPendingImport(null);if(!accountAccess()||!mounted.current||selected.owner!==ownerRef.current||selected.generation!==generation.current){setMessage('身份已变化，本次导入确认已失效。');return;}try{if(latest.current.restore(selected.payload))setMessage('词库记录已合并到当前分区，原记录已保留。');}catch{setMessage('备份格式无效，原记录保留。');}};
+ return <section className="v041-vocabulary-data" aria-label="词卡记录备份与恢复"><h2>词卡记录</h2><p>收藏与词卡反馈。{owner&&online?'联网后同步到当前账号。':'保存在当前本机分区。'}</p>{store.error&&<p role="alert">{store.error}</p>}<div className="button-row"><button type="button" className="button secondary" disabled={blocked} onClick={saveBackup}><Download size={16}/>备份词卡记录</button><button type="button" className="button secondary" disabled={blocked} onClick={()=>input.current?.click()}><Upload size={16}/>恢复词卡记录</button><button type="button" className="text-button" disabled={busy} onClick={store.retry}>重新读取</button></div>{pendingImport&&<section role="alertdialog" aria-label="确认本人词库备份"><p>旧词库文件没有可信账号绑定。请确认文件来源属于本人，并将其中收藏与反馈合并到当前账号分区；文件中的owner不会用作身份。</p><div className="button-row"><button type="button" className="button primary" onClick={confirmImport}>确认本人来源并导入当前分区</button><button type="button" className="button secondary" onClick={()=>setPendingImport(null)}>取消导入</button></div></section>}<input ref={input} type="file" accept="application/json,.json" hidden disabled={blocked} aria-label="选择词库记录备份" onChange={event=>{const file=event.currentTarget.files?.[0];event.currentTarget.value='';void restore(file);}}/>{message&&<p role="status">{message}</p>}</section>;
 }

@@ -1,4 +1,5 @@
 'use client';
+import {useLearningAccess} from '@/lib/learning-access';
 import {stopLessonAudio} from '@/lib/lesson-audio';
 
 import {useEffect,useRef,useState} from 'react';
@@ -77,6 +78,7 @@ export function SpeakingRecordingHistory({recordings,timezone,nativeMode=false,o
 }
 
 export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=false,timezone,recovery,onRetain,onRelease,feedbackScope}:SpeakingRoomProps){
+ const accountAccess=useLearningAccess();
  const dialogViewport=useDialogViewport();
  const [phase,setPhase]=useState<SpeakingPhase>(recovery?'done':'ready');const [seconds,setSeconds]=useState(prompt.prepSeconds);
  const [url,setUrl]=useState('');const [saved,setSaved]=useState(false);const [busy,setBusy]=useState(false);const [saving,setSaving]=useState(false);const [saveError,setSaveError]=useState(false);const [accessError,setAccessError]=useState('');const [self,setSelf]=useState<string[]>([]);const [discardOpen,setDiscardOpen]=useState(false);const [returnNotice,setReturnNotice]=useState('');
@@ -93,7 +95,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
  useEffect(()=>{mounted.current=true;if(recovery){last.current={meta:recovery.meta,blob:recovery.blob};objectURL.current=URL.createObjectURL(recovery.blob);recordingMediaTrace('source-ready',objectURL.current);setUrl(objectURL.current);setSaveError(!recovery.saving);if(recovery.saving){savingNow.current=true;setSaving(true);void recovery.saving.then(()=>{if(mounted.current){setSaved(true);setSaveError(false);}},()=>{if(mounted.current)setSaveError(true);}).finally(()=>{if(mounted.current){savingNow.current=false;setSaving(false);}});}}return()=>{mounted.current=false;requestGeneration.current++;if(recorder.current&&['recording','processing'].includes(currentPhase.current)){if(!stoppedAt.current)stoppedAt.current=Date.now();onRetain?.({prompt,meta:recordingMeta(),blob:new Blob(chunks.current,{type:recorder.current.mimeType||'audio/webm'}),processing:true});if(recorder.current.state==='recording')recorder.current.stop();}releaseMicrophone();if(objectURL.current){recordingMediaTrace('url-released',objectURL.current);URL.revokeObjectURL(objectURL.current);}};},[]);
  const persist=async(meta:Recording,blob:Blob)=>{
   // A rapid second retry must not write/upload the same clip concurrently.
-  if(savingNow.current)return;
+  if(!accountAccess()||savingNow.current)return;
   const generation=requestGeneration.current;savingNow.current=true;setSaving(true);setSaveError(false);setDiscardOpen(false);
   const captureState=captureCounts.current,trace=captureTrace.current;observeCapture('save-start',blob.type,captureState,trace);
   const valid=()=>mounted.current&&generation===requestGeneration.current&&last.current?.meta.id===meta.id;
@@ -103,6 +105,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
  };
  const stop=()=>{if(recorder.current?.state!=='recording')return;stoppedAt.current=Date.now();captureCounts.current.stoppedAt=stoppedAt.current;observeCapture('stop-request');changePhase('processing');recorder.current.stop();releaseMicrophone();};
  const begin=()=>{
+  if(!accountAccess())return;
   stopLessonAudio();
   if(!stream.current||beginning.current||recorder.current?.state==='recording'||document.hidden||!isNativeForeground())return;
   beginning.current=true;
@@ -135,6 +138,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
   }catch{observeCapture('start-error');beginning.current=false;releaseMicrophone();changePhase('ready');setAccessError('录音未能启动，请检查设备麦克风后重试。');toast.error('录音未能启动，请检查设备麦克风后重试');}
  };
  const start=async()=>{
+  if(!accountAccess())return;
   stopLessonAudio();
   if(acquiring.current||busy||savingNow.current||!['ready','done'].includes(currentPhase.current)||document.hidden||!isNativeForeground())return;
   // Downloading does not authorize replacing an unsaved Blob with a fresh clip.
@@ -144,7 +148,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
   captureTrace.current=createRecordingCaptureTrace();captureCounts.current={chunkCount:0,zeroChunks:0,totalBytes:0,lastChunkBytes:0,startedAt:0,stoppedAt:0};observeCapture('permission-request');
   try{
    const acquired=await navigator.mediaDevices.getUserMedia({audio:true});
-   if(!mounted.current||generation!==requestGeneration.current||document.hidden||!isNativeForeground()){acquired.getTracks().forEach(track=>track.stop());return;}
+   if(!accountAccess()||!mounted.current||generation!==requestGeneration.current||document.hidden||!isNativeForeground()){acquired.getTracks().forEach(track=>track.stop());return;}
    if(feedback?.status==='ready')setPreviousFeedback(feedback);setFeedback(null);
     stream.current=acquired;beginning.current=false;setSelf([]);setSaved(false);setSaveError(false);setCaptureIssue('');deadline.current=Date.now()+prompt.prepSeconds*1000;changePhase('prep');setSeconds(prompt.prepSeconds);
    observeCapture('stream-acquired');

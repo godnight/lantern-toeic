@@ -15,7 +15,7 @@ function load(file, imports, globals = {}) {
     fileName:file,compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX}
   }).outputText;
   vm.runInNewContext(code, {exports, require(name) {
-    if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals}).resolve(name,file);
+    if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals,permitLearningAccess:true}).resolve(name,file);
     return imports[name];
   }, Date, Map, Set, TextEncoder, structuredClone, crypto: webcrypto, ...globals}, {filename: file});
   return exports;

@@ -9,7 +9,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 
 // Executes repository modules. Only browser, React hooks and network I/O are simulated.
 function load(file, imports, globals = {}) {
-  const dependencies=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals});
+  const dependencies=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals,permitLearningAccess:true});
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(root + '/' + file, 'utf8'), {
     fileName:file,compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX}
@@ -169,18 +169,21 @@ function ownerWorkspace() {
   const render=()=>{h.render();return h.render();};
   const button=(label)=>nodes(render(),n=>n.type==='button'&&textOf(n)===label)[0];
   const dialog=(title)=>nodes(render(),n=>n.type==='Dialog'&&textOf(n).includes(title))[0];
-  return {h,render,button,dialog,preferences(){navigateApp(render,'profile');nodes(render(),n=>n.type==='button'&&textOf(n).startsWith('学习偏好'))[0].props.onClick();},switchTo(next,nextNative=false){owner=next;nativeMode=nextNative;return render();}};
+  return {h,render,button,dialog,preferences(){navigateApp(render,'profile');nodes(render(),n=>n.type==='button'&&textOf(n).startsWith('学习计划'))[0].props.onClick();},switchTo(next,nextNative=false){owner=next;nativeMode=nextNative;return render();}};
 }
 
-test('C10: owner and mode boundary removes preference drafts while same owner keeps edits',()=>{
+test('C10: owner and mode boundary removes plan drafts while same owner keeps edits',()=>{
   const app=ownerWorkspace();app.render();app.preferences();
-  let dialog=app.dialog('学习偏好');assert.equal(dialog.props.open,true);
-  nodes(dialog,n=>n.type==='input'&&n.props.maxLength===40)[0].props.onChange({target:{value:'ALICE PRIVATE DRAFT'}});
-  assert.equal(nodes(app.dialog('学习偏好'),n=>n.type==='input'&&n.props.maxLength===40)[0].props.value,'ALICE PRIVATE DRAFT');
-  app.switchTo('bob');assert.equal(app.dialog('学习偏好').props.open,false);
-  app.preferences();dialog=app.dialog('学习偏好');
-  assert.equal(nodes(dialog,n=>n.type==='input'&&n.props.maxLength===40)[0].props.value,'BOB');
-  app.switchTo('bob',true);assert.equal(app.dialog('学习偏好').props.open,false,'Changing native/web mode also disposes the draft');
+  const plan=()=>nodes(app.render(),n=>n.type==='LearningPlanDialog')[0];
+  const a=plan();assert.ok(a);assert.equal(a.props.profile.name,'ALICE');
+  const {harness}=require('./helpers/plan-ui-harness.cjs');
+  const editor=harness('ProfilePlanEditor',{profile:a.props.profile,readable:true,saveProfile:a.props.saveProfile,onLeave(){},onSaved(){}});
+  editor.find(n=>n.type==='input'&&n.props.maxLength===40)[0].props.onChange({target:{value:'ALICE PRIVATE DRAFT'}});editor.render();
+  assert.equal(editor.find(n=>n.type==='input'&&n.props.maxLength===40)[0].props.value,'ALICE PRIVATE DRAFT');assert.equal(plan().key,a.key);
+  app.switchTo('bob');assert.equal(plan(),undefined);editor.unmount(); // React removes this keyed workspace and its editor.
+  app.preferences();const b=plan(),next=harness('ProfilePlanEditor',{profile:b.props.profile,readable:true,saveProfile:b.props.saveProfile,onLeave(){},onSaved(){}});
+  assert.equal(next.find(n=>n.type==='input'&&n.props.maxLength===40)[0].props.value,'BOB');
+  app.switchTo('bob',true);assert.equal(plan(),undefined);next.unmount();
   assert.doesNotMatch(JSON.stringify([...app.h.storage]),/ALICE PRIVATE DRAFT/,'Unsaved draft never enters either account snapshot');
 });
 
@@ -480,7 +483,7 @@ test('storage quota failure keeps resource checkin open without a false success 
   assert.equal(nodes(retained, n => n.type === 'textarea')[0].props.value, 'Keep my takeaway when storage fails');
 });
 
-test('mobile access guidance distinguishes synchronized PWA and local native modes', async () => {
+test('M1 access guidance keeps Web and native learning local', async () => {
   const createApp = h => createStudyApp(h);
   const openInstall = (h, StudyApp, owner, nativeMode) => {
     h.setRenderer(() => StudyApp({owner, nativeMode}));
@@ -491,20 +494,20 @@ test('mobile access guidance distinguishes synchronized PWA and local native mod
     const button=nodes(tree,n=>n.type==='button'&&textOf(n)==='设备与离线使用')[0];
     assert.ok(button,'Find the actual device-installation control');button.props.onClick();
     tree = h.render();
-    return nodes(tree, n => n.type === 'Dialog' && n.props.open && textOf(n).includes(nativeMode ? '原生预览' : '鸿蒙桌面'))[0];
+    return nodes(tree, n => n.type === 'Dialog' && n.props.open && textOf(n).includes(nativeMode ? '鸿蒙本机学习' : '鸿蒙桌面'))[0];
   };
 
   const web = environment();
   const webDialog = openInstall(web, createApp(web), 'alice', false);
   assert.match(textOf(webDialog), /HarmonyOS \/ 鸿蒙/);
   assert.doesNotMatch(textOf(webDialog), /Android|iPhone/);
-  assert.match(textOf(webDialog), /微光产品会话/);assert.doesNotMatch(textOf(webDialog),/ChatGPT 账号/);
-  assert.match(textOf(webDialog), /账号同步已开启/);
+  assert.match(textOf(webDialog), /当前账号使用本机数据/);assert.doesNotMatch(textOf(webDialog),/ChatGPT 账号/);
+  assert.match(textOf(webDialog), /不自动上传/);assert.match(textOf(webDialog),/暂未启用跨设备同步/);
 
   const native = environment();
   const nativeDialog = openInstall(native, createApp(native), null, true);
   assert.match(textOf(nativeDialog), /本机模式/);
-  const onlineLink = nodes(nativeDialog, n => n.type === 'a' && textOf(n).includes('打开同步网页版'))[0];
+  const onlineLink = nodes(nativeDialog, n => n.type === 'a' && textOf(n).includes('打开网页版'))[0];
   assert.equal(onlineLink.props.href, 'https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site');
   assert.equal(onlineLink.props.rel, 'noopener noreferrer');
 });

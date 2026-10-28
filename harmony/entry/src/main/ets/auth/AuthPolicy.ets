@@ -8,6 +8,7 @@ export interface AuthCredentials {
   code?: string;
 }
 export interface AuthRequest {
+  version?: number;
   id: string;
   action: string;
   body?: AuthCredentials;
@@ -24,6 +25,7 @@ export interface AuthCapabilities {
   passwordRecovery?: boolean;
 }
 export interface AuthBody {
+  session?: AuthSessionProof;
   code?: string;
   error?: string;
   user?: AuthUser;
@@ -38,9 +40,15 @@ export interface AuthBody {
   attemptsRemaining?: number;
 }
 export interface AuthReply {
+  version?: number;
   id: string;
   status: number;
   body: AuthBody;
+}
+export interface AuthSessionProof {
+  version?: number;
+  remainingMs?: number;
+  validForMs?: number;
 }
 export interface AuthCookie {
   token: string;
@@ -117,6 +125,7 @@ export function parseAuthRequest(raw: string): AuthRequest | undefined {
       typeof value.id !== 'string' || !/^[A-Za-z0-9_-]{1,80}$/.test(value.id) ||
       typeof value.action !== 'string') return undefined;
     const keys: string = Object.keys(value).sort().join(',');
+    if (value.version !== undefined) return value.version === 2 && keys === 'action,id,version' && value.action === 'session' ? value : undefined;
     if (keys !== 'action,id' && keys !== 'action,body,id') return undefined;
     if (value.action === 'session' || value.action === 'logout' || value.action === 'phone-status') {
       if (value.body !== undefined && (value.body === null || typeof value.body !== 'object' ||
@@ -232,6 +241,19 @@ export function parseResponseBody(raw: string): AuthBody {
   const body: AuthBody = JSON.parse(raw) as AuthBody;
   if (body === null || typeof body !== 'object' || Array.isArray(body)) throw new Error('Unconfirmed');
   return body;
+}
+
+export function sessionProofBudget(body: AuthBody): number {
+  if (Object.keys(body).sort().join(',') !== 'capabilities,session,user' || !body.user ||
+    Object.keys(body.user).sort().join(',') !== 'id,username' || !publicUser(body) ||
+    !body.capabilities || body.capabilities.passwordLogin !== true || typeof body.capabilities.phoneLogin !== 'boolean' ||
+    Object.keys(body.capabilities).some((key: string) => !['passwordLogin', 'phoneLogin', 'passwordRecovery', 'cloudSync'].includes(key)) ||
+    body.capabilities.passwordRecovery !== undefined && typeof body.capabilities.passwordRecovery !== 'boolean' ||
+    body.capabilities.cloudSync !== undefined && typeof body.capabilities.cloudSync !== 'boolean') throw new Error('Unconfirmed');
+  const proof: AuthSessionProof | undefined = body.session;
+  if (!proof || Object.keys(proof).sort().join(',') !== 'remainingMs,version' || proof.version !== 2 ||
+    typeof proof.remainingMs !== 'number' || !Number.isSafeInteger(proof.remainingMs) || proof.remainingMs <= 0 || proof.remainingMs > 43200000) throw new Error('Unconfirmed');
+  return proof.remainingMs;
 }
 
 export function publicFailure(status: number, body: AuthBody): AuthReply {
