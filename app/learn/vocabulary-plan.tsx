@@ -13,6 +13,7 @@ import {getWordAudioBindingForSnapshot,isPrivateWordAudioBlocked,PRIVATE_AUDIO_L
 import {naturalAudioRegistry,subscribeProductLessonAudio,productLessonAudioState} from '@/lib/lesson-audio';
 import {ThemeScene} from './ui-theme';
 import {getWordCardReference} from './word-card-reference';
+import {PLAN_SAVE_WAIT_MS,PlanExitPrompt,usePlanEditorExit,type PlanBackRef} from './plan-editor-state';
 import './v041-vocabulary.css';
 
 type Workflow=VocabularyWorkflowController;
@@ -51,6 +52,69 @@ export function evaluatePlanDraft(draft:VocabularyPlanDraft,projection:Vocabular
     detail=`剩余 ${remaining} 个 · 每周 ${draft.dailyNew*draft.weekdays.length} 个新词。到期复习另计，漏学不自动补债。`;
   }
   return {learned,capacity,remaining,valid:goalValid&&dailyValid&&(daysValid||remaining===0),title,detail,finish};
+}
+
+/** One presentation editor for every plan entry; the workflow remains authoritative. */
+export function VocabularyPlanEditor({workflow,onLeave,onSaved,backRef,onPendingChange,enabled=true}:{workflow:Workflow;onLeave:()=>void;onSaved:()=>void;backRef?:PlanBackRef;onPendingChange?:(pending:boolean)=>void;enabled?:boolean}){
+  const projection=workflow.projection;
+  const initial=useRef<VocabularyPlanDraft>(projection?.plan?{bookId:projection.plan.bookId,goal:projection.plan.goal,dailyNew:projection.plan.dailyNew,weekdays:[...projection.plan.weekdays]}:newPlanDraft());
+  const [draft,setDraft]=useState<VocabularyPlanDraft>(()=>({...initial.current,weekdays:[...initial.current.weekdays]}));
+  const revision=useRef(projection?.plan?.revision??null);
+  const [phase,setPhase]=useState<'idle'|'waiting'|'review'|'failed'>('idle'),[attempted,setAttempted]=useState(false),[message,setMessage]=useState(''),[readback,setReadback]=useState(false),[resultId,setResultId]=useState('');
+  const alive=useRef(true),generation=useRef(0),inFlight=useRef(false),timer=useRef<ReturnType<typeof setTimeout>|null>(null),scope=useRef(workflow.scopeKey);
+  scope.current=workflow.scopeKey;
+  const form=useRef<HTMLFormElement>(null);
+  useEffect(()=>{alive.current=true;return()=>{alive.current=false;generation.current++;if(timer.current)clearTimeout(timer.current);};},[]);
+  useEffect(()=>{onPendingChange?.(phase==='waiting');return()=>onPendingChange?.(false);},[phase,onPendingChange]);
+  const ready=enabled&&workflow.ready&&!workflow.error&&!!projection;
+  const dirty=JSON.stringify(draft)!==JSON.stringify(initial.current);
+  const exit=usePlanEditorExit({dirty,attempted,pending:phase==='waiting',onLeave,backRef});
+  const estimate=projection?evaluatePlanDraft(draft,projection):null;
+  const begin=()=>{
+    const id=++generation.current,key=workflow.scopeKey;
+    inFlight.current=true;setPhase('waiting');setReadback(false);
+    timer.current=setTimeout(()=>{if(!alive.current||generation.current!==id||scope.current!==key)return;generation.current++;inFlight.current=false;timer.current=null;setPhase('review');setMessage('等待已超过15秒，保存结果尚未确认。请重新读取核对；离开不会撤销已发操作。');},PLAN_SAVE_WAIT_MS);
+    return {valid:()=>alive.current&&generation.current===id&&scope.current===key,finish:()=>{if(timer.current)clearTimeout(timer.current);timer.current=null;inFlight.current=false;}};
+  };
+  const submit=async()=>{
+    if(!ready||inFlight.current||phase==='review'||exit.confirm)return;
+    if(!estimate?.valid){setMessage(estimate?`${estimate.title}：${estimate.detail}`:'计划暂不可读取。');form.current?.querySelector<HTMLInputElement>('input:invalid')?.focus();return;}
+    setAttempted(true);setMessage('');setResultId('');const attempt=begin();
+    try{
+      const result=await workflow.savePlan({...draft,weekdays:[...draft.weekdays]},revision.current);
+      if(!attempt.valid())return;attempt.finish();
+      if(successful(result)){setPhase('idle');onSaved();return;}
+      setResultId(result.id??'');
+      const needsRead=['unknown','pending','conflict'].includes(result.status);
+      setPhase(needsRead?'review':'failed');
+      setMessage(result.reason||(needsRead?'保存结果需要核对，请先重新读取当前计划。':'计划未获保存确认，填写内容已保留。'));
+    }catch(error){if(attempt.valid()){attempt.finish();setPhase('review');setMessage(error instanceof Error?error.message:'保存结果尚未确认，请先重新读取核对。');}}
+  };
+  const refresh=async()=>{
+    if(inFlight.current||!enabled||exit.confirm)return;setMessage('正在重新读取当前计划…');const attempt=begin();
+    try{await workflow.refresh();if(!attempt.valid())return;attempt.finish();setPhase('review');setReadback(true);setMessage('请核对当前读回的计划；未能读取时可再次尝试。读回不代表原保存命令已确认。');}
+    catch(error){if(attempt.valid()){attempt.finish();setPhase('review');setMessage(error instanceof Error?error.message:'暂时无法读回，草稿仍保留。');}}
+  };
+  const locked=!ready||phase==='waiting'||phase==='review'||exit.confirm;
+  return <section className="lp-editor phase2-plan-editor" aria-label="单词安排编辑器">
+    <h2>{projection?.plan?'调整单词安排':'制定单词计划'}</h2>
+    {!ready&&<p role="alert">{workflow.error||'正在读取计划，暂不能保存。'}</p>}
+    <form ref={form} noValidate aria-busy={phase==='waiting'} onSubmit={event=>{event.preventDefault();void submit();}}>
+      <fieldset disabled={locked}>
+        <fieldset className="v041-plan-books"><legend>词本</legend><div>{PLAN_CHOICES.map(book=><label key={book.id}><input type="radio" name="v041-plan-book" value={book.id} checked={draft.bookId===book.id} onChange={()=>{if(!projection)return;const next={...draft,bookId:book.id};setDraft({...next,goal:evaluatePlanDraft({...next,goal:0},projection).capacity});}}/><span>{book.label}</span></label>)}</div>{!PLAN_CHOICES.some(book=>book.id===draft.bookId)&&<p role="status">保留当前词本</p>}</fieldset>
+        <div className="form-grid"><label className="field">总覆盖目标<input type="number" required min={estimate?.learned??0} max={estimate?.capacity??0} step={1} value={Number.isFinite(draft.goal)?draft.goal:''} onChange={event=>setDraft({...draft,goal:event.target.value===''?NaN:Number(event.target.value)})}/><small>已学 {estimate?.learned??0} · 可学 {estimate?.capacity??0}</small></label><label className="field">每日新词<input type="number" required min={1} max={1000} step={1} value={Number.isFinite(draft.dailyNew)?draft.dailyNew:''} onChange={event=>setDraft({...draft,dailyNew:event.target.value===''?NaN:Number(event.target.value)})}/><small>个新词/学习日，复习另计。</small></label></div>
+        <fieldset className="phase2-weekday-field"><legend>每周学习日</legend><div className="phase2-weekday-picker">{WEEKDAYS.map(day=><label key={day}><input type="checkbox" checked={draft.weekdays.includes(day)} onChange={event=>setDraft({...draft,weekdays:event.target.checked?[...draft.weekdays,day]:draft.weekdays.filter(value=>value!==day)})}/><span>周{DAY_NAMES[day%7]}</span></label>)}</div></fieldset>
+        {estimate&&<div className="phase2-plan-estimate" role="status"><b>{estimate.title}</b><p>{estimate.detail}</p></div>}
+        <p className="phase2-vocab-note">保存后更新计划和预计安排；当前词组和已学记录保留，下一组采用新设置。</p>
+        <button type="submit" className="button primary" disabled={!estimate?.valid}>{phase==='waiting'?'保存中…':'保存计划'}<Check size={17}/></button>
+      </fieldset>
+    </form>
+    {message&&<div className="lp-save-notice" role="status"><p>{message}</p>{resultId&&<small>核对标识：{resultId}</small>}
+      {phase==='review'&&<><button type="button" className="button secondary" disabled={!enabled||exit.confirm} onClick={()=>void refresh()}>重新读取核对</button>{readback&&ready&&projection&&<><p>当前读回：{projection.plan?`${planName(projection.plan.bookId)} · 目标 ${projection.plan.goal} · 每日 ${projection.plan.dailyNew} 个新词`:'尚无已保存计划'}</p><button type="button" className="button secondary" disabled={!ready||exit.confirm} onClick={()=>{if(!ready)return;generation.current++;revision.current=workflow.projection?.plan?.revision??null;setPhase('idle');setReadback(false);setMessage('已采用当前版本继续编辑；再次保存将发起一次新的修改。');}}>已核对，继续修改</button></>}</>}
+    </div>}
+    <div className="button-row"><button type="button" className="button secondary" disabled={phase==='waiting'||exit.confirm} onClick={exit.request}>返回</button></div>
+    <PlanExitPrompt exit={exit}/>
+  </section>;
 }
 
 /** Calendar arithmetic uses the workflow's local date, never the browser's zone. */
@@ -136,7 +200,7 @@ export function CandidateAction({workflow,word,disabled=false}:{workflow:Workflo
   </div>;
 }
 
-export function TodayVocabularyTask({workflow,onOpen,onOpenStudy,disabled=false,priority=false,compact=false,theme}:{workflow:Workflow;onOpen:()=>void;onOpenStudy?:()=>void;disabled?:boolean;priority?:boolean;compact?:boolean;theme?:Theme}){
+export function TodayVocabularyTask({workflow,onOpen,onOpenStudy,onPlanOverview,disabled=false,priority=false,compact=false,theme}:{workflow:Workflow;onOpen:()=>void;onOpenStudy?:()=>void;onPlanOverview?:()=>void;disabled?:boolean;priority?:boolean;compact?:boolean;theme?:Theme}){
   const [busy,setBusy]=useState(false),[message,setMessage]=useState('');
   const pending=useRef(false),scope=useRef(workflow.scopeKey);scope.current=workflow.scopeKey;
   useEffect(()=>{setMessage('');setBusy(false);pending.current=false;},[workflow.scopeKey]);
@@ -155,7 +219,7 @@ export function TodayVocabularyTask({workflow,onOpen,onOpenStudy,disabled=false,
   return <section className={`phase2-today-vocabulary v041-today-vocabulary panel${priority?' workspace-vocabulary-priority workspace-priority':''}${compact?' v040-word-task':''}`} aria-label="今日单词任务">
     <WorkflowNotice workflow={workflow}/>
     {workflow.ready&&!workflow.error&&projection&&<>
-      <div className="phase2-vocab-heading"><h2>{compact?'单词':active?'继续背词':!plan?'制定单词计划':projection.daily.goalCompleted?'今日目标已完成':'今日单词'}</h2>{!compact&&plan&&<button type="button" className="text-button" disabled={disabled} onClick={onOpen}>查看计划<ArrowRight size={16}/></button>}</div>
+      <div className="phase2-vocab-heading"><h2>{compact?'单词':active?'继续背词':!plan?'制定单词计划':projection.daily.goalCompleted?'今日目标已完成':'今日单词'}</h2>{onPlanOverview?<button type="button" className="text-button lp-plan-entry" disabled={disabled} onClick={onPlanOverview}>学习计划<ChevronRight size={16}/></button>:!compact&&plan&&<button type="button" className="text-button" disabled={disabled} onClick={onOpen}>查看计划<ArrowRight size={16}/></button>}</div>
       {active?<div className="v040-word-task-progress"><p>本组 {active.queue.length} 词 · 已保存 {saved} 词</p><progress aria-label="当前词组已保存词数" value={saved} max={Math.max(1,active.queue.length)}/></div>:plan&&<p className="v041-today-progress">新学 {projection.daily.newDone} / {projection.daily.newDone+projection.daily.newRemaining} · 复习 {projection.daily.reviewDone} / {projection.daily.reviewDone+projection.daily.reviewRemaining}</p>}
       <button type="button" className="button primary" disabled={disabled||busy||!!plan&&!workflow.activeSession&&projection.daily.newRemaining+projection.daily.reviewRemaining===0} onClick={()=>void open()}>
         {busy?'正在准备…':!plan?'制定单词计划':active?'继续背词':'开始背词'}<ArrowRight size={17}/>
@@ -253,15 +317,15 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   </section>;
 }
 
-export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=false,onOpenSearch,onCancel,entryView='study'}:{workflow:Workflow;theme:Theme;onExampleLookup?:ExampleLookup;overlayBlocked?:boolean;onOpenSearch?:()=>void;onCancel?:()=>void;entryView?:'plan'|'study'}){
+export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=false,onOpenSearch,onCancel,onEditPlan,entryView='study'}:{workflow:Workflow;theme:Theme;onExampleLookup?:ExampleLookup;overlayBlocked?:boolean;onOpenSearch?:()=>void;onCancel?:()=>void;onEditPlan?:()=>void;entryView?:'plan'|'study'}){
   const projection=workflow.projection,plan=projection?.plan;
-  const [editing,setEditing]=useState(false),[draft,setDraft]=useState<VocabularyPlanDraft>(newPlanDraft);
+  const [editing,setEditing]=useState(false);
   const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[completedHidden,setCompletedHidden]=useState('');
   const [studyOpenRequest,setStudyOpenRequest]=useState(0);
   const [planView,setPlanView]=useState<'week'|'day'>('week'),[weekOffset,setWeekOffset]=useState(0),[selectedDate,setSelectedDate]=useState<string|null>(null);
   const planRoot=useRef<HTMLDivElement>(null),lastStudyOpen=useRef('');
   const pending=useRef(false),scope=useRef(workflow.scopeKey);scope.current=workflow.scopeKey;
-  useEffect(()=>{setEditing(false);setDraft(newPlanDraft());setMessage('');setBusy(false);pending.current=false;setCompletedHidden('');},[workflow.scopeKey]);
+  useEffect(()=>{setEditing(false);setMessage('');setBusy(false);pending.current=false;setCompletedHidden('');},[workflow.scopeKey]);
   useEffect(()=>{setWeekOffset(0);setSelectedDate(null);},[workflow.scopeKey,projection?.daily.window.localDate]);
   const blocked=overlayBlocked||!workflow.ready||!!workflow.error||busy;
   const activeSessionId=workflow.activeSession?.status==='active'?workflow.activeSession.id:null;
@@ -312,12 +376,11 @@ export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=fa
         window.scrollBy({top:action.bottom-usableBottom,behavior:'instant'});
     }
   },[workflow.scopeKey,activeSessionId,studyOpenRequest,overlayBlocked,busy,entryView]);
-  const estimate=projection?evaluatePlanDraft(draft,projection):null;
   const savedEstimate=projection&&plan?evaluatePlanDraft(plan,projection):null;
   const calendar=projection&&plan?planCalendarWeek(projection,weekOffset):[];
   const selected=calendar.find(day=>day.localDate===(selectedDate||projection?.daily.window.localDate))||calendar[0];
   const changeWeek=(offset:number)=>{const next=weekOffset+offset;setWeekOffset(next);if(projection)setSelectedDate(planCalendarWeek(projection,next)[0].localDate);};
-  const edit=()=>{if(blocked)return;setMessage('');setDraft(plan?{bookId:plan.bookId,goal:plan.goal,dailyNew:plan.dailyNew,weekdays:[...plan.weekdays]}:newPlanDraft());setEditing(true);};
+  const edit=()=>{if(blocked)return;if(onEditPlan){onEditPlan();return;}setMessage('');setEditing(true);};
   const run=async(action:()=>Promise<VocabularyWorkflowResult>,success:string,after?:()=>void)=>{
     if(blocked||pending.current)return;const key=workflow.scopeKey;pending.current=true;setBusy(true);setMessage('');
     try{const result=await action();if(scope.current!==key)return;setMessage(resultMessage(result,success));if(successful(result))after?.();}
@@ -328,18 +391,7 @@ export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=fa
   return <div ref={planRoot} tabIndex={-1} className="phase2-vocabulary-plan v041-vocabulary">
     <WorkflowNotice workflow={workflow}/>
     {workflow.ready&&!workflow.error&&projection&&<>
-      {(editing||!plan)&&<section className="phase2-plan-editor panel" aria-labelledby="phase2-plan-editor-title"><h2 id="phase2-plan-editor-title">{plan?'调整计划':'制定单词计划'}</h2>
-        <form onSubmit={event=>{event.preventDefault();if(estimate?.valid)void run(()=>workflow.savePlan(draft,plan?.revision??null),'单词计划已保存；已完成的学习记录保留。',()=>setEditing(false));}}>
-          <fieldset disabled={blocked}><legend className="sr-only">单词计划设置</legend>
-            <fieldset className="v041-plan-books"><legend>词本</legend><div>{PLAN_CHOICES.map(book=><label key={book.id}><input type="radio" name="v041-plan-book" value={book.id} checked={draft.bookId===book.id} onChange={()=>{const next={...draft,bookId:book.id};setDraft({...next,goal:evaluatePlanDraft({...next,goal:0},projection).capacity});}}/><span>{book.label}</span></label>)}</div>{!PLAN_CHOICES.some(book=>book.id===draft.bookId)&&<p role="status">保留当前词本</p>}</fieldset>
-            <div className="phase2-plan-number-fields"><label className="phase2-plan-field">总覆盖目标<input type="number" inputMode="numeric" step="1" min={estimate?.learned??0} max={estimate?.capacity} value={Number.isNaN(draft.goal)?'':draft.goal} aria-invalid={!!estimate&&!Number.isSafeInteger(draft.goal)||!!estimate&&(draft.goal<estimate.learned||draft.goal>estimate.capacity)} onChange={event=>setDraft({...draft,goal:event.target.value===''?NaN:Number(event.target.value)})}/><small>已学 {estimate?.learned} · 可学 {estimate?.capacity}</small></label><label className="phase2-plan-field">每日新词量<input type="number" inputMode="numeric" step="1" min="1" max="1000" value={Number.isNaN(draft.dailyNew)?'':draft.dailyNew} onChange={event=>setDraft({...draft,dailyNew:event.target.value===''?NaN:Number(event.target.value)})}/><small>复习另计。</small></label></div>
-            <fieldset className="phase2-weekday-field"><legend>每周学习日</legend><div className="phase2-weekday-picker">{WEEKDAYS.map(day=><label key={day}><input type="checkbox" checked={draft.weekdays.includes(day)} onChange={event=>setDraft({...draft,weekdays:event.target.checked?[...draft.weekdays,day]:draft.weekdays.filter(value=>value!==day)})}/><span>周{DAY_NAMES[day%7]}</span></label>)}</div></fieldset>
-            {estimate&&<div className="phase2-plan-estimate" role="status"><b>{estimate.title}</b><p>{estimate.detail}</p></div>}
-            {plan&&<p className="phase2-vocab-note">调整从下一组生效，当前词组和已学记录保留。</p>}
-            <div className="button-row"><button type="button" className="button secondary" onClick={()=>{if(plan)setEditing(false);else if(onCancel)onCancel();else window.history.back();}}>取消</button><button type="submit" className="button primary" disabled={blocked||!estimate?.valid}>{busy?'正在保存…':'保存计划'}<Check size={17}/></button></div>
-          </fieldset>
-        </form>
-      </section>}
+      {(editing||!plan)&&(onEditPlan?<section className="panel"><h2>尚未设置单词安排</h2><button type="button" className="button primary" disabled={blocked} onClick={edit}>制定单词计划</button></section>:<VocabularyPlanEditor workflow={workflow} onLeave={()=>{if(plan)setEditing(false);else onCancel?.();}} onSaved={()=>setEditing(false)}/>)}
       {!editing&&plan&&<>
         {showSession?<VocabularyStudyCard workflow={workflow} theme={theme} onExampleLookup={onExampleLookup} overlayBlocked={overlayBlocked||busy} onFinish={()=>setCompletedHidden(workflow.activeSession?.id||'')}/>:<TodayVocabularyTask workflow={workflow} disabled={blocked} onOpen={openPlan} onOpenStudy={openStudy} compact/>}
         <section className="v041-current-plan panel" aria-label="当前单词计划"><div className="phase2-vocab-heading"><h2>{planName(plan.bookId)}</h2><button type="button" className="text-button" disabled={blocked} onClick={edit}><Settings2 size={16}/>调整</button></div><p>每天 {plan.dailyNew} 个新词 · 每周 {plan.weekdays.length} 天</p><progress aria-label="总目标覆盖进度" value={Math.min(projection.counts.learned,plan.goal)} max={Math.max(1,plan.goal)}/><p>已学 {projection.counts.learned} / {plan.goal}</p>{savedEstimate&&<small>{savedEstimate.title}</small>}

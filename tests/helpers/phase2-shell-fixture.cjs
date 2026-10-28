@@ -15,6 +15,7 @@ exports.workflowShellFixture = function workflowShellFixture(react, selection) {
   }},
   '@/lib/practice-selection':selection,
   './learn/practice-settlement':{default:'PracticeSettlement'},
+  './learn/learning-plan':{LearningPlanDialog:'LearningPlanDialog'},
   './learn/interactive-example':{InteractiveExample:'InteractiveExample'},
   './learn/vocabulary-plan':{VocabularyPlan:'VocabularyPlan',TodayVocabularyTask:'TodayVocabularyTask',CandidateAction:'CandidateAction'}
  };
