@@ -50,3 +50,10 @@ test('audio validation always closes its owned message ports on success and fail
  const media=createSourceLoader({root,globals:{MessageChannel:Channel}}).load('lib/natural-audio.ts');await media.validateNaturalAudioManifest(manifest(),true);
  const bad=manifest();bad.clips[0].text='tampered';sign(bad);await assert.rejects(media.validateNaturalAudioManifest(bad,true));assert.equal(created,2);assert.equal(closed,4);
 });
+test('per-clip validation yields even when digest completions form one microtask chain',async()=>{
+ let clock=0,digests=0;const atYield=[];
+ class Channel{constructor(){this.port1={onmessage:null,close(){}};this.port2={postMessage:()=>{atYield.push(digests);queueMicrotask(()=>this.port1.onmessage?.({data:0}));},close(){}};}}
+ const wrapped={subtle:{async digest(...args){const value=await crypto.webcrypto.subtle.digest(...args);digests++;clock+=5;return value;}}};
+ const media=createSourceLoader({root,globals:{MessageChannel:Channel,performance:{now:()=>clock},crypto:wrapped}}).load('lib/natural-audio.ts'),input=manifest();input.clips=Array.from({length:64},(_,i)=>clip('Fixture '+i+'.',String(i)));sign(input);
+ await media.validateNaturalAudioManifest(input,true);assert.equal(digests,65);assert(atYield.some(count=>count>1&&count<65),'Actual task yields must occur before the final clip, not only during canonicalization or freezing');
+});

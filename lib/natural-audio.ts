@@ -107,6 +107,8 @@ export async function validateNaturalAudioManifest(input:unknown,allowLocalCandi
   if(await manifestPayloadDigest(payload,tasks)!==pack.manifestSha256)throw Error('自然音频清单校验失败，原音频保留。');
   if(pack.schemaVersion===2&&!compiledNaturalAudioRows(pack.packId,pack.manifestSha256).length)throw Error('自然音频缺少编译期精确准入表。');
   const ids=new Set<string>(),blocked=new Set(pack.knownAssetSha256Hold);let total=0;
+  const validationNow=()=>typeof performance==='undefined'?Date.now():performance.now();
+  let clipSliceEnd=validationNow()+4,clipSliceOperations=0;
   for(const clip of pack.clips){
     if(pack.schemaVersion===1&&['engine','provenance','provenanceSha256','legacySourceId'].some(key=>Object.prototype.hasOwnProperty.call(clip,key)))throw Error('旧版Kokoro音频包不能携带新版引擎或来源声明。');
     if(!clip||typeof clip.id!=='string'||!/^natural-[a-f0-9]{64}$/.test(clip.id)||clip.id!=='natural-'+clip.cacheKey||typeof clip.text!=='string'||!clip.text.trim()||clip.text.length>12000||!HEX.test(clip.textSha256)||!HEX.test(clip.sha256)||!HEX.test(clip.cacheKey)||clip.codec!=='mp3'||clip.sampleRateHz!==24000||clip.channels!==1||!HEX.test(clip.sourceWavSha256)||!Number.isSafeInteger(clip.bytes)||clip.bytes<64||clip.bytes>MAX_CLIP_BYTES||!Number.isFinite(clip.durationSeconds)||clip.durationSeconds<=0||clip.durationSeconds>600||typeof clip.voiceProfileId!=='string'||!clip.voiceProfileId||clip.voiceProfileId.length>160||!['en-US','en-GB'].includes(clip.locale)||clip.qualityStatus!=='TECHNICAL_CANDIDATE'||clip.humanAccepted!==false||clip.publishAllowed!==false||blocked.has(clip.sha256)||blocked.has(clip.sourceWavSha256)||!Array.isArray(clip.references)||!clip.references.length||clip.references.length>1000||!clip.references.every(ref=>ref&&typeof ref.materialId==='string'&&ref.materialId.length>0&&ref.materialId.length<=200&&typeof ref.segmentId==='string'&&ref.segmentId.length>0&&ref.segmentId.length<=100&&typeof ref.kind==='string'&&typeof ref.contentReview==='string'&&(ref.activationAssetKey===undefined||HEX.test(ref.activationAssetKey))))throw Error('自然音频条目无效或仍在疑点保留名单中。');
@@ -123,6 +125,9 @@ export async function validateNaturalAudioManifest(input:unknown,allowLocalCandi
     if(total>MAX_PACK_BYTES)throw Error('自然音频包超过本机校验容量。');
     if(await naturalAudioSha256(new TextEncoder().encode(clip.text))!==clip.textSha256)throw Error('自然音频文本与清单身份不一致。');
     if(pack.excluded.some(row=>row.textSha256===clip.textSha256)&&!(pack.schemaVersion===2&&clip.references.every(ref=>compiledNaturalAudioAdmission(pack.packId,pack.manifestSha256,clip,ref))))throw Error('疑点文本不得因更换音频文件而重新激活。');
+    // Awaiting an already-resolved WebCrypto promise can remain in one long
+    // microtask chain. Bound the complete per-clip checks with actual tasks too.
+    if(++clipSliceOperations>=2048||validationNow()>=clipSliceEnd){await tasks.yield();clipSliceEnd=validationNow()+4;clipSliceOperations=0;}
   }
   return await runCooperativeSteps(freezeManifestSteps(pack),tasks.yield);
   }finally{tasks.close();}
