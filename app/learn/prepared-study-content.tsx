@@ -16,5 +16,5 @@ export function PreparedStudyContent<P extends object>({loader,componentProps,cu
   return()=>{live=false;};
  },[loader,current,attempt]);
  if(view.component&&current()){const Content=view.component;return <Content {...componentProps}/>;}
- return <main className="workspace"><section className="panel" aria-live="polite"><h1>{view.error?'学习内容暂未准备好':'准备学习内容'}</h1><p>{view.error?'词表核验暂未完成，已保存的学习记录会保留。':'正在核验随包词表，完成后即可继续。'}</p>{view.error&&<button className="button primary" onClick={()=>{setView({component:null,error:false});setAttempt(value=>value+1);}}>重新准备</button>}{onBack&&<button className="button secondary" onClick={onBack}>返回账号入口</button>}</section></main>;
+ return <main className="workspace" style={{padding:'24px 18px'}}><section className="panel" aria-live="polite"><h1>{view.error?'暂时无法加载学习内容':'正在准备学习内容…'}</h1>{view.error&&<p>已保存的学习记录会保留。</p>}{view.error&&<button className="button primary" onClick={()=>{setView({component:null,error:false});setAttempt(value=>value+1);}}>重试</button>}{onBack&&<button className="button secondary" onClick={onBack}>返回账号入口</button>}</section></main>;
 }

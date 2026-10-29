@@ -1,4 +1,5 @@
 import type {Word} from './vocabulary-model';
+import {runCooperativeSteps} from './cooperative-task';
 import type historicalTable from '../content/vocabulary-v040-b02-private.json';
 type HistoricalTable=typeof historicalTable;
 export type CurrentTeachingEntry={memberId:string;contextHash:string;pairFingerprintSha256:string;word:Word;headwordBindingDigest:string;exampleBindingDigest:string;privatePracticeEligible:boolean;formalAllowed:boolean;publishAllowed:boolean;humanListeningPerformed:boolean;validatedLocale:unknown};
@@ -14,18 +15,6 @@ let pending:Promise<VocabularyCatalogSnapshot>|null=null;
 let failure:unknown=null;
 let generation=0;
 const yieldTask=()=>new Promise<void>(resolve=>setTimeout(resolve,0));
-const now=()=>typeof performance==='undefined'?Date.now():performance.now();
-function catalogTaskQueue():{yield:()=>Promise<void>;close:()=>void}{
- // Message tasks avoid the repeated 4ms timer clamp while still letting input
- // and rendering run between bounded batches. Older engines keep timer fallback.
- try{
-  if(typeof MessageChannel==='undefined')return {yield:yieldTask,close:()=>{}};
-  const channel=new MessageChannel();let resume:(()=>void)|null=null;
-  channel.port1.onmessage=()=>{const wake=resume;resume=null;wake?.();};
-  return {yield:()=>new Promise<void>(resolve=>{resume=resolve;try{channel.port2.postMessage(0);}catch{resume=null;setTimeout(resolve,0);}}),
-   close:()=>{resume=null;channel.port1.onmessage=null;channel.port1.close();channel.port2.close();}};
- }catch{return {yield:yieldTask,close:()=>{}};}
-}
 export class VocabularyCatalogPendingError extends Error{constructor(){super('词表仍在核验，暂不能读取统计或开始学习。');}}
 export function readPreparedVocabularyCatalog():VocabularyCatalogSnapshot{
  if(!complete)throw new VocabularyCatalogPendingError();return complete;
@@ -37,16 +26,7 @@ export function installServerVocabularyCatalog(create:()=>VocabularyCatalogSnaps
  if(!complete)complete=Object.freeze(create());return complete;
 }
 export async function runVocabularyCatalogSteps(steps:Generator<void,VocabularyCatalogSnapshot,void>,schedule?:()=>Promise<void>):Promise<VocabularyCatalogSnapshot>{
- const queue=schedule?{yield:schedule,close:()=>{}}:catalogTaskQueue();
- try{
-  let next=steps.next();
-  while(!next.done){
-   const end=now()+4;let operations=0;
-   do{next=steps.next();operations++;}while(!next.done&&operations<2048&&now()<end);
-   if(!next.done)await queue.yield();
-  }
-  return next.value;
- }finally{queue.close();}
+ return runCooperativeSteps(steps,schedule);
 }
 /** Immutable packaged content is process shared, never learner/owner state.
  * Consumers cancel their own callback; one unmount cannot cancel another wait.

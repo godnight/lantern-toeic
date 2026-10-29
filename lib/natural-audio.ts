@@ -1,5 +1,6 @@
 import {compiledNaturalAudioAdmission,compiledNaturalAudioRows} from './natural-audio-admission';
 import {compiledListening50PronunciationException} from './listening50-pronunciation-exception';
+import {createCooperativeTaskQueue,runCooperativeSteps,type CooperativeTaskQueue} from './cooperative-task';
 /** Verified, immutable offline media for a private local candidate.
  * Content review, acoustic review and publication approval remain separate.
  */
@@ -47,7 +48,34 @@ export async function naturalAudioSha256(bytes:Uint8Array):Promise<string>{
   const input=new Uint8Array(bytes.length);input.set(bytes);
   return [...new Uint8Array(await crypto.subtle.digest('SHA-256',input))].map(byte=>byte.toString(16).padStart(2,'0')).join('');
 }
-const freezeManifest=<T>(value:T):T=>{if(value&&typeof value==='object'){Object.values(value).forEach(freezeManifest);Object.freeze(value);}return value;};
+function* stableManifestSteps(value:unknown):Generator<void,string,void>{
+ if(value===null||typeof value!=='object'){yield;return JSON.stringify(value);}
+ const parts:string[]=[];
+ if(Array.isArray(value)){
+  for(const child of value)parts.push(yield* stableManifestSteps(child));
+  yield;return '['+parts.join(',')+']';
+ }
+ for(const key of Object.keys(value).sort())parts.push(JSON.stringify(key)+':'+(yield* stableManifestSteps((value as Record<string,unknown>)[key])));
+ yield;return '{'+parts.join(',')+'}';
+}
+function* freezeManifestSteps<T>(value:T):Generator<void,T,void>{
+ if(value&&typeof value==='object'){
+  for(const child of Object.values(value))yield* freezeManifestSteps(child);
+  Object.freeze(value);yield;
+ }
+ return value;
+}
+async function detachedManifest(input:unknown,tasks:CooperativeTaskQueue):Promise<NaturalAudioManifest>{
+ // Capture every caller field synchronously. No caller object is read after
+ // this first await, even if it changes while later work yields to rendering.
+ const snapshot=JSON.stringify(input);
+ await tasks.yield();return JSON.parse(snapshot) as NaturalAudioManifest;
+}
+async function manifestPayloadDigest(payload:unknown,tasks:CooperativeTaskQueue):Promise<string>{
+ const canonical=await runCooperativeSteps(stableManifestSteps(payload),tasks.yield);
+ await tasks.yield();const bytes=new TextEncoder().encode(canonical);
+ await tasks.yield();return naturalAudioSha256(bytes);
+}
 function isCvClipAdmitted(pack:NaturalAudioManifest,clip:NaturalAudioClip){
   return pack.schemaVersion===2&&cvNounHoldOnly(clip.text)&&clip.references.every(ref=>compiledNaturalAudioAdmission(pack.packId,pack.manifestSha256,clip,ref)?.sense==='cv-noun');
 }
@@ -70,12 +98,13 @@ async function validateEncodingObservation(clip:NaturalAudioClip,schemaVersion:1
 }
 export async function validateNaturalAudioManifest(input:unknown,allowLocalCandidate=false):Promise<NaturalAudioManifest>{
   if(!allowLocalCandidate)throw Error('此音频包仅限已授权的本地候选，未获公开发布批准。');
-  // Detach mutable caller objects before the first await.
-  const pack=JSON.parse(JSON.stringify(input)) as NaturalAudioManifest;
+  const tasks=createCooperativeTaskQueue();
+  try{
+  const pack=await detachedManifest(input,tasks);
   const versionValid=pack&&(pack.schemaVersion===1&&pack.engine==='kokoro'&&pack.packId==='v040-kokoro-'+pack.manifestSha256?.slice(0,12)||pack.schemaVersion===2&&pack.engine==='mixed'&&pack.packId==='v040-natural-'+pack.manifestSha256?.slice(0,12));
   if(!versionValid||pack.status!=='PRIVATE_LOCAL_CANDIDATE'||pack.publishAllowed!==false||pack.humanAccepted!==false||pack.accentValidated!==false||!HEX.test(pack.manifestSha256)||!Array.isArray(pack.clips)||!pack.clips.length||pack.clips.length>4096||!Array.isArray(pack.excluded)||!Array.isArray(pack.knownAssetSha256Hold)||!pack.knownAssetSha256Hold.every(hash=>HEX.test(hash))||!Array.isArray(pack.sourceFiles)||!pack.sourceFiles.every(row=>row&&typeof row.path==='string'&&HEX.test(row.sha256)))throw Error('自然音频包身份或状态无效。');
   const {packId:_,manifestSha256:__,...payload}=pack;
-  if(await naturalAudioSha256(new TextEncoder().encode(stable(payload)))!==pack.manifestSha256)throw Error('自然音频清单校验失败，原音频保留。');
+  if(await manifestPayloadDigest(payload,tasks)!==pack.manifestSha256)throw Error('自然音频清单校验失败，原音频保留。');
   if(pack.schemaVersion===2&&!compiledNaturalAudioRows(pack.packId,pack.manifestSha256).length)throw Error('自然音频缺少编译期精确准入表。');
   const ids=new Set<string>(),blocked=new Set(pack.knownAssetSha256Hold);let total=0;
   for(const clip of pack.clips){
@@ -95,7 +124,8 @@ export async function validateNaturalAudioManifest(input:unknown,allowLocalCandi
     if(await naturalAudioSha256(new TextEncoder().encode(clip.text))!==clip.textSha256)throw Error('自然音频文本与清单身份不一致。');
     if(pack.excluded.some(row=>row.textSha256===clip.textSha256)&&!(pack.schemaVersion===2&&clip.references.every(ref=>compiledNaturalAudioAdmission(pack.packId,pack.manifestSha256,clip,ref))))throw Error('疑点文本不得因更换音频文件而重新激活。');
   }
-  return freezeManifest(pack);
+  return await runCooperativeSteps(freezeManifestSteps(pack),tasks.yield);
+  }finally{tasks.close();}
 }
 async function readBounded(response:Response,expectedBytes:number):Promise<Uint8Array>{
   if(!response.ok||response.type==='opaque')throw Error('自然音频下载失败，原音频保留。');
