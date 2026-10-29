@@ -28,6 +28,15 @@ test('cooperative runner yields between bounded batches and returns only the fin
  const result=api.runVocabularyCatalogSteps(steps(),async()=>{slices++;if(slices===1)await gate.promise;}).then(value=>{done=true;return value;});
  await tick();assert.equal(done,false);assert.equal(slices,1);gate.resolve();assert.equal(await result,ready);assert(slices>=2);
 });
+test('message task scheduling yields without timer clamping and closes both ports on success or failure',async()=>{
+ for(const fail of [false,true]){
+  let posted=0,closed=0;class Channel{constructor(){this.port1={onmessage:null,close(){closed++;}};this.port2={postMessage:()=>{posted++;queueMicrotask(()=>this.port1.onmessage?.({data:0}));},close(){closed++;}};}}
+  const api=createSourceLoader({root,globals:{MessageChannel:Channel}}).load('lib/prepare-vocabulary-catalog.ts');
+  function* steps(){for(let i=0;i<5000;i++)yield;if(fail)throw Error('Controlled failure');return snapshot();}
+  if(fail)await assert.rejects(api.runVocabularyCatalogSteps(steps()),/Controlled failure/);else await api.runVocabularyCatalogSteps(steps());
+  assert(posted>=2);assert.equal(closed,2);
+ }
+});
 test('full cooperative admission preserves the frozen 4040/69, historical selectors, provenance and seven wordbooks digest',async()=>{
  const loader=createSourceLoader({root,globals:{window:{}}}),prepare=loader.load('lib/prepare-vocabulary-catalog.ts');await prepare.prepareVocabularyCatalog();
  const content=loader.load('lib/vocabulary-content-catalog.ts'),audio=loader.load('lib/word-audio-bindings-v040.ts');
