@@ -197,11 +197,12 @@ test('reading position survives same-word save and retry; only the next word res
  const h=harness('VocabularyStudyCard',{workflow,theme:'hollow'});
  const content=nodes(h.tree,node=>node.props?.className==='phase2-word-content')[0].props.ref;
  const heading=nodes(h.tree,node=>node.type==='h2'&&node.props.className==='phase2-current-word')[0].props.ref;
- let revealFocusCalls=0;content.current={scrollTop:137,focus:()=>{revealFocusCalls++;}};let focusCalls=0;heading.current={focus:()=>{focusCalls++;}};
+ let revealFocusCalls=0,cardScrollCalls=0;content.current={scrollTop:137,focus:()=>{revealFocusCalls++;},closest:selector=>{assert.equal(selector,'.phase2-word-card');return {scrollIntoView:options=>{assert.equal(options.block,'start');assert.equal(options.behavior,'instant');cardScrollCalls++;}};}};let focusCalls=0;heading.current={focus:()=>{focusCalls++;}};
  h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);
- h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);assert.equal(focusCalls,0);assert.equal(revealFocusCalls,1);
+ h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);assert.equal(focusCalls,0);assert.equal(revealFocusCalls,1);assert.equal(cardScrollCalls,0);
  active.currentStep={...active.currentStep,id:'next-word',word:{...word,id:'available',word:'available',meaning:'可用的'},receipt:undefined};
- h.render();assert.equal(content.current.scrollTop,0);assert.equal(focusCalls,1);
+ h.render();assert.equal(content.current.scrollTop,0);assert.equal(focusCalls,1);assert.equal(cardScrollCalls,1);
+ h.update({overlayBlocked:true});active.currentStep={...active.currentStep,id:'overlay-word'};h.render();assert.equal(cardScrollCalls,1);assert.equal(focusCalls,1);
  assert.doesNotMatch(text(h.tree),/安静的；轻声的|可用的/);h.unmount();
 });
 

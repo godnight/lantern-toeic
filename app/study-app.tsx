@@ -53,6 +53,7 @@ import {applyDocumentTheme,UI_THEME_META} from '@/lib/ui-theme';
 import {getSpeakingRecovery,hasSpeakingRecovery,retainSpeakingRecovery,releaseSpeakingRecovery,subscribeSpeakingRecovery} from '@/lib/speaking-recovery';
 let workspaceOwnerEpoch=Date.now();
 const prompts=sData as Speaking[];
+const questionById=new Map(questions.map(question=>[question.id,question]));
 const ONLINE_SITE_URL='https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site';
 function saveFile(name:string,text:string,type='application/json'){const u=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);}
 function ChoiceSelect({value,onChange,items,label}:{value:string;onChange:(v:string)=>void;items:{value:string;label:string}[];label:string}){return <Select value={value} onValueChange={onChange}><SelectTrigger className="form-select" aria-label={label}><SelectValue/></SelectTrigger><SelectContent>{items.map(x=><SelectItem key={x.value} value={x.value}>{x.label}</SelectItem>)}</SelectContent></Select>}
@@ -138,7 +139,7 @@ export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable
  }),[practiceSettlementId,mockOpen,speaking,recordingPlay,checkinOpen,themeOpen,planRoute,installOpen,queue,practiceBlocked,nav,searchFrom]);
  useEffect(()=>applyDocumentTheme(profile.theme),[profile.theme]);
  useEffect(()=>{const t=setInterval(()=>setNow(new Date()),60000);if(!nativeMode&&'serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});const before=(e:Event)=>{e.preventDefault();setInstallPrompt(e);};window.addEventListener('beforeinstallprompt',before);return()=>{clearInterval(t);window.removeEventListener('beforeinstallprompt',before);};},[]);
- const partStats=PARTS.map((name,i)=>{const a=first.filter(a=>questions.find(q=>q.id===a.qid)?.part===i+1);return {part:i+1,name,total:a.length,correct:a.filter(x=>x.correct).length,rate:a.length?Math.round(a.filter(x=>x.correct).length/a.length*100):null};});
+ const partStats=PARTS.map((name,i)=>{const a=first.filter(a=>questionById.get(a.qid)?.part===i+1);return {part:i+1,name,total:a.length,correct:a.filter(x=>x.correct).length,rate:a.length?Math.round(a.filter(x=>x.correct).length/a.length*100):null};});
  const {listeningPart,readingPart,oral,checkedTasks,recommendation}=dailyPlan(data,questions,prompts,today);
  const focusEvidence=recommendation.parts.find(item=>item.part===recommendation.focusPart);
  const weakest=focusEvidence?{part:focusEvidence.part,name:PARTS[focusEvidence.part-1],total:focusEvidence.sampleCount,rate:Math.round((focusEvidence.accuracy??0)*100)}:undefined;

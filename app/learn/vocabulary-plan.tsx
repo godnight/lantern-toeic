@@ -240,7 +240,10 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   useEffect(()=>{
     const wordKey=step?JSON.stringify([workflow.scopeKey,step.id]):null;
     if(contentRoot.current)contentRoot.current.scrollTop=0;
-    if(previousWord.current&&wordKey&&previousWord.current!==wordKey&&!overlayBlocked)wordHeading.current?.focus({preventScroll:true});
+    if(previousWord.current&&wordKey&&previousWord.current!==wordKey&&!overlayBlocked){
+      contentRoot.current?.closest<HTMLElement>('.phase2-word-card')?.scrollIntoView({block:'start',behavior:'instant'});
+      wordHeading.current?.focus({preventScroll:true});
+    }
     previousWord.current=wordKey;
     // Reading position changes only when the word/scope changes, not on save,
     // retry, audio status or the reveal of this same word.

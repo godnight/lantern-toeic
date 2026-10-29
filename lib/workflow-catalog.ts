@@ -27,10 +27,11 @@ const reusableWords=(core as Word[]).filter(word=>LEGACY_PRIVATE_PLAYABLE_WORD_I
 const reusableById=new Map(reusableWords.map(word=>[word.id,word]));
 const importedLearningWords=FULL4109_CURRENT_MODE?FULL4109_CURRENT_WORDS:[...new Map([...reusableWords,...B02_PRIVATE_WORDS].map(word=>[word.id,word])).values()];
 const importedCatalogs=new Map(MEMBER_WORDBOOKS.map(book=>[book.id,importedLearningWords.filter(word=>belongsToWordbook(word.word,book.id))]));
+const privateWordIds=new Set(B02_PRIVATE_WORDS.map(word=>word.id));
 export const WORKFLOW_BOOKS: {id:WorkflowBookId;name:string;capacity:number;memberCount:number;pendingCount:number;imported:boolean;legacyPracticeCount?:number;privateCandidateCount?:number}[] = [
   {id:'scene', name:'托业场景词', capacity:SCENE_WORDS.length,memberCount:SCENE_WORDS.length,pendingCount:0,imported:false},
   {id:'expressions', name:'题内表达', capacity:EXPRESSION_WORDS.length,memberCount:EXPRESSION_WORDS.length,pendingCount:0,imported:false},
-  ...MEMBER_WORDBOOKS.map(book=>({id:book.id,name:book.title,capacity:importedCatalogs.get(book.id)!.length,memberCount:book.count,pendingCount:book.count-importedCatalogs.get(book.id)!.length,imported:true,privateCandidateCount:importedCatalogs.get(book.id)!.filter(word=>B02_PRIVATE_WORDS.some(row=>row.id===word.id)).length,legacyPracticeCount:importedCatalogs.get(book.id)!.filter(word=>!B02_PRIVATE_WORDS.some(row=>row.id===word.id)).length})),
+  ...MEMBER_WORDBOOKS.map(book=>({id:book.id,name:book.title,capacity:importedCatalogs.get(book.id)!.length,memberCount:book.count,pendingCount:book.count-importedCatalogs.get(book.id)!.length,imported:true,privateCandidateCount:importedCatalogs.get(book.id)!.filter(word=>privateWordIds.has(word.id)).length,legacyPracticeCount:importedCatalogs.get(book.id)!.filter(word=>!privateWordIds.has(word.id)).length})),
 ];
 export function isWorkflowBookId(value:unknown):value is WorkflowBookId{return value==='scene'||value==='expressions'||isMemberWordbookId(value);}
 export function getWorkflowBook(id:WorkflowBookId){const book=WORKFLOW_BOOKS.find(book=>book.id===id);if(!book)throw Error('不支持的词书，原计划保留。');return book;}

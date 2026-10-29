@@ -33,7 +33,7 @@ test('mutable snapshots and frozen getter snapshots still observe changed contex
 });
 
 function admission(duplicate=false){
- const row={clipId:'clip',cacheKey:'asset',activationAssetKey:'alias',encodedSha256:'d'.repeat(64),materialId:'material',segmentId:'headword',contextHash:'c'.repeat(64),voiceProfileId:'voice',textSha256:'a'.repeat(64)};
+ const row={clipId:'clip',cacheKey:'asset',activationAssetKey:'alias',encodedSha256:'d'.repeat(64),masterWavSha256:'e'.repeat(64),engine:'kokoro',provenanceSha256:'1'.repeat(64),materialId:'material',segmentId:'headword',contextHash:'c'.repeat(64),voiceProfileId:'voice',textSha256:'a'.repeat(64)};
  return createSourceLoader({root,imports:{'../content/natural-audio-admission-v2.json':{__esModule:true,default:{schemaVersion:1,packId:'fixture-pack',manifestSha256:'f'.repeat(64),entries:duplicate?[row,{...row}]:[row],wordExceptions:[]}},'./natural-audio-catalog-index':{compiledNaturalAudioCatalog:null,compiledNaturalAudioPack:()=>null}}}).load('lib/natural-audio-admission.ts');
 }
 test('indexed admission still checks the full tuple, aliases and duplicate ambiguity',()=>{
@@ -41,4 +41,12 @@ test('indexed admission still checks the full tuple, aliases and duplicate ambig
  assert(actual.compiledBindingAdmission('fixture-pack',{...row,audio:{...row.audio,audioKey:'alias'}}));
  for(const change of [{requestContextHash:'changed'},{mp3Sha256:'changed'},{audio:{...row.audio,voiceProfileId:'changed'}},{audio:{...row.audio,audioKey:'unknown'}}])assert.equal(actual.compiledBindingAdmission('fixture-pack',{...row,...change}),null);
  assert.equal(admission(true).compiledBindingAdmission('fixture-pack',row),null);
+});
+
+test('clip candidate indexing preserves full provenance and ambiguous-row rejection',()=>{
+ const actual=admission(),clip={id:'clip',cacheKey:'asset',sha256:'d'.repeat(64),sourceWavSha256:'e'.repeat(64),engine:'kokoro',provenanceSha256:'1'.repeat(64),textSha256:'a'.repeat(64),voiceProfileId:'voice'},ref={materialId:'material',segmentId:'headword',contextHash:'c'.repeat(64),activationAssetKey:'alias'};
+ assert(actual.compiledNaturalAudioAdmission('fixture-pack','f'.repeat(64),clip,ref));
+ for(const change of [{sha256:'changed'},{sourceWavSha256:'changed'},{provenanceSha256:'changed'},{voiceProfileId:'changed'},{legacySourceId:'changed'}])assert.equal(actual.compiledNaturalAudioAdmission('fixture-pack','f'.repeat(64),{...clip,...change},ref),null);
+ assert.equal(actual.compiledNaturalAudioAdmission('fixture-pack','f'.repeat(64),clip,{...ref,activationAssetKey:'changed'}),null);
+ assert.equal(admission(true).compiledNaturalAudioAdmission('fixture-pack','f'.repeat(64),clip,ref),null);
 });

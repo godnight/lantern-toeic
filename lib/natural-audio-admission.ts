@@ -40,8 +40,12 @@ const sameOptional=(a:string|undefined,b:string|undefined)=>a===b;
 export function matchesNaturalAudioAdmission(row:NaturalAudioAdmission,clip:AdmissionClip,ref:AdmissionReference):boolean{
   return row.clipId===clip.id&&row.cacheKey===clip.cacheKey&&row.encodedSha256===clip.sha256&&row.masterWavSha256===clip.sourceWavSha256&&row.textSha256===clip.textSha256&&row.voiceProfileId===clip.voiceProfileId&&row.engine===clip.engine&&row.provenanceSha256===clip.provenanceSha256&&sameOptional(row.legacySourceId,clip.legacySourceId)&&sameOptional(row.encodingObservationSha256,clip.encodingObservationSha256)&&row.materialId===ref.materialId&&row.segmentId===ref.segmentId&&row.contextHash===ref.contextHash&&(row.activationAssetKey??row.cacheKey)===(ref.activationAssetKey??clip.cacheKey);
 }
+const immutableRowsByClip=new WeakMap<readonly NaturalAudioAdmission[],Map<string,NaturalAudioAdmission[]>>();
 export function compiledNaturalAudioAdmission(packId:string,manifestSha256:string,clip:AdmissionClip,ref:AdmissionReference):NaturalAudioAdmission|null{
-  const rows=compiledNaturalAudioRows(packId,manifestSha256).filter(row=>matchesNaturalAudioAdmission(row,clip,ref));
+  const compiled=compiledNaturalAudioRows(packId,manifestSha256);
+  let byClip=immutableRowsByClip.get(compiled);
+  if(!byClip){byClip=new Map();for(const row of compiled){const rows=byClip.get(row.clipId);if(rows)rows.push(row);else byClip.set(row.clipId,[row]);}immutableRowsByClip.set(compiled,byClip);}
+  const rows=(byClip.get(clip.id)??[]).filter(row=>matchesNaturalAudioAdmission(row,clip,ref));
   return rows.length===1?rows[0]:null;
 }
 export type AdmissionWordBinding={wordId:string;slot:string;textSha256:string;snapshotContextSha256:string;requestContextHash?:string;mp3Sha256?:string;audio:{audioKey:string;materialId:string;segmentId:string;voiceProfileId:string}};
