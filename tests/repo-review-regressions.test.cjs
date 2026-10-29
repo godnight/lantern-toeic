@@ -145,7 +145,8 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
   for (const name of ['dialog','tabs','select','radio-group','progress','sonner']) imports['@/components/ui/'+name]=stubs;
   Object.assign(imports,require('./helpers/phase2-shell-fixture.cjs').workflowShellFixture(h.react,load('lib/practice-selection.ts',{'./study-model':h.model},h.browser)));
   imports['@/public/build-identity.json']={default:JSON.parse(fs.readFileSync(root+'/public/build-identity.json','utf8'))};
-  const app = load('app/study-app.tsx',imports,h.browser);
+  Object.assign(imports,require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root));
+ const app = load('app/study-workspace.tsx',imports,h.browser);
   h.recovery=imports['@/lib/speaking-recovery'];
   workspaceComponent=app.StudyWorkspace;
   pureComponents.add(app.StudyWorkspace);
@@ -280,7 +281,7 @@ test('recording dates follow the configured timezone across UTC day boundaries',
     assert.ok(list,'StudyApp passes its actual recordings and timezone into history');
     history.setRenderer(()=>actualHistory(list.props));
     const row=nodes(history.render(),n=>n.type==='article'&&n.props.className==='speaking-recording-item')[0];
-    assert.ok(textOf(row).includes(expected+' · 24 秒 · 本机录音'),timezone);
+    assert.ok(textOf(row).includes(expected+' · 24 秒 · M4A · 本机录音'),timezone);
     assert.equal(data.recordings[0].createdAt,createdAt,'Formatting preserves the original recording timestamp');
   }
 });

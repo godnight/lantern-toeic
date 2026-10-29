@@ -16,7 +16,8 @@ function load(file, imports = {}, globals = {}, append = '') {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
   }).outputText;
   vm.runInNewContext(code, { exports, require(name) {
-    if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals}).resolve(name,file); return name.endsWith('.json') ? {default:imports[name]} : imports[name];
+    // This suite extracts catalog construction without mounting an account UI.
+    if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals,permitLearningAccess:true}).resolve(name,file); return name.endsWith('.json') ? {default:imports[name]} : imports[name];
   }, Date, Intl, Map, Set, Error, JSON, Uint8Array, TextDecoder, AbortController,
   crypto: crypto.webcrypto, setTimeout, clearTimeout, ...globals }, { filename: file });
   return exports;
