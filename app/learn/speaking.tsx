@@ -213,6 +213,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
  const downloadName=`speaking-recording.${last.current?.meta.mime.includes('wav')?'wav':last.current?.meta.mime.includes('mp4')?'m4a':'webm'}`;
  const retrySave=()=>last.current?persist(last.current.meta,last.current.blob):Promise.resolve();
  const download=<a href={url} download={downloadName} className="button secondary speaking-download"><Download size={17}/>下载保留录音</a>;
+ const captureChoiceField=<label className="field">下一次录音方案<select value={captureChoice} disabled={busy||saving} onChange={event=>setCaptureChoice(event.target.value==='aac'?'aac':'legacy')}><option value="legacy">原方案（WAV）</option><option value="aac">原生（M4A）</option></select><small>两种录音都保存在本机，可回听比较。</small></label>;
  return <>
   <Dialog open onOpenChange={open=>{if(!open)requestClose();}}><DialogContent className="speaking-room" positioning="inset" style={dialogViewport(1120,true)} showCloseButton={false} onEscapeKeyDown={event=>{event.preventDefault();requestClose();}} onPointerDownOutside={event=>event.preventDefault()}>
    <div className="speaking-room-toolbar"><button type="button" className="button secondary" onClick={requestClose}><ArrowLeft size={17}/>返回口语目录</button><span>原创口语专项</span></div>
@@ -227,7 +228,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
      <details className="speaking-guide"><summary>练习提示</summary><ul>{prompt.guide.map(guide=><li key={guide}>{guide}</li>)}</ul></details>
     </section><section className="speaking-controls" aria-labelledby="speaking-controls-title">
      <div className="speaking-section-heading"><h2 id="speaking-controls-title">{phase==='done'?'回听与自评':'准备与录音'}</h2><span>{phaseLabel}</span></div>
-     {nativeMode&&(phase==='ready'||phase==='done'&&saved)&&<label className="field">下一次录音方案<select value={captureChoice} disabled={busy||saving} onChange={event=>setCaptureChoice(event.target.value==='aac'?'aac':'legacy')}><option value="legacy">原方案 · WAV</option><option value="aac">原生录音 · AAC</option></select><small>默认保留原方案；两种录音都保存在本机，可回听比较。</small></label>}
+     {nativeMode&&phase==='ready'&&captureChoiceField}
      {phase!=='done'&&<><div className={'speaking-countdown '+(phase==='recording'?'is-recording':'')} aria-live="off"><b>{phase==='processing'?'…':clockText(seconds)}</b><span>{phase==='recording'?'回答剩余':phase==='prep'?'准备剩余':phase==='processing'?'正在整理':'秒准备'}</span></div><div className="speaking-durations"><span>准备 <b>{prompt.prepSeconds} 秒</b></span><span>回答 <b>{prompt.answerSeconds} 秒</b></span></div></>}
      {accessError&&<div className="speaking-notice error" role="alert"><strong>{nativePending?'录音结果待确认':'麦克风或录音当前不可用'}</strong><p>{accessError}</p></div>}
      {phase==='ready'&&<><p className="speaking-secondary">点击后申请麦克风权限。准备结束会自动录音，也可以提前开始。</p><button type="button" className="button primary speaking-main-action" disabled={busy} onClick={start}><Mic size={18}/>{busy?'等待麦克风…':'开始准备'}</button></>}
@@ -243,6 +244,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
       {last.current&&(feedbackScope?<OfflineSpeakingFeedback key={JSON.stringify([feedbackScope.ownerKey,feedbackScope.ownerGeneration,last.current.meta.id])} prompt={prompt} recordingId={last.current.meta.id} blob={last.current.blob} saved={saved} captureIssue={captureIssue} scope={feedbackScope} previousFeedback={previousFeedback} onFeedback={setFeedback}/>:<p className="speaking-caption" role="status">此设备暂不支持本地语音识别，录音可回听和保留。</p>)}
       <div className="speaking-reflect"><h3>回听，只改一个地方</h3><p className="speaking-secondary">按真实感受自评，不产生自动分数。</p><fieldset className="speaking-self-checks"><legend>这一次我留意了</legend>{prompt.guide.map((guide,index)=><label key={guide} htmlFor={`speaking-self-${index}`}><Checkbox id={`speaking-self-${index}`} checked={self.includes(guide)} onCheckedChange={checked=>setSelf(items=>checked?[...items,guide]:items.filter(item=>item!==guide))}/><span>{guide}</span></label>)}</fieldset>
        <SpeakingSample prompt={prompt}/>
+       {nativeMode&&saved&&captureChoiceField}
        <div className="speaking-final-actions"><button type="button" className="button secondary" disabled={!saved||busy} onClick={start}><RotateCcw size={17}/>{busy?'等待麦克风…':'再说一次'}</button><button type="button" className="button primary" disabled={!saved||busy||!!captureIssue} onClick={()=>{if(!busy&&!captureIssue)onFinish(Math.max(1,Math.ceil(((last.current?.meta.duration||0)+prompt.prepSeconds)/60)));}}><CheckCircle2 size={17}/>记录收获</button></div><p className="speaking-caption">自评只用于本轮回听；学习时间与手记在下一步单独确认。</p>
       </div>
      </>}
