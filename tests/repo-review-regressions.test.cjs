@@ -113,7 +113,7 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
     'react/jsx-runtime':runtime, 'lucide-react':stubs, './ui-theme':themeUi
   }, h.browser);
   for (const component of Object.values(workspace)) if (typeof component === 'function') pureComponents.add(component);
-  const speaking = load('app/learn/speaking.tsx', {'@/lib/lesson-audio':{stopLessonAudio(){}},
+  const speaking = load('app/learn/speaking.tsx', {...require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root),'@/lib/lesson-audio':{stopLessonAudio(){}},
     react:h.react, 'react/jsx-runtime':runtime, 'lucide-react':stubs,
     '@/components/ui/dialog':stubs, '@/components/ui/checkbox':stubs, './practice':stubs, './recording-player':{RecordingPlayer:'audio'},
     '@/lib/study-model':h.model,
@@ -270,7 +270,7 @@ test('recording dates follow the configured timezone across UTC day boundaries',
   const render=dailyApp(data); navigateApp(render,'train');
   // A separate hook environment preserves the component boundary, as React does.
   const history=environment(), jsx=(type,props)=>({type,props}), stubs=new Proxy({},{get:(_,name)=>String(name)});
-  const actualHistory=load('app/learn/speaking.tsx',{'@/lib/lesson-audio':{stopLessonAudio(){}},
+  const actualHistory=load('app/learn/speaking.tsx',{...require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root),'@/lib/lesson-audio':{stopLessonAudio(){}},
     react:history.react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stubs,
     '@/components/ui/dialog':stubs,'@/components/ui/checkbox':stubs,'./practice':stubs,'./recording-player':{RecordingPlayer:'audio'},
     '@/lib/study-model':history.model,'@/lib/native-host':{registerNativeBack:()=>()=>{},isNativeForeground:()=>true,subscribeNativeState:()=>()=>{}},sonner:{toast:history.toast}
