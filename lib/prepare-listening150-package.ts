@@ -18,10 +18,12 @@ export function prepareListening150Package(retry=false):Promise<Listening150Admi
  if(failure&&!retry)return Promise.reject(failure);
  failure=null;
  const task=(async()=>{
-  await prepareNaturalAudioCatalog(retry);
   preparationMark('listening150-start');
-  const {listening150PackageSteps}=await import('./listening150-package-admission');
-  const result=await runCooperativeSteps(listening150PackageSteps());
+  const input=import('./listening150-package-admission').then(module=>{const snapshot=module.captureCompiledListening150Package();preparationMark('listening150-input-ready');return snapshot;});
+  const [snapshot]=await Promise.all([input,prepareNaturalAudioCatalog(retry)]);
+  const {admitListening150PackageSteps}=await import('./listening150-catalog');
+  preparationMark('listening150-validation-start');
+  const result=await runCooperativeSteps(admitListening150PackageSteps(snapshot.input,snapshot.pins));
   complete=result;preparationMark('listening150-ready');return result;
  })();
  pending=task;

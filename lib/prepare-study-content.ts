@@ -46,10 +46,13 @@ export function prepareStudyContent(retry=false):Promise<void>{
  if(failure&&!retry)return Promise.reject(failure);
  failure=null;
  const questionTask=(async()=>{
+  // Only immutable source loading starts early. The package task itself waits
+  // for the full locator; module consumers remain behind both admissions.
+  const listening=questions?null:prepareListening150Package(retry);
   await prepareNaturalAudioCatalog(retry);
   if(!questions){
    preparationMark('question-catalog-start');
-   await prepareListening150Package(retry);
+   await listening;
    const {questionCatalogSteps}=await import('./question-catalog-admission');
    questions=Object.freeze(await runCooperativeSteps(questionCatalogSteps()));
    preparationMark('question-catalog-ready');

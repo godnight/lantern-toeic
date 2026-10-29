@@ -1,7 +1,7 @@
 import questions from '../content/questions-v041-listening150.json';
 import gate from '../content/questions-v041-listening150-text-image-gates.json';
 import media from '../content/questions-v041-listening150-media.json';
-import {admitListening150PackageSteps,type Listening150Input,type Listening150Pins} from './listening150-catalog';
+import type {Listening150Input,Listening150Pins} from './listening150-catalog';
 
 /** Complete source-r3 and exact image/media pins. No caller activation is accepted. */
 const sealed:Readonly<{input:Listening150Input;pins:Listening150Pins}>={
@@ -59,7 +59,8 @@ const sealed:Readonly<{input:Listening150Input;pins:Listening150Pins}>={
   ]
 }
 };
-export const listening150PackageSteps=()=>admitListening150PackageSteps(sealed.input,sealed.pins);
-export function completeListening150PackageSynchronously(){
- const steps=listening150PackageSteps();let next=steps.next();while(!next.done)next=steps.next();return next.value;
+/** Each consumer receives a private snapshot, never the compiled authority
+ * references. Loading this data module does not read an unprepared locator. */
+export function captureCompiledListening150Package(){
+ return JSON.parse(JSON.stringify(sealed)) as {input:Listening150Input;pins:Listening150Pins};
 }

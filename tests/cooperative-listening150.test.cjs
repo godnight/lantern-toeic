@@ -35,7 +35,8 @@ test('package readers share pending work, stay blocked after failure and retry o
  const hold=deferred();let fail=true,runs=0;const ready=Object.freeze({questions:Object.freeze([{id:'complete'}])});
  const api=createSourceLoader({root,globals:{window:{}},imports:{
   './prepare-natural-audio-catalog':{prepareNaturalAudioCatalog:async()=>{}},
-  './listening150-package-admission':{listening150PackageSteps:function*(){runs++;yield;if(fail)throw Error('invalid complete package');return ready;}},
+  './listening150-package-admission':{captureCompiledListening150Package:()=>({input:{},pins:{}})},
+  './listening150-catalog':{admitListening150PackageSteps:function*(){runs++;yield;if(fail)throw Error('invalid complete package');return ready;}},
   './cooperative-task':{runCooperativeSteps:async steps=>{await hold.promise;return drain(steps);}},
  }}).load('lib/prepare-listening150-package.ts');
  assert.throws(api.readPreparedListening150Package,/仍在核验/);assert.throws(()=>api.installServerListening150Package(()=>ready),/仍在核验/);
@@ -52,4 +53,12 @@ test('actual complete client package preserves all frozen394 questions, track se
  // Captured from the actual frozen394 synchronous source before this layer.
  assert.equal(crypto.createHash('sha256').update(JSON.stringify(snapshot)).digest('hex'),'b2fa50a562a65b8f8f5affcb8bf3ceedf9da6d6abbdf752016f73c36feb71e67');
  assert.equal(value.questions.length,150);assert.equal(value.stats.bodyTracks,102);assert.equal(value.stats.questionTracks,72);assert.equal(value.stats.imageCount,42);
+});
+
+
+test('compiled early source snapshots cannot mutate or replace authority for another admission',()=>{
+ const source=actual.load('lib/listening150-package-admission.ts'),first=source.captureCompiledListening150Package(),second=source.captureCompiledListening150Package();
+ assert.notEqual(first,second);assert.notEqual(first.input.questions,second.input.questions);const original=second.pins.questionsCanonicalSha256,question=second.input.questions[0].prompt;
+ first.pins.questionsCanonicalSha256='0'.repeat(64);first.input.questions[0].prompt+=' modified';
+ const third=source.captureCompiledListening150Package();assert.equal(third.pins.questionsCanonicalSha256,original);assert.equal(third.input.questions[0].prompt,question);
 });
