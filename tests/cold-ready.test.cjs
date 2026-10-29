@@ -47,6 +47,7 @@ test('shared preparation overlaps independent questions and vocabulary but gates
  const hold=deferred(),order=[],marks=[];let fail=true,viewRuns=0;
  const api=createSourceLoader({root,globals:{window:{},performance:{now:()=>performance.now(),mark:name=>marks.push(name)}},imports:{
   './prepare-natural-audio-catalog':{prepareNaturalAudioCatalog:async()=>{}},
+  './prepare-listening150-package':{prepareListening150Package:async()=>{}},
   './lesson-audio':{prepareProductLessonAudio:async()=>({status:'ready'})},
   './prepare-vocabulary-catalog':{prepareVocabularyCatalog:async()=>{await hold.promise;order.push('vocabulary');}},
   './question-catalog-admission':{questionCatalogSteps:function*(){order.push('questions');yield;return {validated:true};}},

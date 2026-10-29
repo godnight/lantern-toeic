@@ -1,5 +1,6 @@
 import {prepareVocabularyCatalog} from './prepare-vocabulary-catalog';
 import {prepareNaturalAudioCatalog} from './prepare-natural-audio-catalog';
+import {prepareListening150Package} from './prepare-listening150-package';
 import {runCooperativeSteps} from './cooperative-task';
 import {preparationMark} from './preparation-timing';
 import type {QuestionCatalogSnapshot} from './question-catalog-admission';
@@ -48,6 +49,7 @@ export function prepareStudyContent(retry=false):Promise<void>{
   await prepareNaturalAudioCatalog(retry);
   if(!questions){
    preparationMark('question-catalog-start');
+   await prepareListening150Package(retry);
    const {questionCatalogSteps}=await import('./question-catalog-admission');
    questions=Object.freeze(await runCooperativeSteps(questionCatalogSteps()));
    preparationMark('question-catalog-ready');
