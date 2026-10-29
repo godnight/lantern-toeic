@@ -1,3 +1,5 @@
+import {registeredBundledClip,registeredBundledSource} from './bundled-lesson-audio';
+export {installBundledLessonAudio} from './bundled-lesson-audio';
 import naturalManifest from '../content/natural-audio-manifest.json';
 import type {NaturalAudioSelector} from './natural-audio';
 import {naturalAudioCatalogRegistry as naturalAudioRegistry} from './natural-audio-catalog';
@@ -19,27 +21,11 @@ export const productLessonAudioState=naturalAudioRegistry.getSnapshot;
 export const naturalLessonDescriptor=(text:string,selector:NaturalAudioSelector={})=>naturalAudioRegistry.resolve(text,selector);
 export const retryProductLessonAudio=()=>prepareProductLessonAudio({allowLocalCandidate:localCandidateAudioAuthorized});
 
-type Clip = {text:string; file:string; sha256?:string};
-let bundledSources = new Map<string,string>();
-let bundledClips = new Map<string,string>();
 let active: ReturnType<typeof createBundledPlayback> | null = null;
 let playbackSequence=0;
 
-// Both entries may register existing packaged clips; callers supply only their shipped assets.
-export function installBundledLessonAudio(clips:Clip[]) {
-  const next = new Map<string,string>();
-  const sources = new Map<string,string>();
-  for (const clip of clips) {
-    if (!/^[a-f0-9]{20}\.mp3$/.test(clip.file)) throw new Error('Invalid bundled audio filename');
-    if (next.has(clip.text)) throw new Error('Duplicate bundled audio text');
-    next.set(clip.text, '/audio/offline/' + clip.file);
-    sources.set(clip.text,'bundled:'+clip.file+':'+(clip.sha256??clip.file));
-  }
-  bundledClips = next;bundledSources=sources;
-}
-
-export function bundledLessonAudio(text:string,selector:NaturalAudioSelector={}) {const natural=naturalAudioRegistry.resolve(text,selector);if(natural)return natural.url;if(naturalAudioRegistry.isBlocked(text)||naturalAudioRegistry.hasText(text)||Object.values(selector).some(Boolean))return null;return bundledClips.get(text)??null;}
-export function bundledLessonSource(text:string,selector:NaturalAudioSelector={}) {const natural=naturalAudioRegistry.resolve(text,selector);if(natural)return natural.sourceId;if(naturalAudioRegistry.isBlocked(text)||naturalAudioRegistry.hasText(text)||Object.values(selector).some(Boolean))return null;return bundledSources.get(text)??null;}
+export function bundledLessonAudio(text:string,selector:NaturalAudioSelector={}) {const natural=naturalAudioRegistry.resolve(text,selector);if(natural)return natural.url;if(naturalAudioRegistry.isBlocked(text)||naturalAudioRegistry.hasText(text)||Object.values(selector).some(Boolean))return null;return registeredBundledClip(text);}
+export function bundledLessonSource(text:string,selector:NaturalAudioSelector={}) {const natural=naturalAudioRegistry.resolve(text,selector);if(natural)return natural.sourceId;if(naturalAudioRegistry.isBlocked(text)||naturalAudioRegistry.hasText(text)||Object.values(selector).some(Boolean))return null;return registeredBundledSource(text);}
 /** Explicit user/navigation boundary: stop every old lesson/TTS/replay before another source. */
 export function stopLessonAudio(){
  active?.stop();

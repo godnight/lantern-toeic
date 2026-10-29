@@ -1,3 +1,4 @@
+import {prepareNaturalAudioCatalog} from './prepare-natural-audio-catalog';
 import type {Word} from './vocabulary-model';
 import {runCooperativeSteps} from './cooperative-task';
 import type historicalTable from '../content/vocabulary-v040-b02-private.json';
@@ -39,6 +40,7 @@ export function prepareVocabularyCatalog(retry=false):Promise<VocabularyCatalogS
  const task=(async()=>{
   // Allow the caller's preparation view to paint before loading heavy modules.
   await yieldTask();
+  await prepareNaturalAudioCatalog(retry);
   const {vocabularyCatalogSteps}=await import('./vocabulary-content-admission');
   const result=await runVocabularyCatalogSteps(vocabularyCatalogSteps());
   const status=result.FULL4109_CATALOG_STATUS;
