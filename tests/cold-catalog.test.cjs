@@ -38,7 +38,7 @@ test('message task scheduling yields without timer clamping and closes both port
  }
 });
 test('full cooperative admission preserves the frozen 4040/69, historical selectors, provenance and seven wordbooks digest',async()=>{
- const loader=createSourceLoader({root,globals:{window:{}}}),prepare=loader.load('lib/prepare-study-content.ts');await prepare.prepareStudyContent();
+ const loader=createSourceLoader({root,globals:{window:{}}}),prepare=loader.load('lib/prepare-study-content.ts');await prepare.prepareWorkflowContent();
  const content=loader.load('lib/vocabulary-content-catalog.ts'),audio=loader.load('lib/word-audio-bindings-v040.ts');
  const words=[...content.FULL4109_CURRENT_WORDS,...content.LEGACY_PRIVATE_WORDS],selectors=words.map(word=>[word.id,audio.getWordAudioBindingForSnapshot(word,'headword'),audio.getWordAudioBindingForSnapshot(word,'example'),audio.isPrivateWordAudioBlocked(word)]);
  const workflow=loader.load('lib/workflow-catalog.ts'),admission=loader.load('lib/natural-audio-admission.ts'),identity=admission.compiledNaturalAudioIdentity();

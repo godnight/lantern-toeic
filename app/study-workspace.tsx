@@ -44,7 +44,7 @@ import {workspaceParent,isPersonalPage} from '@/lib/workspace-navigation';
 import {useWorkspaceDialogHistory} from '@/lib/use-workspace-dialog-history';
 import {formatStudyDate,isSupportedStudyTimezone,studyTimezoneChoices} from '@/lib/study-format';
 import localAsrProfile from '@/content/local-asr-profile.json';
-import {prepareProductLessonAudio,stopLessonAudio} from '@/lib/lesson-audio';
+import {stopLessonAudio} from '@/lib/lesson-audio';
 import {applyDocumentTheme,UI_THEME_META} from '@/lib/ui-theme';
 import {getSpeakingRecovery,hasSpeakingRecovery,retainSpeakingRecovery,releaseSpeakingRecovery,subscribeSpeakingRecovery} from '@/lib/speaking-recovery';
 let workspaceOwnerEpoch=Date.now();
@@ -55,7 +55,6 @@ function saveFile(name:string,text:string,type='application/json'){const u=URL.c
 function ChoiceSelect({value,onChange,items,label}:{value:string;onChange:(v:string)=>void;items:{value:string;label:string}[];label:string}){return <Select value={value} onValueChange={onChange}><SelectTrigger className="form-select" aria-label={label}><SelectValue/></SelectTrigger><SelectContent>{items.map(x=><SelectItem key={x.value} value={x.value}>{x.label}</SelectItem>)}</SelectContent></Select>}
 export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable=false,remoteLearningEnabled=false}:{owner:string|null;nativeMode?:boolean;onAccount?:()=>void;legacyAvailable?:boolean;remoteLearningEnabled?:boolean}){
  const accountAccess=useLearningAccess(owner);
- useEffect(()=>{void prepareProductLessonAudio({allowLocalCandidate:true});},[]);
  useEffect(()=>()=>stopLessonAudio(),[]);
  const [feedbackOwnerGeneration]=useState(()=>++workspaceOwnerEpoch);
  const recoveryScope=JSON.stringify([nativeMode,owner]);const [,setRecoveryVersion]=useState(0);

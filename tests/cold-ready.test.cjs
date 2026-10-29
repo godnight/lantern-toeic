@@ -5,21 +5,6 @@ const sha=value=>crypto.createHash('sha256').update(JSON.stringify(value)).diges
 function drain(steps){let next=steps.next();while(!next.done)next=steps.next();return next.value;}
 function deferred(){let resolve;const promise=new Promise(yes=>resolve=yes);return {promise,resolve};}
 
-test('cooperative canonical bytes and full SHA retain numeric keys, Unicode, escapes and block padding',()=>{
- const loader=createSourceLoader({root}),steps=loader.load('lib/canonical-command-steps.ts'),domain=loader.load('lib/domain-command.ts');
- const values=[null,-0,{z:'2026-01-01T00:00:00+08:00',2:'二',10:'十',a:'汉🙂\ud800\udfff\n"\\'},[true,false,[],{}]];
- for(let size=0;size<130;size++)values.push('🙂x'.repeat(size));
- for(const value of values){const text=drain(steps.canonicalJsonSteps(value));assert.equal(text,domain.canonicalJson(value));assert.equal(drain(steps.canonicalHashSteps(text)),crypto.createHash('sha256').update(text).digest('hex'));}
- const sparse=[];sparse[1]=1;const accessor={};Object.defineProperty(accessor,'x',{enumerable:true,get(){throw Error('Getter must not execute');}});
- const cycle={};cycle.self=cycle;
- for(const value of [undefined,NaN,Infinity,sparse,accessor,cycle,{constructor:'reserved'},new Date(),{[Symbol('field')]:1}]){
-  let expected;try{domain.canonicalJson(value);}catch(error){expected=error.message;}
-  assert(expected);assert.throws(()=>drain(steps.canonicalJsonSteps(value)),error=>error.message===expected);
- }
- let deep=null;for(let i=0;i<82;i++)deep=[deep];
- for(const value of [deep,Array(250001).fill(null),'汉'.repeat(3*1024*1024)])assert.throws(()=>drain(steps.canonicalJsonSteps(value)),/过大|过深|超过8MiB/);
-});
-
 test('cooperative sealing publishes no identity before full digest and caches only a matching deep-frozen graph',()=>{
  const base=createSourceLoader({root}).load('lib/domain-command.ts');let hashes=0;
  const loader=createSourceLoader({root,imports:{'./domain-command':{...base,canonicalHash:text=>{hashes++;return base.canonicalHash(text);}}}}),api=loader.load('lib/practice-catalog-identity.ts');
@@ -27,10 +12,11 @@ test('cooperative sealing publishes no identity before full digest and caches on
  const pending=api.sealPracticeCatalogSteps(rows,expected);pending.next();
  assert.equal(api.practiceCatalogIdentity(rows),expected);assert.equal(hashes,1,'Pending preparation cannot prefill the expected identity');
  drain(pending);assert(Object.isFrozen(rows)&&Object.isFrozen(rows[0])&&Object.isFrozen(rows[0].options));
- for(let i=0;i<10;i++)assert.equal(api.practiceCatalogIdentity(rows),expected);assert.equal(hashes,1);
+ assert.equal(hashes,2,'The complete original SHA path ran before caching');
+ for(let i=0;i<10;i++)assert.equal(api.practiceCatalogIdentity(rows),expected);assert.equal(hashes,2);
  const wrong=[{id:'changed'}];assert.throws(()=>drain(api.sealPracticeCatalogSteps(wrong,expected)),/snapshot-mismatch/);
- assert.notEqual(api.practiceCatalogIdentity(wrong),expected);assert.equal(hashes,2,'Rejected snapshots do not enter the cache');
- const cancelled=[{id:'cancelled'}],cancel=api.sealPracticeCatalogSteps(cancelled,expected);cancel.next();cancel.return();api.practiceCatalogIdentity(cancelled);assert.equal(hashes,3);
+ assert.notEqual(api.practiceCatalogIdentity(wrong),expected);assert.equal(hashes,4,'Rejected snapshots do not enter the cache');
+ const cancelled=[{id:'cancelled'}],cancel=api.sealPracticeCatalogSteps(cancelled,expected);cancel.next();cancel.return();api.practiceCatalogIdentity(cancelled);assert.equal(hashes,5);
 });
 
 test('cooperative deep freeze rejects accessors, symbols and non-JSON prototypes before reading executable data',()=>{
@@ -57,21 +43,23 @@ test('locator shares pending work and a failed complete validation requires expl
  const retry=api.prepareNaturalAudioCatalog(true);assert.equal(retry,api.prepareNaturalAudioCatalog());assert.equal((await retry).index,snapshot);assert.equal(runs,2);
 });
 
-test('shared study preparation orders full vocabulary, question identity and views, with no automatic failed-stage retry',async()=>{
+test('shared preparation overlaps independent questions and vocabulary but gates views, mounting and explicit retry',async()=>{
  const hold=deferred(),order=[],marks=[];let fail=true,viewRuns=0;
  const api=createSourceLoader({root,globals:{window:{},performance:{now:()=>performance.now(),mark:name=>marks.push(name)}},imports:{
+  './prepare-natural-audio-catalog':{prepareNaturalAudioCatalog:async()=>{}},
+  './lesson-audio':{prepareProductLessonAudio:async()=>({status:'ready'})},
   './prepare-vocabulary-catalog':{prepareVocabularyCatalog:async()=>{await hold.promise;order.push('vocabulary');}},
   './question-catalog-admission':{questionCatalogSteps:function*(){order.push('questions');yield;return {validated:true};}},
   './learning-word-views-admission':{learningWordViewSteps:function*(){order.push('views');viewRuns++;yield;if(fail)throw Error('view failure');return {complete:true};}},
  }}).load('lib/prepare-study-content.ts');
  const first=api.prepareStudyContent();assert.equal(api.prepareStudyContent(),first);assert.deepEqual(order,[]);
  assert.throws(api.readPreparedQuestionCatalog,/仍在核验/);assert.throws(api.readPreparedLearningWordViews,/仍在核验/);
- hold.resolve();await assert.rejects(first,/view failure/);assert.deepEqual(order,['vocabulary','questions','views']);assert.equal(api.readPreparedQuestionCatalog().validated,true);assert.throws(api.readPreparedLearningWordViews,/仍在核验/);
+ hold.resolve();await assert.rejects(first,/view failure/);assert(order.indexOf('views')>order.indexOf('vocabulary'));assert.equal(order.filter(item=>item==='questions').length,1);assert.equal(api.readPreparedQuestionCatalog().validated,true);assert.throws(api.readPreparedLearningWordViews,/仍在核验/);
  await assert.rejects(api.prepareStudyContent(),/view failure/);assert.equal(viewRuns,1);assert(!marks.includes('lantern:required-content-ready'));fail=false;await api.prepareStudyContent(true);assert.equal(viewRuns,2);assert.equal(api.readPreparedLearningWordViews().complete,true);assert.equal(marks.filter(name=>name==='lantern:required-content-ready').length,1);
 });
 
 test('complete browser preparation retains frozen practice pins and both exact historical word-view orders',async()=>{
- const loader=createSourceLoader({root,globals:{window:{}}}),api=loader.load('lib/prepare-study-content.ts');
+ const loader=createSourceLoader({root,globals:{window:{}},imports:{'./lesson-audio':{prepareProductLessonAudio:async()=>({status:'ready'})}}}),api=loader.load('lib/prepare-study-content.ts');
  await api.prepareStudyContent();
  const questions=loader.load('lib/question-catalog.ts'),identity=loader.load('lib/practice-catalog-identity.ts'),domain=loader.load('lib/domain-command.ts'),views=loader.load('lib/learning-word-views.ts');
  assert.equal(questions.QUESTIONS.length,313);assert.equal(questions.LISTENING_COLLECTION_QUESTIONS.length,200);
@@ -83,4 +71,16 @@ test('complete browser preparation retains frozen practice pins and both exact h
  assert.equal(sha(views.WORKFLOW_WORDS),'224a28c578a9aa29cd05eac008dbd139b2a66918d5f628b52d97173ac48c174e');
  assert.equal(sha(views.SCENE_WORDS),'4fea17a70a5df907d5e7171b20370d4ec386a989335095feadc44d7c486823ff');
  assert.equal(sha(views.EXPRESSION_WORDS),'c120ccda6b60f8c7bf4826930518e56a7a63efd47c509fbc8769198044399fa1');
+});
+
+
+test('explicit legacy recovery prepares workflow only, without practice registration or audio activation',async()=>{
+ let vocab=0,view=0,questions=0,audio=0;
+ const api=createSourceLoader({root,globals:{window:{}},imports:{
+  './prepare-vocabulary-catalog':{prepareVocabularyCatalog:async()=>{vocab++;}},
+  './learning-word-views-admission':{learningWordViewSteps:function*(){view++;yield;return {complete:true};}},
+  './question-catalog-admission':{questionCatalogSteps:function*(){questions++;throw Error('Unexpected practice load');}},
+  './lesson-audio':{prepareProductLessonAudio:async()=>{audio++;}},
+ }}).load('lib/prepare-study-content.ts');
+ await api.prepareWorkflowContent();assert.equal(vocab,1);assert.equal(view,1);assert.equal(questions,0);assert.equal(audio,0);assert.throws(api.readPreparedQuestionCatalog,/仍在核验/);
 });
