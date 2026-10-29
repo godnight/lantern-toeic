@@ -1,4 +1,5 @@
 import {runCooperativeSteps} from './cooperative-task';
+import {preparationMark} from './preparation-timing';
 import type {NaturalAudioCatalogIndex} from './natural-audio-catalog-index';
 
 export type NaturalAudioCatalogResult={index:Readonly<NaturalAudioCatalogIndex>|null;error:string|null};
@@ -21,8 +22,10 @@ export function prepareNaturalAudioCatalog(retry=false):Promise<NaturalAudioCata
  if(failure&&!retry)return Promise.reject(failure);
  failure=null;
  const task=(async()=>{
+  preparationMark('audio-locator-start');
   const {naturalAudioCatalogSteps}=await import('./natural-audio-catalog-admission');
   const index=await runCooperativeSteps(naturalAudioCatalogSteps());
+  preparationMark('audio-locator-ready');
   return complete=Object.freeze({index,error:null});
  })();
  pending=task;

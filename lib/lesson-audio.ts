@@ -1,4 +1,5 @@
 import {registeredBundledClip,registeredBundledSource} from './bundled-lesson-audio';
+import {preparationMark} from './preparation-timing';
 export {installBundledLessonAudio} from './bundled-lesson-audio';
 import naturalManifest from '../content/natural-audio-manifest.json';
 import type {NaturalAudioSelector} from './natural-audio';
@@ -12,6 +13,7 @@ export function prepareProductLessonAudio(options:{allowLocalCandidate?:boolean}
   if(naturalPreparation)return naturalPreparation;
   if(naturalAudioRegistry.getSnapshot().phase==='ready')return Promise.resolve({status:'ready' as const});
   const promise=naturalAudioRegistry.activate(naturalManifest,{allowLocalCandidate:localCandidateAudioAuthorized});
+  void promise.then(result=>{if(result.status==='ready')preparationMark('audio-metadata-ready');},()=>{});
   naturalPreparation=promise;
   void promise.finally(()=>{if(naturalPreparation===promise)naturalPreparation=null;});
   return promise;

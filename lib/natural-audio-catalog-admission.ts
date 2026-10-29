@@ -1,4 +1,5 @@
 import compiled from '../content/natural-audio-catalog-v1.json';
+import {preparationMark} from './preparation-timing';
 import type {NaturalAudioCatalogIndex} from './natural-audio-catalog-index';
 import type {NaturalAudioCatalogResult} from './prepare-natural-audio-catalog';
 const NATURAL_AUDIO_CATALOG_MAX_BYTES=5*1024*1024;
@@ -14,14 +15,20 @@ function* freezeSteps(value:unknown):Generator<void,void,void>{
 /** Capture before returning the first schedulable step. No later read can
  * observe mutation of the imported or caller-supplied object. */
 export function naturalAudioCatalogSteps(input:unknown=compiled):Generator<void,Readonly<NaturalAudioCatalogIndex>,void>{
+ preparationMark('locator-snapshot-start');
  const source=JSON.stringify(input);
+ preparationMark('locator-snapshot-end');
  return validateSteps(source);
 }
 function* validateSteps(source:string):Generator<void,Readonly<NaturalAudioCatalogIndex>,void>{
  yield;
+ preparationMark('locator-utf8-start');
  if(new TextEncoder().encode(source).byteLength>NATURAL_AUDIO_CATALOG_MAX_BYTES)throw Error('自然音频定位索引超过5MiB。');
+ preparationMark('locator-utf8-end');
  yield;
+ preparationMark('locator-parse-start');
  const value=JSON.parse(source) as NaturalAudioCatalogIndex;
+ preparationMark('locator-parse-end');
  yield;
     if(value.schemaVersion!==1||!value.catalogId||!Array.isArray(value.packs)||value.packs.length>64||!value.packs.length||!value.routes||!value.bindings||!Array.isArray(value.wordExceptions))throw Error('自然音频定位索引格式不正确。');
     const seen=new Set<string>();

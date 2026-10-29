@@ -1,4 +1,5 @@
 import {prepareNaturalAudioCatalog} from './prepare-natural-audio-catalog';
+import {preparationMark} from './preparation-timing';
 import type {Word} from './vocabulary-model';
 import {runCooperativeSteps} from './cooperative-task';
 import type historicalTable from '../content/vocabulary-v040-b02-private.json';
@@ -41,12 +42,13 @@ export function prepareVocabularyCatalog(retry=false):Promise<VocabularyCatalogS
   // Allow the caller's preparation view to paint before loading heavy modules.
   await yieldTask();
   await prepareNaturalAudioCatalog(retry);
+  preparationMark('vocabulary-start');
   const {vocabularyCatalogSteps}=await import('./vocabulary-content-admission');
   const result=await runVocabularyCatalogSteps(vocabularyCatalogSteps());
   const status=result.FULL4109_CATALOG_STATUS;
   if(result.FULL4109_CURRENT_MODE&&(!status.configured||!status.partitionValid||status.rejectedCount!==0))throw Error('词表完整核验未通过，原有记录保留。');
   if(token!==generation)throw new VocabularyCatalogPendingError();
-  complete=Object.freeze(result);return complete;
+  complete=Object.freeze(result);preparationMark('vocabulary-ready');return complete;
  })();
  pending=task;
  void task.then(()=>{if(token===generation)pending=null;},error=>{if(token===generation){pending=null;failure=error;}});

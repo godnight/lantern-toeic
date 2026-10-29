@@ -58,8 +58,8 @@ test('locator shares pending work and a failed complete validation requires expl
 });
 
 test('shared study preparation orders full vocabulary, question identity and views, with no automatic failed-stage retry',async()=>{
- const hold=deferred(),order=[];let fail=true,viewRuns=0;
- const api=createSourceLoader({root,globals:{window:{}},imports:{
+ const hold=deferred(),order=[],marks=[];let fail=true,viewRuns=0;
+ const api=createSourceLoader({root,globals:{window:{},performance:{now:()=>performance.now(),mark:name=>marks.push(name)}},imports:{
   './prepare-vocabulary-catalog':{prepareVocabularyCatalog:async()=>{await hold.promise;order.push('vocabulary');}},
   './question-catalog-admission':{questionCatalogSteps:function*(){order.push('questions');yield;return {validated:true};}},
   './learning-word-views-admission':{learningWordViewSteps:function*(){order.push('views');viewRuns++;yield;if(fail)throw Error('view failure');return {complete:true};}},
@@ -67,7 +67,7 @@ test('shared study preparation orders full vocabulary, question identity and vie
  const first=api.prepareStudyContent();assert.equal(api.prepareStudyContent(),first);assert.deepEqual(order,[]);
  assert.throws(api.readPreparedQuestionCatalog,/仍在核验/);assert.throws(api.readPreparedLearningWordViews,/仍在核验/);
  hold.resolve();await assert.rejects(first,/view failure/);assert.deepEqual(order,['vocabulary','questions','views']);assert.equal(api.readPreparedQuestionCatalog().validated,true);assert.throws(api.readPreparedLearningWordViews,/仍在核验/);
- await assert.rejects(api.prepareStudyContent(),/view failure/);assert.equal(viewRuns,1);fail=false;await api.prepareStudyContent(true);assert.equal(viewRuns,2);assert.equal(api.readPreparedLearningWordViews().complete,true);
+ await assert.rejects(api.prepareStudyContent(),/view failure/);assert.equal(viewRuns,1);assert(!marks.includes('lantern:required-content-ready'));fail=false;await api.prepareStudyContent(true);assert.equal(viewRuns,2);assert.equal(api.readPreparedLearningWordViews().complete,true);assert.equal(marks.filter(name=>name==='lantern:required-content-ready').length,1);
 });
 
 test('complete browser preparation retains frozen practice pins and both exact historical word-view orders',async()=>{

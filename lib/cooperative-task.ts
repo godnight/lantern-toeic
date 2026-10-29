@@ -14,13 +14,15 @@ export function createCooperativeTaskQueue():CooperativeTaskQueue{
 }
 export async function runCooperativeSteps<T>(steps:Generator<void,T,void>,schedule?:()=>Promise<void>):Promise<T>{
  const queue=schedule?{yield:schedule,close:()=>{}}:createCooperativeTaskQueue();
+ const start=now();let waitMs=0,yields=0,status:'complete'|'failed'='failed';
  try{
   let next=steps.next();
   while(!next.done){
    const end=now()+4;let operations=0;
    do{next=steps.next();operations++;}while(!next.done&&operations<2048&&now()<end);
-   if(!next.done)await queue.yield();
+   if(!next.done){const begin=now();try{await queue.yield();}finally{waitMs+=now()-begin;yields++;}}
   }
-  return next.value;
- }finally{queue.close();}
+  status='complete';return next.value;
+ }finally{queue.close();cooperativeTiming(start,now(),waitMs,yields,status);}
 }
+import {cooperativeTiming} from './preparation-timing';

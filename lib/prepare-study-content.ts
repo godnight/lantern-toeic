@@ -1,5 +1,6 @@
 import {prepareVocabularyCatalog} from './prepare-vocabulary-catalog';
 import {runCooperativeSteps} from './cooperative-task';
+import {preparationMark} from './preparation-timing';
 import type {QuestionCatalogSnapshot} from './question-catalog-admission';
 import type {LearningWordViews} from './learning-word-views-admission';
 
@@ -26,14 +27,18 @@ export function prepareStudyContent(retry=false):Promise<void>{
  const task=(async()=>{
   await prepareVocabularyCatalog(retry);
   if(!questions){
+   preparationMark('question-catalog-start');
    const {questionCatalogSteps}=await import('./question-catalog-admission');
    questions=Object.freeze(await runCooperativeSteps(questionCatalogSteps()));
+   preparationMark('question-catalog-ready');
   }
   if(!views){
+   preparationMark('learning-views-start');
    const {learningWordViewSteps}=await import('./learning-word-views-admission');
    views=Object.freeze(await runCooperativeSteps(learningWordViewSteps()));
+   preparationMark('learning-views-ready');
   }
-  ready=true;
+  ready=true;preparationMark('required-content-ready');
  })();
  pending=task;
  void task.then(()=>{pending=null;},error=>{pending=null;failure=error;});
