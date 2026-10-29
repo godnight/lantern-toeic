@@ -29,7 +29,7 @@ async function open(dist,requests,options={}){
  const page=await context.newPage();page.on('pageerror',error=>report.errors.push(error.message));page.on('request',request=>{requests.push({path:new URL(request.url()).pathname});});page.setDefaultTimeout(15000);return page;
 }
 (async()=>{fs.mkdirSync(OUT,{recursive:true});browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',args:['--mute-audio']});report.browser=browser.version();report.node=process.version;report.inputs={after:identity(AFTER),...(BEFORE?{before:identity(BEFORE)}:{})};
- const order=process.env.LANTERN_COLD_BOUNDARIES_ONLY?[]:BEFORE?['before','after','after','before','before','after','after','before','before','after']:Array(N).fill('after');report.order=order;
+ const order=process.env.LANTERN_COLD_BOUNDARIES_ONLY||process.env.LANTERN_COLD_PROFILE_ONLY?[]:BEFORE?['before','after','after','before','before','after','after','before','before','after']:Array(N).fill('after');report.order=order;
  for(let run=0;run<order.length;run++){
   const source=order[run],requests=[],page=await open(source==='after'?AFTER:BEFORE,requests);await page.goto(ORIGIN,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.__cold.stages.homeReady!==undefined);await page.waitForTimeout(500);
   const cold=await page.evaluate(()=>({...window.__cold,paint:performance.getEntriesByType('paint').map(e=>({name:e.name,start:e.startTime})),memory:performance.memory?{used:performance.memory.usedJSHeapSize,total:performance.memory.totalJSHeapSize}:null}));
@@ -37,6 +37,14 @@ async function open(dist,requests,options={}){
   const firstVocabularyMs=await page.evaluate(start=>performance.now()-start,start),row={source,run,stages:cold.stages,paint:cold.paint,longTasks:cold.longTasks,memory:cold.memory,firstVocabularyMs,requests};report.samples.push(row);
   if(source==='after'&&!report.screenshot){report.screenshot=path.join(OUT,'first-vocabulary-390.png');await page.screenshot({path:report.screenshot,fullPage:true});}
   await context.close();context=null;process.stdout.write(JSON.stringify({source,run,...cold.stages,longest:Math.max(0,...cold.longTasks.map(e=>e.duration)),firstVocabularyMs})+'\n');
+ }
+ if(process.env.LANTERN_COLD_PROFILE_ONLY){
+  const requests=[],page=await open(AFTER,requests),cdp=await context.newCDPSession(page);await cdp.send('Performance.enable');await cdp.send('Profiler.enable');await cdp.send('Profiler.setSamplingInterval',{interval:1000});await cdp.send('Profiler.start');await page.goto(ORIGIN,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.__cold.stages.homeReady!==undefined);await page.waitForTimeout(500);const {profile}=await cdp.send('Profiler.stop'),metrics=(await cdp.send('Performance.getMetrics')).metrics;
+  fs.writeFileSync(path.join(OUT,'cold.cpuprofile'),JSON.stringify(profile));const longTasks=await page.evaluate(()=>window.__cold.longTasks),nav=metrics.find(m=>m.name==='NavigationStart')?.value,nodes=new Map(profile.nodes.map(n=>[n.id,n])),parents=new Map();for(const n of profile.nodes)for(const child of n.children||[])parents.set(child,n.id);
+  const annotated=longTasks.map(task=>({...task,self:new Map(),inclusive:new Map(),samples:0}));let time=profile.startTime;
+  for(let i=0;i<(profile.samples||[]).length;i++){const delta=profile.timeDeltas?.[i]||0;time+=delta;const ms=time/1000-nav*1000;for(const task of annotated)if(ms>=task.start&&ms<task.start+task.duration){task.samples++;let id=profile.samples[i];task.self.set(id,(task.self.get(id)||0)+delta);for(let depth=0;id!==undefined&&depth<200;depth++,id=parents.get(id))task.inclusive.set(id,(task.inclusive.get(id)||0)+delta);}}
+  function format(map){return [...map].sort((a,b)=>b[1]-a[1]).slice(0,8).map(([id,us])=>{const frame=nodes.get(id).callFrame;let fragment='';if(frame.url.startsWith(ORIGIN+'/assets/')){const file=path.join(AFTER,'assets',new URL(frame.url).pathname.split('/').pop());if(fs.existsSync(file)){const line=fs.readFileSync(file,'utf8').split('\n')[frame.lineNumber]||'';fragment=line.slice(Math.max(0,frame.columnNumber-100),frame.columnNumber+220);}}return {name:frame.functionName,url:frame.url,line:frame.lineNumber+1,column:frame.columnNumber+1,ms:us/1000,fragment};});}
+  report.profile={scope:'One diagnostic actual candidate stack; profiler overhead is excluded from latency samples',navigationStart:nav,startTime:profile.startTime,longTasks:annotated.map(task=>({start:task.start,duration:task.duration,samples:task.samples,self:format(task.self),inclusive:format(task.inclusive)})),requests};await cdp.detach();await context.close();context=null;
  }
  if(process.env.LANTERN_COLD_BOUNDARIES_ONLY){
   report.boundaries=[];
