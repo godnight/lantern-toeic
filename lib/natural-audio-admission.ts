@@ -45,10 +45,21 @@ export function compiledNaturalAudioAdmission(packId:string,manifestSha256:strin
   return rows.length===1?rows[0]:null;
 }
 export type AdmissionWordBinding={wordId:string;slot:string;textSha256:string;snapshotContextSha256:string;requestContextHash?:string;mp3Sha256?:string;audio:{audioKey:string;materialId:string;segmentId:string;voiceProfileId:string}};
+const immutableBindingRows=new WeakMap<AdmissionTable,Map<string,NaturalAudioAdmission[]>>();
+const bindingRowKey=(materialId:string,segmentId:string,voiceProfileId:string,textSha256:string,contextHash:string|undefined,encodedSha256:string|undefined)=>JSON.stringify([materialId,segmentId,voiceProfileId,textSha256,contextHash,encodedSha256]);
+function bindingCandidates(table:AdmissionTable,binding:AdmissionWordBinding):NaturalAudioAdmission[]{
+ let index=immutableBindingRows.get(table);
+ if(!index){
+  index=new Map();for(const row of table.entries){const key=bindingRowKey(row.materialId,row.segmentId,row.voiceProfileId,row.textSha256,row.contextHash,row.encodedSha256),rows=index.get(key);if(rows)rows.push(row);else index.set(key,[row]);}
+  immutableBindingRows.set(table,index);
+ }
+ const audio=binding.audio;return index.get(bindingRowKey(audio.materialId,audio.segmentId,audio.voiceProfileId,binding.textSha256,binding.requestContextHash,binding.mp3Sha256))??[];
+}
 export function compiledBindingAdmission(packId:string,binding:AdmissionWordBinding):NaturalAudioAdmission|null{
   const selected=table.packId===packId?table:lazyTables.get(packId)?.table;if(!selected)return null;
   const audio=binding.audio;
-  const rows=selected.entries.filter(row=>[row.cacheKey,row.activationAssetKey,row.clipId].includes(audio.audioKey)&&row.materialId===audio.materialId&&row.segmentId===audio.segmentId&&row.voiceProfileId===audio.voiceProfileId&&row.textSha256===binding.textSha256&&row.contextHash===binding.requestContextHash&&row.encodedSha256===binding.mp3Sha256);
+  // Candidate indexing never replaces the exact match or duplicate rejection.
+  const rows=bindingCandidates(selected,binding).filter(row=>[row.cacheKey,row.activationAssetKey,row.clipId].includes(audio.audioKey)&&row.materialId===audio.materialId&&row.segmentId===audio.segmentId&&row.voiceProfileId===audio.voiceProfileId&&row.textSha256===binding.textSha256&&row.contextHash===binding.requestContextHash&&row.encodedSha256===binding.mp3Sha256);
   return rows.length===1?rows[0]:null;
 }
 export function compiledCvWordException(packId:string,binding:AdmissionWordBinding,word?:{pos:string;meaning:string;example:string;translation:string}):boolean{

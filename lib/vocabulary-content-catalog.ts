@@ -8,7 +8,9 @@ export {isPrivatePronunciationHold,isPrivateWordAudioBlocked,PRIVATE_AUDIO_LABEL
 
 export type CurrentTeachingEntry={memberId:string;contextHash:string;pairFingerprintSha256:string;word:Word;headwordBindingDigest:string;exampleBindingDigest:string;privatePracticeEligible:boolean;formalAllowed:boolean;publishAllowed:boolean;humanListeningPerformed:boolean;validatedLocale:unknown};
 type CurrentTable={schemaVersion:number;status:string;sourceEntrySha256?:string;targetMemberIds?:string[];acceptedTeachingEntries?:CurrentTeachingEntry[];heldMemberIds?:string[]};
-const current=currentInput as unknown as CurrentTable;
+const freeze=<T>(value:T):T=>{if(value&&typeof value==='object'){Object.values(value).forEach(freeze);Object.freeze(value);}return value;};
+const current=freeze(currentInput) as unknown as CurrentTable;
+freeze(data);
 const sha=(value:unknown):value is string=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
 export const FULL4109_SOURCE_ENTRY_SHA256='1a6c66de2c532981e62b57cc4dab9710d2dca756db98723c4e3b78d1a03d001d';
 // The disabled form is only for older candidate fixtures. Any malformed current

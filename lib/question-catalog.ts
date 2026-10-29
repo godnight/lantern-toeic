@@ -8,7 +8,7 @@ import b03Data from '../content/questions-v040-b03-r2.json';
 import gateData from '../content/questions-v040-b03-r2-gates.json';
 import mediaData from '../content/questions-v040-b03-r2-media.json';
 import historicalR1Data from '../content/questions-v040-catalog-r1-snapshot.json';
-import {canonicalHash,canonicalJson} from './domain-command';
+import {sealPracticeCatalog} from './practice-catalog-identity';
 import type {Question} from './study-model';
 
 export type QuestionAudioSelection={audioKey:string;materialId:string;segmentId:string;voiceProfileId:string};
@@ -66,13 +66,13 @@ export const QUESTION_CATALOG_VERSIONS={
  ...(LISTENING150_ADMISSION?{listening200_313:'practice-v1:'+LISTENING150_ADMISSION.combined313CanonicalSha256}:{})
 } as const;
 function assertExactCatalogSnapshot(rows:readonly Question[],version:string){
- if('practice-v1:'+canonicalHash(canonicalJson(JSON.parse(JSON.stringify(rows))))!==version)throw Error('question-catalog-snapshot-mismatch');
+ sealPracticeCatalog(rows,version);
 }
 assertExactCatalogSnapshot(LEGACY_QUESTIONS,QUESTION_CATALOG_VERSIONS.legacy68);
 assertExactCatalogSnapshot(READING_ONLY_QUESTIONS,QUESTION_CATALOG_VERSIONS.reading93);
 assertExactCatalogSnapshot(R1_QUESTIONS,QUESTION_CATALOG_VERSIONS.frozenR1_106);
 assertExactCatalogSnapshot(CANDIDATE_R2_QUESTIONS,QUESTION_CATALOG_VERSIONS.candidateR2_113);
 assertExactCatalogSnapshot(LISTENING50_CATALOG_163,QUESTION_CATALOG_VERSIONS.listening50_163);
-if(LISTENING150_ADMISSION)assertExactCatalogSnapshot(QUESTIONS,'practice-v1:'+LISTENING150_ADMISSION.combined313CanonicalSha256);
+assertExactCatalogSnapshot(QUESTIONS,LISTENING150_ADMISSION?'practice-v1:'+LISTENING150_ADMISSION.combined313CanonicalSha256:QUESTION_CATALOG_VERSIONS.listening50_163);
 export const PRACTICE_QUESTION_CATALOGS:readonly (readonly Question[])[]=[LEGACY_QUESTIONS,READING_ONLY_QUESTIONS,R1_QUESTIONS,CANDIDATE_R2_QUESTIONS,LISTENING50_CATALOG_163,...(LISTENING150_ADMISSION?[QUESTIONS]:[])];
 export function getQuestionAudioSelection(qid:string):QuestionAudioSelection|null{return getReviewedListeningAudio(qid)?.body??registered.audioByQuestion.get(qid)??null;}

@@ -1,5 +1,6 @@
 import {initialPracticeTraining,materialHash,trainingHash,validatePracticeTraining,type PracticeTraining,type TrainingWrite} from './practice-training';
 import {canonicalHash,canonicalJson,canonicalValue} from './domain-command';
+import {practiceCatalogIdentity} from './practice-catalog-identity';
 import {openLearningDomainRepository,workflowScopeKey,type DomainCommitResult,type DomainRecord,type DomainWrite,type LearningDomainRepository,type WorkflowScope} from './learning-domain-repository';
 import {createId,dayKey,type Attempt,type Checkin,type Question} from './study-model';
 
@@ -38,8 +39,7 @@ function validCheckin(value:unknown):value is Checkin {
  return typeof id==='string'&&uuid.test(id)&&typeof date==='string'&&/^\d{4}-\d\d-\d\d$/.test(date)&&Number.isFinite(Date.parse(date+'T12:00:00Z'))&&new Date(date+'T12:00:00Z').toISOString().slice(0,10)===date&&stamp(createdAt)&&validDraft(draft);
 }
 export function practiceCatalogVersion(questions:readonly Question[]):string {
- // JSON serialization drops optional undefined properties without changing authored text.
- return 'practice-v1:'+canonicalHash(canonicalJson(JSON.parse(JSON.stringify(questions))));
+ return practiceCatalogIdentity(questions);
 }
 function unitId(question:Question){return question.groupId?`group:${question.part}:${question.groupId}`:`question:${question.id}`;}
 

@@ -15,10 +15,23 @@ const sha=/^[a-f0-9]{64}$/;
 const frozen=<T>(value:T):T=>{if(value&&typeof value==='object'){Object.values(value).forEach(frozen);Object.freeze(value);}return value;};
 const validPath=(value:string)=>/^\/audio\/natural\/[a-z0-9-]+\/[a-zA-Z0-9._-]+\.json$/.test(value)&&!value.includes('..');
 const integer=(n:unknown,min:number,max:number)=>Number.isSafeInteger(n)&&Number(n)>=min&&Number(n)<=max;
+const immutableBindingDigests=new WeakMap<object,string>();
+function frozenStringFields(value:object,keys:readonly string[]):boolean{
+ return Object.isFrozen(value)&&keys.every(key=>{const field=Object.getOwnPropertyDescriptor(value,key);return !!field&&'value'in field&&typeof field.value==='string';});
+}
+function immutableBinding(binding:AdmissionWordBinding):boolean{
+ const audio=Object.getOwnPropertyDescriptor(binding,'audio');
+ return frozenStringFields(binding,['wordId','slot','textSha256','snapshotContextSha256','requestContextHash','mp3Sha256'])&&
+  !!audio&&'value'in audio&&!!audio.value&&typeof audio.value==='object'&&frozenStringFields(audio.value,['audioKey','materialId','segmentId','voiceProfileId']);
+}
 export function naturalAudioBindingDigest(binding:AdmissionWordBinding):string{
-  return canonicalHash(canonicalJson({wordId:binding.wordId,slot:binding.slot,textSha256:binding.textSha256,snapshotContextSha256:binding.snapshotContextSha256,
+  const known=immutableBindingDigests.get(binding);if(known!==undefined)return known;
+  const digest=canonicalHash(canonicalJson({wordId:binding.wordId,slot:binding.slot,textSha256:binding.textSha256,snapshotContextSha256:binding.snapshotContextSha256,
     requestContextHash:binding.requestContextHash??null,mp3Sha256:binding.mp3Sha256??null,
     audio:{audioKey:binding.audio.audioKey,materialId:binding.audio.materialId,segmentId:binding.audio.segmentId,voiceProfileId:binding.audio.voiceProfileId}}));
+  // Accessors, mutable rows and shallow-frozen rows always take the full path.
+  if(immutableBinding(binding))immutableBindingDigests.set(binding,digest);
+  return digest;
 }
 export function naturalAudioSelectorDigest(textSha256:string,assetKey:string,materialId:string,segmentId:string,voiceProfileId:string,contextHash:string):string{
   return canonicalHash(canonicalJson({assetKey,materialId,segmentId,voiceProfileId,contextHash,textSha256}));
