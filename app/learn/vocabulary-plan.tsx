@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
+import {useEffect,useLayoutEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {ArrowRight,BookOpen,CalendarDays,Check,CheckCircle2,ChevronLeft,ChevronRight,Download,LoaderCircle,Plus,RefreshCw,Settings2,Upload} from 'lucide-react';
 import type {Theme} from '@/lib/study-model';
 import type {Word} from '@/lib/vocabulary-model';
@@ -351,7 +351,7 @@ export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=fa
   const openPlan=()=>{planRoot.current?.focus({preventScroll:true});planRoot.current?.scrollIntoView({block:'start',behavior:'instant'});};
   const openStudy=()=>{setCompletedHidden('');setMessage('');setStudyOpenRequest(value=>value+1);};
   useEffect(()=>{if(entryView==='plan'&&studyOpenRequest===0&&!overlayBlocked&&!busy)openPlan();},[entryView,studyOpenRequest,overlayBlocked,busy]);
-  useEffect(()=>{
+  useLayoutEffect(()=>{
     if(entryView==='plan'&&studyOpenRequest===0)return;
     if(!activeSessionId||overlayBlocked||busy)return;
     const token=JSON.stringify([workflow.scopeKey,activeSessionId,studyOpenRequest]);
@@ -361,7 +361,8 @@ export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=fa
     lastStudyOpen.current=token;
     card.focus({preventScroll:true});
     card.scrollIntoView({block:'start',behavior:'instant'});
-    // This one resume positioning pass respects the actual fixed navigation,
+    // Position a newly committed group before its first paint. This one resume
+    // positioning pass respects the actual fixed navigation,
     // including its safe-area padding. Long answers keep natural reading scroll.
     const controls=card.querySelector<HTMLElement>('.phase2-next-word,.phase2-rating-actions');
     if(controls){
