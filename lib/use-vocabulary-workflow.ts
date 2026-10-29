@@ -20,20 +20,28 @@ export type VocabularyWorkflowController={
  exportWorkflow:()=>Promise<WorkflowBackup>;restoreWorkflow:(input:unknown)=>Promise<VocabularyWorkflowResult>;refresh:()=>Promise<void>;
 };
 type Service=Awaited<ReturnType<typeof createVocabularyWorkflow>>;
+type ServiceInstance={key:string;generation:number;value:Service};
+type OperationReads={active:number;invalidations:number;covered:number};
 export function useVocabularyWorkflow(options:VocabularyWorkflowHookOptions):VocabularyWorkflowController {
  const accountAccess=useLearningAccess(options.owner),canRead=useLearningAccess(options.owner,true);
  const scope:VocabularyWorkflowScope=options.nativeMode?(options.owner?{kind:'harmony-owner',ownerId:options.owner}:{kind:'harmony-device',partition:'existing-device'}):options.owner===null?{kind:'web-local',partition:'existing-device'}:{kind:'web-owner',ownerId:options.owner};
  const key=workflowScopeKey(scope),latest=useRef(options);latest.current=options;
  const activeKey=useRef(key);activeKey.current=key;
- const generation=useRef(0),service=useRef<{key:string;generation:number;value:Service}|null>(null),requestId=useRef(0),notify=useRef<(()=>void)|null>(null);
+ const generation=useRef(0),service=useRef<ServiceInstance|null>(null),requestId=useRef(0),notify=useRef<(()=>void)|null>(null);
+ const operationReads=useRef(new WeakMap<ServiceInstance,OperationReads>());
  const [snapshot,setSnapshot]=useState<{key:string;ready:boolean;error:string;projection:VocabularyProjection|null}>({key,ready:false,error:'',projection:null});
  const [openAttempt,setOpenAttempt]=useState(0);
  const current=snapshot.key===key&&canRead()?snapshot:{key,ready:false,error:'',projection:null};
- async function refreshSnapshot(){
-  const instance=service.current;if(!accountAccess()||!instance||instance.key!==activeKey.current)return;
-  const request=++requestId.current;
+ async function refreshSnapshot(instance=service.current,afterAction=false){
+  if(!accountAccess()||!instance||service.current!==instance||instance.key!==activeKey.current)return;
+  const reads=operationReads.current.get(instance);
+  // A legacy invalidation can arrive between prepare and apply. Let the owning
+  // operation finish, then perform the same complete, verified projection read.
+  if(reads?.active&&!afterAction){reads.invalidations++;return;}
+  const covered=reads?.invalidations??0,request=++requestId.current;
   try{const projection=await instance.value.readProjection(latest.current.timezone);if(!accountAccess()||service.current!==instance||activeKey.current!==instance.key||request!==requestId.current)return;setSnapshot({key:instance.key,ready:true,error:'',projection});}
   catch(error){if(!accountAccess()||service.current!==instance||request!==requestId.current)return;setSnapshot(previous=>({key:instance.key,ready:false,error:error instanceof Error?error.message:'本机工作流无法读取；原记录保留。',projection:previous.key===instance.key?previous.projection:null}));}
+  finally{if(reads&&afterAction)reads.covered=Math.max(reads.covered,covered);}
  }
  useEffect(()=>{
   const id=++generation.current;let cancelled=false;
@@ -61,7 +69,21 @@ export function useVocabularyWorkflow(options:VocabularyWorkflowHookOptions):Voc
  async function run(action:(value:Service)=>Promise<VocabularyWorkflowResult>){
   const instance=service.current;
   if(!accountAccess()||!instance||instance.key!==key||!current.ready||current.error)return {status:'blocked' as const,reason:current.error||'请等待本机工作流读取完成。'};
-  try{const result=await action(instance.value);if(!accountAccess()||service.current!==instance||activeKey.current!==key)return {status:'blocked' as const,reason:'账号已切换，原操作保留在原账号。'};notify.current?.();await refreshSnapshot();return result;}catch(error){await refreshSnapshot();return {status:'blocked' as const,reason:error instanceof Error?error.message:'工作流操作未完成。'};}
+  const reads=operationReads.current.get(instance)??{active:0,invalidations:0,covered:0};
+  operationReads.current.set(instance,reads);reads.active++;++requestId.current;
+  try{
+   const result=await action(instance.value);
+   if(!accountAccess()||service.current!==instance||activeKey.current!==key)return {status:'blocked' as const,reason:'账号已切换，原操作保留在原账号。'};
+   notify.current?.();await refreshSnapshot(instance,true);return result;
+  }catch(error){await refreshSnapshot(instance,true);return {status:'blocked' as const,reason:error instanceof Error?error.message:'工作流操作未完成。'};}
+  finally{
+   if(!--reads.active){
+    operationReads.current.delete(instance);
+    // A hint arriving during the final read is newer than that read. It must
+    // still invalidate it, and an old owner's completion cannot read a new scope.
+    if(reads.invalidations>reads.covered)void refreshSnapshot(instance);
+   }
+  }
  }
  async function refresh(){
   if(!accountAccess())return;
