@@ -3,6 +3,7 @@ import http from '@ohos.net.http';
 import deviceInfo from '@ohos.deviceInfo';
 import { systemDateTime } from '@kit.BasicServicesKit';
 import { AuthSessionStore } from './AuthSessionStore';
+import { VerifiedOwnerLease, TrustedOwnerProvider } from '../media/VerifiedOwnerLease';
 import { AUTH_API_ORIGIN } from './AuthConfiguration';
 import { AuthRequest, AuthBody, AuthReply, AuthUser, AuthCookie, AuthRoute, COOKIE_NAME,
   AUTH_TIMEOUT_MS, MAX_RESPONSE_BYTES, trustedFrame, configuredOrigin, parseAuthRequest,
@@ -15,6 +16,7 @@ interface Operation {
   id: string;
   action: string;
   epoch: number;
+  ownerLeaseEpoch: number;
   timedOut: boolean;
   replied: boolean;
   sessionMayHaveChanged: boolean;
@@ -33,6 +35,7 @@ export class NativeAuthHost {
   private controller: webview.WebviewController;
   private active: () => boolean;
   private store: AuthSessionStore = new AuthSessionStore();
+  private ownerLease: VerifiedOwnerLease = new VerifiedOwnerLease();
   private epoch: number = 0;
   private attached: boolean = false;
   private disposed: boolean = false;
@@ -64,11 +67,15 @@ export class NativeAuthHost {
   }
 
   invalidate(): void {
+    this.ownerLease.revoke();
     this.epoch++;
     this.seen = [];
     // Do not abort merely because the page changed: that is not server rollback.
     // Busy stays held until the real HTTP and any Asset call/cleanup settle.
   }
+
+  // Native consumers only. Only request() is on the registered JS method list.
+  trustedOwnerProvider(): TrustedOwnerProvider { return this.ownerLease; }
 
   dispose(): void {
     this.invalidate();
@@ -83,6 +90,7 @@ export class NativeAuthHost {
     const epoch: number = this.epoch;
     try { frame = this.controller.getLastJavascriptProxyCallingFrameUrl(); } catch { return; }
     if (!trustedFrame(frame) || !this.live(epoch)) return;
+    this.ownerLease.revoke();
     const input: AuthRequest | undefined = parseAuthRequest(raw);
     if (input === undefined) return;
     // Never send a duplicate id that could overwrite the original operation's reply.
@@ -108,7 +116,7 @@ export class NativeAuthHost {
       return;
     }
     NativeAuthHost.busy = true;
-    const operation: Operation = { id: input.id, action: input.action, version: input.version, epoch: epoch, timedOut: false, replied: false, sessionMayHaveChanged: false };
+    const operation: Operation = { id: input.id, action: input.action, version: input.version, epoch: epoch, ownerLeaseEpoch: this.ownerLease.version(), timedOut: false, replied: false, sessionMayHaveChanged: false };
     this.run(input, operation).catch(() => { /* run publishes only sanitized failures. */ });
   }
 
@@ -315,6 +323,9 @@ export class NativeAuthHost {
         if (!Number.isFinite(ended) || ended < started || !Number.isSafeInteger(validForMs) || validForMs <= 0 || validForMs > 43200000) throw new Error('Unconfirmed');
         operation.sessionMayHaveChanged = false;
         NativeAuthHost.quarantined = false;
+        // This branch is the existing strict v2 session proof. Preserve its wire
+        // reply and project only the remaining monotonic lifetime to native media.
+        if (this.current(operation)) this.ownerLease.publishVerifiedV2(user.id, ended, validForMs, operation.ownerLeaseEpoch);
         this.finish(operation, 200, { user: user, capabilities: capabilities(true), session: { validForMs: validForMs } });
         return;
       }

@@ -14,6 +14,8 @@ import {RecordingPlayer} from './recording-player';
 import {recordingMediaTrace} from '@/lib/recording-media-diagnostics';
 import {createRecordingCaptureTrace} from '@/lib/recording-capture-diagnostics';
 import {createRecordingCapture,captureDuration,captureWarning,type RecordingCapture} from '@/lib/pcm-recorder';
+import {NativeAacRecorder} from '@/lib/native-aac-recorder';
+import {NativeMediaError,nativeMediaMessage} from '@/lib/native-speaking-media';
 import type {SpeakingRecovery} from '@/lib/speaking-recovery';
 import {useDialogViewport} from '@/lib/use-dialog-viewport';
 import {formatStudyDate} from '@/lib/study-format';
@@ -24,6 +26,8 @@ import {getSpeakingSampleAudio} from '@/lib/speaking-audio-bindings';
 
 type SpeakingPhase='ready'|'prep'|'recording'|'processing'|'done';
 type CaptureCounts={chunkCount:number;zeroChunks:number;totalBytes:number;lastChunkBytes:number;startedAt:number;stoppedAt:number};
+type SpeakingCapture=RecordingCapture|NativeAacRecorder;
+const recordingFormat=(recording:Recording)=>recording.captureImplementation==='harmony-avrecorder-aac'?'原生 AAC · M4A':String(recording.mime||'').includes('wav')?'WAV':String(recording.mime||'').includes('mp4')?'M4A':String(recording.mime||'').includes('webm')?'WebM':'音频';
 type SpeakingRoomProps={feedbackScope?:LocalAsrScope;nativeMode?:boolean;timezone?:string;prompt:Speaking;onClose:()=>void;onSave:(recording:Recording,blob:Blob)=>Promise<void>;onFinish:(minutes:number)=>void;recovery?:SpeakingRecovery;onRetain?:(clip:SpeakingRecovery)=>void;onRelease?:(id:string)=>void};
 const TASK_LABELS:Record<string,{label:string;description:string}>={
  'read-aloud':{label:'朗读',description:'读清通知，找到长句中的停顿。'},
@@ -69,7 +73,7 @@ export function SpeakingRecordingHistory({recordings,timezone,nativeMode=false,o
  return <section className="speaking-history" aria-labelledby="speaking-history-title">
   <div className="speaking-section-heading"><h2 id="speaking-history-title">我的口语录音</h2><span>{recordings.length} 段</span></div>
   {recordings.length?<div className="speaking-recording-list">{recordings.slice().reverse().map(recording=><article className="speaking-recording-item" key={recording.id}>
-   <div className="speaking-recording-row"><span className="speaking-recording-icon" aria-hidden="true"><Headphones size={20}/></span><div><h3>{recording.title}</h3><p><time dateTime={recording.createdAt}>{recordingTime(recording.createdAt,timezone)}</time> · {recording.duration} 秒 · {nativeMode?'本机录音':recording.uploaded?'已同步':'本机录音'}</p></div><button type="button" className="button secondary" disabled={loading!==null} onClick={()=>void play(recording)} aria-label={`回听${recording.title}`}>{loading===recording.id?'读取中…':'回听'}<Play size={16}/></button></div>
+   <div className="speaking-recording-row"><span className="speaking-recording-icon" aria-hidden="true"><Headphones size={20}/></span><div><h3>{recording.title}</h3><p><time dateTime={recording.createdAt}>{recordingTime(recording.createdAt,timezone)}</time> · {recording.duration} 秒 · {recordingFormat(recording)} · {nativeMode?'本机录音':recording.uploaded?'已同步':'本机录音'}</p></div><button type="button" className="button secondary" disabled={loading!==null} onClick={()=>void play(recording)} aria-label={`回听${recording.title}`}>{loading===recording.id?'读取中…':'回听'}<Play size={16}/></button></div>
    {recording.note?.startsWith('录音完整性提示：')&&<p className="speaking-notice error" role="alert">{recording.note}</p>}
    {failed===recording.id&&<div className="speaking-notice error" role="alert"><strong>这段录音暂时无法读取</strong><p>本机音频未能读取，也可能没有已确认的云端副本。原记录与练习时间保留。</p><button type="button" className="button secondary" disabled={loading!==null} onClick={()=>void play(recording)}>重新读取<RotateCcw size={16}/></button></div>}
   </article>)}</div>:<div className="speaking-history-empty"><Mic size={24} aria-hidden="true"/><h3>还没有录音</h3><p>先完成一次专项练习，留住自己的起点。</p></div>}
@@ -81,45 +85,50 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
  const accountAccess=useLearningAccess();
  const dialogViewport=useDialogViewport();
  const [phase,setPhase]=useState<SpeakingPhase>(recovery?'done':'ready');const [seconds,setSeconds]=useState(prompt.prepSeconds);
+ const [captureChoice,setCaptureChoice]=useState<'legacy'|'aac'>('legacy'),[nativePending,setNativePending]=useState(false);
+ const useNativeAac=nativeMode&&captureChoice==='aac';
  const [url,setUrl]=useState('');const [saved,setSaved]=useState(false);const [busy,setBusy]=useState(false);const [saving,setSaving]=useState(false);const [saveError,setSaveError]=useState(false);const [accessError,setAccessError]=useState('');const [self,setSelf]=useState<string[]>([]);const [discardOpen,setDiscardOpen]=useState(false);const [returnNotice,setReturnNotice]=useState('');
- const recorder=useRef<RecordingCapture|null>(null);const stream=useRef<MediaStream|null>(null);const chunks=useRef<Blob[]>([]);const started=useRef(0);const stoppedAt=useRef(0);const last=useRef<{meta:Recording;blob:Blob}|null>(null);const objectURL=useRef('');const mounted=useRef(true);const beginning=useRef(false);const requestGeneration=useRef(0);const deadline=useRef(0);const currentPhase=useRef(phase);const savingNow=useRef(false);const acquiring=useRef(false);const exitRequested=useRef(false);currentPhase.current=phase;
+ const recorder=useRef<SpeakingCapture|null>(null);const stream=useRef<MediaStream|null>(null);const chunks=useRef<Blob[]>([]);const started=useRef(0);const stoppedAt=useRef(0);const last=useRef<{meta:Recording;blob:Blob}|null>(null);const objectURL=useRef('');const mounted=useRef(true);const beginning=useRef(false);const requestGeneration=useRef(0);const deadline=useRef(0);const currentPhase=useRef(phase);const savingNow=useRef(false);const acquiring=useRef(false);const exitRequested=useRef(false);currentPhase.current=phase;
  const [feedback,setFeedback]=useState<SpeakingFeedback|null>(null);const [previousFeedback,setPreviousFeedback]=useState<SpeakingFeedback|null>(null);
   const [captureIssue,setCaptureIssue]=useState(recovery?.meta.note?.startsWith('录音完整性提示：')?recovery.meta.note.slice(8):'');
  const stopMeta=useRef<Recording|null>(null);
  const captureTrace=useRef<ReturnType<typeof createRecordingCaptureTrace>|null>(null);
  const captureCounts=useRef<CaptureCounts>({chunkCount:0,zeroChunks:0,totalBytes:0,lastChunkBytes:0,startedAt:0,stoppedAt:0});
  const observeCapture=(event:string,mime='',counts=captureCounts.current,trace=captureTrace.current)=>{try{trace?.(event,{chunkCount:counts.chunkCount,zeroChunks:counts.zeroChunks,totalBytes:counts.totalBytes,lastChunkBytes:counts.lastChunkBytes,elapsedMs:counts.startedAt?Math.max(0,(counts.stoppedAt||Date.now())-counts.startedAt):0,mime:mime||recorder.current?.mimeType||'',activeTracks:stream.current?.getTracks().filter(track=>track.readyState==='live').length||0});}catch{/* Observations must never change capture or persistence. */}};
- const recordingMeta=()=>stopMeta.current||(stopMeta.current={id:createId(),promptId:prompt.id,title:prompt.title,duration:Math.max(0,Math.round(((stoppedAt.current||Date.now())-started.current)/1000)),createdAt:new Date(started.current).toISOString(),mime:recorder.current?.mimeType||'audio/webm',note:''});
+ const recordingMeta=()=>stopMeta.current||(stopMeta.current={id:createId(),promptId:prompt.id,title:prompt.title,duration:Math.max(0,Math.round(((stoppedAt.current||Date.now())-started.current)/1000)),createdAt:new Date(started.current).toISOString(),mime:recorder.current?.mimeType||'audio/webm',note:'',captureImplementation:recorder.current instanceof NativeAacRecorder?'harmony-avrecorder-aac':nativeMode?'arkweb-pcm-wav':'browser-mediarecorder'});
  const releaseMicrophone=()=>{stream.current?.getTracks().forEach(track=>track.stop());observeCapture('track-release');};
  const changePhase=(next:SpeakingPhase)=>{currentPhase.current=next;setPhase(next);};
- useEffect(()=>{mounted.current=true;if(recovery){last.current={meta:recovery.meta,blob:recovery.blob};objectURL.current=URL.createObjectURL(recovery.blob);recordingMediaTrace('source-ready',objectURL.current);setUrl(objectURL.current);setSaveError(!recovery.saving);if(recovery.saving){savingNow.current=true;setSaving(true);void recovery.saving.then(()=>{if(mounted.current){setSaved(true);setSaveError(false);}},()=>{if(mounted.current)setSaveError(true);}).finally(()=>{if(mounted.current){savingNow.current=false;setSaving(false);}});}}return()=>{mounted.current=false;requestGeneration.current++;if(recorder.current&&['recording','processing'].includes(currentPhase.current)){if(!stoppedAt.current)stoppedAt.current=Date.now();onRetain?.({prompt,meta:recordingMeta(),blob:new Blob(chunks.current,{type:recorder.current.mimeType||'audio/webm'}),processing:true});if(recorder.current.state==='recording')recorder.current.stop();}releaseMicrophone();if(objectURL.current){recordingMediaTrace('url-released',objectURL.current);URL.revokeObjectURL(objectURL.current);}};},[]);
+ useEffect(()=>{mounted.current=true;if(recovery){last.current={meta:recovery.meta,blob:recovery.blob};objectURL.current=URL.createObjectURL(recovery.blob);recordingMediaTrace('source-ready',objectURL.current);setUrl(objectURL.current);setSaveError(!recovery.saving);if(recovery.saving){savingNow.current=true;setSaving(true);void recovery.saving.then(()=>{if(mounted.current){setSaved(true);setSaveError(false);}},()=>{if(mounted.current)setSaveError(true);}).finally(()=>{if(mounted.current){savingNow.current=false;setSaving(false);}});}}return()=>{mounted.current=false;requestGeneration.current++;if(recorder.current instanceof NativeAacRecorder)recorder.current.detach();else if(recorder.current&&['recording','processing'].includes(currentPhase.current)){if(!stoppedAt.current)stoppedAt.current=Date.now();onRetain?.({prompt,meta:recordingMeta(),blob:new Blob(chunks.current,{type:recorder.current.mimeType||'audio/webm'}),processing:true});if(recorder.current.state==='recording')recorder.current.stop();}releaseMicrophone();if(objectURL.current){recordingMediaTrace('url-released',objectURL.current);URL.revokeObjectURL(objectURL.current);}};},[]);
  const persist=async(meta:Recording,blob:Blob)=>{
   // A rapid second retry must not write/upload the same clip concurrently.
   if(!accountAccess()||savingNow.current)return;
   const generation=requestGeneration.current;savingNow.current=true;setSaving(true);setSaveError(false);setDiscardOpen(false);
   const captureState=captureCounts.current,trace=captureTrace.current;observeCapture('save-start',blob.type,captureState,trace);
   const valid=()=>mounted.current&&generation===requestGeneration.current&&last.current?.meta.id===meta.id;
-  try{const saving=onSave(meta,blob);onRetain?.({prompt,meta,blob,saving});await saving;observeCapture('save-ok',blob.type,captureState,trace);onRelease?.(meta.id);if(!valid())return;setSaved(true);setSaveError(false);if(exitRequested.current)setReturnNotice('录音已保存。再次点击“返回口语目录”即可离开。');toast.success('录音已保存');}
+  try{const capture=recorder.current,saving=onSave(meta,blob);onRetain?.({prompt,meta,blob,saving});await saving;observeCapture('save-ok',blob.type,captureState,trace);onRelease?.(meta.id);if(capture instanceof NativeAacRecorder&&meta.captureImplementation==='harmony-avrecorder-aac')void capture.confirmSaved().catch(()=>{if(valid()&&accountAccess())setReturnNotice('录音已保存在本机，原生临时副本的清理尚未确认。退出本段会继续清理。');});if(!valid())return;setSaved(true);setSaveError(false);if(exitRequested.current)setReturnNotice('录音已保存。再次点击“返回口语目录”即可离开。');toast.success('录音已保存');}
   catch{observeCapture('save-error',blob.type,captureState,trace);onRetain?.({prompt,meta,blob});if(!valid())return;setSaveError(true);if(exitRequested.current)setReturnNotice('录音尚未保存。请重试、下载保留，或明确放弃后离开。');toast.error('录音暂未保存，请重试或下载保留');}
   finally{if(valid()){savingNow.current=false;setSaving(false);}}
  };
  const stop=()=>{if(recorder.current?.state!=='recording')return;stoppedAt.current=Date.now();captureCounts.current.stoppedAt=stoppedAt.current;observeCapture('stop-request');changePhase('processing');recorder.current.stop();releaseMicrophone();};
- const begin=()=>{
+ const begin=async()=>{
   if(!accountAccess())return;
   stopLessonAudio();
   if(!stream.current||beginning.current||recorder.current?.state==='recording'||document.hidden||!isNativeForeground())return;
   beginning.current=true;
   try{
-   const recording=createRecordingCapture(stream.current,nativeMode,prompt.answerSeconds+1);recorder.current=recording;chunks.current=[];stoppedAt.current=0;stopMeta.current=null;
+   const generation=requestGeneration.current;
+   const recording:SpeakingCapture=useNativeAac?new NativeAacRecorder(prompt.answerSeconds+1,generation,()=>accountAccess()&&mounted.current&&generation===requestGeneration.current&&!document.hidden&&isNativeForeground()):createRecordingCapture(stream.current,nativeMode,prompt.answerSeconds+1);recorder.current=recording;chunks.current=[];stoppedAt.current=0;stopMeta.current=null;setNativePending(false);
+   if(recording instanceof NativeAacRecorder){recording.onstatus=message=>{if(mounted.current&&generation===requestGeneration.current)setReturnNotice(message);};recording.onpending=message=>{if(mounted.current&&generation===requestGeneration.current){setNativePending(true);setAccessError(message);changePhase('processing');}};}
    const captureState=captureCounts.current,trace=captureTrace.current;observeCapture('recorder-created','',captureState,trace);
    recording.ondataavailable=(event:{data:Blob})=>{const size=event.data.size;captureState.chunkCount++;captureState.lastChunkBytes=size;captureState.totalBytes+=size;if(!size)captureState.zeroChunks++;observeCapture('chunk','',captureState,trace);if(size)chunks.current.push(event.data);};
    recording.onstop=async()=>{
-    beginning.current=false;releaseMicrophone();const blob=new Blob(chunks.current,{type:recording.mimeType||'audio/webm'});
+    beginning.current=false;releaseMicrophone();setNativePending(false);const blob=new Blob(chunks.current,{type:recording.mimeType||'audio/webm'});
     if(!captureState.stoppedAt)captureState.stoppedAt=stoppedAt.current||Date.now();observeCapture('stopped',blob.type,captureState,trace);
-    const issue=captureWarning(recording);const originalMeta=recordingMeta();
-    const meta:Recording={...originalMeta,mime:blob.type,duration:Math.round(captureDuration(recording,originalMeta.duration)*1000)/1000,...(issue?{note:'录音完整性提示：'+issue}:{})};
+    const issue=recording instanceof NativeAacRecorder?recording.captureIssue:captureWarning(recording);const originalMeta=recordingMeta();
+    const meta:Recording={...originalMeta,mime:blob.type,duration:Math.round((recording instanceof NativeAacRecorder?recording.durationSeconds:captureDuration(recording,originalMeta.duration))*1000)/1000,...(issue?{note:'录音完整性提示：'+issue}:{})};
     if(!mounted.current){if(blob.size)onRetain?.({prompt,meta,blob});else onRelease?.(meta.id);return;}
-    if(!blob.size){setAccessError('没有收到录音，请检查麦克风后重新准备。');toast.error('没有收到录音，请检查麦克风');changePhase('ready');return;}
+    if(!blob.size){setAccessError(issue||'没有收到录音，请检查麦克风后重新准备。');toast.error('没有收到完整录音，请检查后重新准备');changePhase('ready');return;}
+    setAccessError('');
     setCaptureIssue(issue);if(objectURL.current){recordingMediaTrace('url-released',objectURL.current);URL.revokeObjectURL(objectURL.current);}objectURL.current=URL.createObjectURL(blob);recordingMediaTrace('source-ready',objectURL.current);setUrl(objectURL.current);changePhase('done');
     last.current={meta,blob};onRetain?.({prompt,meta,blob});await persist(meta,blob);
    };
@@ -134,8 +143,12 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
      releaseMicrophone();changePhase('processing');
     }
    };
-   recording.start(250);started.current=Date.now();captureState.startedAt=started.current;deadline.current=started.current+prompt.answerSeconds*1000;changePhase('recording');setSeconds(prompt.answerSeconds);observeCapture('start','',captureState,trace);
-  }catch{observeCapture('start-error');beginning.current=false;releaseMicrophone();changePhase('ready');setAccessError('录音未能启动，请检查设备麦克风后重试。');toast.error('录音未能启动，请检查设备麦克风后重试');}
+   started.current=Date.now();captureState.startedAt=started.current;
+   if(recording instanceof NativeAacRecorder)await recording.start(250);else recording.start(250);
+   if(!mounted.current||generation!==requestGeneration.current||!accountAccess()){if(recording instanceof NativeAacRecorder)recording.detach();else if(recording.state==='recording')recording.stop();return;}
+   if(recording.state!=='recording')return;
+   deadline.current=Date.now()+prompt.answerSeconds*1000;changePhase('recording');setSeconds(prompt.answerSeconds);observeCapture('start','',captureState,trace);
+  }catch(error){observeCapture('start-error');beginning.current=false;if(recorder.current instanceof NativeAacRecorder)recorder.current.detach();releaseMicrophone();changePhase('ready');setAccessError(useNativeAac?nativeMediaMessage(error):'录音未能启动，请检查设备麦克风后重试。');toast.error('录音未能启动，请检查后重试');}
  };
  const start=async()=>{
   if(!accountAccess())return;
@@ -143,23 +156,25 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
   if(acquiring.current||busy||savingNow.current||!['ready','done'].includes(currentPhase.current)||document.hidden||!isNativeForeground())return;
   // Downloading does not authorize replacing an unsaved Blob with a fresh clip.
   if(currentPhase.current==='done'&&!saved)return;
-  if(!navigator.mediaDevices?.getUserMedia||!(nativeMode?window.AudioContext:window.MediaRecorder)){const message=nativeMode?'当前系统未提供录音能力，请更新系统后重试，或先使用网页版。':'当前浏览器不支持录音，请在支持录音的 Safari 或 Chrome 中打开。';setAccessError(message);toast.error(message);return;}
+  if(useNativeAac&&!window.LanternSpeakingHost){setAccessError(nativeMediaMessage(new NativeMediaError('UNSUPPORTED')));return;}
+  if(!navigator.mediaDevices?.getUserMedia||!useNativeAac&&!(nativeMode?window.AudioContext:window.MediaRecorder)){const message=nativeMode?'当前系统未提供录音能力，请更新系统后重试，或先使用网页版。':'当前浏览器不支持录音，请在支持录音的 Safari 或 Chrome 中打开。';setAccessError(message);toast.error(message);return;}
   acquiring.current=true;setBusy(true);setAccessError('');setReturnNotice('');exitRequested.current=false;const generation=++requestGeneration.current;
   captureTrace.current=createRecordingCaptureTrace();captureCounts.current={chunkCount:0,zeroChunks:0,totalBytes:0,lastChunkBytes:0,startedAt:0,stoppedAt:0};observeCapture('permission-request');
   try{
    const acquired=await navigator.mediaDevices.getUserMedia({audio:true});
    if(!accountAccess()||!mounted.current||generation!==requestGeneration.current||document.hidden||!isNativeForeground()){acquired.getTracks().forEach(track=>track.stop());return;}
    if(feedback?.status==='ready')setPreviousFeedback(feedback);setFeedback(null);
-    stream.current=acquired;beginning.current=false;setSelf([]);setSaved(false);setSaveError(false);setCaptureIssue('');deadline.current=Date.now()+prompt.prepSeconds*1000;changePhase('prep');setSeconds(prompt.prepSeconds);
+    stream.current=acquired;if(useNativeAac)acquired.getTracks().forEach(track=>track.stop());beginning.current=false;setSelf([]);setSaved(false);setSaveError(false);setCaptureIssue('');setNativePending(false);deadline.current=Date.now()+prompt.prepSeconds*1000;changePhase('prep');setSeconds(prompt.prepSeconds);
    observeCapture('stream-acquired');
   }catch{if(mounted.current&&generation===requestGeneration.current){observeCapture('permission-error');const message=nativeMode?'请在手机设置中允许微光托业使用麦克风，再重新准备。':'请在浏览器设置中允许使用麦克风，再重新准备。';setAccessError(message);toast.error(message);}}
   finally{if(mounted.current&&generation===requestGeneration.current){acquiring.current=false;setBusy(false);}}
  };
- const cancelPrep=()=>{requestGeneration.current++;acquiring.current=false;releaseMicrophone();beginning.current=false;setBusy(false);changePhase('ready');setSeconds(prompt.prepSeconds);};
+ const cancelPrep=()=>{requestGeneration.current++;acquiring.current=false;if(recorder.current instanceof NativeAacRecorder)recorder.current.detach();releaseMicrophone();beginning.current=false;setBusy(false);setNativePending(false);changePhase('ready');setSeconds(prompt.prepSeconds);};
  useEffect(()=>{if(phase!=='prep'&&phase!=='recording')return;const timer=setInterval(()=>setSeconds(Math.max(0,Math.ceil((deadline.current-Date.now())/1000))),250);return()=>clearInterval(timer);},[phase]);
  useEffect(()=>{
   const pause=()=>{
    if(!document.hidden&&isNativeForeground())return;
+   if(recorder.current instanceof NativeAacRecorder&&['prep','recording','processing'].includes(currentPhase.current)){requestGeneration.current++;recorder.current.detach();releaseMicrophone();beginning.current=false;acquiring.current=false;setBusy(false);setNativePending(false);changePhase('ready');setSeconds(prompt.prepSeconds);setAccessError('原生录音已因离开前台停止，本段未保存。');return;}
    // Duplicate native/browser background events must preserve an in-flight save.
    if(acquiring.current||currentPhase.current==='ready'||currentPhase.current==='prep'){requestGeneration.current++;acquiring.current=false;setBusy(false);}
    if(recorder.current?.state==='recording'){stop();toast('已结束录音，回来后可回听');}
@@ -169,6 +184,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
  },[prompt.prepSeconds]);
  const requestClose=()=>{
   if(discardOpen){setDiscardOpen(false);return;}
+  if(nativePending&&currentPhase.current==='processing'){setDiscardOpen(true);return;}
   if(recorder.current?.state==='recording'){exitRequested.current=true;stop();setReturnNotice('录音已结束，正在整理。保存完成后再次点击“返回口语目录”。');return;}
   if(currentPhase.current==='processing'||currentPhase.current==='recording'){exitRequested.current=true;setReturnNotice('正在整理录音，请稍候。保存完成后再次点击“返回口语目录”。');return;}
   if(currentPhase.current==='prep'||busy){cancelPrep();setReturnNotice('准备已取消。再次点击“返回口语目录”即可离开。');return;}
@@ -185,7 +201,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
   window.addEventListener('popstate',pop,true);
   return()=>{lease.active=false;window.removeEventListener('popstate',pop,true);if(lease.release!==null)clearTimeout(lease.release);lease.release=setTimeout(()=>{lease.release=null;if(!lease.active&&window.history.state?.lanternSpeakingView===token)window.history.back();},0);};
  },[]);
- useEffect(()=>registerNativeBack(()=>{requestClose();return true;},100),[phase,busy,saved,saveError,discardOpen,onClose]);
+ useEffect(()=>registerNativeBack(()=>{requestClose();return true;},100),[phase,busy,saved,saveError,discardOpen,nativePending,onClose]);
  useEffect(()=>{
   const warnBeforeUnload=(event:BeforeUnloadEvent)=>{if(!busy&&!['prep','recording','processing'].includes(currentPhase.current)&&!(currentPhase.current==='done'&&!saved))return;event.preventDefault();event.returnValue='';};
   if(typeof window.addEventListener!=='function')return;
@@ -211,12 +227,13 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
      <details className="speaking-guide"><summary>练习提示</summary><ul>{prompt.guide.map(guide=><li key={guide}>{guide}</li>)}</ul></details>
     </section><section className="speaking-controls" aria-labelledby="speaking-controls-title">
      <div className="speaking-section-heading"><h2 id="speaking-controls-title">{phase==='done'?'回听与自评':'准备与录音'}</h2><span>{phaseLabel}</span></div>
+     {nativeMode&&(phase==='ready'||phase==='done'&&saved)&&<label className="field">下一次录音方案<select value={captureChoice} disabled={busy||saving} onChange={event=>setCaptureChoice(event.target.value==='aac'?'aac':'legacy')}><option value="legacy">原方案 · WAV</option><option value="aac">原生录音 · AAC</option></select><small>默认保留原方案；两种录音都保存在本机，可回听比较。</small></label>}
      {phase!=='done'&&<><div className={'speaking-countdown '+(phase==='recording'?'is-recording':'')} aria-live="off"><b>{phase==='processing'?'…':clockText(seconds)}</b><span>{phase==='recording'?'回答剩余':phase==='prep'?'准备剩余':phase==='processing'?'正在整理':'秒准备'}</span></div><div className="speaking-durations"><span>准备 <b>{prompt.prepSeconds} 秒</b></span><span>回答 <b>{prompt.answerSeconds} 秒</b></span></div></>}
-     {accessError&&<div className="speaking-notice error" role="alert"><strong>麦克风或录音当前不可用</strong><p>{accessError}</p></div>}
+     {accessError&&<div className="speaking-notice error" role="alert"><strong>{nativePending?'录音结果待确认':'麦克风或录音当前不可用'}</strong><p>{accessError}</p></div>}
      {phase==='ready'&&<><p className="speaking-secondary">点击后申请麦克风权限。准备结束会自动录音，也可以提前开始。</p><button type="button" className="button primary speaking-main-action" disabled={busy} onClick={start}><Mic size={18}/>{busy?'等待麦克风…':'开始准备'}</button></>}
      {phase==='prep'&&<><p className="speaking-secondary" role="status">准备倒计时结束后，自动开始录音。</p><div className="speaking-action-stack"><button type="button" className="button primary" onClick={begin}>准备好了，现在录音<Play size={17}/></button><button type="button" className="button secondary" onClick={cancelPrep}>取消准备</button></div></>}
      {phase==='recording'&&<><p className="speaking-recording-status" role="status"><i aria-hidden="true"/>正在录音</p><p className="speaking-secondary">时间到会自动结束，也可以提前停录。</p><button type="button" className="button primary speaking-main-action" onClick={stop}><Square size={16} fill="currentColor"/>结束录音</button></>}
-     {phase==='processing'&&<div className="speaking-notice" role="status"><strong>正在整理已录内容</strong><p>整理完成后会尝试本机保存，请留在本页。</p></div>}
+     {phase==='processing'&&<div className="speaking-notice" role="status"><strong>正在整理已录内容</strong><p>整理完成后会尝试本机保存，请留在本页。</p>{nativePending&&<button type="button" className="button secondary" disabled={busy} onClick={()=>{const capture=recorder.current;if(!(capture instanceof NativeAacRecorder))return;setBusy(true);void capture.retryResult().finally(()=>{if(mounted.current)setBusy(false);});}}>{busy?'正在查询…':'查询并继续保存'}</button>}</div>}
      {phase==='done'&&<>
       <RecordingPlayer src={url} className="speaking-audio" label="回听本次录音"/>
       {captureIssue&&<div className="speaking-notice error" role="alert"><strong>这次录音可能不完整</strong><p>{captureIssue} 原始音频副本保留，未把缺失时间补成录音。</p>{download}</div>}
@@ -234,7 +251,7 @@ export default function SpeakingRoom({prompt,onClose,onSave,onFinish,nativeMode=
   </DialogContent></Dialog>
   <Dialog open={discardOpen} onOpenChange={setDiscardOpen}><DialogContent className="speaking-discard" positioning="inset" style={dialogViewport(480)} showCloseButton={false}>
    <DialogHeader><DialogTitle>放弃这段未保存录音？</DialogTitle><DialogDescription>录音还没有保存到学习记录。离开会释放当前页面的临时音频，之后可能无法找回。可以先重试，或下载并确认文件已保留。</DialogDescription></DialogHeader>
-   <div className="speaking-action-stack"><button type="button" className="button primary" onClick={()=>setDiscardOpen(false)}>留在这里</button><button type="button" className="button secondary" disabled={saving} onClick={retrySave}>重试保存<RotateCcw size={17}/></button>{download}<button type="button" className="button secondary speaking-danger" onClick={()=>{if(last.current)onRelease?.(last.current.meta.id);setDiscardOpen(false);onClose();}}>确认放弃并离开</button></div><p className="speaking-caption">下载仅保留音频文件，不代表录音已保存到学习记录。</p>
+   <div className="speaking-action-stack"><button type="button" className="button primary" onClick={()=>setDiscardOpen(false)}>留在这里</button><button type="button" className="button secondary" disabled={saving||!last.current} onClick={retrySave}>重试保存<RotateCcw size={17}/></button>{download}<button type="button" className="button secondary speaking-danger" onClick={()=>{if(recorder.current instanceof NativeAacRecorder)recorder.current.detach();if(last.current)onRelease?.(last.current.meta.id);setDiscardOpen(false);onClose();}}>确认放弃并离开</button></div><p className="speaking-caption">下载仅保留音频文件，不代表录音已保存到学习记录。</p>
   </DialogContent></Dialog>
  </>;
 }

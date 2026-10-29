@@ -22,7 +22,8 @@ function loadRoom(react,globals,native,capture={createRecordingCaptureTrace:()=>
  const imports={react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':proxy,'@/components/ui/dialog':proxy,'@/components/ui/checkbox':proxy,'@/lib/study-model':model,'@/lib/native-host':native,'@/lib/lesson-audio':{stopLessonAudio(){}},'./practice':proxy,'./recording-player':{RecordingPlayer:'audio'},sonner:{toast:Object.assign(()=>{},{success(){},error(){}})}};
  const viewport={};const viewportSource=path.join(root,'lib/use-dialog-viewport.ts');const viewportCode=ts.transpileModule(fs.readFileSync(viewportSource,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;vm.runInNewContext(viewportCode,{exports:viewport,require(name){assert.equal(name,'react');return react;},...globals},{filename:viewportSource});imports['@/lib/use-dialog-viewport']=viewport;
  const code=ts.transpileModule(fs.readFileSync(source,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
- vm.runInNewContext(code,{exports,require(name){if(name==='@/lib/pcm-recorder')return {createRecordingCapture:(stream)=>new globals.MediaRecorder(stream),captureDuration:(_rec,seconds)=>globals.captureSeconds??seconds,captureWarning:()=>globals.captureIssue||''};if(name==='@/lib/recording-capture-diagnostics')return capture;if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals,permitLearningAccess:true}).resolve(name,'app/learn/speaking.tsx');return imports[name];},Blob,URL,Intl,Date,...globals},{filename:source});return exports;
+ const dependencies=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:{TextEncoder,TextDecoder,Uint8Array,ArrayBuffer,DataView,...globals},permitLearningAccess:true});
+ vm.runInNewContext(code,{exports,require(name){if(name==='@/lib/pcm-recorder')return {createRecordingCapture:(stream)=>new globals.MediaRecorder(stream),captureDuration:(_rec,seconds)=>globals.captureSeconds??seconds,captureWarning:()=>globals.captureIssue||''};if(name==='@/lib/recording-capture-diagnostics')return capture;if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};if(!Object.hasOwn(imports,name))return dependencies.resolve(name,'app/learn/speaking.tsx');return imports[name];},Blob,URL,Intl,Date,...globals},{filename:source});return exports;
 }
 function harness({prompt=prompts[0],manualPermissions=false,emptyClip=false,manualChunks=false,failStart=false,captureSeconds,captureIssue='',recovery,onRetain,onRelease,nativeMode=true,browser}={}){
  const hooks=hookRuntime(),permissions=[],recorders=[],saves=[],stopTasks=[],finished=[],captureEvents=[],sequence=[];
@@ -48,6 +49,48 @@ function harness({prompt=prompts[0],manualPermissions=false,emptyClip=false,manu
  const h={exports,props,render,permissions,recorders,saves,finished,captureEvents,sequence,window,document,get closed(){return closed;},get time(){return clock;},strictReplay(){hooks.strictReplay();return render();},advance(ms){clock+=ms;for(const fn of timers.values())fn();render();},button:label=>findButton(render(),label),click(label){const button=findButton(render(),label);assert.notEqual(button.props.disabled,true,`${label} must be enabled`);return button.props.onClick();},back(){render();const handler=[...backs.values()].sort((a,b)=>b.priority-a.priority)[0];assert.equal(handler.priority,100);return handler.fn();},deliverStop(){assert.ok(stopTasks.length);return stopTasks.shift()();},background(){foreground=false;for(const fn of nativeListeners)fn(false);},foreground(){foreground=true;for(const fn of nativeListeners)fn(true);},beforeUnload(){render();const e={blocked:false,returnValue:undefined,preventDefault(){this.blocked=true;}};if(browser)browser.dispatch('beforeunload',e);else for(const fn of events.get('beforeunload')||[])fn(e);return e;},cleanup:()=>hooks.cleanup()};return h;
 }
 async function record(h){await h.click('开始准备');h.click('准备好了');h.render();assert.equal(h.recorders[0].state,'recording');}
+
+// Actual SpeakingRoom + actual native TS/ETS. System capture and permission are
+// synthetic seams; these ftyp fixture bytes do not prove playable AAC or sound.
+function nativeRoom(t,options={}){
+ const lab=require('./helpers/native-media-runtime.cjs').nativeMediaRuntime(options);
+ const h=harness({browser:{window:lab.window,setTimeout:lab.clock.set,clearTimeout:lab.clock.clear}});
+ t.after(()=>{h.cleanup();lab.dispose();});
+ const select=nodes(h.render(),node=>node.type==='select')[0];
+ assert.equal(select.props.value,'legacy');select.props.onChange({target:{value:'aac'}});h.render();
+ return {h,lab,until:require('./helpers/native-media-runtime.cjs').until};
+}
+async function recordNative(h,lab){
+ await h.click('开始准备');await h.click('准备好了');h.render();
+ assert.equal(h.recorders.length,0,'AAC must not create the legacy PCM recorder');
+ assert.equal(lab.recorders.length,1);assert.equal(lab.recorders[0].startCalls,1);
+ assert.equal(h.permissions[0].track.readyState,'ended','Web permission stream must release before native capture');
+ lab.clock.advance(1000);h.advance(1000);h.click('结束录音');
+}
+test('actual native speaking room saves exact AAC bytes and acknowledges only fulfilled local persistence',async t=>{
+ const {h,lab,until}=nativeRoom(t);await recordNative(h,lab);await until(()=>h.saves.length===1);
+ const save=h.saves[0];assert.equal(save.meta.mime,'audio/mp4');assert.equal(save.meta.captureImplementation,'harmony-avrecorder-aac');assert.equal(save.meta.duration,1);
+ assert.deepEqual(new Uint8Array(await save.blob.arrayBuffer()),lab.payload);
+ assert.equal(lab.requests.filter(r=>r.action==='ack').length,0);assert.equal(lab.files.size,1);
+ assert.equal(h.button('记录收获').props.disabled,true);save.resolve();await until(()=>lab.requests.some(r=>r.action==='ack'));await until(()=>lab.files.size===0);
+ assert.equal(h.button('记录收获').props.disabled,false);assert.equal(lab.recorders[0].stopCalls,1);
+});
+test('actual native speaking room preserves Blob and ID after local save failure without premature ACK',async t=>{
+ const {h,lab,until}=nativeRoom(t);await recordNative(h,lab);await until(()=>h.saves.length===1);
+ const original=h.saves[0];original.reject(Error('Synthetic local persistence failure'));await flush();await flush();
+ assert.equal(lab.requests.filter(r=>r.action==='ack').length,0);assert.equal(lab.files.size,1);assert.match(text(h.render()),/重试保存/);
+ const retry=h.click('重试保存');assert.equal(h.saves.length,2);assert.equal(h.saves[1].blob,original.blob);assert.equal(h.saves[1].meta.id,original.meta.id);
+ h.saves[1].resolve();await retry;await until(()=>lab.files.size===0);assert.equal(lab.requests.filter(r=>r.action==='ack').length,1);assert.equal(lab.recorders[0].stopCalls,1);
+});
+test('actual native speaking room unmount detaches a late chunk and never saves partial or other-owner audio',async t=>{
+ const {h,lab,until}=nativeRoom(t,{holdFrames:true});await recordNative(h,lab);await until(()=>lab.heldFrames>0);
+ h.cleanup();lab.releaseFrames();await flush();await flush();assert.equal(h.saves.length,0);await until(()=>lab.files.size===0);
+ assert.equal(lab.requests.filter(r=>r.action==='ack').length,0);assert.equal(lab.recorders[0].stopCalls,1);
+});
+test('actual native speaking room exposes unsupported capture without creating a legacy fallback or saved clip',async t=>{
+ const {h,lab}=nativeRoom(t,{unsupported:true});await h.click('开始准备');await h.click('准备好了');await flush();
+ assert.equal(h.recorders.length,0);assert.equal(h.saves.length,0);assert.equal(h.button('开始准备').props.disabled,false);assert.match(text(h.render()),/原生 AAC 录音暂不可用/);assert.equal(lab.requests.filter(r=>r.action==='ack').length,0);
+});
 
 test('all five shipped speaking tasks route by the original prompt object and expose actual preparation/answer times',()=>{
  const h=harness();const opened=[];const tree=h.exports.SpeakingTaskCatalog({prompts,onOpen:prompt=>opened.push(prompt)});
