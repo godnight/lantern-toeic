@@ -38,7 +38,7 @@ test('message task scheduling yields without timer clamping and closes both port
  }
 });
 test('full cooperative admission preserves the frozen 4040/69, historical selectors, provenance and seven wordbooks digest',async()=>{
- const loader=createSourceLoader({root,globals:{window:{}}}),prepare=loader.load('lib/prepare-vocabulary-catalog.ts');await prepare.prepareVocabularyCatalog();
+ const loader=createSourceLoader({root,globals:{window:{}}}),prepare=loader.load('lib/prepare-study-content.ts');await prepare.prepareStudyContent();
  const content=loader.load('lib/vocabulary-content-catalog.ts'),audio=loader.load('lib/word-audio-bindings-v040.ts');
  const words=[...content.FULL4109_CURRENT_WORDS,...content.LEGACY_PRIVATE_WORDS],selectors=words.map(word=>[word.id,audio.getWordAudioBindingForSnapshot(word,'headword'),audio.getWordAudioBindingForSnapshot(word,'example'),audio.isPrivateWordAudioBlocked(word)]);
  const workflow=loader.load('lib/workflow-catalog.ts'),admission=loader.load('lib/natural-audio-admission.ts'),identity=admission.compiledNaturalAudioIdentity();
@@ -53,7 +53,7 @@ function gateFixture(){
  let cursor=0,pending=[],slots=[],active=true,loaded=0;const ready=deferred();
  const react={useState(initial){const i=cursor++;if(!(i in slots))slots[i]=initial;return [slots[i],value=>{slots[i]=typeof value==='function'?value(slots[i]):value;}];},useEffect(fn){const i=cursor++;if(!(i in slots)){slots[i]={};pending.push(()=>slots[i].cleanup=fn());}}};
  const jsx=(type,props)=>({type,props}),Content=()=>null;
- const module=createSourceLoader({root,imports:{react,'react/jsx-runtime':{jsx,jsxs:jsx},'@/lib/prepare-vocabulary-catalog':{prepareVocabularyCatalog:()=>ready.promise}}}).load('app/learn/prepared-study-content.tsx');
+ const module=createSourceLoader({root,imports:{react,'react/jsx-runtime':{jsx,jsxs:jsx},'@/lib/prepare-study-content':{prepareStudyContent:()=>ready.promise}}}).load('app/learn/prepared-study-content.tsx');
  const props={loader:async()=>{loaded++;return Content;},componentProps:{owner:'A'},current:()=>active};
  return {ready,setActive:value=>active=value,get loaded(){return loaded;},render(){cursor=0;const tree=module.PreparedStudyContent(props);const jobs=pending;pending=[];jobs.forEach(fn=>fn());return tree;},cleanup(){for(const slot of slots)slot?.cleanup?.();},Content};
 }

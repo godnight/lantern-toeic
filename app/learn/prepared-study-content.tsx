@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useState,type ComponentType} from 'react';
-import {prepareVocabularyCatalog} from '@/lib/prepare-vocabulary-catalog';
+import {prepareStudyContent} from '@/lib/prepare-study-content';
 
 /** Only an active consumer may mount the fully prepared module. The shared
  * content promise contains no owner data; expired/old consumers cannot commit. */
@@ -10,7 +10,7 @@ export function PreparedStudyContent<P extends object>({loader,componentProps,cu
  useEffect(()=>{
   let live=true;
   if(!current())return()=>{live=false;};
-  void prepareVocabularyCatalog(attempt>0).then(()=>live&&current()?loader():null).then(component=>{
+  void prepareStudyContent(attempt>0).then(()=>live&&current()?loader():null).then(component=>{
    if(component&&live&&current())setView({component,error:false});
   },()=>{if(live&&current())setView({component:null,error:true});});
   return()=>{live=false;};
