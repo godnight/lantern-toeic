@@ -4,6 +4,6 @@
   "sourceInputsSha256": "ca48f6890fe3ade45b0ab7a2332492867aea62ae3721969326d4dabcb0752e21",
   "inputCount": 14142,
   "excludedSelf": "public/build-identity.json",
-  "versionName": "0.4.5",
-  "versionCode": 20061
+  "versionName": "0.4.6",
+  "versionCode": 20062
 }

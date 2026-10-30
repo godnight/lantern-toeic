@@ -1,7 +1,7 @@
 {
-  "version": "0.4.5",
+  "version": "0.4.6",
   "prerelease": true,
-  "notes": "docs/releases/v0.4.5-word-card-space.md",
-  "qa": "docs/testing/V045-WORD-CARD-SPACE-20261026.md",
+  "notes": "docs/PROJECT_STATUS.md",
+  "qa": "docs/PROJECT_STATUS.md",
   "nativeHapAvailable": false
 }
