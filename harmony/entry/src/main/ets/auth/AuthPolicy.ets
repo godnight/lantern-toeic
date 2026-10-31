@@ -268,10 +268,32 @@ export function publicFailure(status: number, body: AuthBody): AuthReply {
   return { id: '', status: 503, body: unknownBody() };
 }
 
-export function sessionCookie(lines: string[]): AuthCookie | undefined {
+export function productCookieLines(lines: string[]): string[] | undefined {
   if (lines.length > 16) return undefined;
-  let result: AuthCookie | undefined = undefined;
+  const selected: string[] = [];
+  let count: number = 0;
   for (const line of lines) {
+    if (line.length > 4096 || /[\r\n]/.test(line)) return undefined;
+    // HTTP ports can return an array or a comma-joined Set-Cookie field. Only a
+    // new cookie-name= starts another cookie; the comma in Expires stays intact.
+    const cookies: string[] = line.split(/,\s*(?=[!#$%&'*+\-.^_`|~0-9A-Za-z]+=)/);
+    count += cookies.length;
+    if (count > 16) return undefined;
+    for (const cookie of cookies) {
+      const candidate: string = cookie.trim();
+      if (candidate.startsWith(COOKIE_NAME + '=')) selected.push(candidate);
+    }
+  }
+  // Other cookies belong to the hosting gateway, never to the private session.
+  // Preserve every product occurrence so strict duplicate/attribute checks apply.
+  return selected;
+}
+
+export function sessionCookie(lines: string[]): AuthCookie | undefined {
+  const selected: string[] | undefined = productCookieLines(lines);
+  if (selected === undefined) return undefined;
+  let result: AuthCookie | undefined = undefined;
+  for (const line of selected) {
     if (line.length > 4096 || /[\r\n,]/.test(line)) return undefined;
     const pieces: string[] = line.split(';').map((part: string) => part.trim());
     if (!pieces[0].startsWith(COOKIE_NAME + '=')) continue;

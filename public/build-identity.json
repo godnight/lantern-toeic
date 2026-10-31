@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "buildId": "v046-phone-beta-20261031-r1-62818898a58c",
-  "sourceInputsSha256": "62818898a58cce6bac3358215e6025079174aab81e26c3257186690e215037ae",
+  "buildId": "v046-auth-connect-20261031-r2-c934fcce3dad",
+  "sourceInputsSha256": "c934fcce3dadc1846a5a49c08a7ba672c7f01e07f4852281ea6a391e1a5ffcb0",
   "inputCount": 14180,
   "excludedSelf": "public/build-identity.json",
   "versionName": "0.4.6",
-  "versionCode": 20062
+  "versionCode": 20063
 }

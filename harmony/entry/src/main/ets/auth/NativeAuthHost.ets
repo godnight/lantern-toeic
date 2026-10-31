@@ -8,7 +8,7 @@ import { AUTH_API_ORIGIN } from './AuthConfiguration';
 import { AuthRequest, AuthBody, AuthReply, AuthUser, AuthCookie, AuthRoute, COOKIE_NAME,
   AUTH_TIMEOUT_MS, MAX_RESPONSE_BYTES, trustedFrame, configuredOrigin, parseAuthRequest,
   utf8Length, capabilities, unavailableBody, unknownBody, unauthenticatedBody,
-  parseResponseBody, publicUser, publicFailure, sessionCookie, authRoute, phoneAction,
+  parseResponseBody, publicUser, publicFailure, sessionCookie, productCookieLines, authRoute, phoneAction,
   operationUnknownBody, phoneStatus, phoneChallenge, phoneFailure, phoneSuccessCapabilities, sessionProofBudget } from './AuthPolicy';
 
 interface Operation {
@@ -175,7 +175,9 @@ export class NativeAuthHost {
       }
     }
     if (!contentType) throw new Error('Unconfirmed');
-    return lines;
+    const selected: string[] | undefined = productCookieLines(lines);
+    if (selected === undefined) throw new Error('Unconfirmed');
+    return selected;
   }
 
   private async fetch(action: string, body: string, token: string | undefined,
