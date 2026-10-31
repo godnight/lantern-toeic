@@ -12,7 +12,7 @@ import './legal-pages.css';
 export type PublicInfoKind='privacy'|'terms'|'support';
 export const SUPPORT_EMAIL='zzl1414179@qq.com';
 export const SUPPORT_MAILTO=`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('微光托业问题反馈')}`;
-const TITLES:Record<PublicInfoKind,string>={privacy:'隐私政策',terms:'用户协议',support:'联系客服'};
+const TITLES:Record<PublicInfoKind,string>={privacy:'隐私政策',terms:'用户协议',support:'问题反馈'};
 const LINK_ICONS={privacy:ShieldCheck,terms:FileText,support:Mail};
 const isKind=(value:unknown):value is PublicInfoKind=>value==='privacy'||value==='terms'||value==='support';
 const PublicInfoContext=createContext<((kind:PublicInfoKind)=>void)|null>(null);

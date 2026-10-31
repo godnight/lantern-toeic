@@ -1,4 +1,5 @@
 'use client';
+import {useLearningAccess} from './learning-access';
 import {useState,useEffect,useRef,useCallback} from 'react';
 import {toast} from 'sonner';
 import {createId,EMPTY_DATA,migrateStudyData,mergeData,mergeMutableRecords,validQuestionMark,validResourceTask,validStudyDate,compareMutableRecords,uniqueById,type StudyData,type Profile,type Theme,type Attempt,type Checkin,type Recording,type QuestionMark,type ResourceTask} from './study-model';
@@ -94,6 +95,7 @@ function readSnapshot(key:string,owner:string|null,primaryBytes?:string|null):St
 export type SyncIssue={id:string;kind:'op'|'recording'|'session';status:'waiting'|'blocked'|'auth'|'missing';attempts:number;nextRetryAt:number;reason:string};
 function syncIssues(key:string):SyncIssue[]{const result:SyncIssue[]=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k?.startsWith(key+':sync:')){try{const item=JSON.parse(localStorage.getItem(k)||'');const complete=item.kind==='op'?localStorage.getItem(key+':ack:'+item.id):item.kind==='recording'?JSON.parse(localStorage.getItem(key+':recording:'+item.id)||'null')?.uploaded:false;if(!complete)result.push(item);}catch{}}}return result;}
 export function useStudy(owner:string|null,remoteEnabled=true){
+ const accountAccess=useLearningAccess(owner),canRead=useLearningAccess(owner,true);
  const key='lantern-v1-'+(owner||'device');const generation=useRef(0);const activeKey=useRef(key);const syncing=useRef(false);const dirty=useRef(false);const readOnly=useRef(false);const remoteReadOnly=useRef(false);const retryTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const remoteAudioCache=useRef<RemoteRecordingCache|null>(null);
  if(!remoteAudioCache.current){
@@ -108,7 +110,7 @@ export function useStudy(owner:string|null,remoteEnabled=true){
   setSync('blocked');toast.error('学习记录无法读取或版本不受支持，已停止写入并保留原始记录；请保留记录后重试');
  },[]);
  const scheduleJournalCompaction=useCallback(()=>{
-  if(activeKey.current!==key||readOnly.current||compacting.current===key)return;
+  if(!accountAccess()||activeKey.current!==key||readOnly.current||compacting.current===key)return;
   const locks=typeof navigator!=='undefined'?navigator.locks:undefined;
   if(!locks)return; // No unsafe cross-tab deletion fallback on older WebViews.
   compacting.current=key;
@@ -116,9 +118,9 @@ export function useStudy(owner:string|null,remoteEnabled=true){
    createId,withLock:async(name,work)=>await locks.request(name,()=>work())})
    .catch(()=>{/* The existing facts/logs remain authoritative on quota or contention. */})
    .finally(()=>{if(compacting.current===key)compacting.current=null;});
- },[key,owner]);
+ },[key,owner,accountAccess]);
  const persist=useCallback((d:StudyData,nextSyncState?:StudySyncState):boolean=>{
-  if(activeKey.current!==key||readOnly.current)return false;
+  if(!accountAccess()||activeKey.current!==key||readOnly.current)return false;
   let stored:StudyData;let primaryBytes:string|null;try{primaryBytes=localStorage.getItem(key);stored=readSnapshot(key,owner,primaryBytes);}catch{blockReads();return false;}
   const next=mergeData(stored,d);
   // Ordinary stale-tab writes cannot roll back server-assigned projections.
@@ -129,7 +131,7 @@ export function useStudy(owner:string|null,remoteEnabled=true){
   current.current=next;setData(next);scheduleJournalCompaction();return true;
  },[key,owner,blockReads,scheduleJournalCompaction]);
  const syncNow=useCallback(async function runSync(){
-  if(activeKey.current!==key||remoteReadOnly.current)return;
+  if(!accountAccess()||activeKey.current!==key||remoteReadOnly.current)return;
   try{
    const saved=readSnapshot(key,owner);
    // Recovery only revalidates externally repaired bytes; it never deletes or
@@ -137,7 +139,7 @@ export function useStudy(owner:string|null,remoteEnabled=true){
    if(readOnly.current){readOnly.current=false;current.current=saved;setData(saved);setIssues(syncIssues(key));}
   }catch{blockReads();return;}
   if(syncing.current){dirty.current=true;return;}
-  const gen=generation.current;const valid=()=>gen===generation.current&&activeKey.current===key;
+  const gen=generation.current;const valid=()=>accountAccess()&&gen===generation.current&&activeKey.current===key;
   if(retryTimer.current){clearTimeout(retryTimer.current);retryTimer.current=null;}
   scheduleJournalCompaction();
   if(!owner||!remoteEnabled){setSync('local');return;}
@@ -278,33 +280,33 @@ export function useStudy(owner:string|null,remoteEnabled=true){
  useEffect(()=>{
   generation.current++;activeKey.current=key;remoteAudioCache.current?.setOwner(remoteEnabled?owner:null);syncing.current=false;dirty.current=false;readOnly.current=false;remoteReadOnly.current=false;setReady(false);
   current.current=structuredClone(EMPTY_DATA);setData(current.current);
-  const load=()=>{if(remoteReadOnly.current)return false;try{const saved=readSnapshot(key,owner);readOnly.current=false;current.current=saved;setData(saved);setIssues(syncIssues(key));return true;}catch{blockReads();return false;}};
+  const load=()=>{if(!accountAccess()||remoteReadOnly.current)return false;try{const saved=readSnapshot(key,owner);readOnly.current=false;current.current=saved;setData(saved);setIssues(syncIssues(key));return true;}catch{blockReads();return false;}};
   const loaded=load();setReady(true);if(loaded)void syncNow();
   const online=()=>void syncNow();const changed=(e:StorageEvent)=>{if(e.newValue===null&&(e.key?.startsWith(key+':op:')||e.key?.startsWith(key+':ack:')||e.key?.startsWith(key+':checkpoint:')||e.key?.startsWith(key+':sync:op:')))return;if(e.key?.startsWith(key)){const wasBlocked=readOnly.current;if(!load())return;if(wasBlocked||e.key.startsWith(key+':op:')||e.key.startsWith(key+':recording:'))void syncNow();}};
   window.addEventListener('online',online);window.addEventListener('focus',online);window.addEventListener('storage',changed);
   return()=>{generation.current++;remoteAudioCache.current?.setOwner(null);dirty.current=false;if(retryTimer.current)clearTimeout(retryTimer.current);retryTimer.current=null;window.removeEventListener('online',online);window.removeEventListener('focus',online);window.removeEventListener('storage',changed);};
  },[key,syncNow,persist,blockReads]);
- const retryIssue=(issue:SyncIssue)=>{if(activeKey.current!==key)return;if(readOnly.current){void syncNow();return;}if(!editableSnapshot())return;try{localStorage.removeItem(key+':sync:'+issue.kind+':'+issue.id);setIssues(syncIssues(key));void syncNow();}catch{toast.error('本机存储不可用，请保留记录后重试');}};
- const enqueue=(type:Op['type'],value:Op['data'],d:StudyData):boolean=>{if(activeKey.current!==key||readOnly.current||!editableSnapshot())return false;const op:Op={id:createId(),owner,type,data:value};try{localStorage.setItem(key+':op:'+op.id,JSON.stringify(op));if(type==='profile'||type==='theme')localStorage.setItem(key+':profile',JSON.stringify(d.profile));}catch{setSync('blocked');toast.error('本机存储不可用，保存未完成；请保留记录后重试');return false;}if(!persist(d))return false;setSync('pending');void syncNow();return true;};
+ const retryIssue=(issue:SyncIssue)=>{if(!accountAccess()||activeKey.current!==key)return;if(readOnly.current){void syncNow();return;}if(!editableSnapshot())return;try{localStorage.removeItem(key+':sync:'+issue.kind+':'+issue.id);setIssues(syncIssues(key));void syncNow();}catch{toast.error('本机存储不可用，请保留记录后重试');}};
+ const enqueue=(type:Op['type'],value:Op['data'],d:StudyData):boolean=>{if(!accountAccess()||activeKey.current!==key||readOnly.current||!editableSnapshot())return false;const op:Op={id:createId(),owner,type,data:value};try{localStorage.setItem(key+':op:'+op.id,JSON.stringify(op));if(type==='profile'||type==='theme')localStorage.setItem(key+':profile',JSON.stringify(d.profile));}catch{setSync('blocked');toast.error('本机存储不可用，保存未完成；请保留记录后重试');return false;}if(!persist(d))return false;setSync('pending');void syncNow();return true;};
  const saveProfile=(p:Profile)=>{if(p.examDate!==''&&!validStudyDate(p.examDate)){toast.error('考试日期无效，偏好未保存；原记录未修改。');return false;}return enqueue('profile',p,{...current.current,profile:p});};
  const saveTheme=(theme:Theme)=>{
-  if(activeKey.current!==key||readOnly.current)return false;
+  if(!accountAccess()||activeKey.current!==key||readOnly.current)return false;
   // Another tab may have saved settings before its storage event reaches us.
   const latest=editableSnapshot();if(!latest)return false;
   return enqueue('theme',{theme},{...latest,profile:{...latest.profile,theme}});
  };
  const readAttempt=(id:string):Attempt|undefined=>{
-  if(activeKey.current!==key)throw Error('当前账号或学习记录不可读取');
+  if(!accountAccess()||activeKey.current!==key)throw Error('当前账号或学习记录不可读取');
   if(readOnly.current){readSnapshot(key,owner);throw Error('当前学习记录不可读取，请先重新读取');}
   try{return readImmutableRecord(key,owner,'attempt',id);}catch(error){blockReads();throw error;}
  };
  const readCheckin=(id:string):Checkin|undefined=>{
-  if(activeKey.current!==key)throw Error('当前账号或学习记录不可读取');
+  if(!accountAccess()||activeKey.current!==key)throw Error('当前账号或学习记录不可读取');
   if(readOnly.current){readSnapshot(key,owner);throw Error('当前学习记录不可读取，请先重新读取');}
   try{return readImmutableRecord(key,owner,'checkin',id);}catch(error){blockReads();throw error;}
  };
  const addAttempt=(a:Attempt):boolean=>{
-  if(activeKey.current!==key||readOnly.current)return false;
+  if(!accountAccess()||activeKey.current!==key||readOnly.current)return false;
   let payload:string;try{payload=immutablePayload('attempt',a);}catch{toast.error('答题事件格式无效，未保存');return false;}
   try{
    const prior=readAttempt(a.id);
@@ -314,7 +316,7 @@ export function useStudy(owner:string|null,remoteEnabled=true){
   }catch{return false;}
  };
  const addCheckin=(c:Checkin):boolean=>{
-  if(activeKey.current!==key||readOnly.current)return false;
+  if(!accountAccess()||activeKey.current!==key||readOnly.current)return false;
   let payload:string;try{payload=immutablePayload('checkin',c);}catch{toast.error('打卡事件格式无效，未保存');return false;}
   try{
    const prior=readCheckin(c.id);
@@ -325,23 +327,23 @@ export function useStudy(owner:string|null,remoteEnabled=true){
    return enqueue('checkin',JSON.parse(payload),{...latest,checkins:[...latest.checkins,JSON.parse(payload)]});
   }catch{return false;}
  };
- const editableSnapshot=()=>{try{return readSnapshot(key,owner);}catch{blockReads();return null;}};
+ const editableSnapshot=()=>{if(!accountAccess())return null;try{return readSnapshot(key,owner);}catch{blockReads();return null;}};
  const saveQuestionMark=(value:Omit<QuestionMark,'revision'|'mutationId'|'updatedAt'>):boolean=>{
-  if(activeKey.current!==key||readOnly.current)return false;
+  if(!accountAccess()||activeKey.current!==key||readOnly.current)return false;
   const latest=editableSnapshot();if(!latest)return false;const prior=latest.questionMarks.find(mark=>mark.qid===value.qid);
   const mark:QuestionMark={...value,revision:(prior?.revision||0)+1,mutationId:createId(),updatedAt:new Date().toISOString()};
   if(!validQuestionMark(mark))return false;
   return enqueue('questionMark',mark,{...latest,questionMarks:mergeMutableRecords([...latest.questionMarks,mark])});
  };
  const saveResourceTask=(value:Omit<ResourceTask,'revision'|'mutationId'|'updatedAt'>):boolean=>{
-  if(activeKey.current!==key||readOnly.current)return false;
+  if(!accountAccess()||activeKey.current!==key||readOnly.current)return false;
   const latest=editableSnapshot();if(!latest)return false;const prior=latest.resourceTasks.find(task=>task.id===value.id);
   const task:ResourceTask={...value,revision:(prior?.revision||0)+1,mutationId:createId(),updatedAt:new Date().toISOString()};
   if(!validResourceTask(task))return false;
   return enqueue('resourceTask',task,{...latest,resourceTasks:mergeMutableRecords([...latest.resourceTasks,task])});
  };
  const restoreBackup=(value:unknown,restoreProfile=false):boolean=>{
-  if(activeKey.current!==key||readOnly.current)return false;
+  if(!accountAccess()||activeKey.current!==key||readOnly.current)return false;
   const before=editableSnapshot();if(!before)return false;
   try{
    const restored=restoreStudyBackup(before,value,restoreProfile);
@@ -359,15 +361,15 @@ export function useStudy(owner:string|null,remoteEnabled=true){
   }catch{toast.error('恢复未完成，请保留备份后重试；已保存记录不会丢失');return false;}
  };
  const addRecording=async(r:Recording,blob:Blob)=>{
-  if(activeKey.current!==key||readOnly.current||!editableSnapshot())throw Error('当前学习记录不可写入');
+  if(!accountAccess()||activeKey.current!==key||readOnly.current||!editableSnapshot())throw Error('当前学习记录不可写入');
   const gen=generation.current;await putAudio(key+':'+r.id,blob);
-  if(gen!==generation.current||activeKey.current!==key||readOnly.current)throw Error('账号或记录版本已变化，请保留录音后重试');
+  if(gen!==generation.current||!accountAccess()||activeKey.current!==key||readOnly.current)throw Error('账号或记录版本已变化，请保留录音后重试');
   const latest=editableSnapshot();if(!latest)throw Error('当前学习记录不可写入');
   localStorage.setItem(key+':recording:'+r.id,JSON.stringify(r));if(!persist({...latest,recordings:uniqueById([...latest.recordings,r])}))throw Error('录音保存未完成，请保留录音后重试');setSync('pending');void syncNow();
  };
  const recordingUrl=async(r:Recording,options:{signal?:AbortSignal}={})=>{
   const gen=generation.current;
-  const valid=()=>gen===generation.current&&activeKey.current===key&&!readOnly.current&&!options.signal?.aborted;
+  const valid=()=>accountAccess()&&gen===generation.current&&activeKey.current===key&&!readOnly.current&&!options.signal?.aborted;
   if(!valid())throw Error('账号或记录范围已变化，回听已取消');
   let blob:Blob|undefined;
   try{blob=await getAudio(key+':'+r.id);}catch(error){if(!owner||!remoteEnabled||!r.uploaded)throw error;}
@@ -384,5 +386,5 @@ export function useStudy(owner:string|null,remoteEnabled=true){
    return URL.createObjectURL(result.blob);
   }finally{clearTimeout(timer);options.signal?.removeEventListener('abort',cancel);}
  };
- return {data,ready,recordsReadable:ready&&activeKey.current===key&&!readOnly.current,sync,issues,syncNow,retryIssue,saveProfile,saveTheme,addAttempt,addCheckin,readAttempt,readCheckin,saveQuestionMark,saveResourceTask,restoreBackup,addRecording,recordingUrl};
+ return {data:canRead()?data:EMPTY_DATA,ready:ready&&canRead(),recordsReadable:canRead()&&ready&&activeKey.current===key&&!readOnly.current,sync,issues,syncNow,retryIssue,saveProfile,saveTheme,addAttempt,addCheckin,readAttempt,readCheckin,saveQuestionMark,saveResourceTask,restoreBackup,addRecording,recordingUrl};
 }

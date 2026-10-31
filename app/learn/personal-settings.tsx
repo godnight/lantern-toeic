@@ -40,7 +40,6 @@ export function PersonalSettings({name,scope,theme,dailyNewLabel,accountLabel,sy
     <h2 className="v040-group-label">学习与外观</h2>
     <div className="v040-settings-group">
       <SettingsRow icon={BookOpen} label="学习计划" value={dailyNewLabel} onClick={onPlan}/>
-      <SettingsRow icon={CalendarDays} label="学习偏好" value="目标与节奏" onClick={onPreferences} disabled={disabled}/>
       <SettingsRow icon={Palette} label="外观主题" value={UI_THEME_META[theme].name} onClick={onThemes}/>
     </div>
     <h2 className="v040-group-label">账号与数据</h2>

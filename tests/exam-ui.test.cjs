@@ -17,6 +17,7 @@ function load(file, imports, globals = {}) {
     module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX,
   }}).outputText;
   vm.runInNewContext(code, {exports, require: name => {
+    if(name==='@/lib/learning-access'&&!(name in imports))return {useLearningAccess:()=>()=>true};
     if (!(name in imports)) throw Error('Unexpected import: ' + name);
     return imports[name];
   }, Date, Intl, Map, Set, Promise, Error, URL, Blob, TextEncoder, Uint8Array, Uint32Array, atob, btoa,
@@ -257,6 +258,7 @@ function audioHarness(initial = {}) {
   const document = {hidden:false, addEventListener:(n,f)=>listeners.set(n,f),removeEventListener:n=>listeners.delete(n)};
   const mod=load(path.join(root,'app/learn/mock-exam.tsx'), {
     react:hooks,'react/jsx-runtime':runtime,'lucide-react':dialog,'@/components/ui/dialog':dialog,
+    '@/lib/learning-access':{useLearningAccess:()=>initial.learningAccess??(()=>true)},
     '@/lib/native-host':{isNativeForeground:()=>true,subscribeNativeState:()=>()=>{}},
     '@/lib/exam-model':model,'@/lib/exam-storage':{},'@/lib/exam-ui':ui,'./mock-exam.css':{},'./exam-library':{},
   },{document});
@@ -284,6 +286,10 @@ function audioHarness(initial = {}) {
     dispose(){for(const slot of slots)slot?.cleanup?.();},
   };
 }
+
+test('actual native media controls recheck account access even when the expiry timer is delayed',async()=>{
+ let permit=true;const h=audioHarness({learningAccess:()=>permit});await h.fire('onPlaying');assert(h.ready);permit=false;h.player.paused=false;await h.fire('onPlaying');assert.equal(h.ready,false);assert.equal(h.player.paused,true);await h.fire('onCanPlay');assert.equal(h.ready,false);h.dispose();
+});
 
 test('actual Audio preflight needs matching metadata AND successful playing; durationchange revokes it immediately', async () => {
   const h=audioHarness();

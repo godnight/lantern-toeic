@@ -8,28 +8,33 @@ const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.Comm
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const word={id:'quiet',word:'quiet',pos:'adj.',meaning:'安静的；轻声的',category:'office',example:'Keep the room quiet.',translation:'让房间保持安静。',collocation:''};
 const words=[word,{...word,id:'available',word:'available'}];
+const referenceFixture={schemaVersion:1,sources:{dictionary:{label:'合成词典来源',url:'https://example.test/dictionary',wordUrlPattern:'https://example.test/word/{word}',license:'CC-BY-SA-4.0',licenseUrl:'https://example.test/license',attribution:'合成测试来源'}},entries:{quiet:{phonetics:['/qa-primary/','/qa-variant/'],etymology:'合成构词资料_QUIET',phoneticSource:'dictionary',etymologySource:'dictionary',phoneticSourceUrl:'https://example.test/word/quiet?oldid=123'},available:{phonetics:['/qa-next/'],etymology:'合成构词资料_AVAILABLE',phoneticSource:'dictionary',etymologySource:'dictionary'}}};
+
 const books=[{id:'scene',name:'托业场景词',capacity:2},{id:'expressions',name:'题内表达',capacity:1},{id:'general-base-1.2',name:'通用基础',capacity:2},{id:'combined-with-supplement-1.2',name:'托业备考',capacity:2}];
 const plan={id:'plan',schemaVersion:1,revision:1,createdAt:'2026-10-14T00:00:00.000Z',updatedAt:'2026-10-14T00:00:00.000Z',bookId:'scene',goal:2,dailyNew:15,weekdays:[1,2,3,4,5]};
 const day={id:'day',localDate:'2026-10-14',timezone:'Etc/UTC',startAt:'2026-10-14T00:00:00.000Z',endAt:'2026-10-15T00:00:00.000Z'};
 const receipt={commandId:'command',legacyEventId:'event',legacyPayloadHash:'fixed',occurredAt:'2026-10-14T00:01:00.000Z',rawRating:'known',intent:'new',ratingPolicy:'three-label-conservative-v1'};
 function controller(overrides={}){
  const projection={plan,counts:{capacity:2,learned:0,remaining:2,reviewDue:0},daily:{window:day,newDone:0,reviewDone:0,newRemaining:2,reviewRemaining:0,newWordIds:['quiet','available'],reviewWordIds:[],goalCompleted:false,isLearningDay:true},activeSession:null,candidates:[],learnedWordIds:[]};
- return {scopeKey:'owner-a',ready:true,error:'',projection,activeSession:null,pendingRating:null,candidateStatus:()=> 'available-new',savePlan:async()=>({status:'applied'}),addCandidate:async()=>({status:'applied'}),startGroup:async()=>({status:'applied'}),submitRating:async()=>({status:'applied'}),nextStep:async()=>({status:'applied'}),exportWorkflow:async()=>({kind:'lantern-workflow',schemaVersion:1}),restoreWorkflow:async()=>({status:'applied'}),refresh:async()=>{},...overrides};
+ return {scopeKey:'owner-a',ready:true,error:'',projection,activeSession:null,pendingRating:null,candidateStatus:()=> 'available-new',savePlan:async()=>({status:'applied'}),addCandidate:async()=>({status:'applied'}),startGroup:async()=>({status:'applied'}),submitRating:async()=>({status:'applied'}),correctRating:async()=>({status:'applied'}),nextStep:async()=>({status:'applied'}),exportWorkflow:async()=>({kind:'lantern-workflow',schemaVersion:1}),restoreWorkflow:async()=>({status:'applied'}),refresh:async()=>{},...overrides};
 }
 function session(){return {id:'session',schemaVersion:1,planRevision:1,dayWindow:day,createdAt:day.startAt,cursor:0,status:'active',queue:[{id:'step-1',wordId:word.id,word,intent:'new',reasons:[]}],currentStep:{id:'step-1',wordId:word.id,word,intent:'new',reasons:[]}};}
 function nodes(tree,predicate){const result=[],queue=[tree];while(queue.length){const node=queue.shift();if(!node)continue;if(Array.isArray(node)){queue.push(...node);continue;}if(typeof node==='object'){if(predicate(node))result.push(node);queue.push(node.props?.children);}}return result;}
 function text(node){return node==null||typeof node==='boolean'?'':typeof node==='string'||typeof node==='number'?String(node):Array.isArray(node)?node.map(text).join(''):text(node.props?.children);}
-function harness(componentName,initialProps){
+function harness(componentName,initialProps,references=referenceFixture){
  let slots=[],cursor=0,effects=[],tree,props=initialProps;const downloads=[];
  const same=(a,b)=>a&&b&&a.length===b.length&&a.every((value,index)=>Object.is(value,b[index]));
  const react={useState(value){const i=cursor++;if(!(i in slots))slots[i]=typeof value==='function'?value():value;return [slots[i],next=>slots[i]=typeof next==='function'?next(slots[i]):next];},useRef(value){const i=cursor++;if(!(i in slots))slots[i]={current:value};return slots[i];},useEffect(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps)){const old=slots[i];slots[i]={deps};effects.push(()=>{old?.cleanup?.();slots[i].cleanup=fn();});}}};
+ react.useLayoutEffect=react.useEffect;
  react.useSyncExternalStore=(_subscribe,read)=>read();
- const jsx=(type,props)=>typeof type==='function'&&['WorkflowNotice','ThemeScene','SpeechPlayer','InteractiveExample'].includes(type.name)?type(props):{type,props};
+ const jsx=(type,props)=>typeof type==='function'&&['WorkflowNotice','ThemeScene','SpeechPlayer','InteractiveExample','VocabularyPlanEditor','PlanEditorActions','PlanExitPrompt'].includes(type.name)?type(props):{type,props};
  const componentExports={};const imports={react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':new Proxy({},{get:()=>function Icon(){}}),'@/lib/vocabulary-model':{CATEGORIES:{office:'办公事务'}},'@/lib/workflow-catalog':{getWorkflowCatalog:id=>id==='expressions'?[words[1]]:words,WORKFLOW_BOOKS:books,getWorkflowBook:id=>{const book=books.find(row=>row.id===id);assert.ok(book);return book;},getCandidateLearningWord:row=>words.find(current=>current.id===row.id)??null},'./interactive-example':{InteractiveExample:function InteractiveExample(p){return {type:'example',props:p};}},'./practice':{SpeechPlayer:function SpeechPlayer(){return {type:'audio',props:{}};}},'./ui-theme':{ThemeScene:function ThemeScene(p){return p.theme==='hollow'?{type:'figure',props:{'data-scene':p.scene}}:null;}}};
- imports['@/lib/vocabulary-workflow']=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports:{'./workflow-catalog':imports['@/lib/workflow-catalog']}}).load('lib/vocabulary-workflow.ts');
+ imports['@/lib/vocabulary-workflow']=require('./helpers/actual-source-loader.cjs').createSourceLoader({permitLearningAccess:true,root,imports:{'./workflow-catalog':imports['@/lib/workflow-catalog']}}).load('lib/vocabulary-workflow.ts');
  imports['@/lib/word-audio-bindings-v040']={getWordAudioBindingForSnapshot:()=>null,isPrivateWordAudioBlocked:()=>false,PRIVATE_AUDIO_LABEL:'Synthetic no playback'};
  imports['@/lib/lesson-audio']={naturalAudioRegistry:{pinSelectors:async()=>({release(){}})},subscribeProductLessonAudio:()=>()=>{},productLessonAudioState:()=>({phase:'ready'})};
+ imports['./word-card-reference']=require('./helpers/actual-source-loader.cjs').createSourceLoader({permitLearningAccess:true,root,imports:{'@/content/word-card-reference.json':{__esModule:true,default:references}}}).load('app/learn/word-card-reference.ts');
  imports['./v041-vocabulary.css']={};
+ imports['./plan-editor-state']=require('./helpers/actual-source-loader.cjs').createSourceLoader({permitLearningAccess:true,root,imports,globals:{document:{activeElement:null},HTMLElement:class HTMLElement{},requestAnimationFrame:fn=>fn()}}).load('app/learn/plan-editor-state.tsx');
  vm.runInNewContext(code,{exports:componentExports,require:name=>{assert.ok(name in imports,name);return imports[name];},Set,Map,Date,Number,Math,JSON,Error,Promise,URL,Blob,setTimeout,clearTimeout,document:{createElement:()=>{const anchor={click(){downloads.push({href:anchor.href,download:anchor.download});}};return anchor;}}});
  function render(){cursor=0;tree=componentExports[componentName](props);const pending=effects;effects=[];pending.forEach(fn=>fn());return tree;}
  function button(label){return nodes(tree,node=>node.type==='button'&&text(node).trim()===label)[0];}
@@ -93,6 +98,74 @@ test('learned quiet can explicitly join review; candidate actions never mark lea
  workflow.candidateStatus=()=> 'today-reviewed';h.render();assert.equal(h.button('今日已复习').props.disabled,true);h.click('今日已复习');await h.flush();assert.equal(calls.length,1);h.unmount();
 });
 
+test('all reference phonetics stay visible before and after each rating; etymology is revealed only after saving',async()=>{
+ for(const [rating,label] of [['known','认识'],['fuzzy','模糊'],['forgotten','忘记']]){
+  const active=session(),snapshot=JSON.stringify(active.currentStep.word),calls=[];
+  const workflow=controller({activeSession:active,submitRating:async value=>{calls.push(value);active.currentStep.receipt={...receipt,rawRating:value};return {status:'applied'};}});
+  const h=harness('VocabularyStudyCard',{workflow,theme:'paper'});
+  const phonetic=()=>nodes(h.tree,node=>node.props?.className==='word-phonetic')[0];
+  assert.equal(text(phonetic()),'/qa-primary/ · /qa-variant/');
+  assert.doesNotMatch(text(h.tree),/合成构词资料_QUIET|参考来源/);
+  h.click(label);await h.flush();
+  assert.deepEqual(calls,[rating]);assert.equal(text(phonetic()),'/qa-primary/ · /qa-variant/');
+  assert.match(text(h.tree),/词源与构词参考.*合成构词资料_QUIET/);
+  assert.doesNotMatch(text(h.tree),/参考来源|合成词典来源|合成测试来源/);
+  assert.equal(nodes(h.tree,node=>node.type==='details'&&node.props.className?.includes('phase2-word-reference-sources')).length,0);
+  assert.equal(JSON.stringify(active.currentStep.word),snapshot,'Display enrichment changed the saved word');
+  h.unmount();
+ }
+});
+
+test('existing word reference fields retain priority without modifying the snapshot',()=>{
+ const active=session();active.currentStep.word={...word,phonetics:[' /saved-one/ ','/saved-two/'],etymology:'原词卡构词参考'};
+ active.currentStep.receipt=receipt;const snapshot=JSON.stringify(active.currentStep.word);
+ const h=harness('VocabularyStudyCard',{workflow:controller({activeSession:active}),theme:'paper'});
+ assert.match(text(h.tree),/\/saved-one\/ · \/saved-two\//);assert.match(text(h.tree),/原词卡构词参考/);
+ assert.doesNotMatch(text(h.tree),/qa-primary|合成构词资料_QUIET|合成词典来源/);
+ assert.equal(JSON.stringify(active.currentStep.word),snapshot);h.unmount();
+});
+
+test('reference lookup changes with the exact headword and does not stem or invent missing entries',()=>{
+ const active=session();active.currentStep.word={...word,word:'  QUIET  '};active.currentStep.receipt=receipt;
+ const h=harness('VocabularyStudyCard',{workflow:controller({activeSession:active}),theme:'paper'});
+ assert.match(text(h.tree),/qa-primary/);assert.match(text(h.tree),/合成构词资料_QUIET/);
+ active.currentStep={...active.currentStep,id:'step-next',word:{...word,id:'available',word:'available'},receipt:undefined};h.render();
+ assert.match(text(h.tree),/qa-next/);assert.doesNotMatch(text(h.tree),/qa-primary|合成构词资料_QUIET|合成构词资料_AVAILABLE/);
+ active.currentStep={...active.currentStep,id:'step-missing',word:{...word,word:'quietly'},receipt};h.render();
+ assert.match(text(h.tree),/暂无音标/);assert.doesNotMatch(text(h.tree),/qa-primary|词源与构词参考|参考来源/);
+ h.unmount();
+});
+
+test('the known CV card replaces stale verb IPA only with its reviewed noun reference and never mutates the snapshot',()=>{
+ const cv={...word,id:'v-resume',word:'resume',pos:'名词',meaning:'简历（美式英语，也写作 résumé）',phonetics:['/qa-old-verb/'],etymology:'旧混合动词资料'};
+ const references=structuredClone(referenceFixture);
+ references.entries.resume={phonetics:['/qa-reviewed-noun/'],etymology:'合成名词来源_简历',phoneticSource:'dictionary',etymologySource:'dictionary',partOfSpeech:'noun',overrideWordIds:['v-resume']};
+ const active=session();active.currentStep.word=cv;active.currentStep.receipt=receipt;const snapshot=JSON.stringify(cv);
+ const h=harness('VocabularyStudyCard',{workflow:controller({activeSession:active}),theme:'paper'},references);
+ assert.match(text(h.tree),/qa-reviewed-noun/);assert.match(text(h.tree),/合成名词来源_简历/);assert.doesNotMatch(text(h.tree),/qa-old-verb|旧混合动词资料/);
+ assert.equal(JSON.stringify(cv),snapshot);h.unmount();
+ // An absent or old unscoped reference must not revive the known wrong verb IPA.
+ for(const entry of [undefined,{phonetics:['/qa-unscoped-verb/']}]){
+  const unavailable=structuredClone(referenceFixture);if(entry)unavailable.entries.resume=entry;
+  const missing=harness('VocabularyStudyCard',{workflow:controller({activeSession:active}),theme:'paper'},unavailable);
+  assert.match(text(missing.tree),/暂无音标/);assert.doesNotMatch(text(missing.tree),/qa-old-verb|qa-unscoped-verb|旧混合动词资料/);missing.unmount();
+ }
+});
+
+test('noun-scoped resume references do not leak into verbs or override unrelated saved words',()=>{
+ const references=structuredClone(referenceFixture);
+ references.entries.resume={phonetics:['/qa-reviewed-noun/'],etymology:'合成名词来源_简历',phoneticSource:'dictionary',etymologySource:'dictionary',partOfSpeech:'noun',overrideWordIds:['v-resume']};
+ for(const pos of ['动词','v.','n./v.']){
+  const active=session();active.currentStep.word={...word,id:'other-resume',word:'resume',pos,meaning:'继续',phonetics:[]};active.currentStep.receipt=receipt;
+  const h=harness('VocabularyStudyCard',{workflow:controller({activeSession:active}),theme:'paper'},references);
+  assert.match(text(h.tree),/暂无音标/);assert.doesNotMatch(text(h.tree),/qa-reviewed-noun|合成名词来源_简历|词源与构词参考/);
+  active.currentStep.word.phonetics=['/qa-own-verb/'];h.render();assert.match(text(h.tree),/qa-own-verb/);assert.doesNotMatch(text(h.tree),/qa-reviewed-noun/);h.unmount();
+ }
+ const active=session();active.currentStep.word={...word,id:'other-noun',word:'resume',pos:'n.',meaning:'摘要',phonetics:['/qa-own-noun/']};active.currentStep.receipt=receipt;
+ const h=harness('VocabularyStudyCard',{workflow:controller({activeSession:active}),theme:'paper'},references);
+ assert.match(text(h.tree),/qa-own-noun/);assert.doesNotMatch(text(h.tree),/qa-reviewed-noun/);h.unmount();
+});
+
 test('failed feedback keeps the meaning hidden, locks the original rating and retries it before Next',async()=>{
  const active=session(),calls=[];let tries=0,next=0;
  const workflow=controller({activeSession:active,submitRating:async rating=>{calls.push(rating);if(++tries===1)return {status:'blocked',reason:'空间不足，原反馈保留'};active.currentStep.receipt={...receipt,rawRating:rating};return {status:'applied',receipt:active.currentStep.receipt};},nextStep:async()=>{next++;return {status:'applied'};}});
@@ -125,11 +198,12 @@ test('reading position survives same-word save and retry; only the next word res
  const h=harness('VocabularyStudyCard',{workflow,theme:'hollow'});
  const content=nodes(h.tree,node=>node.props?.className==='phase2-word-content')[0].props.ref;
  const heading=nodes(h.tree,node=>node.type==='h2'&&node.props.className==='phase2-current-word')[0].props.ref;
- let revealFocusCalls=0;content.current={scrollTop:137,focus:()=>{revealFocusCalls++;}};let focusCalls=0;heading.current={focus:()=>{focusCalls++;}};
+ let revealFocusCalls=0,cardScrollCalls=0;content.current={scrollTop:137,focus:()=>{revealFocusCalls++;},closest:selector=>{assert.equal(selector,'.phase2-word-card');return {scrollIntoView:options=>{assert.equal(options.block,'start');assert.equal(options.behavior,'instant');cardScrollCalls++;}};}};let focusCalls=0;heading.current={focus:()=>{focusCalls++;}};
  h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);
- h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);assert.equal(focusCalls,0);assert.equal(revealFocusCalls,1);
+ h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);assert.equal(focusCalls,0);assert.equal(revealFocusCalls,1);assert.equal(cardScrollCalls,0);
  active.currentStep={...active.currentStep,id:'next-word',word:{...word,id:'available',word:'available',meaning:'可用的'},receipt:undefined};
- h.render();assert.equal(content.current.scrollTop,0);assert.equal(focusCalls,1);
+ h.render();assert.equal(content.current.scrollTop,0);assert.equal(focusCalls,1);assert.equal(cardScrollCalls,1);
+ h.update({overlayBlocked:true});active.currentStep={...active.currentStep,id:'overlay-word'};h.render();assert.equal(cardScrollCalls,1);assert.equal(focusCalls,1);
  assert.doesNotMatch(text(h.tree),/安静的；轻声的|可用的/);h.unmount();
 });
 
@@ -186,4 +260,17 @@ test('workflow export uses the native allowlisted filename and names both vocabu
 test('rest-day task separates due review from new words and opens only after a confirmed start',async()=>{
  let opened=0,starts=0;const workflow=controller();workflow.projection.daily.isLearningDay=false;workflow.projection.daily.newRemaining=0;workflow.projection.daily.reviewRemaining=3;workflow.startGroup=async()=>{starts++;return starts===1?{status:'unknown'}:{status:'applied'};};
  const h=harness('TodayVocabularyTask',{workflow,onOpen(){opened++;}});assert.match(text(h.tree),/今日休息，仍可复习或加练/);h.click('开始背词');await h.flush();assert.equal(opened,0);assert.match(text(h.tree),/保存结果尚未确认/);h.click('开始背词');await h.flush();assert.equal(opened,1);assert.equal(workflow.projection.daily.newDone,0);h.unmount();
+});
+
+
+test('saved known feedback can downgrade without a spinner and guards duplicate correction clicks',async()=>{
+ let finish,calls=[];const s=session();s.currentStep={...s.currentStep,receipt};s.queue=[s.currentStep];
+ const workflow=controller({activeSession:s,correctRating:target=>{calls.push(target);return new Promise(resolve=>finish=resolve);}}),h=harness('VocabularyStudyCard',{workflow,theme:'paper'});
+ h.click('改为忘记');h.click('改为忘记');assert.equal(calls.length,1);assert.deepEqual(JSON.parse(JSON.stringify(calls[0])),{sessionId:s.id,stepId:s.currentStep.id,commandId:receipt.commandId,reviewId:receipt.legacyEventId});assert.match(text(h.tree),/正在保存反馈/);assert.equal(nodes(h.tree,n=>String(n.props?.className).includes('spinner')).length,0);
+ finish({status:'applied'});await h.flush();const corrected={...s.currentStep,correctedToForgotten:true};workflow.activeSession={...s,currentStep:corrected,queue:[corrected]};h.update({workflow});assert.match(text(h.tree),/已改为：忘记/);assert.equal(h.button('改为忘记'),undefined);h.unmount();
+});
+test('previous word is a read-only view; correction freezes its original identity and returning never advances',async()=>{
+ let submitted=0,advanced=0,corrected=[];const s=session(),first={...s.currentStep,receipt},second={id:'step-2',wordId:words[1].id,word:words[1],intent:'new',reasons:[]};s.cursor=1;s.queue=[first,second];s.currentStep=second;
+ const workflow=controller({activeSession:s,submitRating:async()=>{submitted++;return {status:'applied'};},nextStep:async()=>{advanced++;return {status:'applied'};},correctRating:async target=>{corrected.push(target);return {status:'applied'};}}),h=harness('VocabularyStudyCard',{workflow,theme:'paper'});
+ h.click('上一词');assert.match(text(h.tree),/上一词 · 新词 · 1 \/ 2/);assert.equal(h.button('上一词').props.disabled,true);h.click('改为忘记');await h.flush();assert.equal(corrected[0].stepId,first.id);assert.equal(corrected[0].reviewId,receipt.legacyEventId);h.click('返回当前词');assert.equal(h.button('认识').props.disabled,false);assert.equal(submitted,0);assert.equal(advanced,0);assert.equal(s.cursor,1);h.unmount();
 });

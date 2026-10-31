@@ -113,7 +113,8 @@ test('actual workflow accepts synthetic full200 but blocks201 and incomplete aut
 });
 function home(questions,listening){const noop=()=>null,jsx=(type,props)=>({type,props}),calls=[];
  const ui=loader({react:{useState:value=>[value,()=>{}]},'react/jsx-runtime':{jsx,jsxs:jsx},'lucide-react':{ArrowRight:noop,BookOpen:noop,Headphones:noop,Mic:noop,Clock:noop},
- '@/components/ui/tabs':{Tabs:noop,TabsContent:noop,TabsList:noop,TabsTrigger:noop}}).load('app/learn/practice-home.tsx');
+ '@/components/ui/tabs':{Tabs:noop,TabsContent:noop,TabsList:noop,TabsTrigger:noop},
+ '@/components/ui/dialog':{Dialog:noop,DialogContent:noop,DialogHeader:noop,DialogTitle:noop,DialogDescription:noop}}).load('app/learn/practice-home.tsx');
  const tree=ui.PracticeHome({questions,listening,busy:false,tab:'lr',onTab(){},onStart:rows=>calls.push(['start',rows.length]),onPart(){},onCustom:(part,count)=>calls.push(['custom',part,count]),onWrong(){},onListeningWrong(){},onMock(){},children:null}),nodes=[];
  function walk(value){if(Array.isArray(value))return value.forEach(walk);if(!value||typeof value!=='object')return;nodes.push(value);walk(value.props?.children);}walk(tree);
  function text(value){if(value==null)return '';if(Array.isArray(value))return value.map(text).join('');return typeof value==='object'?text(value.props?.children):String(value);}return{calls,nodes,text};}

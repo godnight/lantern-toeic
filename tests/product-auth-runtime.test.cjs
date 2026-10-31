@@ -151,6 +151,8 @@ test('locked workerd runtime executes production-cost scrypt and real D1 auth li
   const registeredCookie = sessionCookie(registerResponse);
   t.diagnostic(`Worker registration (real strong hash + D1 transaction): ${Math.round(performance.now() - registrationStart)} ms`);
   assert.equal((await (await dispatch('/session', undefined, registeredCookie)).json()).user.id, registered.user.id);
+  const v2=await mf.dispatchFetch(origin+'/session',{headers:{Cookie:registeredCookie,'X-Lantern-Session-Proof':'2'}});
+  const proof=await v2.json();assert.equal(v2.status,200);assert.equal(proof.user.id,registered.user.id);assert.equal(proof.session.version,2);assert(Number.isSafeInteger(proof.session.remainingMs)&&proof.session.remainingMs>0&&proof.session.remainingMs<=43200000);assert.equal(v2.headers.get('set-cookie'),null);
 
   const credential = await db.prepare('SELECT password_hash FROM auth_password_credentials WHERE user_id=?').bind(registered.user.id).first();
   assert.match(credential.password_hash, hashPattern);

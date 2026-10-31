@@ -7,6 +7,7 @@ import {fileURLToPath} from 'node:url';
 
 const metadata = new Set(['harmony/AppScope/app.json5', 'release-manifest.json', 'public/build-identity.json', 'package.json', 'mobile/package.json']);
 const toolingPaths = new Set(['.github/scripts/change-scope.mjs', '.github/tests/change-scope.test.mjs', '.github/tests/workflows.test.mjs']);
+const vocabularyPaths = new Set(['app/learn/vocabulary-plan.tsx', 'app/learn/v041-vocabulary.css', 'app/learn/word-card-reference.ts', 'content/word-card-reference.json', 'content/word-card-phonetic-supplement.json', 'scripts/build-word-card-reference.py', 'tests/phase2-vocabulary-ui.test.cjs', 'tests/browser/word-card-layout.cjs', 'tests/browser/word-card-layout.fixture.jsx']);
 const git = (cwd, ...args) => execFileSync('git', args, {cwd, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe']});
 const semver = value => typeof value === 'string' && /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(value);
 const sameReleaseLine = (before, after) => semver(before) && semver(after) && before.split('.').slice(0, 2).join('.') === after.split('.').slice(0, 2).join('.') && Number(after.split('.')[2]) >= Number(before.split('.')[2]);
@@ -41,18 +42,19 @@ export function versionOnly(path, beforeText, afterText) {
   }
 }
 
-function plan(full, ui, tooling, reasons, {themeWeb = false, signing = false} = {}) {
-  return {level: full ? 'full' : ui ? 'ui' : tooling ? 'tooling' : 'docs', full, ui: ui && !full, tooling, harmony: full, theme_web: themeWeb && !full, signing, reasons};
+function plan(full, ui, tooling, reasons, {themeWeb = false, signing = false, vocabularyUi = false} = {}) {
+  return {level: full ? 'full' : ui || vocabularyUi ? 'ui' : tooling ? 'tooling' : 'docs', full, ui: ui && !full, tooling, harmony: full, theme_web: themeWeb && !full, vocabulary_ui: vocabularyUi && !full, signing, reasons};
 }
 
 export function classifyChanges(changes, readVersions) {
-  let full = false, ui = false, tooling = false, themeWeb = false, signing = false;
+  let full = false, ui = false, tooling = false, themeWeb = false, signing = false, vocabularyUi = false;
   const reasons = [];
   for (const {path, status} of changes) {
     if (/^(?:README(?:\.[\w-]+)?\.md|AGENTS\.md|LICENSE(?:\.md|\.txt)?)$/.test(path) || /^docs\/.+\.(?:md|txt)$/.test(path) || path === '.github/pull_request_template.md') continue;
     if (/^\.github\/workflows\/[^/]+\.ya?ml$/.test(path) || toolingPaths.has(path)) { tooling = true; continue; }
     if (path.startsWith('tools/harmony-release/')) { tooling = true; signing = true; continue; }
     if (status === 'M' && path === 'tests/browser/theme-browser.cjs') { tooling = true; themeWeb = true; continue; }
+    if ((status === 'A' || status === 'M') && vocabularyPaths.has(path)) { vocabularyUi = true; continue; }
     if (status === 'M' && metadata.has(path) && versionOnly(path, ...readVersions(path))) continue;
     if ((status === 'A' || status === 'M') && (path === 'app/learn/today-dashboard.tsx' || /^(?:app|components)\/.+\.css$/.test(path))) {
       ui = true;
@@ -61,7 +63,7 @@ export function classifyChanges(changes, readVersions) {
     full = true;
     reasons.push(`full: ${status} ${path}`);
   }
-  return plan(full, ui, tooling, reasons.length ? reasons : ['Only allowlisted documentation, presentation UI, targeted tooling or version metadata changed.'], {themeWeb, signing});
+  return plan(full, ui, tooling, reasons.length ? reasons : ['Only allowlisted documentation, presentation UI, targeted tooling or version metadata changed.'], {themeWeb, signing, vocabularyUi});
 }
 
 export function planForEvent({cwd, eventName, event}) {
@@ -93,7 +95,7 @@ export function planForEvent({cwd, eventName, event}) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const result = planForEvent({cwd: process.cwd(), eventName: process.env.GITHUB_EVENT_NAME, event: JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'))});
-  const outputs = ['level', 'full', 'ui', 'tooling', 'harmony', 'theme_web', 'signing'].map(key => `${key}=${result[key]}`).join('\n') + '\n';
+  const outputs = ['level', 'full', 'ui', 'tooling', 'harmony', 'theme_web', 'signing', 'vocabulary_ui'].map(key => `${key}=${result[key]}`).join('\n') + '\n';
   if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, outputs);
   console.log(JSON.stringify(result, null, 2));
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `CI scope: **${result.level}**${result.mergeBase ? ` (PR merge base ${result.mergeBase.slice(0, 12)})` : ''}.\n\n${result.reasons.map(reason => `- ${reason}`).join('\n')}\n`);

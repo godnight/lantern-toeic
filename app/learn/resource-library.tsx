@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useMemo,useRef,useState} from 'react';
+import {useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
 import {ArrowLeft,ArrowUpRight,BookOpen,Check,ChevronRight,Clock,Headphones,Info,NotebookPen} from 'lucide-react';
 import {resources,type LearningResource} from '@/content/resources-v2';
 import {registerNativeBack} from '@/lib/native-host';
@@ -25,7 +25,8 @@ export default function ResourceLibrary({checkins,onRecord,checkinOpen=false,rec
  const detailTitle=useRef<HTMLHeadingElement>(null);
  const itemButtons=useRef(new Map<string,HTMLButtonElement>());
  const selected=resources.find(resource=>resource.id===selectedId);
- useEffect(()=>{onDetailChange?.(!!selectedId);return()=>onDetailChange?.(false);},[selectedId,onDetailChange]);
+ // Parent prelude and child content must settle before either new view paints.
+ useLayoutEffect(()=>{onDetailChange?.(!!selectedId);return()=>onDetailChange?.(false);},[selectedId,onDetailChange]);
  const filtered=resources.filter(resource=>(category==='all'||resource.category===category)&&(!query.trim()||(resource.title+' '+resource.provider+' '+resource.description).toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())));
  const records=useMemo(()=>new Map(resources.map(resource=>{
   const visits=checkins.filter(checkin=>checkin.note.includes(`[资源:${resource.id}]`));
@@ -42,7 +43,7 @@ export default function ResourceLibrary({checkins,onRecord,checkinOpen=false,rec
   restoreList.current=true;
   setSelectedId(null);
  };
- useEffect(()=>{
+ useLayoutEffect(()=>{
   if(selectedId){window.scrollTo({top:0,behavior:'auto'});detailTitle.current?.focus({preventScroll:true});return;}
   if(restoreList.current){
    restoreList.current=false;

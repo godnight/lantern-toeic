@@ -1,5 +1,5 @@
 import index from '@/content/dictionary-legacy-ids.json';
-import {mergeVocabularyEvents,type VocabularyEvent} from './vocabulary-model';
+import {mergeVocabularyEvents,effectiveVocabularyEvents,type VocabularyEvent} from './vocabulary-model';
 
 // Proven identity aliases only. This index contains no definitions or audio data.
 const aliases=new Map<string,string>();
@@ -17,7 +17,7 @@ export function canonicalVocabularyWordId(wordId:string):string{return aliases.g
 export function projectDictionaryVocabularyEvents(events:readonly VocabularyEvent[]):VocabularyEvent[]{
  // Resolve immutable event-ID conflicts before projection; aliasing must never
  // make two originally different facts look like the same imported event.
- return mergeVocabularyEvents([],[...events]).map(event=>{
+ return effectiveVocabularyEvents(mergeVocabularyEvents([],[...events])).map(event=>{
   const wordId=canonicalVocabularyWordId(event.wordId);
   return wordId===event.wordId?event:{...event,wordId};
  });

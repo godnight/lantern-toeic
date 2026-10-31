@@ -103,6 +103,7 @@ function EnabledOfflineSpeakingFeedback({prompt, recordingId, blob, saved, captu
 /** A browser cannot discover a Python model; an explicit same-PC choice enables file exchange. */
 export function OfflineSpeakingFeedback(props: Parameters<typeof EnabledOfflineSpeakingFeedback>[0]) {
   const [enabled,setEnabled]=useState(false);
+  if(props.blob.type.split(';')[0].toLowerCase()==='audio/mp4')return <p className="speaking-caption" role="status">此录音暂不支持口语识别。</p>;
   if(!props.scope.offlineJobSupported)return <EnabledOfflineSpeakingFeedback {...props}/>;
   return <section className="speaking-text-feedback">
     <label className="speaking-local-asr-optin"><input type="checkbox" checked={enabled} onChange={event=>setEnabled(event.target.checked)}/>这台电脑已配置本地转写工具，使用离线文件交换</label>

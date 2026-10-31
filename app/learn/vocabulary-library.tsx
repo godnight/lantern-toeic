@@ -1,15 +1,13 @@
 'use client';
+import {useLearningAccess,useVerifiedLearningAccount} from '@/lib/learning-access';
 import {useDeferredValue,useEffect,useId,useMemo,useRef,useState,type ReactNode} from 'react';
 import {ArrowLeft,ArrowRight,BookOpen,Check,Download,Search,Star,Upload,X} from 'lucide-react';
 import {toast} from 'sonner';
 import {registerNativeBack} from '@/lib/native-host';
 import {useVocabulary} from '@/lib/use-vocabulary';
 import {vocabularyId,CATEGORIES,searchText,searchWords,type Word} from '@/lib/vocabulary-model';
-import wordData from '@/content/vocabulary.json';
-import legacyQuestions from '@/content/questions.json';
+import {learningWords,core,extraWords,questionWords} from '@/lib/learning-word-views';
 import {QUESTIONS as questions} from '@/lib/question-catalog';
-import expansion from '@/content/vocabulary-expansion.json';
-import {B02_PRIVATE_WORDS} from '@/lib/vocabulary-content-catalog';
 import dictionaryMetadata from '@/content/dictionary-metadata.json';
 import {emptyVocabularyState,findDictionary,indexDictionary,mergeWordCatalog,vocabularyStates,type DictionaryEntry} from '@/lib/dictionary-model';
 import {loadDictionary} from '@/lib/load-dictionary';
@@ -21,12 +19,6 @@ import {InteractiveExample,type ExampleLookup} from './interactive-example';
 import {DictionaryPronunciation} from './dictionary-pronunciation';
 import './v041-vocabulary.css';
 
-const core=wordData as Word[];
-const questionWords:Word[]=[];
-for(const q of legacyQuestions)for(const v of q.vocabulary||[])if(!core.some(w=>searchText(w.word)===searchText(v.word))&&!questionWords.some(w=>searchText(w.word)===searchText(v.word)))questionWords.push({id:'qv-'+v.word.toLowerCase().replace(/[^a-z0-9]+/g,'-'),word:v.word,pos:'词汇与表达',meaning:v.meaning,category:'questions',example:v.example,translation:'',collocation:''});
-const extraWords:Word[]=expansion.map(w=>({...w,example:'',translation:'',collocation:'',source:'lantern-expansion'}));
-const legacyLearningWords=[...core,...questionWords,...extraWords];
-const learningWords=[...legacyLearningWords,...B02_PRIVATE_WORDS.filter(word=>!legacyLearningWords.some(old=>old.id===word.id))];
 const posLabel=(value:string)=>({noun:'名词',verb:'动词',adj:'形容词',adjective:'形容词',adv:'副词',adverb:'副词',pron:'代词',pronoun:'代词',prep:'介词',preposition:'介词',conj:'连词',conjunction:'连词',interj:'感叹词',interjection:'感叹词',unknown:'词性未标注',name:'专名',proper:'专名',phrase:'短语',num:'数词',number:'数词',determiner:'限定词',article:'冠词',abbrev:'缩略词',symbol:'符号',suffix:'后缀',prefix:'前缀'} as Record<string,string>)[value]||value;
 type Mode='learn'|'dictionary';
 type Filter='all'|'starred'|'due';
@@ -44,12 +36,12 @@ function DictionarySources({word}:{word:string}){
  return <p className="word-footnote">中文维基词典贡献者 · Kaikki 提取 · {variants.map(value=><span key={value}><a href={'https://zh.wiktionary.org/wiki/'+encodeURIComponent(value)} target="_blank" rel="noreferrer">{value} 原词条</a>（<a href={'https://zh.wiktionary.org/w/index.php?title='+encodeURIComponent(value)+'&action=history'} target="_blank" rel="noreferrer">编辑历史</a>） </span>)} · <a href={dictionaryMetadata.licenseUrl} target="_blank" rel="noreferrer">{dictionaryMetadata.license}</a>。词典释义为一般用法，不代表托业考纲；词源参考不等于记忆联想。</p>;
 }
 export function VocabularyEntry({onOpen}:{onOpen:()=>void}){return <button className="vocabulary-entry panel" onClick={onOpen}><span className="vocabulary-entry-icon"><BookOpen size={25}/></span><span><b>词库与生词本</b><small>查词 · 收藏 · 词卡复习</small></span><ArrowRight size={20}/></button>;}
-export function VocabularyReviewSummary({owner,onOpen}:{owner:string|null;onOpen:()=>void}){
- const store=useVocabulary(owner),[now,setNow]=useState(Date.now());
+export function VocabularyReviewSummary({owner,onOpen,online=false}:{owner:string|null;onOpen:()=>void;online?:boolean}){
+ const store=useVocabulary(owner,online),[now,setNow]=useState(Date.now());
  const states=useMemo(()=>vocabularyStates(store.events),[store.events]);
  useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),60000);return()=>clearInterval(timer);},[]);
  const starred=[...states.values()].filter(s=>s.starred).length,due=[...states.values()].filter(s=>s.due>0&&s.due<=now).length;
- return <section className="vocab-review-summary panel" aria-label="生词与到期词卡"><div><span className="vocab-source-label">词卡复习</span><h2>{!store.ready?'正在读取词卡记录':store.error?'词卡记录暂未读入':due?`${due} 个到期词卡`:'今天没有到期词卡'}</h2>{!store.error&&store.ready&&<p>{starred} 个生词 · <span>{store.sync}</span></p>}</div>{store.error?<div className="vocab-alert" role="alert"><p>{store.error}</p><button className="text-button" onClick={store.retry}>重新读取词卡记录</button></div>:<button className="button secondary" disabled={!store.ready} onClick={onOpen}>查看词卡范围<ArrowRight size={16}/></button>}</section>;
+ return <section className="vocab-review-summary panel" aria-label="生词与到期词卡"><div><span className="vocab-source-label">词卡复习</span><h2>{!store.ready?'正在读取词卡记录':store.error?'词卡记录暂未读入':due?`${due} 个到期词卡`:'今天没有到期词卡'}</h2><p aria-hidden={!store.ready||!!store.error}>{!store.error&&store.ready?<>{starred} 个生词 · <span>{store.sync}</span></>:'\u00a0'}</p></div>{store.error?<div className="vocab-alert" role="alert"><p>{store.error}</p><button className="text-button" onClick={store.retry}>重新读取词卡记录</button></div>:<button className="button secondary" disabled={!store.ready} onClick={onOpen}>查看词卡范围<ArrowRight size={16}/></button>}</section>;
 }
 
 export default function VocabularyLibrary({owner,online=true,onQuestion,initialMode='learn',initialFilter='all',initialQuery='',lookupOnly=false,navigationBoundary='library',backLabel='返回来源页',onBack,onFocusChange,overlayBlocked=false,onExampleLookup,renderPlanAction}:Props){
@@ -246,20 +238,23 @@ export default function VocabularyLibrary({owner,online=true,onQuestion,initialM
 
 /** Management-only reuse of the original validated vocabulary event backup. */
 export function VocabularyRecordData({owner,online=true}:{owner:string|null;online?:boolean}){
+ const accountAccess=useLearningAccess(owner),account=useVerifiedLearningAccount(owner),accountRef=useRef(account);accountRef.current=account;
+ const [pendingImport,setPendingImport]=useState<{payload:unknown;owner:string;epoch:number;generation:number;username:string;fileName:string}|null>(null);
  const store=useVocabulary(owner,online),latest=useRef(store),ownerRef=useRef(owner),mounted=useRef(true),generation=useRef(0),input=useRef<HTMLInputElement>(null),pending=useRef(false);
  const [busy,setBusy]=useState(false),[message,setMessage]=useState('');
  latest.current=store;ownerRef.current=owner;
- useEffect(()=>{generation.current++;pending.current=false;setBusy(false);setMessage('');},[owner]);
+ useEffect(()=>{generation.current++;pending.current=false;setBusy(false);setMessage('');setPendingImport(null);},[owner,account?.epoch]);
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;generation.current++;};},[]);
- const blocked=busy||!store.ready||!!store.error;
- const saveBackup=()=>{if(blocked)return;try{const url=URL.createObjectURL(new Blob([JSON.stringify(store.backup(),null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='lantern-vocabulary-records.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);setMessage('词卡备份已生成，请确认文件已保存。');}catch{setMessage('备份无法读取，请保留浏览器数据后重试。');}};
+ const blocked=busy||pendingImport!==null||!store.ready||!!store.error||!account;
+ const saveBackup=()=>{if(!accountAccess()||blocked)return;try{const url=URL.createObjectURL(new Blob([JSON.stringify(store.backup(),null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='lantern-vocabulary-records.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);setMessage('词卡备份已生成，请确认文件已保存。');}catch{setMessage('备份无法读取，请保留浏览器数据后重试。');}};
  const restore=async(file:File|undefined)=>{
-  if(!file||blocked||pending.current)return;
-  const importingOwner=owner,token=generation.current;pending.current=true;setBusy(true);setMessage('');
-  const current=()=>mounted.current&&generation.current===token&&ownerRef.current===importingOwner;
-  try{if(file.size>20000000)throw Error('备份文件超过 20 MB。');const payload=JSON.parse(await file.text());if(!current())return;if(!latest.current.ready||latest.current.error)throw Error('词库记录暂未读入，未导入这份备份。');if(latest.current.restore(payload))setMessage('词库记录已合并，原记录已保留。');}
+  if(!file||blocked||pending.current||!account||!owner)return;
+  const importingOwner=owner,importingEpoch=account.epoch,token=generation.current;pending.current=true;setBusy(true);setMessage('');
+  const current=()=>accountAccess()&&mounted.current&&generation.current===token&&ownerRef.current===importingOwner&&accountRef.current?.epoch===importingEpoch&&accountRef.current.user.id===importingOwner;
+  try{if(file.size>20000000)throw Error('备份文件超过 20 MB。');const payload:unknown=JSON.parse(await file.text());if(!current())return;if(!latest.current.ready||latest.current.error)throw Error('词库记录暂未读入，未导入这份备份。');setPendingImport({payload,owner:importingOwner,epoch:importingEpoch,generation:token,username:account.user.username,fileName:file.name});}
   catch(error){if(current())setMessage(error instanceof Error?error.message:'导入失败，原记录已保留。');}
   finally{if(current()){pending.current=false;setBusy(false);}}
  };
- return <section className="v041-vocabulary-data" aria-label="词卡记录备份与恢复"><h2>词卡记录</h2><p>收藏与词卡反馈。{owner&&online?'联网后同步到当前账号。':'保存在当前本机分区。'}</p>{store.error&&<p role="alert">{store.error}</p>}<div className="button-row"><button type="button" className="button secondary" disabled={blocked} onClick={saveBackup}><Download size={16}/>备份词卡记录</button><button type="button" className="button secondary" disabled={blocked} onClick={()=>input.current?.click()}><Upload size={16}/>恢复词卡记录</button><button type="button" className="text-button" disabled={busy} onClick={store.retry}>重新读取</button></div><input ref={input} type="file" accept="application/json,.json" hidden disabled={blocked} aria-label="选择词库记录备份" onChange={event=>{const file=event.currentTarget.files?.[0];event.currentTarget.value='';void restore(file);}}/>{message&&<p role="status">{message}</p>}</section>;
+ const confirmImport=()=>{const selected=pendingImport;if(!selected)return;setPendingImport(null);if(!accountAccess()||!mounted.current||selected.owner!==ownerRef.current||selected.generation!==generation.current||selected.epoch!==accountRef.current?.epoch||selected.owner!==accountRef.current?.user.id||selected.username!==accountRef.current?.user.username){setMessage('账号已变化，请重新选择备份。');return;}try{if(latest.current.restore(selected.payload))setMessage('词卡记录已导入当前账号，原记录已保留。');}catch{setMessage('备份格式无效，原记录保留。');}};
+ return <section className="v041-vocabulary-data" aria-label="词卡记录备份与恢复"><h2>词卡记录</h2><p>收藏与词卡反馈。{owner&&online?'联网后同步到当前账号。':owner?'保存在本机当前账号下。':'保存在本机。'}</p>{store.error&&<p role="alert">{store.error}</p>}<div className="button-row"><button type="button" className="button secondary" disabled={blocked} onClick={saveBackup}><Download size={16}/>备份词卡记录</button><button type="button" className="button secondary" disabled={blocked} onClick={()=>input.current?.click()}><Upload size={16}/>恢复词卡记录</button><button type="button" className="text-button" disabled={busy} onClick={store.retry}>重新读取</button></div>{pendingImport&&<section role="alertdialog" aria-label="确认本人词库备份" style={{display:'grid',gap:10,paddingTop:16,fontSize:'1rem',lineHeight:1.6,overflowWrap:'anywhere'}}><h3 style={{fontSize:'1.2rem'}}>导入词卡记录</h3><p style={{fontSize:'1rem'}}>当前账号：<strong>{pendingImport.username}</strong></p><p style={{overflowWrap:'anywhere',fontSize:'1rem'}}>文件：<strong>{pendingImport.fileName}</strong></p><p style={{fontSize:'1rem'}}>这份备份未绑定账号。请确认它属于你，并导入到账号 {pendingImport.username}。</p><div className="button-row"><button type="button" style={{fontSize:'1rem'}} className="button primary" onClick={confirmImport}>确认导入</button><button type="button" style={{fontSize:'1rem'}} className="button secondary" onClick={()=>setPendingImport(null)}>取消</button></div></section>}<input ref={input} type="file" accept="application/json,.json" hidden disabled={blocked} aria-label="选择词库记录备份" onChange={event=>{const file=event.currentTarget.files?.[0];event.currentTarget.value='';void restore(file);}}/>{message&&<p role="status">{message}</p>}</section>;
 }

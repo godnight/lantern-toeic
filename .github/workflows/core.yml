@@ -31,21 +31,45 @@ jobs:
           python3 -B test_verify_request.py
           python3 -B -m unittest test_entrypoint test_signed_payload
       - uses: actions/setup-node@v7
-        if: steps.scope.outputs.ui == 'true' || steps.scope.outputs.theme_web == 'true' || steps.scope.outputs.full == 'true'
+        if: steps.scope.outputs.ui == 'true' || steps.scope.outputs.theme_web == 'true' || steps.scope.outputs.vocabulary_ui == 'true' || steps.scope.outputs.full == 'true'
         with:
           node-version: '22'
           cache: npm
       - name: Install dependencies for affected UI or browser checks
-        if: steps.scope.outputs.ui == 'true' || steps.scope.outputs.theme_web == 'true'
+        if: steps.scope.outputs.ui == 'true' || steps.scope.outputs.theme_web == 'true' || steps.scope.outputs.vocabulary_ui == 'true'
         run: npm ci --no-audit --no-fund
-      - name: Check presentation UI types and component contracts
+      - name: Check affected presentation types
+        if: steps.scope.outputs.ui == 'true' || steps.scope.outputs.vocabulary_ui == 'true'
+        run: npm run typecheck
+      - name: Check presentation UI component contracts
         if: steps.scope.outputs.ui == 'true'
         run: |
-          npm run typecheck
           node --test tests/ui-redesign-owner-shell.test.cjs tests/ui-redesign-hook-contract.test.cjs tests/theme-atmosphere.test.cjs
           node --test --test-name-pattern='daily|practicing other Parts' tests/repo-review-regressions.test.cjs
+      - name: Check the affected word-card presentation
+        if: steps.scope.outputs.vocabulary_ui == 'true'
+        run: |
+          node --test tests/phase2-vocabulary-ui.test.cjs
+      - name: Install Chromium for the affected word card
+        if: steps.scope.outputs.vocabulary_ui == 'true'
+        run: node node_modules/playwright/cli.js install --with-deps chromium
+      - name: Verify word-card references and narrow/enlarged reading
+        if: steps.scope.outputs.vocabulary_ui == 'true'
+        env:
+          LANTERN_WORDCARD_QA_DIR: ${{ runner.temp }}/lantern-word-card-reference-qa
+        run: node tests/browser/word-card-layout.cjs --reference-only
+      - name: Retain affected word-card QA evidence
+        if: always() && steps.scope.outputs.vocabulary_ui == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: word-card-reference-qa-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/lantern-word-card-reference-qa/result.json
+            ${{ runner.temp }}/lantern-word-card-reference-qa/*.png
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Install Chromium for the changed Web theme test
-        if: steps.scope.outputs.theme_web == 'true'
+        if: steps.scope.outputs.theme_web == 'true' && steps.scope.outputs.vocabulary_ui != 'true'
         run: node node_modules/playwright/cli.js install --with-deps chromium
       - name: Verify the changed Web theme browser test
         if: steps.scope.outputs.theme_web == 'true'

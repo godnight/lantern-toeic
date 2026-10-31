@@ -5,6 +5,7 @@ import { BusinessError, systemDateTime } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { NativeDownloads } from '../NativeDownloads';
 import { NativeAuthHost } from '../auth/NativeAuthHost';
+import { SpeakingMediaHost } from '../media/SpeakingMediaHost';
 
 // This is an intercepted local origin. No server or certificate is required.
 const APP_ORIGIN: string = 'https://lantern.local';
@@ -515,6 +516,7 @@ struct Index {
   private controller: webview.WebviewController = new webview.WebviewController();
   private downloads: NativeDownloads | undefined = undefined;
   private authHost: NativeAuthHost | undefined = undefined;
+  private speakingMedia: SpeakingMediaHost | undefined = undefined;
   private attached: boolean = false;
   private alive: boolean = false;
   private documentGeneration: number = 0;
@@ -534,6 +536,8 @@ struct Index {
   }
 
   aboutToDisappear(): void {
+    this.speakingMedia?.dispose();
+    this.speakingMedia = undefined;
     this.authHost?.dispose();
     this.authHost = undefined;
     this.alive = false;
@@ -584,6 +588,7 @@ struct Index {
   }
 
   private invalidateBridge(): void {
+    this.speakingMedia?.invalidate();
     this.bridgeReady = false;
     this.bridgeSequence++;
     if (this.bridgeRetryTimer !== -1) {
@@ -705,6 +710,10 @@ struct Index {
         { headerKey: 'Accept-Ranges', headerValue: 'bytes' },
         { headerKey: 'Content-Length', headerValue: String(selected.length) }
       ];
+      if (path === 'web/index.html') {
+        headers.push({ headerKey: 'Content-Security-Policy',
+          headerValue: "frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'" });
+      }
       if (selected.contentRange !== '') {
         headers.push({ headerKey: 'Content-Range', headerValue: selected.contentRange });
       }
@@ -968,10 +977,18 @@ struct Index {
         .mediaPlayGestureAccess(true)
         .onControllerAttached(() => {
           this.attached = true;
+          this.speakingMedia?.dispose();
+          this.speakingMedia = undefined;
           this.authHost?.dispose();
           this.authHost = new NativeAuthHost(this.controller,
             () => this.alive && this.foreground && this.pageReady && this.isTrustedDocument());
           if (!this.authHost.attach()) this.authHost = undefined;
+          if (this.authHost !== undefined) {
+            this.speakingMedia = new SpeakingMediaHost(this.controller, () => this.context(),
+              () => this.alive && this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
+              this.authHost.trustedOwnerProvider());
+            if (!this.speakingMedia.attach()) { this.speakingMedia.dispose(); this.speakingMedia = undefined; }
+          }
           this.downloads?.invalidate();
           this.downloads = new NativeDownloads(() => this.context(),
             () => this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),

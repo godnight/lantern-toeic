@@ -155,6 +155,14 @@ export async function sessionAction(request:Request,action:'read'|'logout',env:A
  if(action==='logout'&&!sameOriginMutation(request,config.origin))return authJson({code:'invalid-origin',error:'请求来源不匹配'},403);
  try{
   if(action==='read'){
+   if(request.headers.get('X-Lantern-Session-Proof')==='2'){
+    const token=sessionToken(request.headers);
+    const row=token?await config.db.prepare(`SELECT u.id,u.username,s.expires_at AS expiresAt FROM auth_sessions s JOIN auth_users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>?`).bind(digest(token),Date.now()).first<ProductIdentity&{expiresAt:number}>():null;
+    const remainingMs=row?Math.floor(row.expiresAt-Date.now()):0;
+    if(!row||!/^usr_[0-9a-f-]{36}$/.test(row.id)||!Number.isSafeInteger(remainingMs)||remainingMs<=0||remainingMs>SESSION_SECONDS*1000)return denied();
+    const response=authJson({user:{id:row.id,username:row.username},capabilities,session:{version:2,remainingMs}});
+    response.headers.set('Vary','Cookie, X-Lantern-Session-Proof');return response;
+   }
    const user=await readProductIdentity(request.headers,env);return user?authJson({user,capabilities}):denied();
   }
   const token=sessionToken(request.headers);

@@ -1,5 +1,13 @@
 # 当前项目状态
 
+2026-10-31：词卡整改在独立分支feat/vocab-card-correction-20261031完成，来自6798ccf，已纳入f437e85测试only后继。新词采用项目固定打散策略（非词频/难度断言），复习规则与已开始队列不变；已保存“认识”的当前/上一词可改为忘记，原事实保留、SRS按原复习时间修正且不多计学习；上一词仅回看不退持久游标。词卡rating spinner移除，保存锁/失败重试保留。类型、改判13项、相关回归、UI25项、词库/API21项及实际Shared核心6项通过；原测试夹具失败保留。未改账号/原生/版本或触设备/签装/部署，合入20065和最终包验证由集成者完成。新备份含更正时为v2，新客户端读v1；旧客户端/旧API不支持新更正类型，不能声称双向旧版兼容。
+
+2026-10-31：普通练习跨任务续练已完成开发交件，基线bb1571b12c9bb40f589fd2de849d8052dd0961ef；实际构建产品源c2fc9bf2423b3632e61bc4e1c7df548c4bc78c6d，分支feat/practice-task-resume-20261031。领域130项、返回及相邻UI45项、实际Shared/Web各19项、SSR1项、类型和两端构建通过。原QA§16与设计独立复核待执行；无HAP/手机/签装/推送/部署。精确交件和原始失败统一见项目组internal-beta-20261028/UI-IMPLEMENTATION.md本轮段落及practice-task-resume-20261031/candidate.json；旧runtime buildId不冒称本轮指纹。
+
+2026-10-30（Asia/Shanghai）：本地测试候选版本元数据更新为 **0.4.6 / 20062**，分支 `feat/beta-version-20062-20261030`，精确父提交 `f2024affe3935968a3f6cf0d7e812366d978278d`。仅同步 AppScope、三个 package、两个 lock 根节点及当前 release/runtime 版本；依赖、业务、UI、ETS 和内容与 f202 相同，继承其限定本地功能 QA（项目组 `speaking-noise-20261028/PERFORMANCE-BASELINE.md` 第464行），此次只做版本一致性与差异断言。`public/build-identity.json` 的 buildId、sourceInputsSha256、inputCount 保留旧20061指纹，不代表本候选新冻结身份；现有 Shared 仍为 f202 原制品。未构建20062二进制，未签装、推送或发布；整体性能、真实设备、录音音质与认证部署仍开放。
+
+以下为2026-10-24历史交付记录，不代表本候选发布状态。
+
 更新：2026-10-24；发布方式见 [分级验证与发布](RELEASE_POLICY.md)。
 
 | 项目 | 当前事实 |

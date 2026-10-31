@@ -121,19 +121,21 @@ export class LearningDomainRepository {
   if(!validId(id))throw new DomainRepositoryError('corrupt');return this.transaction('readonly',async tx=>{const row=await this.receipt(tx,id);return row?externalCommand(row):undefined;});
  }
  async getReceipt(id:string):Promise<DomainCommitReceipt|undefined>{const row=await this.readCommand(id);return row?.provenance==='local'?row.receipt:undefined;}
- async commit(input:DomainCommit):Promise<DomainCommitResult>{
+ async commit(input:DomainCommit,guard?:()=>void):Promise<DomainCommitResult>{
   try{
+   guard?.();
    const command=parseCommand(input),canonicalPayload=canonicalJson(command),payloadHash=canonicalHash(canonicalPayload);
    return await this.transaction('readwrite',async tx=>{
     // A durable replay must win over the now-stale expectedRevision check.
-    const old=await this.receipt(tx,command.commandId);
+    const old=await this.receipt(tx,command.commandId);guard?.();
     if(old){if(old.canonicalPayload!==canonicalPayload)return {status:'conflict',reason:'payload'};if(old.provenance!=='local')return {status:'blocked',reason:'reference-unverified'};return {status:'replayed',receipt:old.receipt};}
     for(const expected of command.expected){const oldRow=await this.row(tx,expected.collection,expected.id);if(oldRow?.provenance==='restored-unverified')return {status:'blocked',reason:'reference-unverified'};if((oldRow?.revision??null)!==expected.revision)return {status:'conflict',reason:expected.collection==='events'?'event':'revision',collection:expected.collection,id:expected.id};}
     await this.capacity(tx,command.writes.filter(write=>command.expected.some(expected=>expected.collection===write.collection&&expected.id===write.id&&expected.revision===null)).length,1);
+    guard?.();
     const receipt:DomainCommitReceipt={commandId:command.commandId,payloadHash,eventIds:command.writes.filter(row=>row.collection==='events').map(row=>row.id),revisions:command.writes.map(({collection,id,revision})=>({collection,id,revision})),durableAt:new Date().toISOString()};
-    for(const write of command.writes){const {collection:name,id,revision,value}=write;await request(tx.objectStore(name).put({scopeKey:this.scopeKey,schemaVersion:1,id,revision,value,canonicalValue:canonicalJson(value),provenance:'local'} satisfies StoredRow));}
-    await request(tx.objectStore('receipts').add({scopeKey:this.scopeKey,id:command.commandId,schemaVersion:1,command,canonicalPayload,payloadHash,receipt,provenance:'local'} satisfies StoredCommand));
-    return {status:'committed',receipt};
+    for(const write of command.writes){guard?.();const {collection:name,id,revision,value}=write;await request(tx.objectStore(name).put({scopeKey:this.scopeKey,schemaVersion:1,id,revision,value,canonicalValue:canonicalJson(value),provenance:'local'} satisfies StoredRow));}
+    guard?.();await request(tx.objectStore('receipts').add({scopeKey:this.scopeKey,id:command.commandId,schemaVersion:1,command,canonicalPayload,payloadHash,receipt,provenance:'local'} satisfies StoredCommand));
+    guard?.();return {status:'committed',receipt};
    });
   }catch(error){return {status:'blocked',reason:failure(error)};}
  }

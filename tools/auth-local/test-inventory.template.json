@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "platform": "sites",
+  "accountId": "",
+  "observedAt": "",
+  "evidenceKind": "platform-readonly-review",
+  "evidenceRefs": [],
+  "projects": [
+    {"id": "appgprj_6a9e270c912c8191b5983b0f4cb42089", "accountId": "", "name": "", "purpose": "production", "hostname": "lantern-toeic-godnight.zhuangzeliang.chatgpt.site", "databaseId": "", "databaseBinding": "DB"},
+    {"id": "", "accountId": "", "name": "", "purpose": "isolated-auth-test", "hostname": "", "databaseId": "", "databaseBinding": "DB"}
+  ],
+  "databases": [
+    {"id": "", "accountId": "", "name": "", "purpose": "production", "projectIds": ["appgprj_6a9e270c912c8191b5983b0f4cb42089"]},
+    {"id": "", "accountId": "", "name": "", "purpose": "isolated-auth-test", "projectIds": []}
+  ]
+}

@@ -1,0 +1,40 @@
+.lp-dialog{width:min(720px,calc(100vw - 24px));max-width:720px;max-height:calc(100dvh - 24px - env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;font-size:1rem;}
+.lp-dialog-header{display:flex;align-items:center;gap:12px;text-align:left;}
+.lp-dialog-header>div{min-width:0;flex:1;}.lp-dialog-header h2{font-size:1.35rem;line-height:1.4;}
+.lp-back{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border-radius:8px;flex-shrink:0;}
+.lp-overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+.lp-overview-card{display:flex;flex-direction:column;min-width:0;padding:18px;border:1px solid var(--border);border-radius:14px;background:var(--card);}
+.lp-overview-card h3{font-size:1.125rem;margin:0 0 6px;}.lp-overview-card p{margin:4px 0;line-height:1.5;overflow-wrap:anywhere;}
+.lp-overview-card small,.lp-scope{color:var(--muted-foreground);line-height:1.6;}
+.lp-overview-actions{margin-top:auto;padding-top:4px;}.lp-overview-actions .lp-scope{font-size:.875rem;}
+.lp-overview-card button{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;margin-top:4px;text-align:left;color:var(--primary);gap:10px;}
+.lp-editor{min-width:0;}.lp-editor h2{font-size:1.25rem;margin:0 0 16px;}.lp-editor fieldset{min-width:0;}
+.lp-dialog .lp-editor>h2{display:none;}
+.lp-dialog .lp-editor legend{font-size:1rem;}
+.lp-dialog .lp-editor .phase2-plan-estimate,.lp-dialog .lp-editor .phase2-vocab-note,.lp-dialog .lp-editor .field small{font-size:.875rem;line-height:1.6;}
+.lp-dialog .lp-editor .phase2-plan-estimate b,.lp-dialog .lp-editor .phase2-plan-estimate p{font-size:inherit;}
+.lp-editor .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.lp-editor .field{min-width:0;margin:0 0 16px;}.lp-editor .field input,.lp-editor .field select{width:100%;max-width:100%;min-height:44px;font-size:1rem;}
+.lp-editor .field,.lp-editor legend,.lp-editor summary,.lp-editor .button,.lp-save-notice,.lp-save-notice button,.lp-exit-prompt,.lp-exit-prompt button{font-size:1rem;line-height:1.5;}
+.lp-editor .v041-plan-books>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr));gap:8px;margin:10px 0 16px;}
+.lp-editor .v041-plan-books label{display:flex;align-items:center;gap:8px;min-width:0;min-height:44px;padding:10px;border:1px solid var(--border);border-radius:8px;}
+.lp-editor .v041-plan-books span{overflow-wrap:anywhere;}
+.lp-editor button,.lp-editor summary{min-width:44px;min-height:44px;white-space:normal;}
+.lp-editor .button-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}
+.lp-editor .button-row .button{flex:1;min-width:min(100%,8rem);}
+.lp-editor-actions{display:flex;flex-wrap:wrap;align-items:stretch;justify-content:flex-start;gap:8px;width:min(100%,16rem);margin:20px 0 0 auto;}
+.lp-editor .lp-editor-actions>.button{min-height:48px;min-width:min(100%,6rem);margin:0;}
+.lp-editor-actions>.lp-return{flex:0 1 6rem;background:transparent;border-color:transparent;box-shadow:none;color:var(--muted-foreground);}
+.lp-editor-actions>.lp-save{flex:1 1 8rem;min-width:min(100%,8rem);}
+.lp-editor .field .lp-field-error{display:block;color:var(--destructive);font-size:.875rem;line-height:1.5;margin-top:6px;}
+.lp-timezone-field>label{display:flex;flex-direction:column;gap:8px;}
+.lp-editor-more{margin:14px 0;}.lp-editor-more>summary{display:flex;align-items:center;cursor:pointer;gap:8px;}
+.lp-editor-more[open]>summary{margin-bottom:14px;}
+.lp-exit-prompt,.lp-save-notice{margin:16px 0;padding:14px;border:1px solid var(--border);border-radius:10px;line-height:1.6;overflow-wrap:anywhere;}
+.lp-save-notice p{margin:6px 0;}.lp-editor .phase2-weekday-picker{display:grid;grid-template-columns:repeat(auto-fit,minmax(max(44px,3rem),1fr));gap:8px;}
+.lp-editor .phase2-weekday-picker label{min-width:44px;min-height:44px;}
+.lp-editor .phase2-weekday-picker span{font-size:.875rem;}
+.v040-word-task .lp-plan-entry{min-height:44px;min-width:44px;font-size:.875rem;display:flex;align-items:center;gap:4px;color:var(--primary);padding:8px 2px;white-space:normal;}
+.v040-word-task .phase2-vocab-heading{flex-wrap:wrap;}
+.lp-dialog :focus-visible{outline:2px solid var(--ring);outline-offset:3px;}
+@media(max-width:600px){.lp-overview-grid,.lp-editor .form-grid{grid-template-columns:1fr;}.lp-dialog{padding:18px;}.lp-overview-card{padding:14px;}}
