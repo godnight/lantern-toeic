@@ -62,10 +62,10 @@ test('lost legacy response retains pending intent; explicit retry reads the orig
 test('unreadable journal blocks analysis and next even if a write could have succeeded',async()=>{
  const {value,facts}=await setup(),id=await start(value);facts.state.readError=true;assert.equal((await value.submit(id,0,5,0)).status,'pending');assert.equal(facts.state.attemptWrites,0);assert.equal((await session(value,id)).steps[0].attempt,null);facts.state.readError=false;assert.equal((await value.submit(id,0,6,0)).status,'applied');value.close();
 });
-test('two real IDB connections starting together share one active session pointer',async()=>{
+test('two real IDB connections preserve different unfinished tasks',async()=>{
  const a=await setup(),b=await setup({factory:a.factory,facts:a.facts});
  const results=await Promise.all([a.value.start([questions[0]],{unitIds:['question:a']}),b.value.start([questions[1]],{unitIds:['question:b']})]);
- assert.equal(results.filter(result=>result.status==='started').length,1);assert.equal(results.filter(result=>result.status==='restored').length,1);assert.equal(results[0].sessionId,results[1].sessionId);assert.equal((await a.value.readProjection()).sessions.length,1);a.value.close();b.value.close();
+ assert.equal(results.filter(result=>result.status==='started').length,2);assert.notEqual(results[0].sessionId,results[1].sessionId);assert.equal((await a.value.readProjection()).sessions.length,2);a.value.close();b.value.close();
 });
 test('two tabs submitting different choices freeze one original intent and one legacy fact',async()=>{
  const a=await setup(),id=await start(a.value),b=await setup({factory:a.factory,facts:a.facts});
@@ -91,7 +91,7 @@ test('IDB abort after legacy write keeps a pending answer; retry applies the sam
 test('completing a group releases active pointer and preserves the old unsettled draft while continuing',async()=>{
  const {value}=await setup(),id=await start(value);await complete(value,id);await value.updateSettlementDraft(id,draft);
  const first=await session(value,id),nextId=await start(value,[questions[1]],{chainId:first.chainId});assert.notEqual(id,nextId);assert.equal((await value.readProjection()).activeSessionId,nextId);assert.equal((await value.readProjection()).pendingSettlements[0].id,id);assert.deepEqual(plain((await session(value,id)).settlement.draft),draft);
- assert.equal((await value.start([questions[0]],{unitIds:['question:a'],chainId:first.chainId})).status,'restored');await value.leave(nextId);assert.equal((await value.start([questions[0]],{unitIds:['question:a'],chainId:first.chainId})).reason,'practice-chain-unit-repeated');value.close();
+ assert.equal((await value.start([questions[0]],{unitIds:['question:a'],chainId:first.chainId})).reason,'practice-chain-unit-repeated');await value.leave(nextId);assert.equal((await value.start([questions[0]],{unitIds:['question:a'],chainId:first.chainId})).reason,'practice-chain-unit-repeated');value.close();
 });
 test('settlement freezes one manual Checkin, never adds answer seconds, and survives lost response/restart',async()=>{
  const {value,facts,factory}=await setup(),id=await start(value);await complete(value,id);await value.updateSettlementDraft(id,draft);facts.state.checkinMode='throw-after';

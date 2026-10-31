@@ -3,15 +3,15 @@ import {useLearningAccess} from './learning-access';
 import type {TrainingWrite} from './practice-training';
 import {useEffect,useRef,useState} from 'react';
 import {workflowScopeKey,type WorkflowScope} from './learning-domain-repository';
-import {createPracticeWorkflow,practiceCatalogVersion,type PracticeLegacy,type PracticeProjection,type PracticeResult,type PracticeSession,type PracticeSettlementDraft,type PracticeStartOptions,type PracticeWorkflow} from './practice-workflow';
-import type {Attempt,Question} from './study-model';
+import {createPracticeWorkflow,practiceCatalogVersion,type PracticeLegacy,type PracticeProjection,type PracticeResult,type PracticeSession,type PracticeSettlementDraft,type PracticeStartOptions,type PracticeRestartOptions,type PracticeWorkflow} from './practice-workflow';
+import {createId,type Attempt,type Question} from './study-model';
 
 export type PracticeWorkflowHookOptions={owner:string|null;nativeMode:boolean;ready:boolean;timezone:string;questions:readonly Question[];compatibleQuestionCatalogs?:readonly (readonly Question[])[];attempts?:readonly Attempt[];legacy:PracticeLegacy};
 export type PracticeWorkflowController={
  scopeKey:string;ready:boolean;error:string;busy:boolean;session:PracticeSession|null;sessions:PracticeSession[];pendingSettlements:PracticeSession[];
  start:(queue:readonly Question[],options:PracticeStartOptions)=>Promise<PracticeResult>;
  resume:(id:string)=>Promise<PracticeResult>;submit:(choice:number,seconds:number,expectedCursor?:number)=>Promise<PracticeResult>;next:(expectedCursor?:number)=>Promise<PracticeResult>;
- closeView:()=>Promise<PracticeResult>;leave:(id?:string)=>Promise<PracticeResult>;
+ closeView:(expectedId?:string)=>Promise<PracticeResult>;restart:(id:string,options:PracticeRestartOptions)=>Promise<PracticeResult>;leave:(id?:string)=>Promise<PracticeResult>;
  updateTraining:(write:TrainingWrite)=>Promise<PracticeResult>;
  updateSettlementDraft:(id:string,draft:PracticeSettlementDraft)=>Promise<PracticeResult>;settle:(id:string,draft?:PracticeSettlementDraft)=>Promise<PracticeResult>;refresh:()=>Promise<void>;
 };
@@ -24,6 +24,8 @@ export function usePracticeWorkflow(options:PracticeWorkflowHookOptions):Practic
  const generation=useRef(0),requestId=useRef(0),operationCount=useRef(0),operationTail=useRef<Promise<void>>(Promise.resolve()),readable=useRef(false);
  const service=useRef<{key:string;generation:number;value:PracticeWorkflow}|null>(null),notify=useRef<(()=>void)|null>(null);
  const [snapshot,setSnapshot]=useState<Snapshot>({key,ready:false,error:'',projection:null}),[visible,setVisible]=useState<{key:string;id:string|null}>({key,id:null}),[busy,setBusy]=useState(false),[initializationAttempt,setInitializationAttempt]=useState(0);
+ const visibleRef=useRef(visible);visibleRef.current=visible;
+ const creations=useRef(new Map<string,{requestId:string;promise?:Promise<PracticeResult>}>());
  const current=snapshot.key===key&&canRead()?snapshot:{key,ready:false,error:'',projection:null};
  const session=(visible.key===key&&visible.id?current.projection?.sessions.find(item=>item.id===visible.id):null)??null;
  async function refreshSnapshot(){
@@ -79,13 +81,23 @@ export function usePracticeWorkflow(options:PracticeWorkflowHookOptions):Practic
   generation.current++;requestId.current++;readable.current=false;service.current?.value.close();service.current=null;
   setSnapshot(previous=>({key,ready:false,error:'',projection:previous.key===key?previous.projection:null}));setInitializationAttempt(attempt=>attempt+1);
  }
+ async function start(queue:readonly Question[],startOptions:PracticeStartOptions):Promise<PracticeResult>{
+  const signature=JSON.stringify([key,generation.current,startOptions.task??null,startOptions.mode??'resume-or-create',startOptions.chainId??null,queue.map(q=>q.id)]);
+  let intent=creations.current.get(signature);if(intent?.promise)return intent.promise;
+  if(!intent){intent={requestId:startOptions.requestId??createId()};creations.current.set(signature,intent);}
+  const frozen=intent,promise=run(value=>value.start(queue,{...startOptions,requestId:frozen.requestId}),true);frozen.promise=promise;
+  const result=await promise;
+  if(['started','restored','replayed'].includes(result.status))creations.current.delete(signature);else frozen.promise=undefined;
+  return result;
+ }
+ const renderedService=service.current;
  const noSession=():PracticeResult=>({status:'blocked',reason:'practice-session-not-visible'});
  return {
   scopeKey:key,ready:current.ready&&options.ready,error:current.error,busy,session,sessions:current.projection?.sessions??[],pendingSettlements:current.projection?.pendingSettlements??[],
-  start:(queue,start)=>run(value=>value.start(queue,start),true),resume:id=>run(value=>value.resume(id),true),
+  start,restart:(id,options)=>run(value=>value.restart(id,options),true),resume:id=>run(value=>value.resume(id),true),
   submit:(choice,seconds,cursor=session?.cursor)=>session&&cursor!==undefined?run(value=>value.submit(session.id,choice,seconds,cursor)):Promise.resolve(noSession()),
   next:(cursor=session?.cursor)=>session&&cursor!==undefined?run(value=>value.next(session.id,cursor)):Promise.resolve(noSession()),
-  closeView:async()=>{const id=session?.id??'';setVisible({key,id:null});return {status:'closed',sessionId:id};},
+  closeView:async(expectedId=session?.id)=>{if(!accountAccess()||service.current!==renderedService||activeKey.current!==key||visibleRef.current.key!==key||visibleRef.current.id!==expectedId)return {status:'blocked',reason:'scope-changed'};const id=expectedId??'';setVisible({key,id:null});return {status:'closed',sessionId:id};},
   leave:(id=session?.id)=>id?run(value=>value.leave(id)):Promise.resolve(noSession()),
   updateTraining:write=>session?run(value=>value.updateTraining(session.id,write)):Promise.resolve(noSession()),
   updateSettlementDraft:(id,draft)=>run(value=>value.updateSettlementDraft(id,draft)),settle:(id,draft)=>run(value=>value.settle(id,draft)),refresh,
