@@ -8,7 +8,9 @@ const ready={status:'ready',user:null,capabilities:{passwordLogin:true,phoneLogi
 const props={onSubmit:async()=>{},onRecheck(){},onLogout(){},onEnter(){}};
 test('field failures identify the first invalid field without changing credential rules',()=>{
  assert.equal(identity.validateProductCredentials('坏名','x'.repeat(15),'x'.repeat(15)).field,'username');
- assert.equal(identity.validateProductCredentials('learner','x'.repeat(14),'x'.repeat(14)).field,'password');
+ assert.equal(identity.validateProductCredentials('learner','x'.repeat(7),'x'.repeat(7)).field,'password');
+ for(const length of [8,15,128])assert.equal(identity.validateProductCredentials('learner','x'.repeat(length),'x'.repeat(length)).ok,true);
+ assert.equal(identity.validateProductCredentials('learner','x'.repeat(129)).field,'password');
  assert.equal(identity.validateProductCredentials('learner','x'.repeat(15),'y'.repeat(15)).field,'confirmation');
  assert.deepEqual({...identity.validateProductCredentials(' Learner ',' '.repeat(15),' '.repeat(15)).credentials},{username:'learner',password:' '.repeat(15)});
 });

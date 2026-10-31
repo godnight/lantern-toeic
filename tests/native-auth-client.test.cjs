@@ -48,6 +48,50 @@ function controller(options={}){
 }
 async function initial(h,value=session(A)){h.value.start();h.reply(0,value);await tick();return h.value.getSnapshot();}
 
+test('register/login navigation succeeds only after the independent live session proof',async()=>{
+ for(const action of ['register','login']){
+  const h=controller();
+  try{
+   await initial(h,guest);let settled=false;
+   const pending=h.value.mutate(action,credentials).then(result=>{settled=true;return result;});
+   h.reply(1,{status:200,body:{user:A,capabilities:caps}});await tick();
+   assert.equal(settled,false,'Mutation JSON alone must not permit navigation');
+   assert.equal(h.value.getSnapshot().status,'checking');assert.equal(h.calls[2].version,2);
+   h.reply(2,session(B));assert.equal(await pending,true);
+   const state=h.value.getSnapshot();assert.equal(state.user.id,B.id);assert.equal(state.access.owner,B.id);assert(state.access.canAccess());
+  }finally{h.value.dispose();}
+ }
+});
+
+test('rejected credentials cannot report navigation success through a valid old account',async()=>{
+ const h=controller();
+ try{
+  const previous=await initial(h);const pending=h.value.mutate('login',credentials);
+  h.reply(1,{status:401,body:{code:'invalid-credentials'}});await tick();h.reply(2,session(A));
+  assert.equal(await pending,false);assert.equal(h.value.getSnapshot().user.id,A.id);
+  assert.equal(previous.access.canAccess(),false);assert(h.value.getSnapshot().access.canAccess());
+ }finally{h.value.dispose();}
+});
+
+test('missing, invalid, unknown or superseded confirmation cannot report navigation success',async()=>{
+ for(const proof of [guest,{status:200,body:{user:B,capabilities:caps}},{status:503,body:{code:'auth-state-unknown'}}]){
+  const h=controller();
+  try{await initial(h,guest);const pending=h.value.mutate('login',credentials);h.reply(1,{status:200,body:{ok:true}});await tick();h.reply(2,proof);assert.equal(await pending,false);}finally{h.value.dispose();}
+ }
+ const h=controller();
+ try{
+  await initial(h,guest);const pending=h.value.mutate('login',credentials);h.reply(1,{status:200,body:{ok:true}});await tick();
+  h.value.suspend();assert.equal(await pending,false);h.reply(2,session(B));await tick();assert.equal(h.value.getSnapshot().status,'blocked');
+ }finally{h.value.dispose();}
+});
+
+test('logout success requires independently confirmed absence of the session',async()=>{
+ for(const proof of [guest,session(A)]){
+  const h=controller();
+  try{await initial(h);const pending=h.value.mutate('logout');h.reply(1,{status:200,body:{ok:true}});await tick();h.reply(2,proof);assert.equal(await pending,proof===guest);}finally{h.value.dispose();}
+ }
+});
+
 test('v2 old-host silence and missing metadata fail closed without fallback',async()=>{
  const old=controller();old.value.start();assert.equal(old.calls[0].version,2);old.timer.advance(15000);await tick();assert.equal(old.value.getSnapshot().status,'blocked');assert.equal(old.calls.length,1);old.value.dispose();
  const missing=controller();missing.value.start();missing.reply(0,{status:200,body:{user:A,capabilities:caps}});await tick();assert.equal(missing.value.getSnapshot().status,'blocked');missing.value.dispose();
@@ -101,7 +145,7 @@ test('credential rules preserve password whitespace and count Unicode code point
   assert.deepEqual(plain(valid.credentials),{username:'user_name',password:' '.repeat(15)});
   assert.equal(identity.validateProductCredentials('user','😀'.repeat(15)).ok,true);
   for(const args of [['用户_abc','x'.repeat(20)],['user\u00a0','x'.repeat(20)],['ab','x'.repeat(20)],['a'.repeat(33),'x'.repeat(20)],
-    ['user','x'.repeat(14)],['user','😀'.repeat(129)],['user','x'.repeat(15),'X'.repeat(15)]])
+    ['user','x'.repeat(7)],['user','😀'.repeat(129)],['user','x'.repeat(15),'X'.repeat(15)]])
     assert.equal(identity.validateProductCredentials(...args).ok,false);
 });
 

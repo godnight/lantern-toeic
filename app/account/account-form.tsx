@@ -19,5 +19,14 @@ export default function AccountForm({initialMode='register',returnOwner=null}:{i
  const panelState:NativeAccountState=state.status==='ready'&&state.user&&!state.access.canAccess()?{status:'blocked',message:'会话有效期已结束，原分区已锁定。请联网重新核对账号。'}:state;
  const enter=()=>{if(state.status==='ready'&&state.user&&controller.current?.getSnapshot()===state&&state.access.owner===state.user.id&&state.access.assertAccess())window.location.assign('/');};
  const canReturn=state.status==='ready'&&!!state.user&&state.user.id===returnOwner&&state.access.owner===returnOwner&&state.access.canAccess();
- return <AccountPanel state={panelState} initialMode={initialMode} onSubmit={async(mode,credentials)=>{mutating.current=true;try{await controller.current?.mutate(mode,credentials);}finally{mutating.current=false;}}} onLogout={()=>{mutating.current=true;void controller.current?.mutate('logout').finally(()=>{mutating.current=false;});}} onRecheck={()=>{explicit.current=true;setAuthResultHold(false,false,false);controller.current?.recheck();}} onEnter={enter} onBack={canReturn?enter:undefined}/>;
+ const submit=async(mode:'register'|'login',credentials:{username:string;password:string})=>{
+  const active=controller.current;if(!active)return;
+  mutating.current=true;
+  try{
+   if(!await active.mutate(mode,credentials)||controller.current!==active||authResultHeld())return;
+   const confirmed=active.getSnapshot();
+   if(confirmed.status==='ready'&&confirmed.user&&confirmed.access.owner===confirmed.user.id&&confirmed.access.assertAccess())window.location.assign('/');
+  }finally{mutating.current=false;}
+ };
+ return <AccountPanel state={panelState} initialMode={initialMode} onSubmit={submit} onLogout={()=>{mutating.current=true;void controller.current?.mutate('logout').finally(()=>{mutating.current=false;});}} onRecheck={()=>{explicit.current=true;setAuthResultHold(false,false,false);controller.current?.recheck();}} onEnter={enter} onBack={canReturn?enter:undefined}/>;
 }

@@ -26,9 +26,16 @@ export default function NativeAccountRoot(){
  },[]);
  const canReturn=accountOpen&&state.status==='ready'&&!!state.user&&state.user.id===returnOwner&&state.access.owner===returnOwner&&state.access.canAccess();
  const enter=()=>{if(state.status!=='ready'||!state.user||controller.current?.getSnapshot()!==state||state.access.owner!==state.user.id||!state.access.assertAccess())return false;setAccountOpen(false);return true;};
+ const submit=async(mode:'register'|'login',credentials:{username:string;password:string})=>{
+  const active=controller.current;if(!active)return;
+  setAccountOpen(true);
+  if(!await active.mutate(mode,credentials)||controller.current!==active)return;
+  const confirmed=active.getSnapshot();
+  if(confirmed.status==='ready'&&confirmed.user&&confirmed.access.owner===confirmed.user.id&&confirmed.access.assertAccess())setAccountOpen(false);
+ };
  useEffect(()=>registerNativeBack(()=>{if(legacy){setLegacy(false);return true;}return canReturn?enter():false;},100),[canReturn,state,legacy]);
  if(legacy)return <GuestDataRecovery nativeMode onBack={()=>setLegacy(false)}/>;
  if(state.status==='ready'&&state.user&&!accountOpen&&state.access.canAccess())return <StudyApp key={state.user.id+':'+state.access.epoch} owner={state.user.id} nativeMode access={state.access} onAccount={()=>{setReturnOwner(state.user!.id);setAccountOpen(true);}}/>;
  const panelState:NativeAccountState=state.status==='ready'&&state.user&&!state.access.canAccess()?{status:'blocked',message:'会话有效期已结束，原分区已锁定。请联网重新核对账号。'}:state;
- return <AccountPanel state={panelState} onSubmit={async(mode,credentials)=>{await controller.current?.mutate(mode,credentials);setAccountOpen(true);}} onLogout={()=>{void controller.current?.mutate('logout');}} onRecheck={()=>controller.current?.recheck()} onEnter={enter} onBack={canReturn?enter:undefined} onLegacy={()=>setLegacy(true)}/>;
+ return <AccountPanel state={panelState} onSubmit={submit} onLogout={()=>{void controller.current?.mutate('logout');}} onRecheck={()=>controller.current?.recheck()} onEnter={enter} onBack={canReturn?enter:undefined} onLegacy={()=>setLegacy(true)}/>;
 }

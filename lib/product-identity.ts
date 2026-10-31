@@ -34,7 +34,7 @@ export function validateProductCredentials(username:string,password:string,confi
   let bytes=0,wellFormed=true;
   for(let i=0;i<password.length;i++){const code=password.charCodeAt(i);if(code>=0xd800&&code<=0xdbff){const next=password.charCodeAt(++i);if(!(next>=0xdc00&&next<=0xdfff)){wellFormed=false;break;}}else if(code>=0xdc00&&code<=0xdfff){wellFormed=false;break;}}
   for(const point of password){const code=point.codePointAt(0)!;bytes+=code<=0x7f?1:code<=0x7ff?2:code<=0xffff?3:4;}
-  if(length<15||length>128||password.length>256||password.includes('\0')||!wellFormed||bytes>512)return {ok:false,field:'password',message:'密码须为 15–128 个有效字符，不含空字符；首尾空白属于密码。'};
+  if(length<8||length>128||password.length>256||password.includes('\0')||!wellFormed||bytes>512)return {ok:false,field:'password',message:'密码须为 8–128 个有效字符，不含空字符；首尾空白属于密码。'};
   if(confirmation!==undefined&&password!==confirmation)return {ok:false,field:'confirmation',message:'两次输入的密码不一致。'};
   return {ok:true,credentials:{username:username.trim().toLowerCase(),password}};
 }

@@ -72,17 +72,17 @@ export class NativeAccountController {
   hold(message='账号操作结果未确认，分区已锁定。请显式重新核对账号。'){if(!this.alive)return;this.held=true;this.begin(message,true);this.update({status:'blocked',message},true);}
   suspend(synchronous=true){if(!this.alive)return;this.begin('页面已离开，账号身份需要重新核对。',synchronous);
     this.update({status:'blocked',message:this.held?'账号操作结果未确认，分区已锁定。请显式重新核对账号。':'账号身份待重新核对，学习分区已暂停。'});}
-  async mutate(action:'register'|'login'|'logout',credentials?:ProductCredentials):Promise<void> {
-    if(this.state.status==='ready'&&this.state.user&&!this.state.access.assertAccess())return;
+  async mutate(action:'register'|'login'|'logout',credentials?:ProductCredentials):Promise<boolean> {
+    if(this.state.status==='ready'&&this.state.user&&!this.state.access.assertAccess())return false;
     if(!this.alive||this.mutationPending||this.state.status!=='ready'||this.state.unavailable||
-      !this.state.capabilities.passwordLogin||action==='logout'&&!this.state.user)return;
+      !this.state.capabilities.passwordLogin||action==='logout'&&!this.state.user)return false;
     this.mutationAttempted=true;
     const generation=this.begin('账号操作进行中，旧学习分区已暂停。',true);this.mutationPending=true;
     try{
       const pending=this.transport.request(action,credentials);credentials=undefined;
       const reply=await pending;
-      if(!this.current(generation))return;
-      if(reply.status>=500){this.held=true;this.update({status:'blocked',message:'账号操作结果尚未确认，本机分区已锁定。请显式联网重新核对；不会自动重发。'},true);return;}
+      if(!this.current(generation))return false;
+      if(reply.status>=500){this.held=true;this.update({status:'blocked',message:'账号操作结果尚未确认，本机分区已锁定。请显式联网重新核对；不会自动重发。'},true);return false;}
       const warning=reply.status===200?(action==='logout'?'已退出本机。':''):reply.status===429?'尝试过于频繁，请稍后再试。':
         action==='logout'?'退出未获确认；以下账号状态来自独立会话核对。':
         '账号操作未获确认，请检查用户名和密码；以下状态来自独立会话核对。';
@@ -90,8 +90,14 @@ export class NativeAccountController {
       // This new session request is the sole positive identity evidence.
       this.update({status:'checking',message:'正在独立核对服务器会话，尚未切换学习分区。'});
       await this.probe(generation,warning);
+      const confirmed=this.state as NativeAccountState;
+      // Navigation receives an outcome only after the independent session proof.
+      // A rejected mutation with a still-valid old session is not a successful login.
+      if(reply.status!==200||!this.current(generation)||confirmed.status!=='ready'||confirmed.unavailable)return false;
+      return action==='logout'?confirmed.user===null:!!confirmed.user&&confirmed.access.owner===confirmed.user.id&&confirmed.access.assertAccess();
     }catch{
       if(this.current(generation)){this.held=true;this.update({status:'blocked',message:'账号操作结果未知，本机分区已锁定；不代表凭据已清理或服务器已撤销。请显式重新核对账号。'});}
+      return false;
     }finally{if(this.current(generation))this.mutationPending=false;}
   }
   async mutatePhone(purpose:PhonePurpose,body:PhoneVerification):Promise<PhoneOutcome|undefined> {
