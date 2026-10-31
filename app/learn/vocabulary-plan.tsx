@@ -239,13 +239,24 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   const contentRoot=useRef<HTMLDivElement>(null),wordHeading=useRef<HTMLHeadingElement>(null),previousWord=useRef<string|null>(null),focusedReceipt=useRef<string|null>(null);
   const targetKey=JSON.stringify([workflow.scopeKey,session?.id??null,step?.id??null]);
   const currentTarget=useRef(targetKey),attempt=useRef(0);currentTarget.current=targetKey;
-  const pending=useRef(false),scope=useRef(workflow.scopeKey);scope.current=workflow.scopeKey;
+  const pending=useRef(false),scope=useRef(workflow.scopeKey),overlayActive=useRef(overlayBlocked);scope.current=workflow.scopeKey;overlayActive.current=overlayBlocked;
   useEffect(()=>{++attempt.current;setMessage('');setSelected(null);setBusy(false);pending.current=false;},[targetKey]);
   useEffect(()=>{
     const wordKey=step?JSON.stringify([workflow.scopeKey,step.id]):null;
     if(contentRoot.current)contentRoot.current.scrollTop=0;
     if(previousWord.current&&wordKey&&previousWord.current!==wordKey&&!overlayBlocked){
-      contentRoot.current?.closest<HTMLElement>('.phase2-word-card')?.scrollIntoView({block:'start',behavior:'instant'});
+      const document=contentRoot.current?.ownerDocument,view=document?.defaultView,heading=wordHeading.current;
+      if(document&&view&&heading){
+        const viewport=view.visualViewport,top=viewport?.offsetTop??0,bottom=top+(viewport?.height??view.innerHeight);
+        const chrome=[...document.querySelectorAll<HTMLElement>('.workspace-topbar,.workspace-mobile-nav')]
+          .filter(node=>node.getClientRects().length&&['fixed','sticky'].includes(view.getComputedStyle(node).position))
+          .map(node=>({header:node.matches('.workspace-topbar'),rect:node.getBoundingClientRect()}));
+        const usableTop=chrome.filter(item=>item.header&&item.rect.top<=top&&item.rect.bottom>top).reduce((edge,item)=>Math.max(edge,item.rect.bottom),top);
+        const usableBottom=chrome.filter(item=>!item.header&&item.rect.top<bottom&&item.rect.bottom>top).reduce((edge,item)=>Math.min(edge,item.rect.top),bottom);
+        const rect=heading.getBoundingClientRect();
+        // A tall card need not fit in full; only bring an obscured new word back.
+        if(rect.top<usableTop||rect.bottom>usableBottom)contentRoot.current?.closest<HTMLElement>('.phase2-word-card')?.scrollIntoView({block:'start',behavior:'instant'});
+      }
       wordHeading.current?.focus({preventScroll:true});
     }
     previousWord.current=wordKey;
@@ -280,7 +291,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
     const isCurrent=()=>scope.current===key&&currentTarget.current===target&&attempt.current===request;
     const fixed={sessionId:session.id,stepId:step.id,commandId:step.receipt.commandId,reviewId:step.receipt.legacyEventId};
     pending.current=true;setBusy(true);setMessage('');
-    try{const result=await workflow.correctRating(fixed);if(isCurrent())setMessage(resultMessage(result,''));}
+    try{const result=await workflow.correctRating(fixed);if(isCurrent()){setMessage(resultMessage(result,''));if(successful(result)&&!overlayActive.current)contentRoot.current?.focus({preventScroll:true});}}
     catch(error){if(isCurrent())setMessage(error instanceof Error?error.message:'改判尚未确认，请重试。');}
     finally{if(isCurrent()){pending.current=false;setBusy(false);}}
   };
@@ -296,7 +307,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   const headwordAudio=getWordAudioBindingForSnapshot(step.word,'headword'),exampleAudio=getWordAudioBindingForSnapshot(step.word,'example'),audioHeld=isPrivateWordAudioBlocked(step.word);
   const intent=step.intent==='new'?'新词':step.intent==='reinforcement'?'巩固':step.intent==='manual-review'?'主动复习':'到期复习';
   return <section className="phase2-vocabulary-session" aria-label="单词学习">
-    <div className="phase2-word-session-heading"><span>{viewingPrevious?'上一词 · ':''}{intent} · {viewingPrevious?session.cursor:session.cursor+1} / {session.queue.length}</span><span title={session.dayWindow.timezone}>{session.dayWindow.localDate}</span>{session.cursor>0&&<button type="button" className="text-button phase2-previous-word" disabled={blocked||viewingPrevious} onClick={()=>setPreviousStep(session.queue[session.cursor-1].id)}>上一词</button>}</div>
+    <div className="phase2-word-session-heading"><span>{viewingPrevious?'上一词 · ':''}{intent} · {viewingPrevious?session.cursor:session.cursor+1} / {session.queue.length}</span><span title={session.dayWindow.timezone}>{session.dayWindow.localDate}</span><button type="button" className="text-button phase2-previous-word" aria-hidden={session.cursor===0||undefined} disabled={blocked||viewingPrevious||session.cursor===0} onClick={()=>{if(session.cursor>0)setPreviousStep(session.queue[session.cursor-1].id);}}>上一词</button></div>
     {session.blockedReason&&<div className="phase2-vocab-alert" role="alert"><b>原词卡记录尚未确认</b><p>{session.blockedReason}</p><p>请先恢复独立的词库记录备份，再重新读取计划。此状态不计为整组完成，也不会补写学习事件。</p><button type="button" className="text-button" disabled={overlayBlocked||busy} onClick={()=>void workflow.refresh()}><RefreshCw size={15}/>重新核对词卡记录</button></div>}
     <article className="phase2-word-card panel v045-stable-word-card" tabIndex={-1}>
       <fieldset disabled={blocked} className="phase2-word-fieldset">
