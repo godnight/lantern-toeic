@@ -45,6 +45,12 @@
 .phase2-revealed-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .phase2-revealed-actions .phase2-correct-rating { flex: 0 1 auto; }
 .v041-vocabulary .phase2-revealed-actions .phase2-next-word { flex: 1 1 120px; width: auto; }
+/* Compact revealed actions: keep the full end/return labels at the user's size. */
+.v041-vocabulary .v045-stable-word-card .phase2-revealed-actions { column-gap: 4px; }
+.v041-vocabulary .v045-stable-word-card .phase2-revealed-actions .button { padding-inline: 3px; white-space: nowrap; }
+.v041-vocabulary .v045-stable-word-card .phase2-revealed-actions .phase2-next-word>svg { display: none; }
+.phase2-word-session-heading .phase2-previous-word { min-inline-size: 44px; }
+/* End compact revealed actions. */
 .phase2-word-session-heading .phase2-previous-word { margin-inline-start: auto; min-height: 44px; }
 .phase2-word-session-heading .phase2-previous-word[aria-hidden="true"] { visibility: hidden; }
 .lantern-workspace:not(.workspace-focused) .workspace-main .v045-stable-word-card { scroll-margin-block-start: 5rem; }
