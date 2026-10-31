@@ -160,7 +160,7 @@ export default function Practice({queue,attempts,onAttempt,onClose,onSavedClose,
   if(window.history.state?.lanternPracticeView!==token)window.history.pushState({...window.history.state,lanternPracticeView:token},'');
   const pop=(event:PopStateEvent)=>{if(lookupOpen.current)return;if(!lease.active||event.state?.lanternPracticeView===token)return;event.stopImmediatePropagation?.();window.history.pushState({...event.state,lanternPracticeView:token},'');browserBack.current();};
   window.addEventListener('popstate',pop,true);
-  return()=>{lease.active=false;window.removeEventListener('popstate',pop,true);if(lease.release!==null)clearTimeout(lease.release);lease.release=setTimeout(()=>{lease.release=null;if(!lease.active&&window.history.state?.lanternPracticeView===token)window.history.back();},0);};
+  return()=>{lease.active=false;window.removeEventListener('popstate',pop,true);if(lease.release!==null)clearTimeout(lease.release);lease.release=setTimeout(()=>{lease.release=null;if(!lease.active&&window.history.state?.lanternPracticeView===token){window.addEventListener('popstate',event=>event.stopImmediatePropagation(),{once:true,capture:true});window.history.back();}},0);};
  },[]);
  useEffect(()=>registerNativeBack(()=>{if(lookupOpen.current)return false;if(imageOpen){setImageOpen(false);return true;}if(exitOpen){setExitOpen(false);return true;}requestClose();return true;},10),[imageOpen,exitOpen,finished,durable?.blocked]);
  if(!q)return null;
