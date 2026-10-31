@@ -160,7 +160,7 @@ export default function Practice({queue,attempts,onAttempt,onClose,onSavedClose,
   const lease=historyLease.current;if(lease.release!==null){clearTimeout(lease.release);lease.release=null;}if(!lease.token)lease.token=createId();lease.active=true;const token=lease.token;
   const pop=(event:PopStateEvent)=>{if(lookupOpen.current)return;if(!lease.active||event.state?.lanternPracticeView===token)return;event.stopImmediatePropagation?.();window.history.pushState({...event.state,lanternPracticeView:token},'');browserBack.current();};
   const route=claimPracticeHistory(token,'lanternPracticeView',pop,lease.target);lease.target=route.target;
-  if(window.history.state?.lanternPracticeView!==token){if(route.reuse)window.history.replaceState({...route.base,lanternPracticeView:token},'');else window.history.pushState({...window.history.state,lanternPracticeView:token},'');}
+  if(window.history.state?.lanternPracticeView!==token){if(route.reuse)window.history.replaceState({...route.base,lanternPracticeView:token},'');else window.history.pushState({...window.history.state,lanternPracticeView:token},'');}route.own();
   return()=>{lease.active=false;route.release();if(lease.release!==null)clearTimeout(lease.release);lease.release=setTimeout(()=>{lease.release=null;if(!lease.active&&window.history.state?.lanternPracticeView===token&&window.location.href===route.target.href){route.consume();window.history.back();}},0);};
  },[]);
  useEffect(()=>registerNativeBack(()=>{if(lookupOpen.current)return false;if(imageOpen){setImageOpen(false);return true;}if(exitOpen){setExitOpen(false);return true;}requestClose();return true;},10),[imageOpen,exitOpen,finished,durable?.blocked]);

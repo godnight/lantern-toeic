@@ -1,7 +1,7 @@
 'use client';
 import {useState,useRef,useEffect} from 'react';
 import {createId} from '@/lib/study-model';
-import {claimPracticeHistory} from '@/lib/practice-history-browser';
+import {claimPracticeHistory,type PracticeHistoryTarget} from '@/lib/practice-history-browser';
 import {registerNativeBack} from '@/lib/native-host';
 import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription} from '@/components/ui/dialog';
 import {practiceSavedCount,practiceTaskLabel,practiceTaskOriginKey,sortPracticeSessions,type PracticeTaskOrigin} from '@/lib/practice-task';
@@ -9,9 +9,16 @@ import type {PracticeSession} from '@/lib/practice-workflow';
 import type {PracticeWorkflowController} from '@/lib/use-practice-workflow';
 
 export function usePracticeSubviewBack(onClose:()=>void,priority:number){
- const close=useRef(onClose);close.current=onClose;const token=useRef('');if(!token.current)token.current=createId();
- const back=()=>{if(window.history.state?.lanternPracticeSubview===token.current)window.history.back();else close.current();};
- useEffect(()=>{const id=token.current;const pop=(event:PopStateEvent)=>{if(event.state?.lanternPracticeSubview===id)return;if(priority===5&&document.querySelector('[role="dialog"][data-state="open"]')){window.history.pushState({...event.state,lanternPracticeSubview:id},'');window.dispatchEvent(new Event('lantern-practice-dialog-back'));return;}event.stopImmediatePropagation();close.current();};const route=claimPracticeHistory(id,'lanternPracticeSubview',pop);if(route.reuse)window.history.replaceState({...route.base,lanternPracticeSubview:id},'');else window.history.pushState({...window.history.state,lanternPracticeSubview:id},'');const off=registerNativeBack(()=>{back();return true;},priority);return()=>{off();route.release();if(window.history.state?.lanternPracticeSubview===id){const {lanternPracticeSubview,...state}=window.history.state;window.history.replaceState(state,'');}};},[]);
+ const close=useRef(onClose);close.current=onClose;const lease=useRef({token:'',active:false,target:undefined as PracticeHistoryTarget|undefined,timer:null as ReturnType<typeof setTimeout>|null});if(!lease.current.token)lease.current.token=createId();
+ const back=()=>{if(window.history.state?.lanternPracticeSubview===lease.current.token&&window.location.href===lease.current.target?.href)window.history.back();else close.current();};
+ useEffect(()=>{
+  const current=lease.current,id=current.token;current.active=true;if(current.timer!==null){clearTimeout(current.timer);current.timer=null;}
+  const pop=(event:PopStateEvent)=>{if(event.state?.lanternPracticeSubview===id)return;if(priority===5&&document.querySelector('[role="dialog"][data-state="open"]')){window.history.pushState({...event.state,lanternPracticeSubview:id},'');window.dispatchEvent(new Event('lantern-practice-dialog-back'));return;}event.stopImmediatePropagation();close.current();};
+  const route=claimPracticeHistory(id,'lanternPracticeSubview',pop,current.target);current.target=route.target;
+  if(window.history.state?.lanternPracticeSubview!==id){if(route.reuse)window.history.replaceState({...route.base,lanternPracticeSubview:id},'');else window.history.pushState({...window.history.state,lanternPracticeSubview:id},'');}route.own();
+  const off=registerNativeBack(()=>{back();return true;},priority);
+  return()=>{current.active=false;off();route.release();if(current.timer!==null)clearTimeout(current.timer);current.timer=setTimeout(()=>{current.timer=null;if(!current.active&&window.history.state?.lanternPracticeSubview===id&&window.location.href===route.target.href){route.consume();window.history.back();}},0);};
+ },[]);
  return back;
 }
 
