@@ -80,6 +80,14 @@
 .workspace-mobile-nav{padding-bottom:env(safe-area-inset-bottom);min-height:66px}
 .workspace-mobile-nav button{min-width:0;min-height:56px;gap:4px}
 .workspace-mobile-nav button span{font-size:.75rem}
+/* Expanded foldables keep the mobile navigation and one shared content edge. */
+@media(min-width:768px) and (max-width:1023px){
+ .v040-workspace-shell .workspace-topbar{max-width:1080px;padding-left:24px;padding-right:24px;}
+ .v040-workspace-shell:not(.workspace-focused) .workspace-main{max-width:1080px;padding-left:24px;padding-right:24px;}
+ .v040-workspace-shell:not(.workspace-focused):is([data-v040-view=today],[data-v040-view=profile],[data-v040-view=themes],[data-v040-view=about]) .workspace-main{max-width:1080px;padding-left:24px;padding-right:24px;}
+ .v040-workspace-shell .v040-page{max-width:none;}
+ .v040-workspace-shell .workspace-mobile-nav{width:min(100%,1080px);}
+}
 @media(max-width:767px){
  .workspace-main{padding:18px 18px calc(90px + env(safe-area-inset-bottom))!important}
  .workspace-topbar{padding:8px 16px!important;min-height:64px!important}
