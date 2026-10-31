@@ -145,3 +145,74 @@
 .v040-today .v045-today-task .v045-today-action:focus-visible{outline:2px solid var(--ring);outline-offset:3px;border-radius:4px;}
 .v040-today .v045-today-task .v045-today-action:active:not(:disabled){background:var(--ui-selection);border-radius:4px;}
 .v040-today .v045-today-task .v045-today-action:disabled{opacity:.5;cursor:default;}
+
+/* Tab scenes and overview surfaces. Formal learning surfaces keep their tokens. */
+body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell{
+ --tab-overview:rgba(16,27,41,.56);
+ --tab-chart:rgba(16,27,41,.84);
+ --tab-chrome:rgba(16,27,41,.9);
+ --tab-edge:rgba(166,188,207,.3);
+ --tab-shade:rgba(6,14,25,.55);
+ --tab-shade-mid:rgba(9,19,32,.78);
+ --tab-scene-height:clamp(540px,100svh,840px);
+}
+body[data-ui-theme="silk"] .v040-workspace-shell{
+ --tab-overview:rgba(32,24,34,.6);
+ --tab-chart:rgba(32,24,34,.86);
+ --tab-chrome:rgba(32,24,34,.92);
+ --tab-edge:rgba(213,183,203,.3);
+ --tab-shade:rgba(26,16,30,.57);
+ --tab-shade-mid:rgba(32,24,34,.79);
+}
+body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="today"]{--tab-scene:image-set(url('/phase2-theme/dirtmouth-hd-1x.webp') 1x,url('/phase2-theme/dirtmouth-hd-2x.webp') 2x,url('/phase2-theme/dirtmouth-hd-3x.webp') 3x);}
+body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="vocabulary"]{--tab-scene:url('/images/maps/greenpath.webp');}
+body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="review"]{--tab-scene:image-set(url('/phase2-theme/blue-lake-hd-1x.webp') 1x,url('/phase2-theme/blue-lake-hd-2x.webp') 2x,url('/phase2-theme/blue-lake-hd-3x.webp') 3x);}
+body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="progress"]{--tab-scene:image-set(url('/phase2-theme/crystal-peak-hd-1x.webp') 1x,url('/phase2-theme/crystal-peak-hd-2x.webp') 2x,url('/phase2-theme/crystal-peak-hd-3x.webp') 3x);}
+body[data-ui-theme="hollow"] .v040-workspace-shell:is([data-v040-view="resources"],[data-v040-view="profile"],[data-v040-view="themes"],[data-v040-view="about"],[data-v040-view="settings"]){--tab-scene:url('/design-r1/hollow-station.webp');}
+body[data-ui-theme="silk"] .v040-workspace-shell[data-v040-view="today"]{--tab-scene:url('/design-r1/silk-home.webp');}
+body[data-ui-theme="silk"] .v040-workspace-shell[data-v040-view="vocabulary"]{--tab-scene:url('/design-r1/silk-forest.webp');}
+body[data-ui-theme="silk"] .v040-workspace-shell[data-v040-view="train"]{--tab-scene:url('/images/maps/greymoor.webp');}
+body[data-ui-theme="silk"] .v040-workspace-shell[data-v040-view="review"]{--tab-scene:url('/design-r1/silk-calm.webp');}
+body[data-ui-theme="silk"] .v040-workspace-shell[data-v040-view="progress"]{--tab-scene:url('/images/themes-v3/snowy-ridge-wide.webp');}
+body[data-ui-theme="silk"] .v040-workspace-shell:is([data-v040-view="resources"],[data-v040-view="profile"],[data-v040-view="themes"],[data-v040-view="about"],[data-v040-view="settings"]){--tab-scene:url('/design-r1/silk-library.webp');}
+body[data-ui-theme="hollow"] .v040-workspace-shell:not([data-v040-view="train"])::before,
+body[data-ui-theme="silk"] .v040-workspace-shell::before{
+ content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+ background-color:var(--ui-canvas);
+ background-image:linear-gradient(180deg,var(--tab-shade) 0,var(--tab-shade-mid) 55%,var(--ui-canvas) 100%),var(--tab-scene,none);
+ background-position:center top;
+ background-size:100% var(--tab-scene-height),auto var(--tab-scene-height);
+ background-repeat:no-repeat;
+}
+body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell :is(.workspace-topbar,.workspace-mobile-nav){background:var(--tab-chrome)!important;border-color:var(--tab-edge);box-shadow:none;}
+body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .workspace-main :is(
+ .v040-today .v045-today-task,
+ .phase2-vocabulary-plan>.phase2-today-vocabulary,
+ .phase2-vocabulary-plan>.v041-current-plan,
+ .phase2-vocabulary-plan>.phase2-plan-calendar,
+ .v041-vocabulary-setup,
+ [data-workflow-origin]>details.panel,
+ [data-workflow-origin]>details.panel .vocabulary-library:not(.vocab-detail-open):not(.vocab-session-open)>.vocab-results-layout,
+ .vocab-review-summary,
+ .review-banner,
+ .review-list,
+ .metrics-grid>.metric,
+ .resource-redesign:not(.rs-detail) .rs-resource-list,
+ .workspace-resource-prelude,
+ .v040-profile-card,
+ .v040-settings-group,
+ .v040-about-card
+){background:var(--tab-overview);border-color:var(--tab-edge);box-shadow:none;}
+body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .workspace-main .workspace-heading{background:none!important;border:0;padding:0;margin-bottom:8px!important;box-shadow:none;}
+body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .workspace-heading>h1{margin:0;}
+body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .v040-word-action>.phase2-today-vocabulary{background:var(--tab-overview)!important;border-color:var(--tab-edge);box-shadow:none!important;}
+body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .progress-columns>.panel{background:var(--tab-chart);border-color:var(--tab-edge);box-shadow:none;}
+body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell :is(.vocab-detail,.word-flashcard){background:var(--ui-surface);}
+/* The page backdrop replaces duplicate decorative windows on overview pages. */
+body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell:is([data-v040-view="today"],[data-v040-view="review"],[data-v040-view="resources"]) .workspace-main .v041-theme-scene{display:none;}
+body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .v041-today-scene{margin:0 0 20px;}
+body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .v041-today-scene .v040-page-heading{margin:0;}
+@media(max-width:520px){
+ body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="vocabulary"]{--tab-scene:url('/images/maps/greenpath-mobile.webp');}
+ body[data-ui-theme="silk"] .v040-workspace-shell[data-v040-view="train"]{--tab-scene:url('/images/maps/greymoor-mobile.webp');}
+}
