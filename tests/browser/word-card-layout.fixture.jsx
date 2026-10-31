@@ -1,7 +1,7 @@
 /* Synthetic workflow I/O around the actual product components. No user data. */
 import React, {useEffect, useRef, useState} from '__QA_REACT__';
 import {createRoot} from '__QA_REACT_DOM__';
-import {VocabularyStudyCard} from '@/app/learn/vocabulary-plan';
+import {prepareStudyContent} from '@/lib/prepare-study-content';
 import referenceData from '@/content/word-card-reference.json';
 import {WorkspaceShell} from '@/app/learn/workspace-shell';
 import {applyDocumentTheme} from '@/lib/ui-theme';
@@ -31,7 +31,7 @@ const WORDS = terms.map((word, index) => ({
   translation: `教学末尾_${index}。这段翻译必须能够完整读到，不能裁掉。`,
 }));
 
-function Fixture() {
+function Fixture({VocabularyStudyCard}) {
   const [, rerender] = useState(0);
   const state = useRef({
     cursor: 0, status: 'active', pendingRating: null, pending: null,
@@ -112,4 +112,10 @@ function Fixture() {
   </WorkspaceShell>;
 }
 
-createRoot(document.getElementById('root')).render(<React.StrictMode><Fixture/></React.StrictMode>);
+async function mountPreparedFixture() {
+  // Match the product's ready boundary before importing workspace consumers.
+  await prepareStudyContent();
+  const {VocabularyStudyCard} = await import('@/app/learn/vocabulary-plan');
+  createRoot(document.getElementById('root')).render(<React.StrictMode><Fixture VocabularyStudyCard={VocabularyStudyCard}/></React.StrictMode>);
+}
+void mountPreparedFixture();
