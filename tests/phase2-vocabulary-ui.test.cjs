@@ -198,12 +198,15 @@ test('reading position survives same-word save and retry; only the next word res
  const h=harness('VocabularyStudyCard',{workflow,theme:'hollow'});
  const content=nodes(h.tree,node=>node.props?.className==='phase2-word-content')[0].props.ref;
  const heading=nodes(h.tree,node=>node.type==='h2'&&node.props.className==='phase2-current-word')[0].props.ref;
- let revealFocusCalls=0,cardScrollCalls=0;content.current={scrollTop:137,focus:()=>{revealFocusCalls++;},closest:selector=>{assert.equal(selector,'.phase2-word-card');return {scrollIntoView:options=>{assert.equal(options.block,'start');assert.equal(options.behavior,'instant');cardScrollCalls++;}};}};let focusCalls=0;heading.current={focus:()=>{focusCalls++;}};
+ let revealFocusCalls=0,cardScrollCalls=0,headingTop=100;
+ const document={defaultView:{innerHeight:640},querySelectorAll:()=>[]};
+ content.current={ownerDocument:document,scrollTop:137,focus:()=>{revealFocusCalls++;},closest:selector=>{assert.equal(selector,'.phase2-word-card');return {scrollIntoView:options=>{assert.equal(options.block,'start');assert.equal(options.behavior,'instant');cardScrollCalls++;}};}};let focusCalls=0;heading.current={focus:()=>{focusCalls++;},getBoundingClientRect:()=>({top:headingTop,bottom:headingTop+40})};
  h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);
  h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);assert.equal(focusCalls,0);assert.equal(revealFocusCalls,1);assert.equal(cardScrollCalls,0);
  active.currentStep={...active.currentStep,id:'next-word',word:{...word,id:'available',word:'available',meaning:'可用的'},receipt:undefined};
- h.render();assert.equal(content.current.scrollTop,0);assert.equal(focusCalls,1);assert.equal(cardScrollCalls,1);
- h.update({overlayBlocked:true});active.currentStep={...active.currentStep,id:'overlay-word'};h.render();assert.equal(cardScrollCalls,1);assert.equal(focusCalls,1);
+ h.render();assert.equal(content.current.scrollTop,0);assert.equal(focusCalls,1);assert.equal(cardScrollCalls,0);
+ headingTop=-40;active.currentStep={...active.currentStep,id:'offscreen-word'};h.render();assert.equal(cardScrollCalls,1);assert.equal(focusCalls,2);
+ h.update({overlayBlocked:true});active.currentStep={...active.currentStep,id:'overlay-word'};h.render();assert.equal(cardScrollCalls,1);assert.equal(focusCalls,2);
  assert.doesNotMatch(text(h.tree),/安静的；轻声的|可用的/);h.unmount();
 });
 
@@ -268,6 +271,14 @@ test('saved known feedback can downgrade without a spinner and guards duplicate 
  const workflow=controller({activeSession:s,correctRating:target=>{calls.push(target);return new Promise(resolve=>finish=resolve);}}),h=harness('VocabularyStudyCard',{workflow,theme:'paper'});
  h.click('改为忘记');h.click('改为忘记');assert.equal(calls.length,1);assert.deepEqual(JSON.parse(JSON.stringify(calls[0])),{sessionId:s.id,stepId:s.currentStep.id,commandId:receipt.commandId,reviewId:receipt.legacyEventId});assert.match(text(h.tree),/正在保存反馈/);assert.equal(nodes(h.tree,n=>String(n.props?.className).includes('spinner')).length,0);
  finish({status:'applied'});await h.flush();const corrected={...s.currentStep,correctedToForgotten:true};workflow.activeSession={...s,currentStep:corrected,queue:[corrected]};h.update({workflow});assert.match(text(h.tree),/已改为：忘记/);assert.equal(h.button('改为忘记'),undefined);h.unmount();
+});
+test('correction confirmation uses current overlay visibility before restoring reading focus',async()=>{
+ for(const openOverlay of [false,true]){
+  let finish,focusCalls=0;const s=session();s.currentStep={...s.currentStep,receipt};s.queue=[s.currentStep];
+  const workflow=controller({activeSession:s,correctRating:()=>new Promise(resolve=>finish=resolve)}),h=harness('VocabularyStudyCard',{workflow,theme:'paper'});
+  nodes(h.tree,node=>node.props?.className==='phase2-word-content')[0].props.ref.current={focus:options=>{assert.equal(options.preventScroll,true);focusCalls++;}};
+  h.click('改为忘记');if(openOverlay)h.update({overlayBlocked:true});finish({status:'applied'});await h.flush();assert.equal(focusCalls,openOverlay?0:1);h.unmount();
+ }
 });
 test('previous word is a read-only view; correction freezes its original identity and returning never advances',async()=>{
  let submitted=0,advanced=0,corrected=[];const s=session(),first={...s.currentStep,receipt},second={id:'step-2',wordId:words[1].id,word:words[1],intent:'new',reasons:[]};s.cursor=1;s.queue=[first,second];s.currentStep=second;

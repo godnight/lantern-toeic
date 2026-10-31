@@ -1,5 +1,5 @@
 /* D-06/07/08/14. Audio internals remain owned by SpeechPlayer's mode styles. */
-.v041-vocabulary { min-width: 0; color: var(--ui-text); }
+.v041-vocabulary { min-width: 0; color: var(--ui-text); --word-step-heading-size: 44px; }
 .phase2-vocabulary-plan.v041-vocabulary { gap: 20px; }
 .v041-vocabulary :is(h1,h2,h3,p) { overflow-wrap: anywhere; }
 .v041-vocabulary .panel { padding: 20px; }
@@ -7,12 +7,13 @@
 .v041-vocabulary-data :is(button,input,summary):focus-visible { outline: 3px solid var(--ui-focus); outline-offset: 3px; }
 .v041-vocabulary :is(.button,.text-button),.v041-vocabulary-data :is(.button,.text-button) { min-height: 44px; }
 .v041-vocabulary .button.primary { min-height: 48px; }
-.v041-vocabulary .phase2-word-session-heading { margin: 0 0 12px; gap: 8px; font-size: 13px; }
+.v041-vocabulary .phase2-word-session-heading { margin: 0 0 12px; gap: 8px; font-size: 13px; min-block-size: var(--word-step-heading-size); }
 .v041-vocabulary .phase2-word-card { max-width: 760px; }
 .v041-vocabulary .v045-stable-word-card {
   box-sizing: border-box;
-  block-size: max(320px,calc(100vh - 144px - 3rem - env(safe-area-inset-bottom)));
-  block-size: max(320px,calc(100svh - 144px - 3rem - env(safe-area-inset-bottom)));
+  /* Keep the viewport budget while reserving the full history-action row. */
+  block-size: max(320px,calc(100vh - 124px - 3rem - var(--word-step-heading-size) - env(safe-area-inset-bottom)));
+  block-size: max(320px,calc(100svh - 124px - 3rem - var(--word-step-heading-size) - env(safe-area-inset-bottom)));
   min-width: 0;
   scroll-margin-block-start: 5rem;
 }
@@ -44,7 +45,15 @@
 .phase2-revealed-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .phase2-revealed-actions .phase2-correct-rating { flex: 0 1 auto; }
 .v041-vocabulary .phase2-revealed-actions .phase2-next-word { flex: 1 1 120px; width: auto; }
+/* Compact revealed actions: keep the full end/return labels at the user's size. */
+.v041-vocabulary .v045-stable-word-card .phase2-revealed-actions { column-gap: 4px; }
+.v041-vocabulary .v045-stable-word-card .phase2-revealed-actions .button { padding-inline: 3px; white-space: nowrap; }
+.v041-vocabulary .v045-stable-word-card .phase2-revealed-actions .phase2-next-word>svg { display: none; }
+.phase2-word-session-heading .phase2-previous-word { min-inline-size: 44px; }
+/* End compact revealed actions. */
 .phase2-word-session-heading .phase2-previous-word { margin-inline-start: auto; min-height: 44px; }
+.phase2-word-session-heading .phase2-previous-word[aria-hidden="true"] { visibility: hidden; }
+.lantern-workspace:not(.workspace-focused) .workspace-main .v045-stable-word-card { scroll-margin-block-start: 5rem; }
 .v041-word-heading { display: flex; align-items: center; gap: 12px; min-width: 0; flex-wrap: wrap; }
 .v041-word-heading :is(.phase2-current-word,.vocab-word-title) { flex: 0 1 auto; min-width: 0; margin: 0; font-size: clamp(36px,8vw,42px); line-height: 1.25; letter-spacing: -.025em; }
 .v041-word-heading > :is(.speech-audio,.dictionary-pronunciation) { flex: 0 0 auto; max-width: 100%; }
