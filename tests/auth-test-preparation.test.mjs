@@ -120,11 +120,13 @@ test('actual CLI success, production failure and missing input perform no writes
  assert.deepEqual((await readdir(directory)).sort(),['inventory.json','target.json']);
  assert.deepEqual(JSON.parse(await readFile(targetPath,'utf8')),target);assert.deepEqual(JSON.parse(await readFile(inventoryPath,'utf8')),inventory);
 });
-test('shipped local and native network authentication remain disabled',async()=>{
+test('local preparation stays disabled and native auth uses only the reviewed HTTPS service',async()=>{
  const local=JSON.parse(await readFile(new URL('../tools/auth-local/wrangler.json',import.meta.url),'utf8'));
  assert.equal(local.vars.LANTERN_AUTH_ENABLED,'false');assert.equal(local.d1_databases[0].database_id,LOCAL_DATABASE);
  const native=await readFile(new URL('../harmony/entry/src/main/ets/auth/AuthConfiguration.ets',import.meta.url),'utf8');
- assert.match(native,/AUTH_API_ORIGIN: string = ''/);
+ // Native connectivity was separately authorized; preparation still cannot enable or replace it.
+ const origin=native.match(/^export const AUTH_API_ORIGIN: string = '([^']*)';\r?$/m)?.[1];
+ assert.equal(origin,'https://lantern-auth-test-20261031.zhuangzeliang.chatgpt.site');
  const hosting=JSON.parse(await readFile(new URL('../.openai/hosting.json',import.meta.url),'utf8'));
  assert.equal(hosting.project_id,PRODUCTION_PROJECT);assert.equal(hosting.d1,'DB');
 });
