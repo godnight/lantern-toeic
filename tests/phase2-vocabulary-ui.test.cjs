@@ -16,7 +16,7 @@ const day={id:'day',localDate:'2026-10-14',timezone:'Etc/UTC',startAt:'2026-10-1
 const receipt={commandId:'command',legacyEventId:'event',legacyPayloadHash:'fixed',occurredAt:'2026-10-14T00:01:00.000Z',rawRating:'known',intent:'new',ratingPolicy:'three-label-conservative-v1'};
 function controller(overrides={}){
  const projection={plan,counts:{capacity:2,learned:0,remaining:2,reviewDue:0},daily:{window:day,newDone:0,reviewDone:0,newRemaining:2,reviewRemaining:0,newWordIds:['quiet','available'],reviewWordIds:[],goalCompleted:false,isLearningDay:true},activeSession:null,candidates:[],learnedWordIds:[]};
- return {scopeKey:'owner-a',ready:true,error:'',projection,activeSession:null,pendingRating:null,candidateStatus:()=> 'available-new',savePlan:async()=>({status:'applied'}),addCandidate:async()=>({status:'applied'}),startGroup:async()=>({status:'applied'}),submitRating:async()=>({status:'applied'}),nextStep:async()=>({status:'applied'}),exportWorkflow:async()=>({kind:'lantern-workflow',schemaVersion:1}),restoreWorkflow:async()=>({status:'applied'}),refresh:async()=>{},...overrides};
+ return {scopeKey:'owner-a',ready:true,error:'',projection,activeSession:null,pendingRating:null,candidateStatus:()=> 'available-new',savePlan:async()=>({status:'applied'}),addCandidate:async()=>({status:'applied'}),startGroup:async()=>({status:'applied'}),submitRating:async()=>({status:'applied'}),correctRating:async()=>({status:'applied'}),nextStep:async()=>({status:'applied'}),exportWorkflow:async()=>({kind:'lantern-workflow',schemaVersion:1}),restoreWorkflow:async()=>({status:'applied'}),refresh:async()=>{},...overrides};
 }
 function session(){return {id:'session',schemaVersion:1,planRevision:1,dayWindow:day,createdAt:day.startAt,cursor:0,status:'active',queue:[{id:'step-1',wordId:word.id,word,intent:'new',reasons:[]}],currentStep:{id:'step-1',wordId:word.id,word,intent:'new',reasons:[]}};}
 function nodes(tree,predicate){const result=[],queue=[tree];while(queue.length){const node=queue.shift();if(!node)continue;if(Array.isArray(node)){queue.push(...node);continue;}if(typeof node==='object'){if(predicate(node))result.push(node);queue.push(node.props?.children);}}return result;}
@@ -260,4 +260,17 @@ test('workflow export uses the native allowlisted filename and names both vocabu
 test('rest-day task separates due review from new words and opens only after a confirmed start',async()=>{
  let opened=0,starts=0;const workflow=controller();workflow.projection.daily.isLearningDay=false;workflow.projection.daily.newRemaining=0;workflow.projection.daily.reviewRemaining=3;workflow.startGroup=async()=>{starts++;return starts===1?{status:'unknown'}:{status:'applied'};};
  const h=harness('TodayVocabularyTask',{workflow,onOpen(){opened++;}});assert.match(text(h.tree),/今日休息，仍可复习或加练/);h.click('开始背词');await h.flush();assert.equal(opened,0);assert.match(text(h.tree),/保存结果尚未确认/);h.click('开始背词');await h.flush();assert.equal(opened,1);assert.equal(workflow.projection.daily.newDone,0);h.unmount();
+});
+
+
+test('saved known feedback can downgrade without a spinner and guards duplicate correction clicks',async()=>{
+ let finish,calls=[];const s=session();s.currentStep={...s.currentStep,receipt};s.queue=[s.currentStep];
+ const workflow=controller({activeSession:s,correctRating:target=>{calls.push(target);return new Promise(resolve=>finish=resolve);}}),h=harness('VocabularyStudyCard',{workflow,theme:'paper'});
+ h.click('改为忘记');h.click('改为忘记');assert.equal(calls.length,1);assert.deepEqual(JSON.parse(JSON.stringify(calls[0])),{sessionId:s.id,stepId:s.currentStep.id,commandId:receipt.commandId,reviewId:receipt.legacyEventId});assert.match(text(h.tree),/正在保存反馈/);assert.equal(nodes(h.tree,n=>String(n.props?.className).includes('spinner')).length,0);
+ finish({status:'applied'});await h.flush();const corrected={...s.currentStep,correctedToForgotten:true};workflow.activeSession={...s,currentStep:corrected,queue:[corrected]};h.update({workflow});assert.match(text(h.tree),/已改为：忘记/);assert.equal(h.button('改为忘记'),undefined);h.unmount();
+});
+test('previous word is a read-only view; correction freezes its original identity and returning never advances',async()=>{
+ let submitted=0,advanced=0,corrected=[];const s=session(),first={...s.currentStep,receipt},second={id:'step-2',wordId:words[1].id,word:words[1],intent:'new',reasons:[]};s.cursor=1;s.queue=[first,second];s.currentStep=second;
+ const workflow=controller({activeSession:s,submitRating:async()=>{submitted++;return {status:'applied'};},nextStep:async()=>{advanced++;return {status:'applied'};},correctRating:async target=>{corrected.push(target);return {status:'applied'};}}),h=harness('VocabularyStudyCard',{workflow,theme:'paper'});
+ h.click('上一词');assert.match(text(h.tree),/上一词 · 新词 · 1 \/ 2/);assert.equal(h.button('上一词').props.disabled,true);h.click('改为忘记');await h.flush();assert.equal(corrected[0].stepId,first.id);assert.equal(corrected[0].reviewId,receipt.legacyEventId);h.click('返回当前词');assert.equal(h.button('认识').props.disabled,false);assert.equal(submitted,0);assert.equal(advanced,0);assert.equal(s.cursor,1);h.unmount();
 });

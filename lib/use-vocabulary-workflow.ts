@@ -3,11 +3,11 @@ import {useLearningAccess} from './learning-access';
 import {useEffect,useRef,useState} from 'react';
 import type {useVocabulary} from './use-vocabulary';
 import {workflowScopeKey,type WorkflowBackup} from './learning-domain-repository';
-import {createVocabularyWorkflow,type CandidateKind,type CandidateStatus,type RawVocabularyRating,type VocabularyPlanDraft,type VocabularyProjection,type VocabularySession,type VocabularyWorkflowResult,type VocabularyWorkflowScope} from './vocabulary-workflow';
+import {createVocabularyWorkflow,type CandidateKind,type CandidateStatus,type VocabularyCorrectionTarget,type RawVocabularyRating,type VocabularyPlanDraft,type VocabularyProjection,type VocabularySession,type VocabularyWorkflowResult,type VocabularyWorkflowScope} from './vocabulary-workflow';
 import type {Word} from './vocabulary-model';
 import type {Question} from './study-model';
 
-type Legacy=Pick<ReturnType<typeof useVocabulary>,'events'|'ready'|'error'|'readEvent'|'reviewEvent'|'backup'>;
+type Legacy=Pick<ReturnType<typeof useVocabulary>,'events'|'ready'|'error'|'readEvent'|'reviewEvent'|'correctReviewEvent'|'backup'>;
 export type VocabularyWorkflowHookOptions={owner:string|null;nativeMode:boolean;identityReady?:boolean;timezone:string;words?:Word[];practiceQuestionCatalogs?:readonly (readonly Question[])[];legacy:Legacy};
 export type VocabularyWorkflowController={
  scopeKey:string;ready:boolean;error:string;projection:VocabularyProjection|null;activeSession:VocabularySession|null;pendingRating:RawVocabularyRating|null;
@@ -16,6 +16,7 @@ export type VocabularyWorkflowController={
  addCandidate:(word:Word,kind:CandidateKind,commandId?:string)=>Promise<VocabularyWorkflowResult>;
  startGroup:(intent?:'auto'|'daily'|'new'|'review'|'extra')=>Promise<VocabularyWorkflowResult>;
  submitRating:(rating:RawVocabularyRating)=>Promise<VocabularyWorkflowResult>;
+ correctRating:(target:VocabularyCorrectionTarget)=>Promise<VocabularyWorkflowResult>;
  nextStep:()=>Promise<VocabularyWorkflowResult>;
  exportWorkflow:()=>Promise<WorkflowBackup>;restoreWorkflow:(input:unknown)=>Promise<VocabularyWorkflowResult>;refresh:()=>Promise<void>;
 };
@@ -52,6 +53,7 @@ export function useVocabularyWorkflow(options:VocabularyWorkflowHookOptions):Voc
    readEvents:()=>{if(!stillCurrent())throw Error('账号已切换');return latest.current.legacy.backup().events;},
    readEvent:eventId=>{if(!stillCurrent())throw Error('账号已切换');return latest.current.legacy.readEvent(eventId);},
    writeReview:event=>{if(!stillCurrent())throw Error('账号已切换');return latest.current.legacy.reviewEvent(event);},
+   writeCorrection:event=>{if(!stillCurrent())throw Error('账号已切换');return latest.current.legacy.correctReviewEvent(event);},
   }}).then(value=>{if(!stillCurrent()){value.close();return;}service.current={key,generation:id,value};void refreshSnapshot();}).catch(error=>{if(stillCurrent())setSnapshot({key,ready:false,error:error instanceof Error?error.message:'本机工作流不可用。',projection:null});});
   return()=>{cancelled=true;const instance=service.current;if(instance?.generation===id){instance.value.close();service.current=null;}};
   // One service owns this scope; the legacy adapter reads the latest committed journal.
@@ -99,6 +101,7 @@ export function useVocabularyWorkflow(options:VocabularyWorkflowHookOptions):Voc
   addCandidate:(word,kind,commandId)=>run(value=>value.addCandidate(word,kind,commandId,latest.current.timezone)),
   startGroup:(intent='auto')=>run(value=>value.startGroup(intent==='auto'?'daily':intent,latest.current.timezone)),
   submitRating:rating=>{const session=current.projection?.activeSession,step=session?.currentStep;if(!session||!step)return Promise.resolve({status:'blocked',reason:'没有待反馈的可见词卡。'});const target={sessionId:session.id,stepId:step.id};return run(value=>value.submitRating(rating,latest.current.timezone,target));},
+  correctRating:target=>run(value=>value.correctRating(latest.current.timezone,target)),
   nextStep:()=>{const session=current.projection?.activeSession,step=session?.currentStep;if(!session||!step)return Promise.resolve({status:'blocked',reason:'没有待切换的可见词卡。'});const target={sessionId:session.id,stepId:step.id};return run(value=>value.nextStep(latest.current.timezone,target));},
   exportWorkflow:async()=>{const instance=service.current;if(!accountAccess()||!instance||instance.key!==key||!current.ready||current.error)throw Error(current.error||'工作流尚未读入。');return instance.value.exportWorkflow();},
   restoreWorkflow:input=>run(value=>value.restoreWorkflow(input,latest.current.timezone)),refresh,

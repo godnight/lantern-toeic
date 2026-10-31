@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useLayoutEffect,useRef,useState,useSyncExternalStore} from 'react';
-import {ArrowRight,BookOpen,CalendarDays,Check,CheckCircle2,ChevronLeft,ChevronRight,Download,LoaderCircle,Plus,RefreshCw,Settings2,Upload} from 'lucide-react';
+import {ArrowRight,BookOpen,CalendarDays,Check,CheckCircle2,ChevronLeft,ChevronRight,Download,Plus,RefreshCw,Settings2,Upload} from 'lucide-react';
 import type {Theme} from '@/lib/study-model';
 import type {Word} from '@/lib/vocabulary-model';
 import {getWorkflowBook,getCandidateLearningWord,CANDIDATE_CONTENT_PENDING,type WorkflowBookId} from '@/lib/workflow-catalog';
@@ -230,7 +230,11 @@ export function TodayVocabularyTask({workflow,onOpen,onOpenStudy,onPlanOverview,
 }
 
 export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlocked=false,onFinish}:{workflow:Workflow;theme:Theme;onExampleLookup?:ExampleLookup;overlayBlocked?:boolean;onFinish?:()=>void}){
-  const session=workflow.activeSession,step=session?.currentStep;
+  const session=workflow.activeSession;
+  const [previousStep,setPreviousStep]=useState<string|null>(null);
+  const viewingPrevious=!!session&&session.status==='active'&&session.cursor>0&&session.queue[session.cursor-1]?.id===previousStep;
+  const step=viewingPrevious?session!.queue[session!.cursor-1]:session?.currentStep;
+  useEffect(()=>setPreviousStep(null),[workflow.scopeKey,session?.id,session?.cursor]);
   const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[selected,setSelected]=useState<RawVocabularyRating|null>(null);
   const contentRoot=useRef<HTMLDivElement>(null),wordHeading=useRef<HTMLHeadingElement>(null),previousWord=useRef<string|null>(null),focusedReceipt=useRef<string|null>(null);
   const targetKey=JSON.stringify([workflow.scopeKey,session?.id??null,step?.id??null]);
@@ -270,6 +274,16 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
     }catch(error){if(isCurrent())setMessage(error instanceof Error?error.message:'反馈尚未保存，请重试原操作。');}
     finally{if(isCurrent()){pending.current=false;setBusy(false);}}
   };
+  const correct=async()=>{
+    if(blocked||pending.current||!session||!step?.receipt||step.receipt.rawRating!=='known'||step.correctedToForgotten)return;
+    const key=workflow.scopeKey,request=++attempt.current,target=targetKey;
+    const isCurrent=()=>scope.current===key&&currentTarget.current===target&&attempt.current===request;
+    const fixed={sessionId:session.id,stepId:step.id,commandId:step.receipt.commandId,reviewId:step.receipt.legacyEventId};
+    pending.current=true;setBusy(true);setMessage('');
+    try{const result=await workflow.correctRating(fixed);if(isCurrent())setMessage(resultMessage(result,''));}
+    catch(error){if(isCurrent())setMessage(error instanceof Error?error.message:'改判尚未确认，请重试。');}
+    finally{if(isCurrent()){pending.current=false;setBusy(false);}}
+  };
   if(!session)return null;
   if(session.status==='completed')return <section className="phase2-word-finished panel" aria-label="词组完成">
     <CheckCircle2 size={34}/><h2>本组完成</h2><p>已记录 {session.queue.length} 个词的反馈。</p>
@@ -282,7 +296,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   const headwordAudio=getWordAudioBindingForSnapshot(step.word,'headword'),exampleAudio=getWordAudioBindingForSnapshot(step.word,'example'),audioHeld=isPrivateWordAudioBlocked(step.word);
   const intent=step.intent==='new'?'新词':step.intent==='reinforcement'?'巩固':step.intent==='manual-review'?'主动复习':'到期复习';
   return <section className="phase2-vocabulary-session" aria-label="单词学习">
-    <div className="phase2-word-session-heading"><span>{intent} · {session.cursor+1} / {session.queue.length}</span><span title={session.dayWindow.timezone}>{session.dayWindow.localDate}</span></div>
+    <div className="phase2-word-session-heading"><span>{viewingPrevious?'上一词 · ':''}{intent} · {viewingPrevious?session.cursor:session.cursor+1} / {session.queue.length}</span><span title={session.dayWindow.timezone}>{session.dayWindow.localDate}</span>{session.cursor>0&&<button type="button" className="text-button phase2-previous-word" disabled={blocked||viewingPrevious} onClick={()=>setPreviousStep(session.queue[session.cursor-1].id)}>上一词</button>}</div>
     {session.blockedReason&&<div className="phase2-vocab-alert" role="alert"><b>原词卡记录尚未确认</b><p>{session.blockedReason}</p><p>请先恢复独立的词库记录备份，再重新读取计划。此状态不计为整组完成，也不会补写学习事件。</p><button type="button" className="text-button" disabled={overlayBlocked||busy} onClick={()=>void workflow.refresh()}><RefreshCw size={15}/>重新核对词卡记录</button></div>}
     <article className="phase2-word-card panel v045-stable-word-card" tabIndex={-1}>
       <fieldset disabled={blocked} className="phase2-word-fieldset">
@@ -307,11 +321,11 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
           </div>
           <footer className="phase2-word-controls">
             <div className="phase2-word-status" role="status" aria-live="polite" aria-atomic="true">
-              {busy?<span>正在保存反馈…</span>:revealed?<span className="phase2-feedback-saved"><CheckCircle2 size={17}/>已保存：{RATING_NAMES[step.receipt!.rawRating]}</span>:fixedRating?<span className="phase2-fixed-feedback">待确认：{RATING_NAMES[fixedRating]}，请重试。</span>:null}
+              {busy?<span>正在保存反馈…</span>:step.correctionPending?<span>改判待确认，请重试。</span>:revealed?<span className="phase2-feedback-saved"><CheckCircle2 size={17}/>{step.correctedToForgotten?'已改为：忘记':'已保存：'+RATING_NAMES[step.receipt!.rawRating]}</span>:fixedRating?<span className="phase2-fixed-feedback">待确认：{RATING_NAMES[fixedRating]}，请重试。</span>:null}
             </div>
             {!revealed?<div className="phase2-rating-actions" role="group" aria-label="回想反馈">
-              {(['known','fuzzy','forgotten'] as const).map(rating=><button key={rating} type="button" className={`button ${rating==='known'?'primary':'secondary'}`} disabled={blocked||!!fixedRating&&fixedRating!==rating} aria-pressed={fixedRating===rating} aria-busy={busy&&fixedRating===rating} onClick={()=>void run(rating)}><span>{RATING_NAMES[rating]}</span>{busy&&fixedRating===rating&&<LoaderCircle className="phase2-rating-spinner" size={16} aria-hidden="true"/>}</button>)}
-            </div>:<button type="button" className="button primary phase2-next-word" disabled={blocked} aria-busy={busy} onClick={()=>void run()}>{session.cursor===session.queue.length-1?'完成这一组':'下一词'}<ArrowRight size={17}/></button>}
+              {(['known','fuzzy','forgotten'] as const).map(rating=><button key={rating} type="button" className={`button ${rating==='known'?'primary':'secondary'}`} disabled={blocked||!!fixedRating&&fixedRating!==rating} aria-pressed={fixedRating===rating} aria-busy={busy&&fixedRating===rating} onClick={()=>void run(rating)}><span>{RATING_NAMES[rating]}</span></button>)}
+            </div>:<div className="phase2-revealed-actions">{step.receipt!.rawRating==='known'&&!step.correctedToForgotten&&<button type="button" className="button secondary phase2-correct-rating" disabled={blocked} aria-busy={busy} onClick={()=>void correct()}>{step.correctionPending?'重试改判':'改为忘记'}</button>}{viewingPrevious?<button type="button" className="button primary phase2-next-word" disabled={blocked} onClick={()=>setPreviousStep(null)}>返回当前词<ArrowRight size={17}/></button>:<button type="button" className="button primary phase2-next-word" disabled={blocked||session.queue.some(row=>row.correctionPending)} aria-busy={busy} onClick={()=>void run()}>{session.cursor===session.queue.length-1?'完成这一组':'下一词'}<ArrowRight size={17}/></button>}</div>}
           </footer>
         </div>
       </fieldset>

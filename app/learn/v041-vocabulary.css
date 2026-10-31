@@ -41,7 +41,10 @@
 .v041-vocabulary .v045-stable-word-card :is(.phase2-rating-actions,.phase2-next-word) { margin: 0; }
 .v041-vocabulary .v045-stable-word-card .phase2-word-controls .button { position: relative; min-height: 3rem; padding-block: .625rem; font-size: 1rem; line-height: 1.5; }
 .v041-vocabulary .v045-stable-word-card .phase2-rating-actions .button { min-height: 3rem; padding-inline: 4px; }
-.phase2-rating-spinner { position: absolute; inset-block-start: 4px; inset-inline-end: 5px; width: 12px; animation: speech-audio-spin 1s linear infinite; }
+.phase2-revealed-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.phase2-revealed-actions .phase2-correct-rating { flex: 0 1 auto; }
+.v041-vocabulary .phase2-revealed-actions .phase2-next-word { flex: 1 1 120px; width: auto; }
+.phase2-word-session-heading .phase2-previous-word { margin-inline-start: auto; min-height: 44px; }
 .v041-word-heading { display: flex; align-items: center; gap: 12px; min-width: 0; flex-wrap: wrap; }
 .v041-word-heading :is(.phase2-current-word,.vocab-word-title) { flex: 0 1 auto; min-width: 0; margin: 0; font-size: clamp(36px,8vw,42px); line-height: 1.25; letter-spacing: -.025em; }
 .v041-word-heading > :is(.speech-audio,.dictionary-pronunciation) { flex: 0 0 auto; max-width: 100%; }

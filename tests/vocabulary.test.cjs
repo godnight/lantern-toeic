@@ -107,7 +107,7 @@ test('journals preserve independent writes, repeated restores and existing study
 });
 
 test('future or malformed vocabulary storage blocks writing without removing any original bytes', () => {
-  for (const raw of ['{broken', JSON.stringify({ ...backup([]), schemaVersion: 2 })]) {
+  for (const raw of ['{broken', JSON.stringify({ ...backup([]), schemaVersion: 99 })]) {
     const key = model.vocabularyKey(null), f = storageFixture(new Map([[key + 'retained', raw]]));
     assert.throws(() => model.writeVocabulary(f.storage, key, [review()]));
     assert.equal(f.raw.size, 1); assert.equal(f.raw.get(key + 'retained'), raw);
@@ -302,4 +302,9 @@ test('new local study during an uncertain POST survives cancellation and resumes
   assert.equal(model.vocabularyState(h.current.events, 'schedule').starred, true);
   assert.equal(model.vocabularyState(h.current.events, 'reservation').starred, true);
   assert.match(h.current.sync, /已同步/); h.unmount();
+});
+
+test('correction API preserves original reviews, roundtrips v2 and isolates owners idempotently',async()=>{
+ const h=apiFixture();try{const original=review({id:'api-original'}),event={id:'api-correction',wordId:original.wordId,createdAt:'2026-01-01T00:01:00.000Z',type:'review-correction',reviewId:original.id,reviewHash:model.vocabularyReviewHash(original),grade:'again'};const request=()=>new Request('https://test.local/api/vocabulary',{method:'POST',headers:{origin:'https://test.local','content-type':'application/json','x-lantern-owner':'alice'},body:JSON.stringify(model.vocabularyBackup([original,event]))});assert.equal((await h.api.POST(request())).status,200);assert.equal((await h.api.POST(request())).status,200);const payload=await (await h.api.GET()).json();assert.equal(payload.schemaVersion,2);assert.equal(payload.events.length,2);assert.equal(payload.events.find(e=>e.id===original.id).grade,'remembered');assert.equal(model.vocabularyState(model.parseVocabularyBackup(payload).events,original.wordId).reviews,1);assert.equal(model.vocabularyState(payload.events,original.wordId).level,0);h.setOwner('bob');const foreign=await (await h.api.GET()).json();assert.equal(foreign.events.length,0);assert.equal(foreign.schemaVersion,1);
+ }finally{h.sqlite.close();}
 });
