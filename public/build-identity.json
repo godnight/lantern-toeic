@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "buildId": "v045-word-card-space-20261026-r1-ca48f6890fe3",
-  "sourceInputsSha256": "ca48f6890fe3ade45b0ab7a2332492867aea62ae3721969326d4dabcb0752e21",
-  "inputCount": 14142,
+  "buildId": "v046-phone-beta-20261031-r1-62818898a58c",
+  "sourceInputsSha256": "62818898a58cce6bac3358215e6025079174aab81e26c3257186690e215037ae",
+  "inputCount": 14180,
   "excludedSelf": "public/build-identity.json",
   "versionName": "0.4.6",
   "versionCode": 20062
