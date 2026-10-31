@@ -10,9 +10,10 @@ const root = process.env.LANTERN_REVIEW_ROOT || path.resolve(__dirname, '..');
 const ts = require(path.join(root, 'node_modules/typescript'));
 const tick = () => new Promise(resolve => setImmediate(resolve));
 function load(file, imports = {}, globals = {}) {
+ imports={...require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root),...imports};const fallback=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals,permitLearningAccess:true});
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(path.join(root, file), 'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-  vm.runInNewContext(code, {exports,require(name){if(name==='@/lib/recording-capture-diagnostics')return {createRecordingCaptureTrace:()=>()=>{}};if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({permitLearningAccess:true,root,imports,globals:globals}).resolve(name,file);return imports[name];},Date,Map,Set,structuredClone,crypto:webcrypto,Blob,URL,AbortController,...globals}, {filename:file});
+  vm.runInNewContext(code, {exports,require(name){if(name==='@/lib/recording-capture-diagnostics')return {createRecordingCaptureTrace:()=>()=>{}};if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};if(!Object.hasOwn(imports,name))return fallback.resolve(name,file);return imports[name];},Date,Map,Set,structuredClone,crypto:webcrypto,Blob,URL,AbortController,...globals}, {filename:file});
   return exports;
 }
 const model = load('lib/study-model.ts');
@@ -46,9 +47,10 @@ const root=process.env.LANTERN_REVIEW_ROOT || path.resolve(__dirname,'..');
 const ts=require(path.join(root,'node_modules/typescript'));
 const observedFiles={};
 function load(file,imports={},globals={}) {
+ imports={...require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root),...imports};const fallback=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals,permitLearningAccess:true});
  const source=fs.readFileSync(path.join(root,file),'utf8');observedFiles[file]=crypto.createHash('sha256').update(source).digest('hex');
  const exports={},code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
- vm.runInNewContext(code,{exports,require:name=>{if(name==='@/lib/recording-capture-diagnostics')return {createRecordingCaptureTrace:()=>()=>{}};if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};if(!(name in imports))return require('./helpers/actual-source-loader.cjs').createSourceLoader({permitLearningAccess:true,root,imports,globals}).resolve(name,file);return imports[name];},Date,Intl,Set,Map,URLSearchParams,Blob,URL,...globals});return exports;
+ vm.runInNewContext(code,{exports,require:name=>{if(name==='@/lib/recording-capture-diagnostics')return {createRecordingCaptureTrace:()=>()=>{}};if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};if(!(name in imports))return fallback.resolve(name,file);return imports[name];},Date,Intl,Set,Map,URLSearchParams,Blob,URL,...globals});return exports;
 }
 const model=load('lib/study-model.ts'),data=structuredClone(model.EMPTY_DATA);
 const jsx=(type,props)=>({type,props}),proxy=new Proxy({},{get:(_,key)=>String(key)});

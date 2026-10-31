@@ -10,12 +10,13 @@ const root = process.env.LANTERN_REVIEW_ROOT || path.resolve(__dirname, '..');
 const ts = require(path.join(root, 'node_modules/typescript'));
 
 function load(file, imports, globals = {}) {
+ imports={...require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root),...imports};const fallback=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals,permitLearningAccess:true});
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(file==='app/learn/practice.tsx' && process.env.LANTERN_PRACTICE_COMPONENT ? process.env.LANTERN_PRACTICE_COMPONENT : path.join(root, file), 'utf8'), {
     fileName:file,compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX}
   }).outputText;
   vm.runInNewContext(code, {exports, require(name) {
-    if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals,permitLearningAccess:true}).resolve(name,file);
+    if(!Object.hasOwn(imports,name))return fallback.resolve(name,file);
     return imports[name];
   }, Date, Map, Set, TextEncoder, structuredClone, crypto: webcrypto, ...globals}, {filename: file});
   return exports;
@@ -133,10 +134,10 @@ test('submitted count and score advance once per saved question, preserving firs
 
 test('Dialog close and Native Back use the exit guard without advancing or losing an unsaved choice', () => {
   const h = harness({outcomes:[false]}); h.choose(1); h.click('确认答案'); h.dismissMain();
-  assert.equal(h.closed, 0); assert.match(textOf(h.tree), /先结束这组练习/);
+  assert.equal(h.closed, 0); assert.match(textOf(h.tree), /暂时退出练习/);
   h.click('继续练习'); h.nativeBack(); assert.equal(h.closed, 0);
   h.nativeBack();
-  assert.equal(nodes(h.tree, n => n.type === 'DialogTitle' && textOf(n) === '先结束这组练习？').length, 0);
+  assert.equal(nodes(h.tree, n => n.type === 'DialogTitle' && textOf(n) === '暂时退出练习？').length, 0);
   assert.equal(h.one(n => n.type === 'RadioGroup').props.value, '1');
   assert.equal(h.one(n => n.type === 'Progress').props.value, 0); assert.equal(h.calls.length, 1); h.unmount();
 });
@@ -146,7 +147,7 @@ test('Native Back closes the enlarged picture before opening exit confirmation',
   assert.equal(nodes(h.tree, n => n.props?.className === 'practice-image-dialog').length, 1);
   h.nativeBack(); assert.equal(h.closed, 0);
   assert.equal(nodes(h.tree, n => n.props?.className === 'practice-image-dialog').length, 0);
-  assert.equal(nodes(h.tree, n => n.type === 'DialogTitle' && textOf(n) === '先结束这组练习？').length, 0);
+  assert.equal(nodes(h.tree, n => n.type === 'DialogTitle' && textOf(n) === '暂时退出练习？').length, 0);
   assert.equal(h.one(n => n.type === 'RadioGroup').props.value, '2');
   h.nativeBack(); h.click('保存并返回'); assert.equal(h.closed, 1);
   assert.equal(h.calls.length, 0); assert.equal(h.finishes.length, 0); h.unmount();
@@ -187,15 +188,15 @@ function browserHarness(initial={lanternWorkspaceView:'search',lanternVocabulary
   let stateIndex=1,timerId=0,pushCalls=0,backCalls=0;const entries=[{lanternWorkspaceView:'resources'},structuredClone(initial)];
   const listeners=[],timers=new Map(),navigation=[],dispatched=[];
   const document={getElementById:()=>({focus(){}}),createElement:()=>({click(){}})};
-  const window={scrollY:380,speechSynthesis:{cancel(){}},matchMedia:()=>({matches:true,addEventListener(){},removeEventListener(){}}),
+  const window={location:{href:'https://study.test/'},scrollY:380,speechSynthesis:{cancel(){}},matchMedia:()=>({matches:true,addEventListener(){},removeEventListener(){}}),
     scrollTo(x,y){this.scrollY=typeof x==='object'?x.top:y;},
-    addEventListener(type,fn,capture=false){listeners.push({type,fn,capture:!!capture});},
+    addEventListener(type,fn,capture=false){listeners.push({type,fn,capture:typeof capture==='object'?!!capture.capture:!!capture,once:typeof capture==='object'&&capture.once});},
     removeEventListener(type,fn){const index=listeners.findIndex(item=>item.type===type&&item.fn===fn);if(index>=0)listeners.splice(index,1);},
     history:{get state(){return entries[stateIndex];},pushState(state){pushCalls++;entries.splice(stateIndex+1);entries.push(structuredClone(state));stateIndex++;},
       replaceState(state){entries[stateIndex]=structuredClone(state);},back(){backCalls++;navigation.push(()=>{if(!stateIndex)return;stateIndex--;dispatch('popstate',{state:structuredClone(entries[stateIndex])});});}}
   };
   function dispatch(type,values={}) {let stopped=false;const event={...values,stopImmediatePropagation(){stopped=true;},preventDefault(){}};
-    for(const item of [...listeners].filter(item=>item.type===type).sort((a,b)=>Number(b.capture)-Number(a.capture))){item.fn(event);if(stopped)break;}dispatched.push({type,state:event.state,stopped});event.wasStopped=stopped;return event;}
+    for(const item of [...listeners].filter(item=>item.type===type).sort((a,b)=>Number(b.capture)-Number(a.capture))){if(item.once)window.removeEventListener(type,item.fn);item.fn(event);if(stopped)break;}dispatched.push({type,state:event.state,stopped});event.wasStopped=stopped;return event;}
   const b={window,document,dispatch,setTimeout(fn){const id=++timerId;timers.set(id,fn);return id;},clearTimeout:id=>timers.delete(id),
     flushTimers(){const batch=[...timers.values()];timers.clear();batch.forEach(fn=>fn());},
     flushHistory(){let count=0;while(navigation.length){assert.ok(++count<30,'History traversal did not settle');navigation.shift()();}},
@@ -208,7 +209,7 @@ test('StrictMode replay retains one Practice entry and never opens an exit confi
   assert.ok(token);h.strictReplay();browser.flush();h.render();
   assert.equal(browser.pushCalls,1);assert.equal(browser.backCalls,0);assert.equal(browser.popListeners,1);
   assert.equal(browser.window.history.state.lanternPracticeView,token);
-  assert.equal(nodes(h.tree,n=>n.type==='DialogTitle'&&textOf(n)==='先结束这组练习？').length,0);
+  assert.equal(nodes(h.tree,n=>n.type==='DialogTitle'&&textOf(n)==='暂时退出练习？').length,0);
   assert.equal(h.closed,0);assert.equal(h.calls.length,0);h.unmount();browser.flush();
   assert.equal(browser.backCalls,1);assert.equal(browser.window.history.state.lanternPracticeView,undefined);assert.equal(browser.window.history.state.lanternVocabularyView.token,'fixture-detail');
 });
@@ -228,11 +229,11 @@ test('Browser Back closes picture then exit confirmation while retaining the sam
   browser.window.addEventListener('popstate',()=>bubblePops++);
   browser.window.history.back();browser.flushHistory();h.render();
   assert.equal(nodes(h.tree,n=>n.props?.className==='practice-image-dialog').length,0);
-  assert.equal(nodes(h.tree,n=>n.type==='DialogTitle'&&textOf(n)==='先结束这组练习？').length,0);
+  assert.equal(nodes(h.tree,n=>n.type==='DialogTitle'&&textOf(n)==='暂时退出练习？').length,0);
   assert.equal(browser.window.history.state.lanternPracticeView,token);assert.equal(bubblePops,0);
-  browser.window.history.back();browser.flushHistory();h.render();assert.match(textOf(h.tree),/先结束这组练习/);assert.equal(h.closed,0);
+  browser.window.history.back();browser.flushHistory();h.render();assert.match(textOf(h.tree),/暂时退出练习/);assert.equal(h.closed,0);
   browser.window.history.back();browser.flushHistory();h.render();
-  assert.equal(nodes(h.tree,n=>n.type==='DialogTitle'&&textOf(n)==='先结束这组练习？').length,0);
+  assert.equal(nodes(h.tree,n=>n.type==='DialogTitle'&&textOf(n)==='暂时退出练习？').length,0);
   assert.equal(h.one(n=>n.type==='RadioGroup').props.value,'1');assert.equal(h.one(n=>n.type==='Progress').props.value,0);
   assert.equal(h.saved.length,0);assert.equal(h.calls.length,1);assert.equal(h.finishes.length,0);assert.equal(bubblePops,0);
   h.unmount();browser.flush();assert.equal(browser.window.history.state.lanternVocabularyView.token,'fixture-detail');assert.equal(browser.popListeners,1);
@@ -280,11 +281,11 @@ test('actual word detail survives Practice StrictMode, guarded Browser/Native/Es
   const all=JSON.parse(fs.readFileSync(path.join(root,'content/questions.json'),'utf8')),model=load('lib/study-model.ts',{});
   words.block(true);const practice=harness({browser,queue:model.expandQuestionGroups(all,new Set([words.questionId])),outcomes:[false]});
   practice.strictReplay();browser.flush();practice.render();
-  assert.equal(nodes(practice.tree,n=>n.type==='DialogTitle'&&textOf(n)==='先结束这组练习？').length,0);
+  assert.equal(nodes(practice.tree,n=>n.type==='DialogTitle'&&textOf(n)==='暂时退出练习？').length,0);
   assert.equal(words.back(),false,'Higher-priority word handler must defer to foreground Practice');practice.nativeBack();practice.click('继续练习');
   const escape=browser.dispatch('keydown',{key:'Escape'});assert.equal(escape.wasStopped,false,'Word capture must not consume Escape while Practice owns the overlay');
   practice.dismissMain();practice.click('继续练习');
-  browser.window.history.back();browser.flushHistory();practice.render();words.render();assert.match(textOf(practice.tree),/先结束这组练习/);
+  browser.window.history.back();browser.flushHistory();practice.render();words.render();assert.match(textOf(practice.tree),/暂时退出练习/);
   assert.equal(nodes(words.tree,n=>n.props?.['data-vocabulary-detail']==='true').length,1);assert.equal(practice.closed,0);
   practice.click('保存并返回');assert.equal(practice.closed,1);practice.unmount();words.block(false);browser.flush();words.render();
   assert.equal(browser.window.history.state.lanternPracticeView,undefined);assert.equal(browser.window.history.state.lanternVocabularyView.token,detailToken);
@@ -322,7 +323,7 @@ test('I09: controlled lookup leaves Practice mounted with identical question, an
   const main=h.one(n=>n.props?.className==='question-scroll practice-with-material');
   assert.equal(main.key,'lookup-fixture-one');
   h.click('查词 reservation');h.dismissMain();assert.equal(h.closed,0);
-  assert.equal(nodes(h.tree,n=>n.type==='DialogTitle'&&textOf(n)==='先结束这组练习？').length,0);
+  assert.equal(nodes(h.tree,n=>n.type==='DialogTitle'&&textOf(n)==='暂时退出练习？').length,0);
   assert.equal(h.nativeResult(),false,'Nested dictionary owns Native Back while active');
   assert.equal(h.one(n=>n.props?.className==='question-scroll practice-with-material').key,main.key);
   assert.equal(nodes(h.tree,n=>n.type==='Dialog'&&n.props.open).length,1,'Main Practice remains open');
@@ -344,9 +345,9 @@ test('I09: Practice history capture yields during nested lookup and resumes its 
   browser.window.history.back();browser.flushHistory();h.render();
   assert.equal(parentReturns,1,'Root/dictionary return handler receives the nested traversal');assert.equal(browser.pushCalls,pushes);
   assert.equal(browser.window.history.state.lanternPracticeView,token);assert.equal(h.closed,0);
-  assert.equal(nodes(h.tree,n=>n.type==='DialogTitle'&&textOf(n)==='先结束这组练习？').length,0);
+  assert.equal(nodes(h.tree,n=>n.type==='DialogTitle'&&textOf(n)==='暂时退出练习？').length,0);
   h.lookupActive(false);browser.window.history.back();browser.flushHistory();h.render();
-  assert.equal(parentReturns,1,'Practice regains capture ownership after lookup return');assert.match(textOf(h.tree),/先结束这组练习/);
+  assert.equal(parentReturns,1,'Practice regains capture ownership after lookup return');assert.match(textOf(h.tree),/暂时退出练习/);
   assert.equal(h.one(n=>n.type==='RadioGroup').props.value,'1');assert.equal(h.saved.length,1);assert.equal(h.calls.length,1);
   h.click('继续练习');h.unmount();browser.flush();
 });
