@@ -16,7 +16,7 @@ export default function NativeAccountRoot(){
   const value=new NativeAccountController(createNativeAuthTransport());controller.current=value;
   const off=value.subscribe((next,sync)=>{if(sync)flushSync(()=>setState(next));else setState(next);});
   let foreground=true,initialized=false;
-  const hide=()=>value.suspend(),show=()=>{if(foreground&&document.visibilityState!=='hidden')value.resume();else value.suspend();};
+  const hide=()=>value.suspend(),show=()=>{if(foreground&&document.visibilityState!=='hidden'){if(value.getSnapshot().status!=='ready')value.resume();}else value.suspend();};
   const native=subscribeNativeState(active=>{foreground=active;if(initialized){if(active)show();else hide();}});
   const visibility=()=>document.visibilityState==='hidden'?hide():show();
   window.addEventListener('pagehide',hide);window.addEventListener('pageshow',show);window.addEventListener('focus',show);document.addEventListener('visibilitychange',visibility);

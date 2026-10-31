@@ -15,7 +15,7 @@ let browser;
 const check=(name,detail=true)=>{report.results.push({name,detail});process.stdout.write('PASS '+name+'\n');};
 const mime=f=>({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml','.woff2':'font/woff2'}[path.extname(f)]||'application/octet-stream');
 function file(pathname){const p=path.resolve(DIST,'.'+pathname);return p.startsWith(DIST+path.sep)&&fs.existsSync(p)&&fs.statSync(p).isFile()?p:null;}
-function bundle(){return Buffer.from(buildSync({stdin:{resolveDir:ROOT,sourcefile:'account-ui-fixture.jsx',loader:'jsx',contents:`import React from 'react';import {createRoot} from 'react-dom/client';import NativeAccountRoot from './mobile/src/NativeAccountRoot';import AccountForm from './app/account/account-form';import StudyApp from './app/study-app';const account=location.pathname==='/account',native=location.origin==='${NATIVE}';createRoot(document.getElementById('root')).render(native?<NativeAccountRoot/>:account?<AccountForm initialMode="register" returnOwner={document.documentElement.dataset.returnOwner||null}/>:<StudyApp owner={document.documentElement.dataset.owner||null} remoteLearningEnabled={false}/>);`},bundle:true,write:false,format:'esm',platform:'browser',target:'es2022',alias:{'@':ROOT},loader:{'.css':'empty'},define:{'process.env.NODE_ENV':'"production"'},logLevel:'silent'}).outputFiles[0].contents);}
+function bundle(){return Buffer.from(buildSync({stdin:{resolveDir:ROOT,sourcefile:'account-ui-fixture.jsx',loader:'jsx',contents:`import React from 'react';import {createRoot} from 'react-dom/client';import NativeAccountRoot from './mobile/src/NativeAccountRoot';import AccountForm from './app/account/account-form';import StudyApp from './app/study-app';import {installHarmonyHost} from './lib/native-host';const account=location.pathname==='/account',native=location.origin==='${NATIVE}';if(native)installHarmonyHost();createRoot(document.getElementById('root')).render(native?<NativeAccountRoot/>:account?<AccountForm initialMode="register" returnOwner={document.documentElement.dataset.returnOwner||null}/>:<StudyApp owner={document.documentElement.dataset.owner||null} remoteLearningEnabled={false}/>);`},bundle:true,write:false,format:'esm',platform:'browser',target:'es2022',alias:{'@':ROOT},loader:{'.css':'empty'},define:{'process.env.NODE_ENV':'"production"'},logLevel:'silent'}).outputFiles[0].contents);}
 async function shot(p,name,fullPage=false){const f=path.join(OUT,name+'.png');await p.screenshot({path:f,fullPage});report.screenshots.push(f);}
 async function context(width=390){const c=await browser.newContext({viewport:{width,height:844},deviceScaleFactor:1});contexts.push(c);return c;}
 function watch(p){p.on('pageerror',e=>report.pageErrors.push(e.message));}
@@ -48,6 +48,25 @@ async function errorGeometry(p,name){
 }
 (async()=>{
  fs.mkdirSync(OUT,{recursive:true});const component=bundle(),styles=fs.readdirSync(path.join(DIST,'assets')).filter(f=>f.endsWith('.css')).map(f=>'/assets/'+f),chrome=['C:/Program Files/Google/Chrome/Application/chrome.exe','C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'].find(fs.existsSync);assert(chrome);browser=await chromium.launch({headless:true,executablePath:chrome});
+ if(process.argv.includes('--focus-only')){
+  const anon=await nativePage(component,styles),p=anon.p;
+  await p.getByRole('heading',{name:'注册微光账号',exact:true}).waitFor();
+  await p.getByLabel('用户名',{exact:true}).fill('synthetic_focus');await p.getByLabel('密码',{exact:true}).fill(password);
+  const field=await p.getByLabel('用户名',{exact:true}).elementHandle(),before=anon.calls.length;
+  await p.evaluate(()=>{document.querySelector('input[name="username"]').focus();dispatchEvent(new Event('focus'));window.__LANTERN_HARMONY__.onAppState(true);window.__LANTERN_HARMONY__.onAppState(true);dispatchEvent(new Event('pageshow'));});
+  assert(await field.evaluate(el=>el.isConnected),'Ready focus must preserve the existing form field');
+  assert.equal(await p.getByLabel('用户名',{exact:true}).inputValue(),'synthetic_focus');assert.equal(await p.getByLabel('密码',{exact:true}).inputValue(),password);assert.equal(anon.calls.length,before);
+  check('Ready field focus, pageshow and repeated native foreground preserve form/input and issue no session request');
+  for(const kind of ['native','visibility']){
+   const old=await p.getByLabel('用户名',{exact:true}).elementHandle(),count=anon.calls.length;
+   await p.evaluate(kind=>{if(kind==='native')window.__LANTERN_HARMONY__.onAppState(false);else{Object.defineProperty(document,'visibilityState',{configurable:true,value:'hidden'});document.dispatchEvent(new Event('visibilitychange'));}},kind);
+   await p.getByRole('heading',{name:'账号需要核对',exact:true}).waitFor();assert.equal(await old.evaluate(el=>el.isConnected),false);
+   await p.evaluate(kind=>{if(kind==='native')window.__LANTERN_HARMONY__.onAppState(true);else{Object.defineProperty(document,'visibilityState',{configurable:true,value:'visible'});document.dispatchEvent(new Event('visibilitychange'));}},kind);
+   await p.getByRole('heading',{name:'注册微光账号',exact:true}).waitFor();assert.equal(anon.calls.length,count+1);assert.equal(await p.getByLabel('密码',{exact:true}).inputValue(),'');
+   check('Real '+kind+' hide/show closes the form and requires a new session before reopening');
+  }
+  assert.equal(report.pageErrors.length,0);assert.equal(report.privateRequests.length,0);report.status='PASS_NATIVE_ACCOUNT_FOCUS';return;
+ }
  if(process.argv.includes('--copy-only')){
   const owner=await nativePage(component,styles,A,390),p=owner.p;await p.getByRole('heading',{name:'今日学习',exact:true}).waitFor();await backups(p);
   assert.equal(await p.locator('.workspace-backups>p').innerText(),'学习记录仅保存在此设备。卸载、清除数据或丢失设备后可能无法找回，请及时备份。');const study=p.locator('.workspace-backups>.panel').filter({has:p.getByRole('heading',{name:'学习记录',exact:true})});assert.match(await study.innerText(),/不含音频文件。录音文件需逐条另存。/);await p.evaluate(()=>scrollTo(0,0));await shot(p,'copy-data-management-390');
