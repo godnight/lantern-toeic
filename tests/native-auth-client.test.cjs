@@ -53,6 +53,36 @@ test('v2 old-host silence and missing metadata fail closed without fallback',asy
  const missing=controller();missing.value.start();missing.reply(0,{status:200,body:{user:A,capabilities:caps}});await tick();assert.equal(missing.value.getSnapshot().status,'blocked');missing.value.dispose();
 });
 
+test('foreground resume and a simultaneous recheck share the initial pending session proof',async()=>{
+  for(const result of [guest,session(A)]){
+    const h=controller();
+    try{
+      h.value.start();h.value.resume();h.value.recheck();h.value.resume();
+      assert.equal(h.calls.length,1,'Repeated foreground/click events must not cancel the live native request');
+      assert.equal(h.value.getSnapshot().status,'checking');
+      h.reply(0,result);await tick();
+      assert.equal(h.value.getSnapshot().status,'ready');
+      assert.equal(h.value.getSnapshot().user?.id??null,result.body.user?.id??null);
+      assert.equal(h.calls.length,1);
+    }finally{h.value.dispose();}
+  }
+});
+
+test('foreground resume and recheck cannot cancel a mutation or its independent session proof',async()=>{
+  const h=controller();let pending;
+  try{
+    const prior=await initial(h),oldAccess=prior.access;
+    pending=h.value.mutate('login',credentials);
+    h.value.resume();h.value.recheck();h.value.resume();
+    assert.equal(h.calls.length,2);assert.equal(h.value.getSnapshot().status,'checking');assert.equal(oldAccess.canAccess(),false);
+    h.reply(1,session(B));await tick();
+    assert.equal(h.calls.length,3);assert.equal(h.calls[2].action,'session');
+    h.value.recheck();h.value.resume();assert.equal(h.calls.length,3);assert.equal(oldAccess.canAccess(),false);
+    h.reply(2,session(B));await pending;
+    assert.equal(h.value.getSnapshot().user.id,B.id);assert.equal(oldAccess.canAccess(),false);
+  }finally{h.value.dispose();await pending;}
+});
+
 test('unknown mutation hold survives lifecycle; explicit proof opens B while old A access stays closed',async()=>{
  const h=controller();const state=await initial(h),oldAccess=state.access;const pending=h.value.mutate('login',credentials);h.reply(1,{status:503,body:{code:'auth-state-unknown'}});await pending;
  h.value.suspend();h.value.resume();await tick();assert.equal(h.calls.length,2);assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(oldAccess.assertAccess(),false);
@@ -169,10 +199,16 @@ test('a session probe that never replies expires with no mounted identity and re
   h.reply(0,session(A));await tick();assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(h.timer.size,0);h.value.dispose();
 });
 
-test('foreground-style recheck invalidates prior session generation and rejects its lateA callback',async()=>{
-  const h=controller();await initial(h);h.value.recheck();assert.equal(h.value.getSnapshot().status,'checking');
-  h.value.recheck();h.reply(1,session(A));await tick();assert.equal(h.value.getSnapshot().status,'checking');
-  h.reply(2,session(B));await tick();assert.equal(h.value.getSnapshot().user.id,B.id);h.value.dispose();
+test('actual suspend invalidates the pending proof; resume revalidates without reviving old owner access',async()=>{
+  const h=controller();
+  try{
+    const prior=await initial(h),oldAccess=prior.access;
+    h.value.recheck();assert.equal(h.value.getSnapshot().status,'checking');
+    h.value.suspend();assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(oldAccess.canAccess(),false);
+    h.value.resume();h.value.resume();h.value.recheck();assert.equal(h.calls.length,3);
+    h.reply(1,session(A));await tick();assert.equal(h.value.getSnapshot().status,'checking');assert.equal(oldAccess.canAccess(),false);
+    h.reply(2,session(B));await tick();assert.equal(h.value.getSnapshot().user.id,B.id);assert.equal(oldAccess.canAccess(),false);
+  }finally{h.value.dispose();}
 });
 
 test('suspend during mutation keeps its late success from selecting any partition',async()=>{

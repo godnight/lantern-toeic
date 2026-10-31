@@ -65,7 +65,9 @@ export class NativeAccountController {
     }
   }
   start(){if(this.alive){const generation=this.begin('正在核对账号会话。',false);void this.probe(generation);}}
-  recheck(){if(!this.alive)return;const warning=this.held?'当前身份已重新核对；这不确认原账号操作结果。':'';this.held=false;const generation=this.begin('正在重新核对账号，旧学习分区已暂停。',true);void this.probe(generation,warning);}
+  // Focus/native-resume and a retry click may arrive together. Keep the pending
+  // probe/mutation; suspend and unknown results enter blocked before retrying.
+  recheck(){if(!this.alive||this.state.status==='checking')return;const warning=this.held?'当前身份已重新核对；这不确认原账号操作结果。':'';this.held=false;const generation=this.begin('正在重新核对账号，旧学习分区已暂停。',true);void this.probe(generation,warning);}
   resume(){if(!this.held)this.recheck();}
   hold(message='账号操作结果未确认，分区已锁定。请显式重新核对账号。'){if(!this.alive)return;this.held=true;this.begin(message,true);this.update({status:'blocked',message},true);}
   suspend(synchronous=true){if(!this.alive)return;this.begin('页面已离开，账号身份需要重新核对。',synchronous);

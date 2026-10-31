@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "buildId": "v046-auth-connect-20261031-r2-c934fcce3dad",
-  "sourceInputsSha256": "c934fcce3dadc1846a5a49c08a7ba672c7f01e07f4852281ea6a391e1a5ffcb0",
+  "buildId": "v046-auth-connect-20261031-r3-8a344aefcfaa",
+  "sourceInputsSha256": "8a344aefcfaa907d5524ad3f12bdb4e1cd1e3def7895ccb7534653de9ee36b7b",
   "inputCount": 14180,
   "excludedSelf": "public/build-identity.json",
   "versionName": "0.4.6",
