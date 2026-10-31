@@ -121,11 +121,13 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
     sonner:{toast:h.toast}
   }, h.browser);
   pureComponents.add(speaking.SpeakingTaskCatalog);
-  const presentationImports={react:h.react,'react/jsx-runtime':runtime,'lucide-react':stubs,'./ui-theme':themeUi,'@/lib/ui-theme':themeModel,'@/lib/study-model':h.model,'./legal-pages':{PublicInfoLinks:'PublicInfoLinks'},'@/components/ui/tabs':stubs};
+  const presentationImports={react:h.react,'react/jsx-runtime':runtime,'lucide-react':stubs,'./ui-theme':themeUi,'@/lib/ui-theme':themeModel,'@/lib/study-model':h.model,'./legal-pages':{PublicInfoLinks:'PublicInfoLinks'},'@/components/ui/tabs':stubs,'@/components/ui/dialog':stubs};
+  const practiceRecords=load('app/learn/practice-records.tsx',presentationImports,h.browser);
+  pureComponents.add(practiceRecords.PracticeTaskActions);
   const presentation={};
   for(const file of ['personal-settings','today-dashboard','practice-home']){const module=load('app/learn/'+file+'.tsx',presentationImports,h.browser);presentation['./learn/'+file]=module;for(const component of Object.values(module))if(typeof component==='function')pureComponents.add(component);}
   const imports = {
-    ...presentation,'./account/account-form':{default:'AccountForm'},'./learn/legal-pages':{PublicInfoLinks:'PublicInfoLinks'},'./legal-pages':{PublicInfoLinks:'PublicInfoLinks'},
+    ...presentation,'./learn/practice-records':practiceRecords,'./account/account-form':{default:'AccountForm'},'./learn/legal-pages':{PublicInfoLinks:'PublicInfoLinks'},'./legal-pages':{PublicInfoLinks:'PublicInfoLinks'},
     react:h.react, 'react/jsx-runtime':runtime, 'lucide-react':stubs, sonner:{toast:h.toast},
     '@/lib/lesson-audio':{prepareProductLessonAudio:async()=>undefined,stopLessonAudio(){}},
     '@/lib/use-study':{useStudy: data ? () => ({data,ready:true,recordsReadable:true,sync:'local',issues:[],...api}) : owner => h.useStudy(owner)},
@@ -248,7 +250,7 @@ function navigateApp(render, id) {
   assert.ok(button,'Find the real WorkspaceShell navigation button for '+id);
   button.props.onClick();
 }
-function startWorkspacePractice(render){navigateApp(render,'train');const start=nodes(render(),n=>n.type==='button'&&textOf(n).includes('Part 1 ·'))[0];assert.ok(start,'Actual Part 1 entry');start.props.onClick();}
+function startWorkspacePractice(render){navigateApp(render,'train');const start=nodes(render(),n=>n.type==='button'&&n.props['aria-label']==='听力 · Part 1 · 开始')[0];assert.ok(start,'Actual Part 1 entry');start.props.onClick();}
 // Daily recommendations are now a model contract; the redesigned Today UI routes
 // to explicit Part selection instead of rendering the old three task buttons.
 function dailySnapshot(render) {
