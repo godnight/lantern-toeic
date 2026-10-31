@@ -17,6 +17,7 @@ import {bundledLessonAudio,bundledLessonSource,stopLessonAudio,naturalLessonDesc
 import {getQuestionPrivateAudio} from '@/lib/question-audio-bindings-v040';
 import {getReviewedListeningAudio as getListening50Audio} from '@/lib/question-audio-dispatch-v041';
 import {createExplicitBundledPlayback} from '@/lib/explicit-bundled-playback';
+import {claimPracticeHistory,type PracticeHistoryTarget} from '@/lib/practice-history-browser';
 import {registerNativeBack,subscribeNativeState} from '@/lib/native-host';
 // Paused players remain mounted. Only the most recently started player owns the checkpoint.
 let checkpointOwner:object|null=null;
@@ -153,14 +154,14 @@ export default function Practice({queue,attempts,onAttempt,onClose,onSavedClose,
  const next=()=>{if(lookupOpen.current||durable?.busy||durable?.blocked||durable?.readError||!submitted)return;if(!durable){stopLessonAudio();if(index===queue.length-1){setFinished(true);return;}setIndex(i=>i+1);setChoice('');setSubmitted(false);setSaveError(false);pending.current=null;qStart.current=Date.now();return;}void(async()=>{stopLessonAudio();if(!await training.flush()){setAdvanceError(true);return;}if(durable){if(index<durable.cursor){await showQuestion(index+1);return;}const ok=await durable.next();setAdvanceError(!ok);return;}if(index===queue.length-1){setFinished(true);return;}setIndex(i=>i+1);setChoice('');setSubmitted(false);setSaveError(false);pending.current=null;qStart.current=Date.now();})();};
  const continueSaved=(action:()=>void)=>{stopLessonAudio();void training.flush().then(ok=>{if(ok)action();else{setUnsavedExit(true);setExitOpen(true);}});};
  const requestClose=()=>{if(lookupOpen.current)return;stopLessonAudio();void training.flush();if(durable?.blocked){onClose();return;}if(imageOpen){setImageOpen(false);return;}if(finished){void closeSaved();return;}setExitOpen(true);};
- const browserBack=useRef(()=>{});browserBack.current=()=>{if(imageOpen){setImageOpen(false);return;}if(exitOpen){setExitOpen(false);return;}requestClose();};const historyLease=useRef({token:'',active:false,release:null as ReturnType<typeof setTimeout>|null});
+ const browserBack=useRef(()=>{});browserBack.current=()=>{if(imageOpen){setImageOpen(false);return;}if(exitOpen){setExitOpen(false);return;}requestClose();};const historyLease=useRef({token:'',active:false,release:null as ReturnType<typeof setTimeout>|null,target:undefined as PracticeHistoryTarget|undefined});
  useEffect(()=>{
   if(!window.history?.pushState||!window.addEventListener)return;
   const lease=historyLease.current;if(lease.release!==null){clearTimeout(lease.release);lease.release=null;}if(!lease.token)lease.token=createId();lease.active=true;const token=lease.token;
-  if(window.history.state?.lanternPracticeView!==token)window.history.pushState({...window.history.state,lanternPracticeView:token},'');
   const pop=(event:PopStateEvent)=>{if(lookupOpen.current)return;if(!lease.active||event.state?.lanternPracticeView===token)return;event.stopImmediatePropagation?.();window.history.pushState({...event.state,lanternPracticeView:token},'');browserBack.current();};
-  window.addEventListener('popstate',pop,true);
-  return()=>{lease.active=false;window.removeEventListener('popstate',pop,true);if(lease.release!==null)clearTimeout(lease.release);lease.release=setTimeout(()=>{lease.release=null;if(!lease.active&&window.history.state?.lanternPracticeView===token){window.addEventListener('popstate',event=>event.stopImmediatePropagation(),{once:true,capture:true});window.history.back();}},0);};
+  const route=claimPracticeHistory(token,'lanternPracticeView',pop,lease.target);lease.target=route.target;
+  if(window.history.state?.lanternPracticeView!==token){if(route.reuse)window.history.replaceState({...route.base,lanternPracticeView:token},'');else window.history.pushState({...window.history.state,lanternPracticeView:token},'');}
+  return()=>{lease.active=false;route.release();if(lease.release!==null)clearTimeout(lease.release);lease.release=setTimeout(()=>{lease.release=null;if(!lease.active&&window.history.state?.lanternPracticeView===token&&window.location.href===route.target.href){route.consume();window.history.back();}},0);};
  },[]);
  useEffect(()=>registerNativeBack(()=>{if(lookupOpen.current)return false;if(imageOpen){setImageOpen(false);return true;}if(exitOpen){setExitOpen(false);return true;}requestClose();return true;},10),[imageOpen,exitOpen,finished,durable?.blocked]);
  if(!q)return null;
