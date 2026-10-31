@@ -88,7 +88,7 @@ function parsePracticeSession(row:DomainRecord<unknown>,scopeKey:string,catalogV
   if(!plain(settlement)||!uuid.test(settlement.checkinId)||!validId(settlement.commandId)||!['draft','prepared','applied'].includes(settlement.status)||!validDraft(settlement.draft)||(settlement.status==='draft'?settlement.pendingPayload!==null:!validCheckin(settlement.pendingPayload)||settlement.pendingPayload.id!==settlement.checkinId||!same({minutes:settlement.pendingPayload.minutes,load:settlement.pendingPayload.load,note:settlement.pendingPayload.note},settlement.draft)))throw Error('practice-settlement-corrupt');
   keys(settlement,['checkinId','commandId','status','draft','pendingPayload']);
   if(settlement.pendingPayload&&settlement.pendingPayload.date!==dayKey(settlement.pendingPayload.createdAt,session.timezone))throw Error('practice-settlement-corrupt');
-  if(session.schemaVersion===3){validatePracticeTask(session.task,session.catalogVersion,session.unitIds,session.questionIds);if(!stamp(session.activityAt)||session.restartOf!==undefined&&(!validId(session.restartOf)||!session.restartOf.startsWith('practice:')||session.restartOf===session.id))throw Error('practice-task-invalid');}
+  if(session.schemaVersion===3){validatePracticeTask(session.task,session.catalogVersion,session.unitIds,session.questionIds);const origin=session.task!.origin;if(origin.part&&session.catalogVersion===catalogVersion&&session.questionIds.some(id=>questions.get(id)?.part!==origin.part)||origin.kind==='material'&&(session.unitIds.length!==1||session.unitIds[0]!==origin.unitId)||origin.kind==='question'&&!session.questionIds.includes(origin.unitId!))throw Error('practice-task-reference');if(!stamp(session.activityAt)||session.restartOf!==undefined&&(!validId(session.restartOf)||!session.restartOf.startsWith('practice:')||session.restartOf===session.id))throw Error('practice-task-invalid');}
   if(session.schemaVersion>=2)validatePracticeTraining(session.training,session.unitIds,session.questionIds,session.cursor,session.steps.map(step=>step.status==='applied'),session.catalogVersion===catalogVersion?session.questionIds.map(id=>questions.get(id)!).filter(Boolean):undefined);
   return session;
  }
@@ -261,7 +261,7 @@ export class PracticeWorkflow {
  }
  private blocked(error:unknown,sessionId?:string):PracticeResult {return {status:'blocked',reason:error instanceof Error?error.message:'practice-unavailable',...(sessionId?{sessionId}:{})};}
  private async transact(commandId:string,occurredAt:string,payload:unknown,rows:{collection:'sessions'|'commands';row:DomainRecord<unknown>|undefined;id:string;value:unknown}[]){
-  this.current();const result=await this.repository.commit({commandId,occurredAt,payload:json(payload),expected:rows.map(({collection,row,id})=>({collection,id,revision:row?.revision??null})),writes:rows.map(({collection,row,id,value})=>({collection,id,revision:(row?.revision??0)+1,value:json(value)}))});this.current();return result;
+  this.current();const result=await this.repository.commit({commandId,occurredAt,payload:json(payload),expected:rows.map(({collection,row,id})=>({collection,id,revision:row?.revision??null})),writes:rows.map(({collection,row,id,value})=>({collection,id,revision:(row?.revision??0)+1,value:json(value)}))},()=>this.current());this.current();return result;
  }
  private freshSession(queue:readonly Question[],start:PracticeStartOptions,id:string,chainId:string,at:string):StoredSession{
   if(!queue.length||queue.length>200||new Set(queue.map(question=>question.id)).size!==queue.length)throw Error('practice-queue-invalid');
@@ -283,7 +283,7 @@ export class PracticeWorkflow {
     const pointer=await this.pointer(),existing=await this.readProjection();this.current();
     if(existing.sessions.some(session=>session.integrityError))throw Error('reference-unverified');
     const prior=existing.sessions.find(session=>session.id===id);
-    if(prior){if(!same(prior.questionIds,value.questionIds)||prior.task?.key!==value.task?.key)throw Error('practice-request-conflict');return {status:'restored',sessionId:id};}
+    if(prior){if(!same(prior.questionIds,value.questionIds)||prior.task?.key!==value.task?.key||start.chainId!==undefined&&prior.chainId!==start.chainId)throw Error('practice-request-conflict');return {status:'restored',sessionId:id};}
     if(start.mode!=='new'){
      const matches=existing.sessions.filter(session=>session.status==='active'&&(value.task?session.task?.key===value.task.key:!session.task&&session.catalogVersion===value.catalogVersion&&same(session.questionIds,value.questionIds)));
      if(matches.length>1)return {status:'conflict',reason:'practice-select-session'};

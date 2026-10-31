@@ -9,6 +9,7 @@ export function validatePracticeTaskOrigin(value:unknown):asserts value is Pract
  if(typeof v.kind!=='string'||!Object.hasOwn(fields,v.kind)||Object.keys(v).some(key=>key!=='kind'&&!fields[v.kind as string].includes(key)))throw Error('practice-task-invalid');
  for(const field of ['collection','unitId','chainId','day'])if(field in v&&(typeof v[field]!=='string'||!v[field]||v[field].length>200||/[\u0000-\u001f]/.test(v[field] as string)))throw Error('practice-task-invalid');
  if('part'in v&&(!Number.isInteger(v.part)||Number(v.part)<1||Number(v.part)>7)||'count'in v&&(!Number.isInteger(v.count)||Number(v.count)<1||Number(v.count)>200))throw Error('practice-task-invalid');
+ if(v.kind==='listening'&&Number(v.part)>4||v.kind==='reading'&&Number(v.part)<5)throw Error('practice-task-invalid');
  if((v.kind==='listening'&&(!v.collection||!v.part))||(v.kind==='reading'&&!v.part)||(v.kind==='material'&&(!v.collection||!v.unitId))||(['custom','wrong','review','continue'].includes(v.kind)&&!v.count)||(v.kind==='question'&&!v.unitId)||(v.kind==='continue'&&!v.chainId)||(v.kind==='wrong'&&!v.collection)||(v.kind==='daily'&&(!v.day||!v.collection))||(v.kind==='combined'&&!v.collection))throw Error('practice-task-invalid');
 }
 export function practiceTaskOriginKey(origin:PracticeTaskOrigin){validatePracticeTaskOrigin(origin);return canonicalHash(canonicalJson(origin));}

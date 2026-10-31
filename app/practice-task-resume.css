@@ -31,3 +31,8 @@
 .practice-history-question img{max-width:100%}
 @media(max-width:380px){.practice-task-row{gap:8px}.practice-task-row>span{min-width:110px}.practice-task-actions{flex:1 1 100%}.practice-task-controls{justify-content:flex-start}.practice-task-progress{text-align:left}.practice-record-actions{width:100%;justify-content:flex-start}.practice-tab-row .main-tabs{max-width:100%}}
 @media(prefers-reduced-motion:reduce){.practice-task-menu-items{scroll-behavior:auto}}
+
+.practice-task-row .practice-task-progress{display:none}
+.practice-today-copy>small{min-height:2.8em;line-height:1.4}
+.practice-today-record-slot{min-height:44px}
+.practice-today-record-slot>.text-button{min-height:44px}

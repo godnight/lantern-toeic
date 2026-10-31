@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),crypto=require('node:crypto'),path=require('node:path');
-const {IDBFactory}=require('fake-indexeddb');
+const {IDBFactory,IDBObjectStore}=require('fake-indexeddb');
 const loader=require('./helpers/actual-source-loader.cjs').createSourceLoader({root:path.resolve(__dirname,'..')});
 const domain=loader.load('lib/practice-workflow.ts'),tasks=loader.load('lib/practice-task.ts');
 const plain=v=>JSON.parse(JSON.stringify(v));
@@ -46,4 +46,24 @@ test('task origin/key and backup scope tampering fail closed without changing fa
 });
 test('origin lookup ignores dynamic selected queue while fixed key and saved counts remain exact',()=>{
  const origin={kind:'wrong',collection:'catalog',part:5,count:5},a=tasks.makePracticeTask(origin,'Wrong','catalog',['a'],['a']),b=tasks.makePracticeTask(origin,'Changed label','catalog',['b'],['b']);assert.notEqual(a.key,b.key);assert.equal(tasks.practiceTaskOriginKey(a.origin),tasks.practiceTaskOriginKey(b.origin));assert.equal(tasks.practiceSavedCount({steps:[{status:'applied'},{status:'pending'},{status:'unanswered'}]}),1);
+});
+test('v3 training edits retain task identity and validate their complete historical receipts',async()=>{
+ const {value,facts}=await setup(),id=await start(value,[questions[0]]);await value.submit(id,0,11,0);const before=await state(value,id),next=plain(before.training);next.materials[0].step='vocab';
+ const training=loader.load('lib/practice-training.ts');assert.equal((await value.updateTraining(id,{operationId:crypto.randomUUID(),occurredAt:new Date().toISOString(),expectedHash:training.trainingHash(before.training),training:next})).status,'updated');
+ const after=await state(value,id);assert.equal(after.task.key,before.task.key);assert.equal(after.training.materials[0].step,'vocab');assert.equal(facts.size,1);const backup=await value.repository.exportBackup();assert.doesNotThrow(()=>domain.validatePracticeWorkflowBackup(backup,questions));
+ value.close();
+});
+
+test('owner changes while restart is pending prevent all late transaction writes',async()=>{
+ let current=true;const f=await setup(undefined,undefined,()=>current),id=await start(f.value,[questions[0]]),old=await state(f.value,id),commit=f.value.repository.commit.bind(f.value.repository);let release,entered;const gate=new Promise(r=>release=r),started=new Promise(r=>entered=r);
+ f.value.repository.commit=async (c,guard)=>{if(c.commandId.startsWith('practice-restart:')){entered();await gate;}return commit(c,guard);};
+ const pending=f.value.restart(id,{expectedRevision:old.revision,requestId:crypto.randomUUID()});await started;current=false;release();assert.equal((await pending).status,'blocked');f.value.close();
+ const reopened=await setup(f.factory,f.facts);assert.equal((await reopened.value.readProjection()).sessions.length,1);assert.equal((await state(reopened.value,id)).status,'active');assert.equal(f.facts.size,0);reopened.value.close();
+});
+
+test('owner invalidation after a staged restart write aborts the entire actual IDB transaction',async t=>{
+ let current=true;const f=await setup(undefined,undefined,()=>current),id=await start(f.value,[questions[0]]),old=await state(f.value,id),put=IDBObjectStore.prototype.put;
+ IDBObjectStore.prototype.put=function(row,...args){const result=put.call(this,row,...args);if(row.value?.kind==='practice-session'&&row.value.status==='left')current=false;return result;};t.after(()=>IDBObjectStore.prototype.put=put);
+ assert.equal((await f.value.restart(id,{expectedRevision:old.revision,requestId:crypto.randomUUID()})).status,'blocked');IDBObjectStore.prototype.put=put;f.value.close();
+ const b=await setup(f.factory,f.facts);assert.equal((await b.value.readProjection()).sessions.length,1);assert.equal((await state(b.value,id)).status,'active');b.value.close();
 });
