@@ -21,7 +21,10 @@ export type ExamView = ExamDefinition & {assets: {id: string; mime: ExamPackage[
 type LegacyPackageRow = {ownerId: string; key: string; exam: ExamPackage};
 type StreamPackageRow = {ownerId: string; key: string; runId: string; package: StreamPackage};
 type PackageRow = LegacyPackageRow | StreamPackageRow;
-type ImportOptions = {signal?: AbortSignal; expected?: {examId: string; version: number; title: string; format?: ExamFormat; bytes: number; sha256: string}; migration?: {key: string; fingerprint: string}};
+type LegacyCopyGuard = {key: string; fingerprint: string; accountIsCurrent: () => boolean};
+type ImportOptions = {signal?: AbortSignal; expected?: {examId: string; version: number; title: string; format?: ExamFormat; bytes: number; sha256: string}; migration?: {key: string; fingerprint: string}; legacyCopy?: LegacyCopyGuard};
+const LEGACY_DEVICE_OWNER = 'harmony-local-device';
+const NATIVE_ACCOUNT_OWNER = /^harmony-usr_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 type AttemptRow = SavedExamAttempt & { ownerId: string; id: string };
 const STORES = ['packages', 'catalog', 'attempts'];
 const request = <T>(r: IDBRequest<T>) => new Promise<T>((resolve, reject) => { r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error ?? new Error('本机数据库请求失败')); });
@@ -160,16 +163,24 @@ export class ExamRepository {
         const incoming = result.manifest.packages[0], expected = options.expected;
         if (expected && (result.inputBytes !== expected.bytes || result.rawSha256 !== expected.sha256 || incoming.definition.id !== expected.examId || incoming.definition.version !== expected.version || incoming.definition.title !== expected.title || incoming.definition.format !== expected.format)) throw new Error('题包原文件校验或目录身份不匹配，未导入');
         if (options.migration && (incoming.key !== options.migration.key || incoming.fingerprint !== options.migration.fingerprint)) throw new Error('旧题包内容与原摘要不符，原题包保留');
-        const outcome = await this.commitStream(stage, result.manifest, now, signal, options.migration);
+        if (options.legacyCopy && (incoming.key !== options.legacyCopy.key || incoming.fingerprint !== options.legacyCopy.fingerprint)) throw new Error('旧题包内容与所选摘要不符，未复制');
+        const outcome = await this.commitStream(stage, result.manifest, now, signal, options.migration, options.legacyCopy);
         active = result.manifest.packages.length > 0;
         return {status: outcome.packagesAdded ? 'imported' : 'unchanged', summary: outcome.summary!};
       } finally {if (stage && !active) await stage.discard().catch(() => {});}
     }, options.signal);
   }
-  private async commitStream(stage: StreamStage, manifest: StreamManifest, now: number, signal: AbortSignal, migration?: {key: string; fingerprint: string}): Promise<{packagesAdded: number; attemptsAdded: number; summary?: ExamSummary}> {
+  private async commitStream(stage: StreamStage, manifest: StreamManifest, now: number, signal: AbortSignal, migration?: {key: string; fingerprint: string}, legacyCopy?: LegacyCopyGuard): Promise<{packagesAdded: number; attemptsAdded: number; summary?: ExamSummary}> {
     let result: {packagesAdded: number; attemptsAdded: number; summary?: ExamSummary} | undefined;
     await stage.activate(manifest, {stores: [...STORES, SPOOL_CHUNKS], signal, write: async (tx, incoming) => {
       const [existing, history] = await Promise.all([this.owned<CatalogRow>(tx, 'catalog'), this.owned<AttemptRow>(tx, 'attempts')]);
+      if (legacyCopy) {
+        if (!NATIVE_ACCOUNT_OWNER.test(this.ownerId) || !legacyCopy.accountIsCurrent() || incoming.kind !== 'package' || incoming.packages.length !== 1 || incoming.attempts.length || migration) throw new Error('旧题包复制目标或范围无效');
+        const source = await request<CatalogRow | undefined>(tx.objectStore('catalog').get([LEGACY_DEVICE_OWNER, legacyCopy.key]));
+        if (!source || source.fingerprint !== legacyCopy.fingerprint) throw new Error('旧题包已改变或不存在，未复制');
+        const sourceAttempts = await request<AttemptRow[]>(tx.objectStore('attempts').index('owner').getAll(LEGACY_DEVICE_OWNER));
+        if (sourceAttempts.some(row => row.attempt.examId === source.id)) throw new Error('旧题包含考试记录，需先单独处理记录，未复制');
+      }
       const additions: {p: StreamPackage; catalog: CatalogRow}[] = [], replacements: StreamPackage[] = [];
       for (const p of incoming.packages) {
         const old = existing.find(value => value.key === p.key);
@@ -208,11 +219,50 @@ export class ExamRepository {
       for (const {p, catalog} of additions) {await request(tx.objectStore('packages').add({ownerId: this.ownerId, key: p.key, runId: stage.runId, package: p} satisfies StreamPackageRow)); await request(tx.objectStore('catalog').add(catalog));}
       for (const p of replacements) await request(tx.objectStore('packages').put({ownerId: this.ownerId, key: p.key, runId: stage.runId, package: p} satisfies StreamPackageRow));
       for (const row of savedChanges) await request(tx.objectStore('attempts').put(row));
+      if (legacyCopy && !legacyCopy.accountIsCurrent()) throw new Error('账号已切换，旧题包未复制');
       const primary = incoming.packages[0];
       result = {packagesAdded: additions.length, attemptsAdded: newAttempts.length, ...(primary ? {summary: summary(allCatalog.find(value => value.key === primary.key)!)} : {})};
       incoming.packages = visible;
     }});
     if (!result) throw new Error('题包激活结果未确认'); return result;
+  }
+  /** Copy ONE explicitly selected, history-free legacy device package into a
+   * currently verified native account. No screen invokes this yet: the caller
+   * must first verify the live account, obtain explicit user consent, and pass
+   * an account-lifecycle signal synchronously aborted on session invalidation
+   * or owner change. Closing either repository also aborts in-flight work.
+   * The original stays in place; attempts are deliberately never transferred.
+   */
+  async copySelectedLegacyPackageTo(target: ExamRepository, selection: {key: string; fingerprint: string; targetOwnerId: string; confirmed: true; accountIsCurrent: () => boolean}, options: {signal: AbortSignal; now?: number}): Promise<{status: 'imported' | 'unchanged'; summary: ExamSummary}> {
+    if (!selection || !options?.signal || typeof options.signal.addEventListener !== 'function' || typeof options.signal.removeEventListener !== 'function' || this.ownerId !== LEGACY_DEVICE_OWNER || !NATIVE_ACCOUNT_OWNER.test(target.ownerId) || target.ownerId !== selection.targetOwnerId || selection.confirmed !== true || typeof selection.accountIsCurrent !== 'function' || !selection.accountIsCurrent() || this.db.name !== target.db.name) throw new Error('旧题包复制目标或确认无效');
+    return this.operation(async signal => {
+      const {row, catalog} = await this.transaction(['packages', 'catalog', 'attempts'], 'readonly', async tx => {
+        const catalog = await this.catalog(tx, selection.key), row = await request<PackageRow | undefined>(tx.objectStore('packages').get([this.ownerId, selection.key]));
+        if (!row || catalog.fingerprint !== selection.fingerprint) throw new Error('旧题包已改变或不存在，未复制');
+        const history = await this.owned<AttemptRow>(tx, 'attempts');
+        if (history.some(value => value.attempt.examId === catalog.id)) throw new Error('旧题包含考试记录，需先单独处理记录，未复制');
+        return {row, catalog};
+      });
+      let file: ExamInputFile;
+      if ('exam' in row) {
+        // Read legacy schema-1 rows without triggering the usual in-place migration.
+        file = jsonInputFile(row.exam, {maxBytes: EXAM_LIMITS.importBytes, signal});
+      } else {
+        const run = await this.transaction([SPOOL_RUNS], 'readonly', tx => request<{ownerId: string; status: string; counts: Record<string, number>} | undefined>(tx.objectStore(SPOOL_RUNS).get(row.runId)));
+        if (!run || run.ownerId !== LEGACY_DEVICE_OWNER || run.status !== 'active') throw new Error('旧题包素材不完整，未复制');
+        const stage = new IdbSpool(this.db, this.ownerId, row.runId, run.counts), read = stage.read.bind(stage);
+        stage.read = async function* (id: string) {checkImportSignal(signal); for await (const chunk of read(id)) {checkImportSignal(signal); yield chunk;}};
+        const prepared = await restorePrepared({kind: 'package', ownerId: this.ownerId, packages: [row.package], attempts: []}, stage, examModel, {verify: true, hashFactory: this.hashFactory});
+        file = {size: catalog.bytes, stream: () => {
+          const iterator = packageChunks(prepared, stage)[Symbol.asyncIterator]();
+          return new ReadableStream<Uint8Array>({async pull(controller) {
+            try {checkImportSignal(signal); const next = await iterator.next(); if (next.done) controller.close(); else controller.enqueue(next.value);}
+            catch (error) {controller.error(signal.aborted ? signal.reason : new Error('旧题包已改变或素材不完整，未复制', {cause: error}));}
+          }, async cancel() {await iterator.return?.(undefined);}});
+        }};
+      }
+      return target.importPackageFile(file, options.now ?? Date.now(), {signal, legacyCopy: {key: selection.key, fingerprint: selection.fingerprint, accountIsCurrent: selection.accountIsCurrent}});
+    }, options.signal);
   }
   /** Explicit user action only; every package needed by a saved attempt is retained. */
   async removeUnusedPackage(key: string): Promise<void> {
