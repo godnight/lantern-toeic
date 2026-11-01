@@ -6,10 +6,12 @@ const path=require('node:path');
 const http=require('node:http');
 const {createHash}=require('node:crypto');
 const {chromium}=require('playwright');
+const {NATIVE_ORIGIN,NATIVE_QA_USER,installNativeAccountFixture,fulfillNativePreview}=require('../helpers/browser-native-auth.cjs');
 const ROOT=path.resolve(__dirname,'../..');
 const OUT=path.resolve(process.env.LANTERN_DICTIONARY_QA_DIR||path.join(ROOT,'reports/dictionary-browser-'+Date.now()));
 const report={scope:'Local production shared frontend, fresh Chrome profiles; not Harmony device acceptance or Service Worker offline caching',steps:[],errors:[]};
 let server,browser,outputReady=false;
+const nativeAccounts=new WeakMap();
 async function step(name,fn){await fn();report.steps.push({name,status:'passed'});}
 (async()=>{
  await fs.mkdir(path.dirname(OUT),{recursive:true});
@@ -26,17 +28,15 @@ async function step(name,fn){await fn();report.steps.push({name,status:'passed'}
  });
  server=http.createServer(async(req,res)=>{try{const url=new URL(req.url,'http://localhost');const file=path.resolve(dist,'.'+decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname));if(!file.startsWith(dist+path.sep))throw Error('path');const bytes=await fs.readFile(file);res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.mp3':'audio/mpeg','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml'})[path.extname(file)]||'application/octet-stream');res.end(bytes);}catch{res.statusCode=404;res.end('Not found');}});
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
- const origin='http://127.0.0.1:'+server.address().port;
+ const previewOrigin='http://127.0.0.1:'+server.address().port,origin=NATIVE_ORIGIN;
  let executablePath=process.env.LANTERN_BROWSER_EXECUTABLE;
  if(!executablePath&&process.platform==='win32')executablePath='C:/Program Files/Google/Chrome/Application/chrome.exe';
  browser=await chromium.launch({headless:true,...(executablePath?{executablePath}:{})});
- async function context(){const c=await browser.newContext({viewport:{width:390,height:844},locale:'zh-CN',timezoneId:'Asia/Shanghai',acceptDownloads:true,serviceWorkers:'block'});await c.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());return c;}
+ async function context(){const c=await browser.newContext({viewport:{width:390,height:844},locale:'zh-CN',timezoneId:'Asia/Shanghai',acceptDownloads:true,serviceWorkers:'block'});nativeAccounts.set(c,await installNativeAccountFixture(c,{report}));await c.route('**/*',r=>new URL(r.request().url()).origin===origin?fulfillNativePreview(r,previewOrigin):r.abort());return c;}
  async function enter(page){
  page.setDefaultTimeout(20000);page.on('pageerror',e=>report.errors.push(String(e)));await page.goto(origin);
- // A fresh no-Host Shared profile must take the real explicit guest first-run path.
- const welcome=page.locator('[data-first-run="welcome"]'),nav=page.getByRole('navigation',{name:'手机主导航',exact:true});
- await Promise.race([welcome.waitFor(),nav.waitFor()]);
- if(await welcome.isVisible())await welcome.locator('[data-first-run-action="guest"]').click();
+ const nav=page.getByRole('navigation',{name:'手机主导航',exact:true});
+ await nav.waitFor();nativeAccounts.get(page.context()).assertVerified(page);
  await nav.getByRole('button',{name:'单词',exact:true}).click();
  const library=page.locator('[data-workflow-origin] > details').filter({has:page.locator('summary').filter({hasText:'词库与收藏'})});
  await library.locator(':scope > summary').click();await page.getByLabel('搜索单词或中文释义').waitFor();
@@ -64,9 +64,9 @@ async function records(page){
  await c.close();
  const legacyBackup=path.join(OUT,'synthetic-legacy-vocabulary-backup.json');const old=JSON.parse(await fs.readFile(backup,'utf8'));old.events=old.events.map(event=>({...event,wordId:'dict-df864c0596aa1a432205'}));await fs.writeFile(legacyBackup,JSON.stringify(old));
  const restoredContext=await context(),restored=await restoredContext.newPage();await enter(restored);
- await step('restore into a fresh context is idempotent and keeps lookup card',async()=>{await records(restored);const notice=restored.getByText('词库记录已合并，原记录已保留。',{exact:true});for(let i=0;i<2;i++){const chooser=restored.waitForEvent('filechooser');await restored.getByRole('button',{name:'恢复词卡记录',exact:true}).click();await(await chooser).setFiles(legacyBackup);await notice.waitFor({state:'visible'});const exported=restored.waitForEvent('download');await restored.getByRole('button',{name:'备份词卡记录',exact:true}).click();const readback=path.join(OUT,'legacy-restore-readback-'+i+'.json');await(await exported).saveAs(readback);const actual=JSON.parse(await fs.readFile(readback,'utf8'));assert.deepEqual(actual.events,old.events,'Restore retains every legacy event byte field and is idempotent');const events=await restored.evaluate(()=>Object.entries(localStorage).filter(([k])=>k.startsWith('lantern-vocab-v1:device:')).flatMap(([,v])=>JSON.parse(v).events));assert.equal(events.length,2,'Restore '+(i+1)+' must complete without duplicating events');}await enter(restored);await restored.getByRole('button',{name:'我的生词',exact:true}).click();await restored.getByRole('heading',{name:'abandon',exact:true}).waitFor();});
+ await step('restore into a fresh context is idempotent and keeps lookup card',async()=>{await records(restored);const notice=restored.getByText('词卡记录已导入当前账号，原记录已保留。',{exact:true});for(let i=0;i<2;i++){const chooser=restored.waitForEvent('filechooser');await restored.getByRole('button',{name:'恢复词卡记录',exact:true}).click();await(await chooser).setFiles(legacyBackup);const confirmation=restored.getByRole('alertdialog',{name:'确认本人词库备份',exact:true});await confirmation.waitFor();assert.match(await confirmation.innerText(),new RegExp(NATIVE_QA_USER.username));await confirmation.getByRole('button',{name:'确认导入',exact:true}).click();await notice.waitFor({state:'visible'});const exported=restored.waitForEvent('download');await restored.getByRole('button',{name:'备份词卡记录',exact:true}).click();const readback=path.join(OUT,'legacy-restore-readback-'+i+'.json');await(await exported).saveAs(readback);const actual=JSON.parse(await fs.readFile(readback,'utf8'));assert.deepEqual(actual.events,old.events,'Restore retains every legacy event byte field and is idempotent');const events=await restored.evaluate(owner=>Object.entries(localStorage).filter(([k])=>k.startsWith('lantern-vocab-v1:owner:'+encodeURIComponent(owner)+':')).flatMap(([,v])=>JSON.parse(v).events),NATIVE_QA_USER.id);assert.equal(events.length,2,'Restore '+(i+1)+' must complete without duplicating events');}await enter(restored);await restored.getByRole('button',{name:'我的生词',exact:true}).click();await restored.getByRole('heading',{name:'abandon',exact:true}).waitFor();});
  await restoredContext.close();
- const failedContext=await context();let fail=true;await failedContext.route('**/dictionaries/zh-en-*.json',async route=>{if(fail){fail=false;await route.fulfill({status:200,contentType:'application/json',body:'{"corrupt":true}'});}else await route.continue();});
+ const failedContext=await context();let fail=true;await failedContext.route('**/dictionaries/zh-en-*.json',async route=>{if(fail){fail=false;await route.fulfill({status:200,contentType:'application/json',body:'{"corrupt":true}'});}else await route.fallback();});
  const failed=await failedContext.newPage();await enter(failed);
  await step('bad checksum leaves original words usable and retry recovers',async()=>{await failed.getByLabel('搜索单词或中文释义').fill('reservation');await failed.getByRole('button',{name:'英汉查词',exact:true}).click();await failed.getByRole('alert').filter({hasText:'词典文件校验失败'}).waitFor();await failed.getByLabel('搜索单词或中文释义').fill('reservation');await failed.getByRole('heading',{name:'reservation',exact:true}).waitFor();await failed.getByRole('button',{name:'重试加载词典',exact:true}).click();await failed.getByRole('button',{name:'英汉查词',exact:true}).click();await failed.locator('[data-dictionary-ready="true"]').waitFor();});
  await failedContext.close();

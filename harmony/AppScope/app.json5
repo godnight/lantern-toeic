@@ -2,7 +2,7 @@
   "app": {
     "bundleName": "com.lantern.toeic",
     "vendor": "LANTERN",
-    "versionCode": 20064,
+    "versionCode": 20069,
     "versionName": "0.4.6",
     "icon": "$media:app_icon",
     "label": "$string:app_name"
