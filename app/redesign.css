@@ -35,7 +35,7 @@ body[data-ui-theme] [data-slot=dialog-header]{padding-right:28px}
 .vocab-redesign .word-open>.vocab-result-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
 .vocab-review-summary{margin-bottom:24px}
 body[data-ui-theme] .review-row>.pill{font-size:13px}
-.workspace-resource-stage[hidden],.resource-detail-active>.workspace-resource-prelude,.resource-detail-active>.resource-note{display:none}
+.workspace-resource-stage[hidden],.resource-detail-active .workspace-resource-prelude,.resource-detail-active>.resource-note{display:none}
 @media(max-width:900px){.practice-dialog .practice-with-material{grid-template-columns:1fr;gap:24px}}
 @media(max-width:700px){body[data-ui-theme] .practice-dialog{padding:20px!important}body[data-ui-theme] .settings-dialog,body[data-ui-theme] .theme-dialog{padding:22px!important}}
 @media(max-width:700px){body[data-ui-theme] .button.primary{min-height:48px}.workspace-heading h1{font-size:28px}}

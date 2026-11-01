@@ -5,7 +5,7 @@ import {z} from 'zod';
 import {getDb} from '@/db';
 import {profiles,attempts,checkins,recordings,questionMarks,resourceTasks} from '@/db/schema';
 import {mutableStudyUpsert} from '@/db/mutable-study';
-import {DEFAULT_PROFILE,DATA_SCHEMA_VERSION,validQuestionMark,validResourceTask,validStudyDate} from '@/lib/study-model';
+import {THEME_IDS,DEFAULT_PROFILE,DATA_SCHEMA_VERSION,validQuestionMark,validResourceTask,validStudyDate} from '@/lib/study-model';
 import {userId,safeMutation,privateJson} from '@/lib/server-auth';
 import {readBoundedRequestBody,RequestBodyTooLargeError} from '@/lib/request-body';
 // Admission and catalog hashes remain mandatory before use, but unrelated or
@@ -19,7 +19,7 @@ import examResources from '@/content/exams/catalogue.json';
 const resourceIds=new Set([...resources.map(resource=>resource.id),...examResources.map(resource=>'exam-'+resource.id)]);
 const id=z.string().uuid();
 const stamp=z.string().datetime().refine(v=>Date.parse(v)<Date.now()+300000,'Invalid future timestamp');
-const profile=z.object({name:z.string().trim().min(1).max(40),lrGoal:z.number().int().min(10).max(990),speakingGoal:z.number().int().min(0).max(200),examDate:z.string().refine(v=>v===''||validStudyDate(v)),dailyMinutes:z.number().int().min(5).max(120),timezone:z.string().refine(v=>{try{new Intl.DateTimeFormat('en',{timeZone:v});return true;}catch{return false;}}),theme:z.enum(['hollow','silk','paper','crystal']),weeklyTarget:z.number().int().min(1).max(7),onboarded:z.boolean()});
+const profile=z.object({name:z.string().trim().min(1).max(40),lrGoal:z.number().int().min(10).max(990),speakingGoal:z.number().int().min(0).max(200),examDate:z.string().refine(v=>v===''||validStudyDate(v)),dailyMinutes:z.number().int().min(5).max(120),timezone:z.string().refine(v=>{try{new Intl.DateTimeFormat('en',{timeZone:v});return true;}catch{return false;}}),theme:z.enum(THEME_IDS),weeklyTarget:z.number().int().min(1).max(7),onboarded:z.boolean()});
 const attempt=z.object({id,qid:z.string().max(100),choice:z.number().int().min(0).max(3),createdAt:stamp,seconds:z.number().int().min(0).max(7200)});
 const checkin=z.object({id,date:z.string().refine(validStudyDate),minutes:z.number().int().min(1).max(240),load:z.enum(['轻','刚好','重']),note:z.string().max(1000),createdAt:stamp});
 // The wire contract deliberately excludes client-supplied correct/mode. Correct
@@ -32,7 +32,7 @@ export async function POST(request:Request){const uid=await userId(request);if(!
  const body=z.object({type:z.string(),data:z.unknown()}).parse(await new Response(await readBoundedRequestBody(request,200000)).json());const db=getDb();
  if(body.type==='profile'){const parsed=profile.parse(body.data);await db.insert(profiles).values({userId:uid,body:JSON.stringify(parsed),updatedAt:new Date().toISOString()}).onConflictDoUpdate({target:profiles.userId,set:{body:JSON.stringify(parsed),updatedAt:new Date().toISOString()}});return privateJson({ok:true});}
  if(body.type==='theme'){
-  const parsed=z.object({theme:z.enum(['hollow','silk','paper','crystal'])}).strict().parse(body.data);const updatedAt=new Date().toISOString();
+  const parsed=z.object({theme:z.enum(THEME_IDS)}).strict().parse(body.data);const updatedAt=new Date().toISOString();
   // Atomic field update preserves every existing setting, including concurrent
   // changes. The default profile is used only for a genuinely new account.
   await db.insert(profiles).values({userId:uid,body:JSON.stringify({...DEFAULT_PROFILE,theme:parsed.theme}),updatedAt}).onConflictDoUpdate({target:profiles.userId,set:{body:sql`json_set(${profiles.body}, '$.theme', ${parsed.theme})`,updatedAt}});return privateJson({ok:true});

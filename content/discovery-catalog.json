@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "rights": {
+        "status": "link-only",
+        "checkedAt": "2026-11-01",
+        "reviewAfter": null,
+        "withdrawal": "来源失效、条款变化或权利方要求撤回时暂停展示，重新审核。",
+        "capabilities": {
+          "embed": false,
+          "host": false,
+          "excerpt": false,
+          "cover": false,
+          "subtitles": false,
+          "audio": false,
+          "ai": false
+        },
+        "holder": "NASA / 美国政府作品；具体记录见来源页",
+        "evidenceUrls": [
+          "https://ntrs.nasa.gov/citations/19940010921",
+          "https://www.nasa.gov/nasa-brand-center/images-and-media/"
+        ]
+      },
+      "availability": {
+        "platforms": "原站网页；App仅打开外部来源",
+        "regions": "未验证地区限制",
+        "network": "not-verified",
+        "note": "实际播放、鸿蒙及无 VPN 可达性未验证。"
+      },
+      "id": "nasa-kennedy-rice-1962",
+      "kind": "talk",
+      "title": "肯尼迪在莱斯大学的登月演讲",
+      "originalTitle": "President Kennedy's Speech at Rice University",
+      "author": "John F. Kennedy",
+      "publisher": "NASA / Johnson Space Center",
+      "description": "从一场历史演讲中听目标、挑战与行动如何被表达。原站记录提供观看入口。",
+      "tags": [
+        "太空",
+        "历史",
+        "公共演讲",
+        "NASA",
+        "space",
+        "speech"
+      ],
+      "sourceUrl": "https://ntrs.nasa.gov/citations/19940010921",
+      "durationSeconds": null,
+      "durationLabel": null,
+      "captions": null,
+      "difficulty": null
+    },
+    {
+      "rights": {
+        "status": "link-only",
+        "checkedAt": "2026-11-01",
+        "reviewAfter": null,
+        "withdrawal": "来源失效、条款变化或权利方要求撤回时暂停展示，重新审核。",
+        "capabilities": {
+          "embed": false,
+          "host": false,
+          "excerpt": false,
+          "cover": false,
+          "subtitles": false,
+          "audio": false,
+          "ai": false
+        },
+        "holder": "Stanford University；链接不代表素材再分发授权",
+        "evidenceUrls": [
+          "https://news.stanford.edu/stories/2005/06/youve-got-find-love-jobs-says",
+          "https://www.stanford.edu/terms"
+        ]
+      },
+      "availability": {
+        "platforms": "原站网页；App仅打开外部来源",
+        "regions": "未验证地区限制",
+        "network": "not-verified",
+        "note": "实际播放、鸿蒙及无 VPN 可达性未验证。"
+      },
+      "id": "stanford-jobs-2005",
+      "kind": "person",
+      "title": "乔布斯的斯坦福毕业演讲",
+      "originalTitle": "You've got to find what you love, Jobs says",
+      "author": "Steve Jobs",
+      "publisher": "Stanford University",
+      "description": "听一个人如何讲述人生转折与选择。原站提供英文演讲稿和观看入口。",
+      "tags": [
+        "人物",
+        "人生选择",
+        "毕业演讲",
+        "乔布斯",
+        "Jobs",
+        "Stanford"
+      ],
+      "sourceUrl": "https://news.stanford.edu/stories/2005/06/youve-got-find-love-jobs-says",
+      "durationSeconds": null,
+      "durationLabel": null,
+      "captions": "原站有英文演讲稿；视频字幕未核",
+      "difficulty": null
+    },
+    {
+      "rights": {
+        "status": "link-only",
+        "checkedAt": "2026-11-01",
+        "reviewAfter": null,
+        "withdrawal": "来源失效、条款变化或权利方要求撤回时暂停展示，重新审核。",
+        "capabilities": {
+          "embed": false,
+          "host": false,
+          "excerpt": false,
+          "cover": false,
+          "subtitles": false,
+          "audio": false,
+          "ai": false
+        },
+        "holder": "Blender Institute；CC BY 3.0，演职员署名及其他权利另核",
+        "evidenceUrls": [
+          "https://www.youtube.com/watch?v=R6MlUcmOul8",
+          "https://mango.blender.org/about/",
+          "https://creativecommons.org/licenses/by/3.0/"
+        ]
+      },
+      "availability": {
+        "platforms": "原站网页；App仅打开外部来源",
+        "regions": "未验证地区限制",
+        "network": "not-verified",
+        "note": "实际播放、鸿蒙及无 VPN 可达性未验证。"
+      },
+      "id": "blender-tears-of-steel",
+      "kind": "film",
+      "title": "Tears of Steel",
+      "originalTitle": "Tears of Steel - Blender VFX Open Movie",
+      "author": "Ian Hubert（编剧、导演）",
+      "publisher": "Blender / Blender Institute",
+      "description": "一部结合真人与视觉特效的英语科幻短片。可以留意人物的对话与语气。",
+      "tags": [
+        "科幻",
+        "短片",
+        "英语对白",
+        "电影",
+        "Blender",
+        "cinema"
+      ],
+      "sourceUrl": "https://www.youtube.com/watch?v=R6MlUcmOul8",
+      "durationSeconds": null,
+      "durationLabel": "约 12 分钟（官方标注）",
+      "captions": null,
+      "difficulty": null
+    }
+  ]
+}

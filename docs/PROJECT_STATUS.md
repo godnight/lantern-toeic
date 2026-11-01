@@ -1,5 +1,9 @@
 # 当前项目状态
 
+2026-11-01：下一版 `feat/next-themes-discovery-20261101` 从已提交华为登录 `0d4a7f03118af2d2e1612c4cfded14eaad4cf6eb` 接续，和 20069 的独立发布快照分开。新增 `whale-bay` 咕噜海湾、`whale-moon` 澜音星海；四张定稿只编码为保留尺寸/构图的 WebP，共 929800 字节，来源与设计审核依据在 `art/whale-themes-v1.json`。每主题六页共用一张无人物学习背景，完整人物只在今日任务后或词组完成槽；旧四主题、蓝湖、图标、词卡尺寸/行为和学习事实不变。统一主题枚举兼容新客户端读取旧记录、备份与同步；旧包不保证理解新主题，不能称降级或新旧双向兼容。没有数据库迁移。
+
+同版 DISCOVERY-01 将现有 `resources` 可见导航升级为发现，仍六导航。精选目录真实搜索/分类，首批三条官方元数据采用原站访问、自制类别图；TED 候选保持 HOLD，未开放嵌入、托管、节选、原站封面、字幕/音轨提取或 AI 处理。来源和限制分别记录于 `content/discovery-catalog.json`、`content/discovery-source-review.json`。收藏是独立、按 owner 隔离的本机记录，不含在原学习备份或云同步内；损坏/拒写/旧 owner 或 proof 失效不能冒报成功。原资料库和学习手记保留，短期按 owner 的 sessionStorage 只保存原站返回所需分类/搜索/位置，重新核对账号后恢复，不存凭据或绕过身份屏障。当前是开发候选，正式外站/ArkWeb/无 VPN 可达与安装由后继交付验证；不能将手机安装 20069 写成这两个模块已交付。
+
 2026-11-01：华为账号登录在独立分支 `feat/huawei-login-20261101` 完成本地接入，基线 `12f50171a79997029925a0743f29ace79995bd7d`。真实原生 Account Kit 校验随机 state，授权码只在原生与服务端流转；服务端交换并核对 Huawei token-info 的应用、用户类型、有效期和 OpenID，再签发原产品会话，客户端独立 v2 核对成功才进入学习。已登录用户须主动绑定，提交时事务重验原 owner/session，冲突不转移身份，原密码与旧响应保持兼容。SDK 授权使用独立时限，前后台等待不复活旧 owner；页面离开、超时与未知结果保持隔离。
 
 新增固定 `/api/auth/providers`、`/api/auth/huawei/login`、`/api/auth/huawei/bind`；能力发现与旧 capabilities 分开，缺配置或无原生 SDK 时关闭入口。服务端仅引用 `LANTERN_HUAWEI_CLIENT_ID` 与 `LANTERN_HUAWEI_CLIENT_SECRET` 环境绑定，密钥不进入 App。主库追加 `0009_huawei_auth.sql`，独立 auth-only 库追加对应 `0002_huawei_auth.sql`；部署者须先备份现库、只执行新增迁移、替换运行服务实际加载的打包 Worker 并注入环境绑定，源码变更不会自动更新本机运行副本。

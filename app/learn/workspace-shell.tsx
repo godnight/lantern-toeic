@@ -8,7 +8,7 @@ import {ThemeMotif} from './ui-theme';
 export const WORKSPACE_NAV = [
  {id:'today',label:'今日',icon:Home},{id:'vocabulary',label:'单词',icon:BookOpen},
  {id:'train',label:'练习',icon:Headphones},{id:'review',label:'复习',icon:RotateCcw},
- {id:'progress',label:'进度',icon:ChartNoAxesCombined},{id:'resources',label:'资料',icon:Library},
+ {id:'progress',label:'进度',icon:ChartNoAxesCombined},{id:'resources',label:'发现',icon:Library},
 ];
 
 export type WorkspaceShellProps={
@@ -18,7 +18,7 @@ export type WorkspaceShellProps={
  onBack?:()=>void;backLabel?:string;onProfile?:()=>void;
 };
 
-const TITLES:Record<string,string>={today:'今日学习',train:'练习',review:'复习',progress:'进度',resources:'资料',
+const TITLES:Record<string,string>={today:'今日学习',train:'练习',review:'复习',progress:'进度',resources:'发现',
  vocabulary:'单词',search:'查词',profile:'我的',themes:'选择主题',about:'关于微光',
  settings:'学习偏好',account:'账号与安全',backups:'数据管理',art:'内容与来源'};
 const PERSONAL_PAGES=new Set(['profile','themes','about','account','settings','backups','art']);

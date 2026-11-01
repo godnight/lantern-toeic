@@ -46,6 +46,6 @@ export function TodayDashboard({theme='paper',dateLabel,wordTask,wordSummary,rev
         </button>
       </div>)}</div>
     </section>
-    {(theme==='hollow'||theme==='silk')&&<ThemeScene theme={theme} scene={theme==='hollow'?'blue-lake':'calm'} className="v041-today-calm"/>}
+    {(theme==='hollow'||theme==='silk'||theme==='whale-bay'||theme==='whale-moon')&&<ThemeScene theme={theme} scene={theme==='hollow'?'blue-lake':'calm'} className="v041-today-calm"/>}
   </div>;
 }

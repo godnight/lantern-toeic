@@ -277,6 +277,120 @@
       "download": "",
       "paletteName": "晶紫微光",
       "paletteNote": "柔紫晶光 · 静心练习"
+    },
+    {
+      "id": "whale-bay",
+      "slug": "whale-bay",
+      "family": "whale",
+      "name": "咕噜海湾",
+      "english": "WHALE BAY",
+      "note": "晨间海边阅读小窝",
+      "direction": "奶油色与海盐蓝的小窝，陪伴读书的咕噜。学习页使用无人物背景。",
+      "alt": "咕噜在海边窗前捧书阅读",
+      "motion": "water",
+      "position": "72% 48%",
+      "palette": [
+        "#f4f1e9",
+        "#fffdf8",
+        "#285f79",
+        "#213642"
+      ],
+      "version": "1.0.0",
+      "image": "/images/whale-themes/whale-bay-home.webp",
+      "portrait": "/images/whale-themes/whale-bay-study.webp",
+      "thumbnail": "/images/whale-themes/whale-bay-home.webp",
+      "assets": [
+        {
+          "id": "whale-bay-home",
+          "title": "咕噜海湾 · 阅读主景",
+          "path": "/images/whale-themes/whale-bay-home.webp",
+          "width": 1672,
+          "height": 941,
+          "sha256": "00645224c373ce59d532a8a97cd20a4e34098c5b10e1fc9c9cdd2c7caea50fe4",
+          "kind": "generated-original-scene",
+          "license": "AI-generated scene based on user-approved character references; no CC0, exclusive-rights or third-party official authorization claim.",
+          "author": "OpenAI imagegen; scenes adapted from user-approved whale-maiden character references",
+          "createdAt": "2026-11-01",
+          "provenance": "art/whale-themes-v1.json",
+          "status": "approved",
+          "approvalBasis": "designer-reviewed; user authorized implementation; final user visual acceptance pending"
+        },
+        {
+          "id": "whale-bay-study",
+          "title": "咕噜海湾 · 学习背景",
+          "path": "/images/whale-themes/whale-bay-study.webp",
+          "width": 1024,
+          "height": 1536,
+          "sha256": "b394437949058e67943f0ed8bb24a19c99c86dc16dfaf7f4a94a4c5f5e5c18d6",
+          "kind": "generated-original-scene",
+          "license": "AI-generated scene based on user-approved character references; no CC0, exclusive-rights or third-party official authorization claim.",
+          "author": "OpenAI imagegen; scenes adapted from user-approved whale-maiden character references",
+          "createdAt": "2026-11-01",
+          "provenance": "art/whale-themes-v1.json",
+          "status": "approved",
+          "approvalBasis": "designer-reviewed; user authorized implementation; final user visual acceptance pending"
+        }
+      ],
+      "download": "",
+      "paletteName": "咕噜海湾",
+      "paletteNote": "奶油白 · 海盐蓝"
+    },
+    {
+      "id": "whale-moon",
+      "slug": "whale-moon",
+      "family": "whale",
+      "name": "澜音星海",
+      "english": "MOONLIT SEA",
+      "note": "月光海边阅读角",
+      "direction": "深海蓝与月白的阅读角，澜音在窗边读书。学习页使用无人物背景。",
+      "alt": "澜音在月光海边的阅读角捧书",
+      "motion": "water",
+      "position": "72% 48%",
+      "palette": [
+        "#0f1b30",
+        "#17263e",
+        "#c5def2",
+        "#edf3f9"
+      ],
+      "version": "1.0.0",
+      "image": "/images/whale-themes/whale-moon-home.webp",
+      "portrait": "/images/whale-themes/whale-moon-study.webp",
+      "thumbnail": "/images/whale-themes/whale-moon-home.webp",
+      "assets": [
+        {
+          "id": "whale-moon-home",
+          "title": "澜音星海 · 阅读主景",
+          "path": "/images/whale-themes/whale-moon-home.webp",
+          "width": 1672,
+          "height": 941,
+          "sha256": "8c8f9328c4f13df1b88b54342a987bbcb33bd1d567ed06492c34b1ecc53518e1",
+          "kind": "generated-original-scene",
+          "license": "AI-generated scene based on user-approved character references; no CC0, exclusive-rights or third-party official authorization claim.",
+          "author": "OpenAI imagegen; scenes adapted from user-approved whale-maiden character references",
+          "createdAt": "2026-11-01",
+          "provenance": "art/whale-themes-v1.json",
+          "status": "approved",
+          "approvalBasis": "designer-reviewed; user authorized implementation; final user visual acceptance pending"
+        },
+        {
+          "id": "whale-moon-study",
+          "title": "澜音星海 · 学习背景",
+          "path": "/images/whale-themes/whale-moon-study.webp",
+          "width": 1024,
+          "height": 1536,
+          "sha256": "fa7f0316231c3a1be8febdc6529186de4e6edfd5461f8630fa5862d4513d30cd",
+          "kind": "generated-original-scene",
+          "license": "AI-generated scene based on user-approved character references; no CC0, exclusive-rights or third-party official authorization claim.",
+          "author": "OpenAI imagegen; scenes adapted from user-approved whale-maiden character references",
+          "createdAt": "2026-11-01",
+          "provenance": "art/whale-themes-v1.json",
+          "status": "approved",
+          "approvalBasis": "designer-reviewed; user authorized implementation; final user visual acceptance pending"
+        }
+      ],
+      "download": "",
+      "paletteName": "澜音星海",
+      "paletteNote": "深海蓝 · 月白"
     }
   ]
 }

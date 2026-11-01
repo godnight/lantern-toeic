@@ -242,7 +242,7 @@ async function freshPage(width){
 async function ready(){const welcome=page.locator('[data-first-run="welcome"]');await Promise.race([welcome.waitFor(),page.getByRole('heading',{name:'今日学习',exact:true}).waitFor()]);if(await welcome.isVisible())await welcome.locator('[data-first-run-action="guest"]').click();await eventually(()=>page.getByRole('button',{name:'选择题型',exact:true}).isEnabled(),'Today screen did not become ready');}
 // Current workspace contract. The complete former atlas suite is retained in
 // theme-atlas-legacy.cjs; it is not claimed as passing against the redesigned UI.
-const NAV=['今日','单词','练习','复习','进度','资料'];
+const NAV=['今日','单词','练习','复习','进度','发现'];
 async function rootTheme(id){await page.waitForFunction(expected=>document.body.dataset.uiTheme===expected,UI_THEME_BY_PERSISTED[id]);}
 function navigation(){return page.getByRole('navigation',{name:page.viewportSize().width<1024?'手机主导航':'桌面主导航',exact:true});}
 async function navigate(label){const button=navigation().getByRole('button',{name:label,exact:true});await button.click();await eventually(()=>button.getAttribute('aria-current').then(value=>value==='page'),'Current navigation is not '+label);await page.locator('#workspace-main').waitFor({state:'visible'});}

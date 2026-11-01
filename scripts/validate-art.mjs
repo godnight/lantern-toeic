@@ -11,10 +11,10 @@ assert.equal(catalogue.schemaVersion,1);
 assert.match(catalogue.artVersion,/^\d+\.\d+\.\d+$/);
 const ids=new Set();let count=0;
 for(const theme of catalogue.themes){
- assert(['hollow','silk','paper','crystal'].includes(theme.id)&&!ids.has(theme.id));ids.add(theme.id);
+ assert(['hollow','silk','paper','crystal','whale-bay','whale-moon'].includes(theme.id)&&!ids.has(theme.id));ids.add(theme.id);
  assert(theme.name&&theme.direction&&theme.version);
  for(const color of theme.palette)assert.match(color,/^#[0-9a-f]{6}$/i);
- assert(['hollow','silk'].includes(theme.family));
+ assert(['hollow','silk','whale'].includes(theme.family));
  assert(['water','snow','petals','crystal'].includes(theme.motion));
  assert(theme.alt && theme.thumbnail);
  for(const path of [theme.image,theme.portrait,theme.thumbnail])assert(theme.assets.some(a=>a.path===path),'Theme image missing from asset manifest');
@@ -28,7 +28,7 @@ for(const theme of catalogue.themes){
   assert(asset.width>0&&asset.height>0&&asset.author&&asset.license&&asset.provenance&&asset.status==='approved');count++;
  }
 }
-assert.equal(ids.size,4);
+assert.equal(ids.size,6);
 const companionArt=JSON.parse(readFileSync(resolve(root,'art/theme-art-provenance-2026-10-12.json'),'utf8'));
 const companionPaths=new Set();
 for(const asset of companionArt.assets){
@@ -39,7 +39,30 @@ for(const asset of companionArt.assets){
  assert.equal(createHash('sha256').update(bytes).digest('hex'),asset.sha256,'Stale companion art: '+asset.id);
  assert.equal(bytes.length,asset.bytes);
 }
-for(const theme of catalogue.themes)for(const asset of theme.assets)assert(companionPaths.has(asset.path),'Untracked companion art');
+for(const theme of catalogue.themes.filter(theme=>theme.family!=='whale'))for(const asset of theme.assets)assert(companionPaths.has(asset.path),'Untracked companion art');
+const whaleArt=JSON.parse(readFileSync(resolve(root,'art/whale-themes-v1.json'),'utf8'));
+assert.equal(whaleArt.schemaVersion,1);
+assert.equal(whaleArt.designId,'CMP-THEME-01');
+assert.deepEqual(whaleArt.assets.map(asset=>asset.id).sort(),['whale-bay-home','whale-bay-study','whale-moon-home','whale-moon-study']);
+let whaleBytes=0;
+for(const asset of whaleArt.assets){
+ assert.equal(asset.path,`/images/whale-themes/${asset.id}.webp`);
+ const bytes=readFileSync(resolve(root,'public','.'+asset.path));
+ assert.equal(bytes.length,asset.bytes);whaleBytes+=bytes.length;
+ assert.equal(createHash('sha256').update(bytes).digest('hex'),asset.sha256);
+ const dimensions=asset.id.endsWith('home')?[1672,941]:[1024,1536];
+ const decoded=await sharp(bytes).metadata();assert.deepEqual([decoded.width,decoded.height],dimensions);
+ assert.deepEqual([asset.width,asset.height],dimensions);
+ assert.equal(asset.encoding.resized,false);assert.equal(asset.encoding.cropped,false);
+ assert.match(asset.source.sha256,/^[a-f0-9]{64}$/);assert(asset.source.path.endsWith('.png'));
+ assert.equal(asset.status,'approved');assert(asset.author&&asset.rights);
+ assert(!existsSync(resolve(root,'public/images/whale-themes',asset.id+'.png')));
+}
+assert.equal(whaleBytes,whaleArt.totalDerivedBytes);
+for(const theme of catalogue.themes.filter(theme=>theme.family==='whale'))for(const asset of theme.assets){
+ const registered=whaleArt.assets.find(entry=>entry.path===asset.path);
+ assert(registered&&registered.sha256===asset.sha256&&registered.width===asset.width&&registered.height===asset.height,'Untracked whale art');
+}
 const referenceIds=new Set();
 for(const item of references){
  assert(item.id&&!referenceIds.has(item.id));referenceIds.add(item.id);

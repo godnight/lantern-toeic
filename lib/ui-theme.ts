@@ -1,16 +1,18 @@
 import type {Theme} from '@/lib/study-model';
 
-/** Display names are separate from the four existing persisted Theme values. */
-export type UiTheme = 'day' | 'night' | 'hollow' | 'silk';
+/** Display names are separate from persisted Theme IDs. */
+export type UiTheme = 'day' | 'night' | 'hollow' | 'silk' | 'whale-bay' | 'whale-moon';
 
 export const UI_THEME_BY_PERSISTED = {
   paper: 'day',
   crystal: 'night',
   hollow: 'hollow',
   silk: 'silk',
+  'whale-bay': 'whale-bay',
+  'whale-moon': 'whale-moon',
 } as const satisfies Record<Theme, UiTheme>;
 
-export const UI_THEME_ORDER = ['paper', 'crystal', 'hollow', 'silk'] as const satisfies readonly Theme[];
+export const UI_THEME_ORDER = ['paper', 'crystal', 'hollow', 'silk', 'whale-bay', 'whale-moon'] as const satisfies readonly Theme[];
 
 export type UiThemeDefinition = Readonly<{
   name: string;
@@ -24,6 +26,8 @@ export const UI_THEME_META = {
   crystal: {name: '夜间', description: '炭灰 · 薄荷 · 无游戏元素', game: false, colorScheme: 'dark'},
   hollow: {name: '空洞骑士', description: '蓝湖 · 雨城 · 小骑士', game: true, colorScheme: 'dark'},
   silk: {name: '丝之歌', description: '斜针 · 丝环 · 钟线', game: true, colorScheme: 'dark'},
+  'whale-bay': {name: '咕噜海湾', description: '奶油白 · 海盐蓝 · 晨间小窝', game: false, colorScheme: 'light'},
+  'whale-moon': {name: '澜音星海', description: '深海蓝 · 月白 · 夜间阅读角', game: false, colorScheme: 'dark'},
 } as const satisfies Record<Theme, UiThemeDefinition>;
 
 export type UiThemePalette = Readonly<{
@@ -51,6 +55,8 @@ export const UI_THEME_PALETTES = {
   night: {canvas:'#121c23', surface:'#1b2932', surfaceMuted:'#253641', text:'#e4eff0', textSecondary:'#afc0c4', primary:'#9cc7ce', onPrimary:'#15252b', selection:'#2b424d', divider:'#3a505d', controlBorder:'#6f8994', focus:'#c0e3e8', success:'#a0d1bd', warning:'#e4c689', danger:'#e8aaa5', dangerSoft:'#482e35', warningSoft:'#443b2c'},
   hollow: {canvas:'#101b29', surface:'#172435', surfaceMuted:'#213044', text:'#edf0ed', textSecondary:'#b0becb', primary:'#efbd75', onPrimary:'#291e12', selection:'#3b3540', divider:'#34485a', controlBorder:'#8093a2', focus:'#f3cd96', success:'#a0cfb7', warning:'#efcf8f', danger:'#f0aaa4', dangerSoft:'#48323d', warningSoft:'#443d2b'},
   silk: {canvas:'#201822', surface:'#2b212d', surfaceMuted:'#362937', text:'#f2e9e4', textSecondary:'#c7b4c5', primary:'#f18b70', onPrimary:'#291712', selection:'#4a3038', divider:'#503c51', controlBorder:'#a889a4', focus:'#ffc0a8', success:'#abd4b9', warning:'#e6c58c', danger:'#f1b1ad', dangerSoft:'#50313c', warningSoft:'#493b2c'},
+  'whale-bay': {canvas:'#f4f1e9', surface:'#fffdf8', surfaceMuted:'#e5eef1', text:'#213642', textSecondary:'#536873', primary:'#285f79', onPrimary:'#ffffff', selection:'#d6e8ee', divider:'#cbd9dd', controlBorder:'#728a95', focus:'#1d658d', success:'#246b48', warning:'#825c1c', danger:'#9d3832', dangerSoft:'#f8e8e5', warningSoft:'#f5eddb'},
+  'whale-moon': {canvas:'#0f1b30', surface:'#17263e', surfaceMuted:'#24364f', text:'#edf3f9', textSecondary:'#afbfd3', primary:'#c5def2', onPrimary:'#13233a', selection:'#2c4663', divider:'#3c506b', controlBorder:'#8199b7', focus:'#9ccff2', success:'#a0d1bd', warning:'#e4c689', danger:'#e8aaa5', dangerSoft:'#482e35', warningSoft:'#443b2c'},
 } as const satisfies Record<UiTheme, UiThemePalette>;
 
 /** Call from an effect before any early-return branch. No settings are persisted. */
