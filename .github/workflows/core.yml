@@ -92,6 +92,9 @@ jobs:
       - name: Verify hosted media proxy and deployment projection
         if: steps.scope.outputs.full == 'true'
         run: node --test tests/web-natural-media-proxy.test.cjs tests/web-hosted-prune.test.cjs
+      - name: Verify account identity, native Huawei authorization and owner isolation
+        if: steps.scope.outputs.full == 'true'
+        run: npm run test:auth
       - name: Verify bounded build cleanup
         if: steps.scope.outputs.full == 'true'
         run: node --test tests/build-timeout.test.cjs

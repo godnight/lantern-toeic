@@ -19,7 +19,7 @@ function environment(options = {}) {
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec('PRAGMA foreign_keys = ON');
   for (const file of fs.readdirSync(path.join(root, 'drizzle')).filter(name => name.endsWith('.sql')).sort()) {
-    if (options.withoutAuth && ['0005_product_auth.sql', '0006_auth_admission_ticket.sql', '0007_phone_auth.sql', '0008_phone_challenges.sql'].includes(file)) continue;
+    if (options.withoutAuth && ['0005_product_auth.sql', '0006_auth_admission_ticket.sql', '0007_phone_auth.sql', '0008_phone_challenges.sql', '0009_huawei_auth.sql'].includes(file)) continue;
     sqlite.exec(fs.readFileSync(path.join(root, 'drizzle', file), 'utf8'));
   }
   const queries = [], objects = new Map(), moduleCache = new Map(), hooks = {};
@@ -91,7 +91,7 @@ function environment(options = {}) {
     vm.runInNewContext(code, {exports, require: resolve, Date, Intl, Map, Set, Error, SyntaxError, JSON,
       Promise, Buffer, structuredClone, TextEncoder, TextDecoder, Uint8Array, Uint32Array, ArrayBuffer,
       Blob, File, FormData, URL, Request, Response, Headers, ReadableStream, AbortController, atob, btoa,
-      crypto: crypto.webcrypto}, {filename: file});
+      crypto: crypto.webcrypto, fetch, URLSearchParams, setTimeout, clearTimeout}, {filename: file});
     return exports;
   }
   const routes = {

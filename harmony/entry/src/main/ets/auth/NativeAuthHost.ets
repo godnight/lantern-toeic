@@ -2,6 +2,8 @@ import { webview } from '@kit.ArkWeb';
 import http from '@ohos.net.http';
 import deviceInfo from '@ohos.deviceInfo';
 import { systemDateTime } from '@kit.BasicServicesKit';
+import { common } from '@kit.AbilityKit';
+import { HuaweiAccountProvider, HuaweiAuthorization } from './HuaweiAccountProvider';
 import { AuthSessionStore } from './AuthSessionStore';
 import { VerifiedOwnerLease, TrustedOwnerProvider } from '../media/VerifiedOwnerLease';
 import { AUTH_API_ORIGIN } from './AuthConfiguration';
@@ -9,7 +11,8 @@ import { AuthRequest, AuthBody, AuthReply, AuthUser, AuthCookie, AuthRoute, COOK
   AUTH_TIMEOUT_MS, MAX_RESPONSE_BYTES, trustedFrame, configuredOrigin, parseAuthRequest,
   utf8Length, capabilities, unavailableBody, unknownBody, unauthenticatedBody,
   parseResponseBody, publicUser, publicFailure, sessionCookie, productCookieLines, authRoute, phoneAction,
-  operationUnknownBody, phoneStatus, phoneChallenge, phoneFailure, phoneSuccessCapabilities, sessionProofBudget } from './AuthPolicy';
+  operationUnknownBody, phoneStatus, phoneChallenge, phoneFailure, phoneSuccessCapabilities, sessionProofBudget,
+  huaweiProviders, huaweiFailure } from './AuthPolicy';
 
 interface Operation {
   version?: number;
@@ -20,6 +23,7 @@ interface Operation {
   timedOut: boolean;
   replied: boolean;
   sessionMayHaveChanged: boolean;
+  huawei?: boolean;
 }
 
 // ArkWeb compares the serialized URL port: default HTTPS is empty, not "443".
@@ -46,10 +50,14 @@ export class NativeAuthHost {
   private static retryAt: number = 0;
   private seen: string[] = [];
   private network: http.HttpRequest | undefined = undefined;
+  private context: (() => common.UIAbilityContext) | undefined;
+  private huaweiOperation: Operation | undefined = undefined;
+  private foregroundWaiter: (() => void) | undefined = undefined;
 
-  constructor(controller: webview.WebviewController, active: () => boolean) {
+  constructor(controller: webview.WebviewController, active: () => boolean, context?: () => common.UIAbilityContext) {
     this.controller = controller;
     this.active = active;
+    this.context = context;
   }
 
   attach(): boolean {
@@ -70,8 +78,33 @@ export class NativeAuthHost {
     this.ownerLease.revoke();
     this.epoch++;
     this.seen = [];
+    this.wakeForeground();
     // Do not abort merely because the page changed: that is not server rollback.
     // Busy stays held until the real HTTP and any Asset call/cleanup settle.
+  }
+
+  // Called only by Index, never exposed on the JavaScript proxy. A real document
+  // navigation/dispose still uses invalidate(), including during an SDK dialog.
+  onForegroundChanged(foreground: boolean): void {
+    this.ownerLease.revoke();
+    if (this.huaweiOperation !== undefined && this.current(this.huaweiOperation)) {
+      if (foreground) this.wakeForeground();
+      return;
+    }
+    this.invalidate();
+  }
+
+  private wakeForeground(): void {
+    const wake: (() => void) | undefined = this.foregroundWaiter;
+    this.foregroundWaiter = undefined;
+    if (wake !== undefined) wake();
+  }
+
+  private async awaitForeground(operation: Operation): Promise<void> {
+    while (this.current(operation) && !this.active()) {
+      await new Promise<void>((resolve: () => void) => { this.foregroundWaiter = resolve; });
+    }
+    if (!this.current(operation) || !this.active()) throw new Error('Unconfirmed');
   }
 
   // Native consumers only. Only request() is on the registered JS method list.
@@ -90,9 +123,11 @@ export class NativeAuthHost {
     const epoch: number = this.epoch;
     try { frame = this.controller.getLastJavascriptProxyCallingFrameUrl(); } catch { return; }
     if (!trustedFrame(frame) || !this.live(epoch)) return;
-    this.ownerLease.revoke();
     const input: AuthRequest | undefined = parseAuthRequest(raw);
-    if (input === undefined) return;
+    if (input === undefined) { this.ownerLease.revoke(); return; }
+    // Discovery has no identity effect. In particular, reading it immediately
+    // after a verified cold-start session must not disable native media access.
+    if (input.action !== 'providers') this.ownerLease.revoke();
     // Never send a duplicate id that could overwrite the original operation's reply.
     if (this.seen.includes(input.id)) return;
     if (this.seen.length >= 256) {
@@ -104,7 +139,7 @@ export class NativeAuthHost {
       this.send(input.id, 503, unavailableBody(input.action), epoch, input.version);
       return;
     }
-    if (input.action !== 'session' && input.action !== 'phone-status') {
+    if (input.action !== 'session' && input.action !== 'phone-status' && input.action !== 'providers') {
       const now: number = systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false);
       if (Number.isFinite(now) && now < NativeAuthHost.retryAt) {
         this.send(input.id, 429, { code: 'too-many-attempts', error: '请稍后重试。' }, epoch, input.version);
@@ -117,6 +152,12 @@ export class NativeAuthHost {
     }
     NativeAuthHost.busy = true;
     const operation: Operation = { id: input.id, action: input.action, version: input.version, epoch: epoch, ownerLeaseEpoch: this.ownerLease.version(), timedOut: false, replied: false, sessionMayHaveChanged: false };
+    if (input.action === 'huawei-login' || input.action === 'huawei-bind') {
+      operation.huawei = true;
+      this.huaweiOperation = operation;
+      this.runHuawei(input, operation).catch(() => {});
+      return;
+    }
     this.run(input, operation).catch(() => { /* run publishes only sanitized failures. */ });
   }
 
@@ -131,7 +172,12 @@ export class NativeAuthHost {
   }
 
   private current(operation: Operation): boolean {
-    return !operation.timedOut && this.live(operation.epoch);
+    if (operation.timedOut) return false;
+    if (operation.huawei === true && this.huaweiOperation === operation) {
+      if (this.disposed || !this.attached || operation.epoch !== this.epoch) return false;
+      try { return trustedFrame(this.controller.getUrl()); } catch { return false; }
+    }
+    return this.live(operation.epoch);
   }
 
   private send(id: string, status: number, body: AuthBody, epoch: number, version?: number): void {
@@ -181,13 +227,14 @@ export class NativeAuthHost {
   }
 
   private async fetch(action: string, body: string, token: string | undefined,
-    operation: Operation): Promise<http.HttpResponse> {
+    operation: Operation, proof: boolean = false): Promise<http.HttpResponse> {
+    if (operation.huawei === true) await this.awaitForeground(operation);
     if (!this.current(operation) || !this.available()) throw new Error('Unconfirmed');
-    // There is no caller supplied URL or method. Eight exact routes only.
+    // There is no caller supplied URL or method, only the fixed policy routes.
     const route: AuthRoute | undefined = authRoute(action);
     if (route === undefined) throw new Error('Unconfirmed');
     const headers: Record<string, string> = { 'Accept': 'application/json', 'Origin': AUTH_API_ORIGIN };
-    if (action === 'session' && operation.version === 2) headers['X-Lantern-Session-Proof'] = '2';
+    if (action === 'session' && (operation.version === 2 || proof)) headers['X-Lantern-Session-Proof'] = '2';
     if (route.method === 'POST') headers['Content-Type'] = 'application/json';
     if (token !== undefined) {
       if (!/^[a-f0-9]{64}$/.test(token)) throw new Error('Unconfirmed');
@@ -205,12 +252,117 @@ export class NativeAuthHost {
     if (route.method === 'POST') options.extraData = body;
     try {
       const response: http.HttpResponse = await request.request(AUTH_API_ORIGIN + route.path, options);
+      if (operation.huawei === true) await this.awaitForeground(operation);
       if (!this.current(operation) || response.responseCode >= 300 && response.responseCode < 400 ||
         typeof response.result !== 'string' || utf8Length(response.result) > MAX_RESPONSE_BYTES) throw new Error('Unconfirmed');
       return response;
     } finally {
       try { request.destroy(); } catch { /* This request belongs to this operation. */ }
       if (this.network === request) this.network = undefined;
+    }
+  }
+
+  private huaweiAvailable(): boolean {
+    return this.context !== undefined && HuaweiAccountProvider.available();
+  }
+
+  private async huaweiSession(token: string | undefined, operation: Operation): Promise<AuthUser> {
+    if (token === undefined) throw new Error('Unconfirmed');
+    const started: number = systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false);
+    const response: http.HttpResponse = await this.fetch('session', '', token, operation, true);
+    if (this.cookieHeaders(response).length !== 0 || response.responseCode !== 200) throw new Error('Unconfirmed');
+    const payload: AuthBody = parseResponseBody(response.result as string);
+    const user: AuthUser | undefined = publicUser(payload);
+    const remaining: number = sessionProofBudget(payload);
+    const ended: number = systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false);
+    if (!user || !Number.isFinite(started) || started < 0 || !Number.isFinite(ended) || ended < started || remaining <= ended - started) throw new Error('Unconfirmed');
+    return user;
+  }
+
+  private async runHuawei(input: AuthRequest, operation: Operation): Promise<void> {
+    let timer: number = -1;
+    const arm: (milliseconds: number, sdk: boolean) => void = (milliseconds: number, sdk: boolean) => {
+      if (timer !== -1) clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (!this.current(operation)) return;
+        operation.timedOut = true;
+        operation.replied = true;
+        this.wakeForeground();
+        this.send(operation.id, sdk ? 408 : 503, sdk ? { code: 'huawei-timeout', error: '华为账号授权已超时，请重试。' } : unknownBody(), operation.epoch);
+      }, milliseconds);
+    };
+    arm(AUTH_TIMEOUT_MS, false);
+    try {
+      if (!this.huaweiAvailable() || this.context === undefined) {
+        this.finish(operation, 503, { code: 'huawei-unavailable', error: '此设备暂不支持华为账号登录。' });
+        return;
+      }
+      let token: string | undefined = undefined;
+      if (NativeAuthHost.quarantined) await this.store.clear();
+      else token = await this.store.load(AUTH_API_ORIGIN);
+      if (!this.current(operation)) return;
+      const providerReply: http.HttpResponse = await this.fetch('providers', '', token, operation);
+      if (this.cookieHeaders(providerReply).length !== 0 || providerReply.responseCode !== 200) throw new Error('Unconfirmed');
+      const providers: AuthBody = huaweiProviders(parseResponseBody(providerReply.result as string), true);
+      if (input.action === 'huawei-bind' ? providers.huaweiBinding !== true : providers.huaweiLogin !== true) {
+        this.finish(operation, 503, { code: 'huawei-unavailable', error: '华为账号登录暂不可用。' });
+        return;
+      }
+      const bindingUser: AuthUser | undefined = input.action === 'huawei-bind' ? await this.huaweiSession(token, operation) : undefined;
+      if (!this.current(operation)) return;
+      arm(180000, true);
+      const authorization: HuaweiAuthorization = await new HuaweiAccountProvider().authorize(this.context());
+      if (!this.current(operation)) return;
+      await this.awaitForeground(operation);
+      if (authorization.code === undefined) {
+        this.finish(operation, 400, { code: authorization.failure === 'huawei-cancelled' ? 'huawei-cancelled' : 'huawei-authorization-failed', error: authorization.failure === 'huawei-cancelled' ? '已取消华为账号授权。' : '华为账号授权未完成，请重试。' });
+        return;
+      }
+      // SDK time is separate from the network/Asset budget. Never resend this code.
+      arm(AUTH_TIMEOUT_MS, false);
+      operation.sessionMayHaveChanged = true;
+      const response: http.HttpResponse = await this.fetch(input.action, JSON.stringify({ code: authorization.code }), token, operation);
+      authorization.code = undefined;
+      const lines: string[] = this.cookieHeaders(response);
+      const payload: AuthBody = parseResponseBody(response.result as string);
+      if (response.responseCode !== 200) {
+        if (lines.length !== 0) throw new Error('Unconfirmed');
+        const failure: AuthReply = huaweiFailure(response.responseCode, payload);
+        if (failure.body.code !== 'auth-state-unknown') operation.sessionMayHaveChanged = false;
+        this.finish(operation, failure.status, failure.body);
+        return;
+      }
+      const user: AuthUser | undefined = publicUser(payload);
+      if (!user) throw new Error('Unconfirmed');
+      if (input.action === 'huawei-bind') {
+        if (lines.length !== 0 || payload.ok !== true || !bindingUser || user.id !== bindingUser.id) throw new Error('Unconfirmed');
+        const confirmed: AuthUser = await this.huaweiSession(token, operation);
+        if (confirmed.id !== bindingUser.id) throw new Error('Unconfirmed');
+        operation.sessionMayHaveChanged = false;
+        NativeAuthHost.quarantined = false;
+        this.finish(operation, 200, { ok: true, user: confirmed });
+      } else {
+        const cookie: AuthCookie | undefined = sessionCookie(lines);
+        if (!cookie || cookie.token === '' || cookie.maxAge < 1 || payload.capabilities?.passwordLogin !== true || !this.current(operation)) throw new Error('Unconfirmed');
+        await this.store.save(AUTH_API_ORIGIN, cookie.token, cookie.maxAge);
+        const confirmed: AuthUser = await this.huaweiSession(cookie.token, operation);
+        if (confirmed.id !== user.id) throw new Error('Unconfirmed');
+        operation.sessionMayHaveChanged = false;
+        NativeAuthHost.quarantined = false;
+        this.finish(operation, 200, { user: confirmed, capabilities: capabilities(true) });
+      }
+    } catch {
+      if (operation.sessionMayHaveChanged) NativeAuthHost.quarantined = true;
+      this.finish(operation, 503, unknownBody());
+    } finally {
+      if (timer !== -1) clearTimeout(timer);
+      if (operation.sessionMayHaveChanged) {
+        NativeAuthHost.quarantined = true;
+        try { await this.store.clear(); } catch {}
+      }
+      if (this.huaweiOperation === operation) this.huaweiOperation = undefined;
+      this.wakeForeground();
+      NativeAuthHost.busy = false;
     }
   }
 
@@ -301,6 +453,10 @@ export class NativeAuthHost {
       }
       if (input.action === 'phone-status') {
         this.finish(operation, 200, phoneStatus(payload));
+        return;
+      }
+      if (input.action === 'providers') {
+        this.finish(operation, 200, huaweiProviders(payload, this.huaweiAvailable()));
         return;
       }
       // A challenge has only one success shape/status; 200 cannot mean sent.

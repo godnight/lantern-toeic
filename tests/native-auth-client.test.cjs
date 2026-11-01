@@ -323,3 +323,94 @@ test('actual React server render of the real NativeAccountRoot stays behind the 
   const html=renderToStaticMarkup(React.createElement(Root));assert(html.includes('正在确认账号'));
   assert(!html.includes('workspace-mobile-nav'));assert(!html.includes('当前未登录'));assert(!html.includes('synthetic_a'));
 });
+
+async function huaweiReady(h,user=guest){
+ await initial(h,user);const providers=h.value.getProviders();
+ h.reply(1,{status:200,body:{huaweiLogin:true,huaweiBinding:true}});await providers;
+}
+
+test('startup provider discovery waits for the native single-slot session proof',async()=>{
+ const h=controller();try{h.value.start();const p=h.value.getProviders();assert.equal(h.calls.length,1);
+  h.reply(0,session(A));await tick();assert.equal(h.calls.length,2);assert.equal(h.calls[1].action,'providers');
+  h.reply(1,{status:200,body:{huaweiLogin:true,huaweiBinding:true}});assert.equal((await p).huaweiLogin,true);
+  assert.equal(h.value.getSnapshot().access.owner,A.id);
+ }finally{h.value.dispose();}
+});
+
+test('Huawei discovery is separate and exact; disabled or secret-bearing provider replies stay closed',async()=>{
+ for(const body of [{huaweiLogin:false,huaweiBinding:false},{huaweiLogin:true,huaweiBinding:true,clientSecret:'synthetic'},
+   {huaweiLogin:'true',huaweiBinding:true},{huaweiLogin:true}]){
+  const h=controller();try{await initial(h,guest);const p=h.value.getProviders();h.reply(1,{status:200,body});
+   assert.deepEqual(plain(await p),{huaweiLogin:false,huaweiBinding:false});assert.equal(await h.value.mutateHuawei('login'),false);assert.equal(h.calls.length,2);
+  }finally{h.value.dispose();}
+ }
+});
+
+test('Huawei transport keeps authorization private and bounded independently of the 15s network timer',async()=>{
+ const h=bridge();try{
+  await assert.rejects(h.transport.request('huawei-login',{code:'synthetic-native-only'}),/protocol/);
+  const p=h.transport.request('huawei-login');assert.deepEqual(Object.keys(h.calls[0]).sort(),['action','id']);
+  h.timer.advance(15000);await tick();assert.equal(h.timer.size,1);
+  await assert.rejects(h.transport.request('login',credentials),/mutation-busy/);
+  h.reply(0,{status:400,body:{code:'huawei-cancelled'}});assert.equal((await p).status,400);
+  const expired=h.transport.request('huawei-bind');h.timer.advance(230000);await assert.rejects(expired,/timeout/);
+  h.reply(1,{status:200,body:{ok:true}});assert.equal(h.timer.size,0);
+ }finally{h.transport.dispose();}
+});
+
+test('Huawei login never chooses a partition from mutation JSON; only independent v2 proof permits navigation',async()=>{
+ const h=controller();try{await huaweiReady(h);let settled=false;
+  const p=h.value.mutateHuawei('login').then(ok=>{settled=true;return ok;});
+  h.reply(2,{status:200,body:{user:A,capabilities:caps}});await tick();assert.equal(settled,false);
+  assert.equal(h.calls[3].action,'session');assert.equal(h.calls[3].version,2);
+  h.reply(3,session(B));assert.equal(await p,true);assert.equal(h.value.getSnapshot().access.owner,B.id);
+  assert(!JSON.stringify(h.calls).includes('code'));
+ }finally{h.value.dispose();}
+});
+
+test('Huawei system authorization background preserves pending work but never revives the old owner',async()=>{
+ const h=controller();try{await huaweiReady(h,session(A));const old=h.value.getSnapshot().access;
+  const p=h.value.mutateHuawei('login');assert.equal(old.canAccess(),false);
+  h.value.suspend(true,true);h.timer.advance(30000);h.reply(2,{status:200,body:{user:B,capabilities:caps}});await tick();
+  assert.equal(h.calls.length,3);assert.equal(h.value.getSnapshot().status,'checking');assert.equal(old.canAccess(),false);
+  h.value.resume();await tick();assert.equal(h.calls[3].action,'session');
+  h.value.suspend(true,true);h.reply(3,session(B));await tick();assert.equal(h.value.getSnapshot().status,'checking');
+  h.value.resume();assert.equal(await p,true);assert.equal(h.value.getSnapshot().user.id,B.id);assert.equal(old.canAccess(),false);
+ }finally{h.value.dispose();}
+});
+
+test('Huawei page navigation, dispose and expiry discard delayed authorization results without a speculative probe',async()=>{
+ for(const end of ['leave','dispose','timeout']){
+  const h=controller();try{await huaweiReady(h,session(A));const old=h.value.getSnapshot().access,p=h.value.mutateHuawei('login');
+   if(end==='leave')h.value.suspend(true,false);else if(end==='dispose')h.value.dispose();else h.timer.advance(230000);
+   assert.equal(await p,false);h.reply(2,{status:200,body:{user:B,capabilities:caps}});await tick();
+   assert.equal(h.calls.length,3);assert.equal(old.canAccess(),false);assert.notEqual(h.value.getSnapshot().status,'ready');
+  }finally{h.value.dispose();}
+ }
+});
+
+test('Huawei binding rejects a changed independent owner before publishing any ready state',async()=>{
+ const h=controller();try{await huaweiReady(h,session(A));const old=h.value.getSnapshot().access;
+  const p=h.value.mutateHuawei('bind');h.reply(2,{status:200,body:{ok:true,user:A}});await tick();h.reply(3,session(B));
+  assert.equal(await p,false);assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(old.canAccess(),false);
+  h.value.resume();h.value.suspend(true,true);h.value.resume();await tick();assert.equal(h.calls.length,4);
+  assert(!h.states.some(({state})=>state.status==='ready'&&state.user?.id===B.id));
+ }finally{h.value.dispose();}
+});
+
+test('Huawei cancellation or binding conflict keeps the verified original identity without reporting success',async()=>{
+ for(const code of ['huawei-cancelled','huawei-binding-conflict']){
+  const h=controller();try{await huaweiReady(h,session(A));const p=h.value.mutateHuawei('bind');
+   h.reply(2,{status:code==='huawei-cancelled'?400:409,body:{code}});await tick();h.reply(3,session(A));
+   assert.equal(await p,false);assert.equal(h.value.getSnapshot().user.id,A.id);assert(h.value.getSnapshot().access.canAccess());
+  }finally{h.value.dispose();}
+ }
+});
+
+test('Huawei binding succeeds only for the same live owner; unknown exchange stays held across resume',async()=>{
+ const h=controller();try{await huaweiReady(h,session(A));const p=h.value.mutateHuawei('bind');h.reply(2,{status:200,body:{ok:true,user:A}});await tick();
+  h.reply(3,session(A));assert.equal(await p,true);assert.match(h.value.getSnapshot().message,/已绑定/);
+  const next=h.value.mutateHuawei('login');h.reply(4,{status:503,body:{code:'auth-state-unknown'}});assert.equal(await next,false);
+  h.value.suspend(true,true);h.value.resume();await tick();assert.equal(h.calls.length,5);assert.equal(h.value.getSnapshot().status,'blocked');
+ }finally{h.value.dispose();}
+});

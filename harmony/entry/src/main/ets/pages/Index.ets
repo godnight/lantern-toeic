@@ -598,7 +598,7 @@ struct Index {
   }
 
   private onForegroundChanged(): void {
-    this.authHost?.invalidate();
+    this.authHost?.onForegroundChanged(this.foreground);
     // @Watch runs synchronously. Even a background/foreground round trip
     // invalidates every earlier permission and Back callback.
     this.lifecycleGeneration++;
@@ -981,7 +981,7 @@ struct Index {
           this.speakingMedia = undefined;
           this.authHost?.dispose();
           this.authHost = new NativeAuthHost(this.controller,
-            () => this.alive && this.foreground && this.pageReady && this.isTrustedDocument());
+            () => this.alive && this.foreground && this.pageReady && this.isTrustedDocument(), () => this.context());
           if (!this.authHost.attach()) this.authHost = undefined;
           if (this.authHost !== undefined) {
             this.speakingMedia = new SpeakingMediaHost(this.controller, () => this.context(),

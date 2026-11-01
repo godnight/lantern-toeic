@@ -25,6 +25,8 @@ export interface AuthCapabilities {
   passwordRecovery?: boolean;
 }
 export interface AuthBody {
+  huaweiLogin?: boolean;
+  huaweiBinding?: boolean;
   session?: AuthSessionProof;
   code?: string;
   error?: string;
@@ -93,6 +95,9 @@ export function phoneAction(action: string): boolean {
 }
 
 export function authRoute(action: string): AuthRoute | undefined {
+  if (action === 'providers') return { path: '/api/auth/providers', method: 'GET' };
+  if (action === 'huawei-login') return { path: '/api/auth/huawei/login', method: 'POST' };
+  if (action === 'huawei-bind') return { path: '/api/auth/huawei/bind', method: 'POST' };
   if (['session', 'register', 'login', 'logout'].includes(action)) {
     return { path: '/api/auth/' + action, method: action === 'session' ? 'GET' : 'POST' };
   }
@@ -127,6 +132,7 @@ export function parseAuthRequest(raw: string): AuthRequest | undefined {
     const keys: string = Object.keys(value).sort().join(',');
     if (value.version !== undefined) return value.version === 2 && keys === 'action,id,version' && value.action === 'session' ? value : undefined;
     if (keys !== 'action,id' && keys !== 'action,body,id') return undefined;
+    if (['providers', 'huawei-login', 'huawei-bind'].includes(value.action)) return keys === 'action,id' ? value : undefined;
     if (value.action === 'session' || value.action === 'logout' || value.action === 'phone-status') {
       if (value.body !== undefined && (value.body === null || typeof value.body !== 'object' ||
         Array.isArray(value.body) || Object.keys(value.body).length !== 0)) return undefined;
@@ -161,6 +167,22 @@ export function parseAuthRequest(raw: string): AuthRequest | undefined {
 
 export function capabilities(enabled: boolean): AuthCapabilities {
   return { passwordLogin: enabled, phoneLogin: false, cloudSync: false, passwordRecovery: false };
+}
+
+export function huaweiProviders(body: AuthBody, nativeAvailable: boolean): AuthBody {
+  if (Object.keys(body).sort().join(',') !== 'huaweiBinding,huaweiLogin' ||
+    typeof body.huaweiLogin !== 'boolean' || typeof body.huaweiBinding !== 'boolean') throw new Error('Unconfirmed');
+  return { huaweiLogin: nativeAvailable && body.huaweiLogin, huaweiBinding: nativeAvailable && body.huaweiBinding };
+}
+
+export function huaweiFailure(status: number, body: AuthBody): AuthReply {
+  // A provider/DB 503 can follow a consumed code or committed session. It never
+  // proves absence of mutation, even if its code also denotes configuration.
+  const codes: string[] = ['huawei-invalid-request', 'huawei-invalid-credential', 'huawei-unauthenticated', 'huawei-replayed', 'huawei-binding-conflict', 'huawei-too-many-attempts'];
+  if ([400, 401, 403, 409, 410, 429].includes(status) && typeof body.code === 'string' && codes.includes(body.code)) {
+    return { id: '', status: status, body: { code: body.code, error: '华为账号请求未被接受，请重试。' } };
+  }
+  return { id: '', status: 503, body: unknownBody() };
 }
 
 export function unavailableBody(action: string = 'session'): AuthBody {

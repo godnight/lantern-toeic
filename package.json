@@ -28,7 +28,7 @@
     "test:themes:browser": "node tests/browser/theme-browser.cjs",
     "test:themes:web:browser": "node tests/browser/theme-browser.cjs --web",
     "test:continuous": "node --test tests/continuous-training.test.cjs tests/continuous-audio-ui.test.cjs tests/phase2-practice-workflow.test.cjs tests/lesson-audio.test.cjs tests/audio-resume-confirmation.test.cjs",
-    "test:auth": "node --test tests/auth-primitives.test.cjs tests/product-auth.test.cjs tests/auth-admission.test.cjs tests/product-auth-runtime.test.cjs tests/product-session-browser-guard.test.cjs",
+    "test:auth": "node --test tests/auth-primitives.test.cjs tests/product-auth.test.cjs tests/auth-admission.test.cjs tests/product-auth-runtime.test.cjs tests/product-session-browser-guard.test.cjs tests/huawei-auth-service.test.cjs tests/native-auth-client.test.cjs tests/native-auth-host-v2.test.cjs tests/native-huawei-auth.test.cjs tests/native-owner-lease.test.cjs tests/native-owner-scope.test.cjs tests/account-ui.test.cjs tests/huawei-account-ui.test.cjs tests/migration-wiring.test.cjs",
     "auth:local": "node scripts/auth-local.mjs"
   },
   "dependencies": {

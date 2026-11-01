@@ -1,7 +1,8 @@
 import {createHash, randomBytes, randomUUID} from 'node:crypto';
 import {hashPassword, verifyPassword, normalizeUsername, validatePassword, PasswordHashBusyError} from './password-credential';
 
-export type AuthEnvironment = {DB?:D1Database; LANTERN_AUTH_ENABLED?:string; LANTERN_AUTH_ORIGIN?:string};
+export type AuthEnvironment = {DB?:D1Database; LANTERN_AUTH_ENABLED?:string; LANTERN_AUTH_ORIGIN?:string;
+ LANTERN_HUAWEI_CLIENT_ID?:string; LANTERN_HUAWEI_CLIENT_SECRET?:string};
 import type {ProductIdentity} from './product-identity';
 export type {ProductIdentity} from './product-identity';
 const COOKIE='__Host-lantern-session';

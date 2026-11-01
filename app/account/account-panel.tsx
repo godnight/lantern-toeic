@@ -6,14 +6,16 @@ import type {NativeAccountState} from '@/lib/native-account-controller';
 
 type Field='username'|'password'|'confirmation';
 type Errors=Partial<Record<Field,string>>;
+export type HuaweiAccountActions={login:boolean;binding:boolean;onLogin:()=>void;onBind:()=>void};
 export function accountNotice(state:NativeAccountState,mode:'register'|'login'){
- if(state.status==='checking')return '正在确认账号，请稍候。';
+ if(state.status==='checking')return state.message==='华为账号授权进行中，旧学习分区已暂停。'?'请在华为账号窗口完成授权。':'正在确认账号，请稍候。';
  if(state.status==='blocked'){
   if(/到期|有效期/.test(state.message))return '登录已过期，学习记录仍保存在本机。';
   if(/账号操作|结果未知|结果尚未确认|结果未确认/.test(state.message))return '操作结果尚未确认，学习记录已暂时保护。';
   return '暂时无法确认账号，学习记录已暂时保护。';
  }
  if(!state.message)return '';
+ if(['华为账号已绑定，学习记录仍属于当前账号。','华为账号授权已取消。','该华为账号已绑定其他微光账号，请使用原账号登录。','华为账号操作未获确认，请稍后重试。'].includes(state.message))return state.message;
  if(/这不确认原账号操作结果/.test(state.message))return state.user?'已确认当前账号；之前操作的结果仍未确认。':'当前尚未登录。之前操作的结果仍未确认，可尝试登录同一账号。';
  if(/已退出本机/.test(state.message))return '已退出本机。';
  if(/退出/.test(state.message))return '退出结果仍未确认，请核对当前账号。';
@@ -21,7 +23,7 @@ export function accountNotice(state:NativeAccountState,mode:'register'|'login'){
  if(/账号操作未获确认/.test(state.message))return mode==='register'?'注册未被接受。请检查输入，或尝试登录。':'登录未被接受。请检查输入，或稍后再试。';
  return '请核对当前账号后继续。';
 }
-export function AccountPanel({state,initialMode='register',onSubmit,onRecheck,onLogout,onEnter,onBack,onLegacy}:{state:NativeAccountState;initialMode?:'register'|'login';onSubmit:(mode:'register'|'login',credentials:{username:string;password:string})=>Promise<void>;onRecheck:()=>void;onLogout:()=>void;onEnter:()=>void;onBack?:()=>void;onLegacy?:()=>void}){
+export function AccountPanel({state,initialMode='register',onSubmit,onRecheck,onLogout,onEnter,onBack,onLegacy,huawei}:{state:NativeAccountState;initialMode?:'register'|'login';onSubmit:(mode:'register'|'login',credentials:{username:string;password:string})=>Promise<void>;onRecheck:()=>void;onLogout:()=>void;onEnter:()=>void;onBack?:()=>void;onLegacy?:()=>void;huawei?:HuaweiAccountActions}){
  const [mode,setMode]=useState(initialMode),[username,setUsername]=useState(''),[password,setPassword]=useState(''),[confirmation,setConfirmation]=useState(''),[visible,setVisible]=useState(false),[switching,setSwitching]=useState(false),[errors,setErrors]=useState<Errors>({});
  const prefix=useId(),inputs=useRef<Partial<Record<Field,HTMLInputElement|null>>>({}),lastSubmit=useRef(initialMode);
  const clear=()=>{setPassword('');setConfirmation('');setVisible(false);setErrors({});};
@@ -40,8 +42,10 @@ export function AccountPanel({state,initialMode='register',onSubmit,onRecheck,on
   <p style={{margin:0}}>学习记录保存在本机，不自动上传。</p>
   {notice&&<p role="status" aria-live="polite" style={{margin:0}}>{notice}</p>}
   {state.status==='ready'&&state.user&&<><p style={{margin:0}}>当前账号：<strong>{state.user.username}</strong></p><div className="button-row"><button style={{fontSize:'1rem'}} className="button primary" type="button" onClick={onBack??onEnter}>{onBack?'返回学习':'进入本机学习'}</button><button style={{fontSize:'1rem'}} className="button secondary" type="button" onClick={()=>{clear();setSwitching(true);setMode('login');}}>切换账号</button><button style={{fontSize:'1rem'}} className="button secondary" type="button" onClick={()=>{clear();onLogout();}}>退出本机</button></div></>}
+  {state.status==='ready'&&state.user&&!state.unavailable&&huawei?.binding&&!switching&&<div style={{display:'grid',gap:8}}><button style={{fontSize:'1rem'}} className="button secondary" type="button" onClick={()=>{clear();huawei.onBind();}}>绑定华为账号</button><p style={{margin:0,fontSize:'0.875rem',color:'var(--muted-foreground)'}}>绑定到当前微光账号，保留现有学习记录与登录方式，不会合并其他微光账号。</p></div>}
   {state.status==='blocked'&&<><p style={{margin:0}}>{resultUnknown?'上次操作的结果还未确认，请重新核对账号后继续。':'请联网重新核对账号后继续。'}</p><button style={{fontSize:'1rem'}} className="button primary" type="button" onClick={()=>{clear();onRecheck();}}>重新核对账号</button></>}
   {state.status==='ready'&&state.unavailable&&<p role="alert">账号服务尚未启用或当前设备不支持，暂时不能注册、登录。</p>}
+  {state.status==='ready'&&!state.unavailable&&(!state.user||switching)&&huawei?.login&&<button style={{fontSize:'1rem'}} className="button secondary" type="button" onClick={()=>{clear();huawei.onLogin();}}>华为账号登录</button>}
   {formOpen&&<form noValidate onSubmit={event=>void submit(event)} style={{display:'grid',gap:16,minWidth:0}}>
    {field('username','用户名',username)}{field('password','密码',password)}
    <button type="button" style={{fontSize:'1rem'}} className="text-button" aria-pressed={visible} onClick={()=>setVisible(!visible)}>{visible?'隐藏密码':'显示密码'}</button>

@@ -64,6 +64,13 @@
       "when": 1792735325393,
       "tag": "0008_phone_challenges",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1793462400000,
+      "tag": "0009_huawei_auth",
+      "breakpoints": true
     }
   ]
 }

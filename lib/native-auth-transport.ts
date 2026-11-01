@@ -2,7 +2,13 @@ import {parseProductIdentity,type ProductCredentials} from './product-identity';
 import {monotonicNow,readSessionProof} from './session-proof';
 import {normalizeMainlandPhone,parsePhonePublicReply,validPhoneVerification,type PhoneVerification,type PhonePurpose,type PhoneClientTransport} from './phone-auth-client';
 
-export type NativeAuthAction='session'|'register'|'login'|'logout'|'phone-status'|'phone-challenge'|'phone-bind'|'phone-login';
+export type NativeAuthAction='session'|'register'|'login'|'logout'|'phone-status'|'phone-challenge'|'phone-bind'|'phone-login'|'providers'|'huawei-login'|'huawei-bind';
+export type NativeAuthProviders=Readonly<{huaweiLogin:boolean;huaweiBinding:boolean}>;
+export const CLOSED_NATIVE_PROVIDERS:NativeAuthProviders=Object.freeze({huaweiLogin:false,huaweiBinding:false});
+export function parseNativeProviders(value:unknown):NativeAuthProviders|null {
+  if(!object(value)||Object.keys(value).sort().join(',')!=='huaweiBinding,huaweiLogin'||typeof value.huaweiLogin!=='boolean'||typeof value.huaweiBinding!=='boolean')return null;
+  return {huaweiLogin:value.huaweiLogin,huaweiBinding:value.huaweiBinding};
+}
 export type NativeAuthBody=ProductCredentials|PhoneVerification|{purpose:PhonePurpose;phone:string};
 export type NativeAuthReply={status:number;body:Record<string,unknown>;version?:2};
 export type NativeAuthFailureCode='timeout'|'superseded'|'disposed'|'mutation-busy'|'protocol'|'bridge-failed';
@@ -15,7 +21,7 @@ export type NativeAuthWindow={location:{origin:string};top?:unknown;self?:unknow
 export type NativeAuthClock={set:(callback:()=>void,ms:number)=>unknown;clear:(timer:unknown)=>void;now?:()=>number};
 export type NativeAuthTransport={request:(action:NativeAuthAction,body?:NativeAuthBody,signal?:AbortSignal,version?:2)=>Promise<NativeAuthReply>;
   cancelAll:()=>void;dispose:()=>void};
-const TRUSTED_ORIGIN='https://lantern.local',DEADLINE_MS=15000;
+const TRUSTED_ORIGIN='https://lantern.local',DEADLINE_MS=15000,HUAWEI_DEADLINE_MS=230000;
 const object=(value:unknown):value is Record<string,unknown>=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const unavailable=(action:NativeAuthAction):NativeAuthReply=>({status:503,body:{code:'native-auth-unavailable',
   capabilities:action.startsWith('phone-')?{phoneLogin:false,phoneBinding:false}:{passwordLogin:false,phoneLogin:false,passwordRecovery:false,cloudSync:false}}});
@@ -59,7 +65,9 @@ export function createNativeAuthTransport(target:NativeAuthWindow=window as unkn
       if(Object.keys(value).sort().join(',')!==(item.version===2?'body,id,status,version':'body,id,status')||item.version===2&&value.version!==2||!Number.isInteger(value.status)||
         (value.status as number)<200||(value.status as number)>599)throw new NativeAuthFailure('protocol');
       const reply={status:value.status as number,body:value.body as Record<string,unknown>};
-      const body=item.action.startsWith('phone-')?reply.body:publicBody(value.body,item.version===2);
+      const providers=item.action==='providers'&&reply.status===200?parseNativeProviders(value.body):null;
+      if(item.action==='providers'&&reply.status===200&&!providers)throw new NativeAuthFailure('protocol');
+      const body=providers?{...providers}:item.action.startsWith('phone-')?reply.body:publicBody(value.body,item.version===2);
       if(item.version===2&&reply.status!==200&&body.session!==undefined)throw new NativeAuthFailure('protocol');
       if(item.version===2&&reply.status===200){const proof=readSessionProof(value.body,'native',(clock.now??monotonicNow)()-item.startedAt);if(!proof)throw new NativeAuthFailure('protocol');body.session={validForMs:proof.validForMs};}
       finish(value.id,item.action.startsWith('phone-')?parsePhonePublicReply(item.action.slice(6) as 'status'|'challenge'|'bind'|'login',reply):{status:reply.status,body,...item.version===2?{version:2 as const}:{}});
@@ -71,8 +79,8 @@ export function createNativeAuthTransport(target:NativeAuthWindow=window as unkn
     request(action,body,signal,version){
       if(disposed)return Promise.reject(new NativeAuthFailure('disposed'));
       if(version!==undefined&&(version!==2||action!=='session'||body!==undefined))return Promise.reject(new NativeAuthFailure('protocol'));
-      if(!['session','register','login','logout','phone-status','phone-challenge','phone-bind','phone-login'].includes(action))return Promise.reject(new NativeAuthFailure('protocol'));
-      const mutation=action!=='session'&&action!=='phone-status';
+      if(!['session','register','login','logout','phone-status','phone-challenge','phone-bind','phone-login','providers','huawei-login','huawei-bind'].includes(action))return Promise.reject(new NativeAuthFailure('protocol'));
+      const mutation=action!=='session'&&action!=='phone-status'&&action!=='providers';
       if(mutation&&mutationId!==null)return Promise.reject(new NativeAuthFailure('mutation-busy'));
       const password=action==='register'||action==='login',challenge=action==='phone-challenge',verification=action==='phone-bind'||action==='phone-login';
       if(password?(!body||Object.keys(body).sort().join(',')!=='password,username'||!('username' in body)||!('password' in body)||typeof body.username!=='string'||typeof body.password!=='string'):
@@ -88,10 +96,11 @@ export function createNativeAuthTransport(target:NativeAuthWindow=window as unkn
         const abort=()=>finish(id,undefined,new NativeAuthFailure('superseded'));
         const item:Pending={action,version,startedAt:version===2?(clock.now??monotonicNow)():0,resolve,reject,timer:undefined,removeAbort:()=>signal?.removeEventListener('abort',abort)};
         pending.set(id,item);signal?.addEventListener('abort',abort,{once:true});
-        item.timer=clock.set(()=>finish(id,undefined,new NativeAuthFailure('timeout')),DEADLINE_MS);
+        item.timer=clock.set(()=>finish(id,undefined,new NativeAuthFailure('timeout')),action.startsWith('huawei-')?HUAWEI_DEADLINE_MS:DEADLINE_MS);
         try{
           // The bridge returns no auth result synchronously. The complete public
-          // callback must arrive before the15s deadline. No password is retained.
+          // Network actions retain their 15s deadline; a native Huawei dialog has
+          // a separate bounded interaction budget. No credential is retained here.
           let serialized=JSON.stringify({id,action,...version===2?{version:2}:{},...body?{body:{...body}}:{}});
           target.LanternAuthHost!.request(serialized);serialized='';
         }catch{finish(id,undefined,new NativeAuthFailure('bridge-failed'));}
