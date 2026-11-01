@@ -39,8 +39,9 @@ export async function POST(request:Request){const uid=await userId(request);if(!
  }
  if(body.type==='attempt'){
   const a=attempt.parse(body.data);const {QUESTIONS:questions}=await loadQuestionCatalog();const q=questions.find(q=>q.id===a.qid);if(!q||a.choice>=q.options.length)return privateJson({error:'题目或选项无效'},400);
-  const prev=await db.select({id:attempts.id}).from(attempts).where(and(eq(attempts.userId,uid),eq(attempts.qid,a.qid))).limit(1);
-  await db.insert(attempts).values({...a,userId:uid,correct:a.choice===q.correctIndex,mode:prev.length?'review':'first'}).onConflictDoNothing();
+  // Determine mode within the INSERT itself. Concurrent requests may both
+  // observe an empty history when a SELECT and INSERT are separate calls.
+  await db.insert(attempts).values({...a,userId:uid,correct:a.choice===q.correctIndex,mode:sql`CASE WHEN EXISTS (SELECT 1 FROM ${attempts} WHERE ${attempts.userId} = ${uid} AND ${attempts.qid} = ${a.qid}) THEN 'review' ELSE 'first' END`}).onConflictDoNothing();
   const owned=await db.select().from(attempts).where(and(eq(attempts.id,a.id),eq(attempts.userId,uid))).limit(1);
   const stored=owned[0];
   if(!stored)return privateJson({error:'记录标识冲突，请保留备份并检查导入来源'},422);

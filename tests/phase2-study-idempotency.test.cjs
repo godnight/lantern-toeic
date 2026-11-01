@@ -38,7 +38,10 @@ function harness(storage=new Map(),options={}){
   useEffect(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps)){const old=slots[i];slots[i]={deps};effects.push(()=>{old?.cleanup?.();slots[i].cleanup=fn();});}}
  };
  const localStorage={get length(){return storage.size;},key:i=>[...storage.keys()][i]??null,getItem:key=>storage.get(key)??null,setItem(key,value){options.beforeSet?.(key,value);writes.push(key);storage.set(key,String(value));},removeItem:key=>storage.delete(key)};
- const hook=load('lib/use-study.ts',{react,sonner:{toast:{error:value=>errors.push(value)}},'./study-model':model,'./study-backup':backup},{localStorage,navigator:{get onLine(){return online;}},window:{addEventListener(){},removeEventListener(){}},setTimeout:()=>1,clearTimeout(){},fetch:async(url,init)=>{requests.push({url,init});if(options.fetch)return options.fetch(url,init);throw Error('Offline test must not fetch');}});
+ // Most journal tests use a synthetic granted session. The guard integration
+ // case opts into the real learning-access module with a controlled context.
+ const learningAccess=options.getAccess?load('lib/learning-access.tsx',{react:{createContext:initial=>({initial}),useContext:()=>options.getAccess()}}):{useLearningAccess:()=>()=>true};
+ const hook=load('lib/use-study.ts',{react,'./learning-access':learningAccess,sonner:{toast:{error:value=>errors.push(value)}},'./study-model':model,'./study-backup':backup},{localStorage,navigator:{get onLine(){return online;}},window:{addEventListener(){},removeEventListener(){}},setTimeout:()=>1,clearTimeout(){},fetch:async(url,init)=>{requests.push({url,init});if(options.fetch)return options.fetch(url,init);throw Error('Offline test must not fetch');}});
  const render=(nextOwner=owner)=>{owner=nextOwner;cursor=0;const api=hook.useStudy(owner);const batch=effects;effects=[];batch.forEach(fn=>fn());return api;};
  render();return {render,storage,writes,errors,requests,online(value){online=value;},ops:()=>[...storage.entries()].filter(([k])=>k.startsWith(main+':op:')).map(([,v])=>JSON.parse(v))};
 }
@@ -135,6 +138,24 @@ test('owner switch invalidates captured readers and does not confirm another par
  const foreign=new Map();journal(foreign,'attempt',attempt,{owner:'bob'});assert.equal(harness(foreign).render().readAttempt(attempt.id),undefined);
 });
 
+test('real learning-access guard blocks local writes and sync for revoked or mismatched sessions',async()=>{
+ for(const scenario of ['revoked','mismatched']){
+  let active=true;const proof={owner:scenario==='mismatched'?'bob':'alice',canAccess:()=>active,assertAccess:()=>active};
+  const existing=a(),storage=new Map([[main,snapshot({attempts:[existing]})]]);journal(storage,'attempt',existing);
+  const h=harness(storage,{getAccess:()=>proof}),captured=h.render();
+  if(scenario==='revoked'){
+   h.online(true);await captured.syncNow();assert.ok(h.requests.length>0,'Granted session must exercise the network path');
+   h.requests.length=0;active=false;
+  }
+  h.online(true);const before=[...storage],writeCount=h.writes.length;
+  assert.throws(()=>captured.readAttempt(existing.id),/不可读取/);
+  assert.equal(captured.addAttempt(a()),false);await captured.syncNow();
+  const denied=h.render();assert.equal(denied.recordsReadable,false);
+  assert.equal(denied.addCheckin(c()),false);await denied.syncNow();
+  assert.equal(h.writes.length,writeCount);assert.deepEqual([...storage],before);assert.equal(h.requests.length,0);
+ }
+});
+
 test('a payload-conflict 409 blocks only its event while healthy later records synchronize',async()=>{
  const h=harness(new Map(),{fetch:async(url,init)=>{
   if(init?.method==='POST')return JSON.parse(init.body).type==='attempt'?new Response('{}',{status:409,headers:{'X-Lantern-Conflict':'event-payload'}}):new Response('{}');
@@ -153,7 +174,7 @@ async function server(){
  const env=environment(),users={alice:await env.register('alice'),bob:await env.register('bob')};let owner='alice',failed=false;
  for(const user of Object.values(users)){const response=await env.call('session','GET',{cookie:user.cookie});assert.equal(response.status,200);assert.equal((await response.json()).user.id,user.id);}
  env.hooks.beforeSql=sql=>{if(failed&&/\b(?:attempts|checkins|profiles|recordings|question_marks|resource_tasks)\b/i.test(sql))throw Error('Synthetic business database failure');};
- return {sqlite:env.sqlite,api:{GET:()=>env.call('study','GET',{cookie:users[owner].cookie})},
+ return {sqlite:env.sqlite,hooks:env.hooks,api:{GET:()=>env.call('study','GET',{cookie:users[owner].cookie})},
   owner(value){assert.ok(users[value],'Registered owner alias');owner=value;},fail(){failed=true;},
   post:(type,data,headerOwner)=>env.call('study','POST',{cookie:users[owner].cookie,owner:headerOwner===undefined?users[owner].id:(users[headerOwner]?.id||headerOwner),body:{type,data}})};
 }
@@ -200,6 +221,27 @@ test('overlapping identical server retries produce one durable event and no fals
   const attempt=a(),checkin=c();const results=await Promise.all(Array.from({length:5},()=>h.post('attempt',attempt)));assert.ok(results.every(r=>r.status===200));
   const settlements=await Promise.all(Array.from({length:5},()=>h.post('checkin',checkin)));assert.ok(settlements.every(r=>r.status===200));
   assert.equal(h.sqlite.prepare('SELECT count(*) AS n FROM attempts').get().n,1);assert.equal(h.sqlite.prepare('SELECT count(*) AS n FROM checkins').get().n,1);
+ }finally{h.sqlite.close();}
+});
+
+test('distinct concurrent answers to the same question have one server-assigned first attempt per owner',{timeout:5000},async()=>{
+ const h=await server();try{
+  const first=a(),second={...first,id:randomUUID(),choice:(first.choice+1)%questions[0].options.length};
+  // Both requests must reach the write before either one is allowed through.
+  // This deterministically reproduces stale pre-insert reads without sleeping.
+  let arrived=0,release;const ready=new Promise(resolve=>{release=resolve;});
+  h.hooks.beforeSql=async sql=>{if(/^\s*insert\s+into\s+["`]?attempts/i.test(sql)&&arrived<2){if(++arrived===2)release();await ready;}};
+  const results=await Promise.all([h.post('attempt',first),h.post('attempt',second)]);
+  assert.equal(arrived,2);delete h.hooks.beforeSql;
+  assert.deepEqual(results.map(r=>r.status),[200,200]);
+  const rows=h.sqlite.prepare('SELECT id,mode,correct FROM attempts WHERE qid=? ORDER BY mode').all(first.qid);
+  assert.equal(rows.length,2);assert.deepEqual(rows.map(row=>row.mode),['first','review']);
+  for(const input of [first,second]){
+   assert.equal((await h.post('attempt',input)).status,200);
+   assert.equal(h.sqlite.prepare('SELECT mode FROM attempts WHERE id=?').get(input.id).mode,rows.find(row=>row.id===input.id).mode);
+  }
+  h.owner('bob');const other={...first,id:randomUUID()};assert.equal((await h.post('attempt',other)).status,200);
+  assert.equal(h.sqlite.prepare('SELECT mode FROM attempts WHERE id=?').get(other.id).mode,'first');
  }finally{h.sqlite.close();}
 });
 
