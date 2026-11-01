@@ -21,3 +21,29 @@ test('recording graph is muted and restarting a retired recorder is forbidden',a
 test('duration cap cuts actual samples exactly, releases resources and emits one final blob',async()=>{const h=harness(),r=new h.exports.PcmRecorder(h.stream,1);let blob;r.ondataavailable=e=>blob=e.data;r.start();h.feed(new Float32Array(96000));await flush();assert.equal(r.state,'inactive');assert.equal(r.durationSeconds,1);assert.equal(blob.size,96044);assert.match(r.captureIssue,/上限/);assert.equal(h.contexts[0].closed,1);});
 test('failed audio resume reports an error, finalizes once, and releases resources',async()=>{const h=harness({resumeError:true}),r=new h.exports.PcmRecorder(h.stream);let errors=0,stops=0;r.onerror=()=>errors++;r.onstop=()=>stops++;r.start();await flush();assert.equal(errors,1);assert.equal(stops,1);assert.equal(h.contexts[0].closed,1);assert.equal(r.state,'inactive');});
 test('source initialization failures close the context without opening another microphone',()=>{const h=harness({sourceError:true});assert.throws(()=>new h.exports.PcmRecorder(h.stream),/source unavailable/);assert.equal(h.contexts[0].closed,1);assert.equal(h.tracks[0].stops,0);});
+
+test('successive 2048-frame PCM callbacks preserve sample order and introduce no 128-frame jumps in a continuous tone',async()=>{
+ const h=harness(),r=new h.exports.PcmRecorder(h.stream);let blob;r.ondataavailable=e=>blob=e.data;r.start();
+ const blockSize=2048,blocks=48,rate=48000,frequency=440,amplitude=.3,expected=new Int16Array(blockSize*blocks);
+ for(let b=0;b<blocks;b++){
+  const frames=new Float32Array(blockSize);
+  for(let i=0;i<blockSize;i++){
+   const index=b*blockSize+i;frames[i]=amplitude*Math.sin(2*Math.PI*frequency*index/rate);
+   expected[index]=Math.round(frames[i]*(frames[i]<0?32768:32767));
+  }
+  h.feed(frames);
+ }
+ h.advance(blockSize*blocks/rate*1000);r.stop();await flush();
+ const view=new DataView(await blob.arrayBuffer());assert.equal(view.getUint32(40,true),expected.length*2);
+ let maxJump=0;for(let i=0;i<expected.length;i++){const actual=view.getInt16(44+i*2,true);assert.equal(actual,expected[i],`sample ${i}`);if(i)maxJump=Math.max(maxJump,Math.abs(actual-expected[i-1]));}
+ assert.ok(maxJump<1000,`continuous 440Hz tone has unexpected jump ${maxJump}`);
+});
+
+test('PCM encoding preserves a discontinuity supplied inside a callback instead of smoothing or relocating it',async()=>{
+ const h=harness(),r=new h.exports.PcmRecorder(h.stream);let blob;r.ondataavailable=e=>blob=e.data;r.start();
+ const first=new Float32Array(2048),second=new Float32Array(2048);first.fill(.25);second.fill(.25);second.fill(-.25,128);
+ h.feed(first);h.feed(second);h.advance(4096/48000*1000);r.stop();await flush();
+ const view=new DataView(await blob.arrayBuffer()),sample=i=>view.getInt16(44+i*2,true),event=2048+128;
+ assert.equal(sample(event-1),8192);assert.equal(sample(event),-8192);
+ assert.equal(sample(event+1),-8192);assert.equal(sample(2048),8192);
+});
