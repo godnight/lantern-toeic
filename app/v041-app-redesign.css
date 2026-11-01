@@ -203,15 +203,10 @@ body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .
  .v040-settings-group,
  .v040-about-card
 ){background:var(--tab-overview);border-color:var(--tab-edge);box-shadow:none;}
-body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .workspace-main .workspace-heading{background:none!important;border:0;padding:0;margin-bottom:8px!important;box-shadow:none;}
-body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .workspace-heading>h1{margin:0;}
+body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .workspace-main .workspace-heading{background:none!important;border:0;box-shadow:none;}
 body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .v040-word-action>.phase2-today-vocabulary{background:var(--tab-overview)!important;border-color:var(--tab-edge);box-shadow:none!important;}
 body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .progress-columns>.panel{background:var(--tab-chart);border-color:var(--tab-edge);box-shadow:none;}
 body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell :is(.vocab-detail,.word-flashcard){background:var(--ui-surface);}
-/* The page backdrop replaces duplicate decorative windows on overview pages. */
-body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell:is([data-v040-view="today"],[data-v040-view="review"],[data-v040-view="resources"]) .workspace-main .v041-theme-scene{display:none;}
-body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .v041-today-scene{margin:0 0 20px;}
-body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .v041-today-scene .v040-page-heading{margin:0;}
 @media(max-width:520px){
  body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="vocabulary"]{--tab-scene:url('/images/maps/greenpath-mobile.webp');}
  body[data-ui-theme="silk"] .v040-workspace-shell[data-v040-view="train"]{--tab-scene:url('/images/maps/greymoor-mobile.webp');}
@@ -259,8 +254,4 @@ body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v040-workspac
 body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v040-workspace-shell .v040-word-action>.phase2-today-vocabulary{background:var(--tab-overview)!important;border-color:var(--tab-edge);box-shadow:none!important;}
 body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v040-workspace-shell .progress-columns>.panel{background:var(--tab-chart);border-color:var(--tab-edge);box-shadow:none;}
 body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v040-workspace-shell :is(.vocab-detail,.word-flashcard){background:var(--ui-surface);}
-body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .workspace-heading{background:none!important;border:0;padding:0;margin-bottom:8px!important;box-shadow:none;}
-body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .workspace-heading>h1{margin:0;}
-body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v041-today-scene{margin:0 0 20px;}
-body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v041-today-scene .v040-page-heading{margin:0;}
-body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v040-workspace-shell[data-v040-view="review"] .workspace-main>.v041-theme-scene[data-scene="calm"]{display:none;}
+body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .workspace-heading{background:none!important;border:0;box-shadow:none;}
