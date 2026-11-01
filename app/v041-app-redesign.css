@@ -255,3 +255,25 @@ body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v040-workspac
 body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v040-workspace-shell .progress-columns>.panel{background:var(--tab-chart);border-color:var(--tab-edge);box-shadow:none;}
 body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v040-workspace-shell :is(.vocab-detail,.word-flashcard){background:var(--ui-surface);}
 body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .workspace-heading{background:none!important;border:0;box-shadow:none;}
+
+/* Approved hollow overview illustrations; study cards retain their original layout. */
+body[data-ui-theme="hollow"] .v040-workspace-shell .v041-vocabulary-overview-art,
+body[data-ui-theme="hollow"] .v040-workspace-shell .v041-progress-overview-art{margin:0;overflow:hidden;border-radius:14px;aspect-ratio:16/9;background:#101b29;min-width:0}
+body[data-ui-theme="hollow"] .v040-workspace-shell :is(.v041-vocabulary-overview-art,.v041-progress-overview-art)>img{display:block;width:100%;height:100%;object-fit:cover}
+body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="vocabulary"] .workspace-main>section[data-workflow-origin]:has(.phase2-vocabulary-session,.phase2-word-finished,.lp-editor,.vocab-detail-open,.vocab-session-open)>.v041-vocabulary-overview-art,
+body[data-ui-theme="hollow"] .v040-workspace-shell.workspace-focused[data-v040-view="vocabulary"] .v041-vocabulary-overview-art{display:none}
+@media(max-width:767px){
+ body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="vocabulary"] .v041-vocabulary-overview-art{margin-bottom:18px}
+ body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="progress"] .v041-progress-overview-art{margin-bottom:16px}
+}
+@media(min-width:768px){
+ body[data-ui-theme="hollow"] .v040-workspace-shell:not(.workspace-focused)[data-v040-view="vocabulary"] .workspace-main>section[data-workflow-origin]:has(>.v041-vocabulary-overview-art):not(:has(.phase2-vocabulary-session,.phase2-word-finished,.lp-editor,.vocab-detail-open,.vocab-session-open)){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr;gap:16px 22px;align-items:start}
+ body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="vocabulary"] .workspace-main>section[data-workflow-origin]>.v041-vocabulary-overview-art{grid-column:1;grid-row:1 / span 2}
+ body[data-ui-theme="hollow"] .v040-workspace-shell:not(.workspace-focused)[data-v040-view="vocabulary"] .workspace-main>section[data-workflow-origin]:has(>.v041-vocabulary-overview-art):not(:has(.phase2-vocabulary-session,.phase2-word-finished,.lp-editor,.vocab-detail-open,.vocab-session-open))>.phase2-vocabulary-plan{grid-column:2;grid-row:1;min-width:0}
+ body[data-ui-theme="hollow"] .v040-workspace-shell:not(.workspace-focused)[data-v040-view="vocabulary"] .workspace-main>section[data-workflow-origin]:has(>.v041-vocabulary-overview-art):not(:has(.phase2-vocabulary-session,.phase2-word-finished,.lp-editor,.vocab-detail-open,.vocab-session-open))>details{grid-column:2;grid-row:2;min-width:0}
+ body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="progress"] .v041-progress-overview{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:center;margin-bottom:24px}
+ body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="progress"] .v041-progress-overview .metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0}
+
+}
+
+body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="progress"] .v041-progress-overview .metrics-grid>.metric{background:rgba(16,27,41,.78)}
