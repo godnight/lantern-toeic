@@ -263,3 +263,4 @@ body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .workspace-hea
 body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .workspace-heading>h1{margin:0;}
 body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v041-today-scene{margin:0 0 20px;}
 body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v041-today-scene .v040-page-heading{margin:0;}
+body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v040-workspace-shell[data-v040-view="review"] .workspace-main>.v041-theme-scene[data-scene="calm"]{display:none;}
