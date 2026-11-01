@@ -7,7 +7,11 @@ import {readDiscoveryReturn,rememberDiscoveryReturn,clearDiscoveryReturn,type Di
 import './discovery.css';
 
 const categories=[['all','为你选'],['talk','演讲'],['person','人物'],['film','影视'],['library','资料库']] as const;
-const coverNames={talk:'声音与表达',person:'人生中的选择',film:'银幕里的对话'};
+const transcriptLabels:Readonly<Record<string,string>>={'原站有英文演讲稿；视频字幕未核':'英文稿'};
+function cardMetadata(entry:DiscoveryEntry):string{
+ return [entry.durationLabel??(entry.durationSeconds===null?null:discoveryDuration(entry.durationSeconds)),
+  transcriptLabels[entry.captions??'']??null,entry.difficulty?`编辑估计：${entry.difficulty}`:null].filter(Boolean).join(' · ');
+}
 type View={scope:string;category:DiscoveryCategory;query:string;savedOnly:boolean};
 type Props={owner:string|null;canAccess:()=>boolean;library:ReactNode;active?:boolean;libraryFocused?:boolean;
  initialReturn?:DiscoveryReturnState|null;onLibraryActiveChange?:(active:boolean)=>void};
@@ -76,15 +80,14 @@ export default function DiscoveryView({owner,canAccess,library,active=true,libra
    {view.savedOnly&&<p className="discovery-storage-note">收藏仅保存在此设备，不随学习记录备份导出。</p>}
    {blocked&&<p className="discovery-notice" role="alert">收藏暂时无法读取，已有记录未修改。原站目录仍可浏览。</p>}
    <div className="discovery-results">{found.map(entry=><article className="discovery-card" key={entry.id}>
-    <div className={`discovery-cover discovery-cover-${entry.kind}`} aria-hidden="true"><span>{DISCOVERY_KINDS[entry.kind]}</span><strong>{coverNames[entry.kind]}</strong><small>分类图</small></div>
     <div className="discovery-copy"><div className="discovery-source"><span>{entry.publisher}</span><span>{DISCOVERY_KINDS[entry.kind]}</span></div><h2>{entry.title}</h2><p className="discovery-author">{entry.author}</p><p>{entry.description}</p>
-     <p className="discovery-meta">{entry.durationLabel??discoveryDuration(entry.durationSeconds)}<br/>{entry.captions??'字幕以原站为准'}<br/>{entry.difficulty?`编辑估计：${entry.difficulty}`:'难度暂未评估'}</p>
+     {cardMetadata(entry)&&<p className="discovery-meta">{cardMetadata(entry)}</p>}
      <div className="discovery-actions"><a ref={node=>{if(node)sourceLinks.current.set(entry.id,node);else sourceLinks.current.delete(entry.id);}} data-discovery-source={entry.id} href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" onClick={event=>{if(!beforeExternal(entry))event.preventDefault();}}>前往原站<ArrowUpRight size={17} aria-hidden="true"/><span className="sr-only">：{entry.title}</span></a><button type="button" data-discovery-save={entry.id} aria-label={`${ids.includes(entry.id)?'取消收藏':'收藏'}：${entry.title}`} aria-pressed={ids.includes(entry.id)} disabled={!allowed||!ready} onClick={()=>toggle(entry)}>{ids.includes(entry.id)?'已收藏':'收藏'}</button></div>
-     <details className="discovery-rights"><summary>来源与访问说明</summary><p>{entry.availability.note}</p><p>仅提供原站入口，不在微光内播放或处理原站内容。</p><p>核查 {entry.rights.checkedAt} · {entry.rights.holder}</p>{entry.rights.evidenceUrls.map((url,index)=><a key={url} href={url} target="_blank" rel="noopener noreferrer" onClick={event=>{if(!beforeExternal(entry))event.preventDefault();}}>查看来源依据 {index+1}<ArrowUpRight size={14} aria-hidden="true"/></a>)}</details>
+     <details className="discovery-rights"><summary>来源与访问说明</summary><p>{entry.durationLabel??discoveryDuration(entry.durationSeconds)}<br/>{entry.captions??'字幕以原站为准'}<br/>{entry.difficulty?`编辑估计：${entry.difficulty}`:'难度暂未评估'}</p><p>{entry.availability.note}</p><p>仅提供原站入口，不在微光内播放或处理原站内容。</p><p>打开原站不会自动记作听完，也不增加学习时长。</p><p>核查 {entry.rights.checkedAt} · {entry.rights.holder}</p>{entry.rights.evidenceUrls.map((url,index)=><a key={url} href={url} target="_blank" rel="noopener noreferrer" onClick={event=>{if(!beforeExternal(entry))event.preventDefault();}}>查看来源依据 {index+1}<ArrowUpRight size={14} aria-hidden="true"/></a>)}</details>
     </div>
    </article>)}</div>
    {!found.length&&<div className="discovery-empty"><h2>{view.savedOnly?'还没有匹配的收藏':'没有匹配的内容'}</h2><p>{view.savedOnly?'看到想听的内容，可以先收藏下来。':'搜索的是已收录目录，可以换个关键词或查看全部内容。'}</p>{(view.query||view.category!=='all'||view.savedOnly)&&<button type="button" onClick={()=>change({query:'',category:'all',savedOnly:false})}>查看全部内容</button>}</div>}
-   <p className="discovery-notice" role="status" aria-live="polite">{notice||'精选目录检索 · 原站访问需要联网'}</p><p className="discovery-footnote">打开原站不会自动记作听完，也不增加学习时长。</p>
+   {notice&&<p className="discovery-notice" role="status" aria-live="polite">{notice}</p>}
   </div>
  </section>;
 }
