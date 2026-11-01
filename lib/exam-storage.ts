@@ -172,7 +172,7 @@ export class ExamRepository {
   }
   private async commitStream(stage: StreamStage, manifest: StreamManifest, now: number, signal: AbortSignal, migration?: {key: string; fingerprint: string}, legacyCopy?: LegacyCopyGuard): Promise<{packagesAdded: number; attemptsAdded: number; summary?: ExamSummary}> {
     let result: {packagesAdded: number; attemptsAdded: number; summary?: ExamSummary} | undefined;
-    await stage.activate(manifest, {stores: [...STORES, SPOOL_CHUNKS], signal, write: async (tx, incoming) => {
+    await stage.activate(manifest, {stores: [...STORES, SPOOL_CHUNKS], signal, ...(legacyCopy ? {finalGuard: () => {if (!legacyCopy.accountIsCurrent()) throw new Error('账号已切换，旧题包未复制');}} : {}), write: async (tx, incoming) => {
       const [existing, history] = await Promise.all([this.owned<CatalogRow>(tx, 'catalog'), this.owned<AttemptRow>(tx, 'attempts')]);
       if (legacyCopy) {
         if (!NATIVE_ACCOUNT_OWNER.test(this.ownerId) || !legacyCopy.accountIsCurrent() || incoming.kind !== 'package' || incoming.packages.length !== 1 || incoming.attempts.length || migration) throw new Error('旧题包复制目标或范围无效');
