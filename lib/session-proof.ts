@@ -19,18 +19,20 @@ export function readSessionProof(value:unknown,kind:'http'|'native',elapsedMs:nu
 }
 export type SessionClock={now:()=>number;set:(fn:()=>void,ms:number)=>unknown;clear:(timer:unknown)=>void};
 export const sessionClock:SessionClock={now:monotonicNow,set:(fn,ms)=>{const timer=setTimeout(fn,ms);(timer as unknown as {unref?:()=>void}).unref?.();return timer;},clear:timer=>clearTimeout(timer as ReturnType<typeof setTimeout>)};
-export type AccountAccess={user?:ProductIdentity;owner:string|null;epoch:number;canAccess:()=>boolean;assertAccess:()=>boolean};
+export type AccountAccess={user?:ProductIdentity;owner:string|null;epoch:number;canAccess:()=>boolean;assertAccess:()=>boolean;sessionSignal?:AbortSignal};
 /** A single proof's in-memory budget. Closing an old proof never affects a new one. */
 export class SessionDeadline {
   private end:number;private last:number;private closed=false;private notified=false;private timer:unknown;
+  private readonly abortController=new AbortController();
+  readonly signal=this.abortController.signal;
   constructor(ms:number,private expired:()=>void,private clock:SessionClock=sessionClock){
     this.last=clock.now();this.end=this.last+ms;
-    if(!validSessionBudget(ms)||!Number.isFinite(this.last)||this.last<0)this.closed=true;
+    if(!validSessionBudget(ms)||!Number.isFinite(this.last)||this.last<0)this.close();
     else this.timer=clock.set(this.wake,ms);
   }
   private wake=()=>{if(!this.canAccess())this.assertAccess();else this.timer=this.clock.set(this.wake,Math.max(1,Math.ceil(this.end-this.clock.now())));};
   canAccess=()=>{const now=this.clock.now();const ok=!this.closed&&Number.isFinite(now)&&now>=this.last&&now<this.end;if(ok)this.last=now;else this.close();return ok;};
   assertAccess=()=>{if(this.canAccess())return true;this.close();if(!this.notified){this.notified=true;this.expired();}return false;};
-  close(){this.closed=true;if(this.timer!==undefined)this.clock.clear(this.timer);this.timer=undefined;}
+  close(){this.closed=true;if(this.timer!==undefined)this.clock.clear(this.timer);this.timer=undefined;this.abortController.abort();}
 }
 export function publicLocalAccess(owner:string|null,epoch=0):AccountAccess{return {owner,epoch,canAccess:()=>true,assertAccess:()=>true};}

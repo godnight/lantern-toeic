@@ -67,7 +67,7 @@ export class NativeAccountController {
     }catch{this.providers=CLOSED_NATIVE_PROVIDERS;}
     return this.alive?this.providers:CLOSED_NATIVE_PROVIDERS;
   }
-  private async probe(generation:number,warning='',expectedOwner?:string){
+  private async probe(generation:number,warning='',expectedOwner?:string,expectedOwnerMessage='华为账号绑定后的身份发生变化，学习分区保持暂停。请重新核对账号。'){
     try{
       if(this.huaweiGeneration===generation&&!await this.awaitForeground(generation))return;
       const started=this.clock.now();const reply=await this.transport.request('session',undefined,undefined,2);
@@ -79,12 +79,12 @@ export class NativeAccountController {
       }
       if(expectedOwner!==undefined&&proof.user?.id!==expectedOwner){
         this.held=true;
-        this.update({status:'blocked',message:'华为账号绑定后的身份发生变化，学习分区保持暂停。请重新核对账号。'},true);return;
+        this.update({status:'blocked',message:expectedOwnerMessage},true);return;
       }
       if(proof.user)this.everAuthenticated=true;
       const deadline=proof.user?new SessionDeadline(proof.validForMs!,()=>{if(this.current(generation)){this.begin('会话已到期，学习分区已锁定。',true);this.update({status:'blocked',message:'会话有效期已结束，原数据保留。请联网重新核对账号。'},true);}},this.clock):null;
       this.deadline=deadline;
-      const access:AccountAccess=deadline?{user:proof.user!,owner:proof.user!.id,epoch:generation,canAccess:deadline.canAccess,assertAccess:deadline.assertAccess}:publicLocalAccess(null,generation);
+      const access:AccountAccess=deadline?{user:proof.user!,owner:proof.user!.id,epoch:generation,canAccess:deadline.canAccess,assertAccess:deadline.assertAccess,sessionSignal:deadline.signal}:publicLocalAccess(null,generation);
       if(deadline&&!deadline.canAccess()){deadline.assertAccess();return;}
       this.update({status:'ready',user:proof.user,capabilities:proof.capabilities,unavailable:proof.unavailable,access,message:warning==='已退出本机。'&&proof.user?'原退出结果未确认；当前显示的是重新核对的账号。':warning});
     }catch{
@@ -176,11 +176,12 @@ export class NativeAccountController {
         this.update({status:'blocked',message:'手机号操作结果未知，学习分区保持暂停。请重新核对账号。'});return;
       }
       this.update({status:'checking',message:'正在独立核对服务器会话，尚未切换学习分区。'});
-      await this.probe(generation,outcome.status===200?'':'手机号操作未获确认；以下账号状态来自独立会话核对。');
+      await this.probe(generation,outcome.status===200?'':'手机号操作未获确认；以下账号状态来自独立会话核对。',purpose==='bind'?previousUser!:undefined,'手机号操作后的账号身份未获预期确认，学习分区保持暂停。请重新核对账号。');
       if(!this.current(generation))return;
       const confirmed=this.state as NativeAccountState;
       if(confirmed.status!=='ready')return;
       if(purpose==='bind'&&confirmed.user?.id!==previousUser||outcome.status===200&&purpose==='login'&&!confirmed.user){
+        this.deadline?.close();this.deadline=null;
         this.update({status:'blocked',message:'手机号操作后的账号身份未获预期确认，学习分区保持暂停。请重新核对账号。'});return;
       }
       return outcome;

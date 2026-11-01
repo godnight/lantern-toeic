@@ -38,3 +38,12 @@ test('operation checks fail closed even when the timer is delayed or monotonic t
   now=300;const next=new SessionDeadline(100,()=>expired++,clock);now=299;assert.equal(next.canAccess(),false);now=301;assert.equal(next.assertAccess(),false);assert.equal(expired,2);next.close();gate.close();
  }finally{e.close();}
 });
+
+test('deadline owns an independent signal, immediately aborted on invalidation and invalid construction',()=>{
+ const e=environment();try{const {SessionDeadline}=e.load('lib/session-proof.ts');let now=0;const clock={now:()=>now,set:()=>1,clear:()=>{}};
+  const a=new SessionDeadline(100,()=>{},clock),b=new SessionDeadline(100,()=>{},clock);let events=0;
+  a.signal.addEventListener('abort',()=>events++);a.close();assert.equal(a.signal.aborted,true);assert.equal(b.signal.aborted,false);assert.equal(events,1);
+  a.close();assert.equal(events,1);now=100;assert.equal(b.canAccess(),false);assert.equal(b.signal.aborted,true);
+  assert.equal(new SessionDeadline(0,()=>{},clock).signal.aborted,true);
+ }finally{e.close();}
+});
