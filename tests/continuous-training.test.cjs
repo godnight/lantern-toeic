@@ -4,7 +4,7 @@ const root=process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..'),ts=requ
 const {IDBFactory,IDBObjectStore}=require('fake-indexeddb');
 function load(file,imports={},globals={}){
  const exports={},code=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- vm.runInNewContext(code,{exports,require:name=>{assert.ok(name in imports,`Unexpected import ${name}`);return imports[name];},Date,Intl,Map,Set,Error,JSON,Promise,Object,Number,Array,DataView,Uint8Array,Uint32Array,TextEncoder,structuredClone,crypto:crypto.webcrypto,...globals},{filename:file});return exports;
+ vm.runInNewContext(code,{exports,require:name=>{if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals}).resolve(name,file);return imports[name];},Date,Intl,Map,Set,Error,JSON,Promise,Object,Number,Array,DataView,Uint8Array,Uint32Array,TextEncoder,structuredClone,crypto:crypto.webcrypto,...globals},{filename:file});return exports;
 }
 const canonical=load('lib/domain-command.ts'),storage=load('lib/learning-domain-repository.ts',{'./domain-command':canonical}),model=load('lib/study-model.ts');
 const training=load('lib/practice-training.ts',{'./domain-command':canonical});

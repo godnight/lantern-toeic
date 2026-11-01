@@ -10,9 +10,10 @@ const root = process.env.LANTERN_REVIEW_ROOT || path.resolve(__dirname, '..');
 const ts = require(path.join(root, 'node_modules/typescript'));
 const tick = () => new Promise(resolve => setImmediate(resolve));
 function load(file, imports = {}, globals = {}) {
+ imports={...require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root),...imports};const fallback=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals,permitLearningAccess:true});
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(path.join(root, file), 'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-  vm.runInNewContext(code, {exports,require(name){if(name==='@/lib/recording-capture-diagnostics')return {createRecordingCaptureTrace:()=>()=>{}};if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};assert.ok(name in imports, 'Unexpected import: '+name);return imports[name];},Date,Map,Set,structuredClone,crypto:webcrypto,Blob,URL,AbortController,...globals}, {filename:file});
+  vm.runInNewContext(code, {exports,require(name){if(name==='@/lib/recording-capture-diagnostics')return {createRecordingCaptureTrace:()=>()=>{}};if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};if(!Object.hasOwn(imports,name))return fallback.resolve(name,file);return imports[name];},Date,Map,Set,structuredClone,crypto:webcrypto,Blob,URL,AbortController,...globals}, {filename:file});
   return exports;
 }
 const model = load('lib/study-model.ts');
@@ -46,16 +47,18 @@ const root=process.env.LANTERN_REVIEW_ROOT || path.resolve(__dirname,'..');
 const ts=require(path.join(root,'node_modules/typescript'));
 const observedFiles={};
 function load(file,imports={},globals={}) {
+ imports={...require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root),...imports};const fallback=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals,permitLearningAccess:true});
  const source=fs.readFileSync(path.join(root,file),'utf8');observedFiles[file]=crypto.createHash('sha256').update(source).digest('hex');
  const exports={},code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
- vm.runInNewContext(code,{exports,require:name=>{if(name==='@/lib/recording-capture-diagnostics')return {createRecordingCaptureTrace:()=>()=>{}};if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};if(!(name in imports))throw Error(name);return imports[name];},Date,Intl,Set,Map,URLSearchParams,Blob,URL,...globals});return exports;
+ vm.runInNewContext(code,{exports,require:name=>{if(name==='@/lib/recording-capture-diagnostics')return {createRecordingCaptureTrace:()=>()=>{}};if(name==='@/lib/recording-media-diagnostics')return {recordingMediaTrace(){}};if(!(name in imports))return fallback.resolve(name,file);return imports[name];},Date,Intl,Set,Map,URLSearchParams,Blob,URL,...globals});return exports;
 }
 const model=load('lib/study-model.ts'),data=structuredClone(model.EMPTY_DATA);
 const jsx=(type,props)=>({type,props}),proxy=new Proxy({},{get:(_,key)=>String(key)});
 let slots=[],cursor=0,effects=[],frame=[],navigation=[],tree,nativeBack;
 const same=(a,b)=>a&&b&&a.length===b.length&&a.every((x,i)=>Object.is(x,b[i]));
 const hooks={useState(value){const i=cursor++;if(!(i in slots))slots[i]=typeof value==='function'?value():value;return[slots[i],next=>{slots[i]=typeof next==='function'?next(slots[i]):next;}];},useRef(value){const i=cursor++;if(!(i in slots))slots[i]={current:value};return slots[i];},useEffect(fn,deps){const i=cursor++,old=slots[i];if(!old||!same(old.deps,deps))effects.push(()=>{old?.cleanup?.();slots[i]={deps,cleanup:fn()};});}};
-const listeners=new Map(),scrolls=[];let focused=null,controls=[];
+hooks.useLayoutEffect=hooks.useEffect;
+ const listeners=new Map(),scrolls=[];let focused=null,controls=[];
 class Element {
  constructor({tag='BUTTON',label='来源按钮',text='来源控件',identity='source'}={}){this.tagName=tag;this.label=label;this.textContent=text;this.identity=identity;this.isConnected=true;this.focusCount=0;}
  getAttribute(name){return name==='aria-label'?this.label:null;}
@@ -70,7 +73,7 @@ const window={location:{search:''},scrollY:0,scrollTo(x,y){this.scrollY=typeof x
  back(){navigation.push(()=>{if(!this.index)return;this.index--;for(const fn of [...listeners.get('popstate')||[]])fn({state:this.state});if(this.scrollRestoration==='auto')window.scrollTo(0,0);});}}
 };
 const appliedThemes=[];
-const imports={react:hooks,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':proxy,
+const imports={'./account/account-form':{default:'AccountForm'},'./learn/legal-pages':{PublicInfoLinks:'PublicInfoLinks'},'./legal-pages':{PublicInfoLinks:'PublicInfoLinks'},'@/lib/lesson-audio':{prepareProductLessonAudio:async()=>undefined,stopLessonAudio(){}},react:hooks,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':proxy,
  '@/lib/study-model':model,'@/lib/use-study':{useStudy:()=>fixtureApi},
  '@/lib/study-backup':{},'@/lib/speaking-recovery':load('lib/speaking-recovery.ts'),'@/lib/native-host':{registerNativeBack:fn=>{nativeBack=fn;return()=>{if(nativeBack===fn)nativeBack=null;};}},'@/lib/ui-theme':{applyDocumentTheme(theme){appliedThemes.push(theme);},UI_THEME_META:{paper:{name:'日间'},crystal:{name:'夜间'},hollow:{name:'空洞骑士'},silk:{name:'丝之歌'}}},
  sonner:{toast:{message(){},success(){},error(){}}},'./learn/workspace-shell':{WorkspaceShell:'WorkspaceShell',WorkspaceHeading:'WorkspaceHeading',BackToWorkspace:'BackToWorkspace'},
@@ -82,7 +85,8 @@ for(const file of ['questions','speaking'])imports['@/content/'+file+'.json']={d
 imports['@/release-manifest.json']={default:JSON.parse(fs.readFileSync(path.join(root,'release-manifest.json'),'utf8'))};
 Object.assign(imports,require('./helpers/phase2-shell-fixture.cjs').workflowShellFixture(hooks,load('lib/practice-selection.ts',{'./study-model':model})));
 imports['@/public/build-identity.json']={default:JSON.parse(fs.readFileSync(path.join(root,'public/build-identity.json'),'utf8'))};
-const app=load('app/study-app.tsx',imports,{window,document,HTMLElement:Element,navigator:{},requestAnimationFrame:fn=>frame.push(fn),setInterval:()=>1,clearInterval(){}}).StudyWorkspace;
+Object.assign(imports,require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root));
+ const app=load('app/study-workspace.tsx',imports,{window,document,HTMLElement:Element,navigator:{},requestAnimationFrame:fn=>frame.push(fn),setInterval:()=>1,clearInterval(){}}).StudyWorkspace;
 function render(){for(let i=0;i<3;i++){cursor=0;effects=[];tree=app({owner:null,nativeMode:true});effects.forEach(fn=>fn());}const current=frame;frame=[];current.forEach(fn=>fn());return tree;}
 function nodes(node){if(!node||typeof node!=='object')return[];if(Array.isArray(node))return node.flatMap(nodes);return[node,...nodes(node.props?.children)];}
 function shell(){return nodes(tree).find(node=>node.type==='WorkspaceShell');}

@@ -1,0 +1,38 @@
+.practice-tab-row,.practice-record-tabs,.practice-task-controls,.practice-record-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.practice-tab-row{justify-content:space-between;gap:8px;margin-bottom:12px}
+.practice-tab-row>.text-button{min-height:44px;flex-shrink:0}
+.practice-task-row{display:flex!important;align-items:center;gap:12px;flex-wrap:wrap;cursor:default}
+.practice-task-row>span{flex:1;min-width:100px}
+.practice-task-row>span small{display:block;color:var(--muted-foreground);margin-top:4px}
+.practice-task-actions{margin-left:auto;min-width:122px;max-width:100%}
+.practice-task-progress{min-height:1.5em;color:var(--muted-foreground);font-size:.875rem;line-height:1.5;text-align:right}
+.practice-task-controls{justify-content:flex-end;gap:8px}
+.practice-task-controls>.button,.practice-task-menu>.text-button{min-height:44px;padding:8px 12px}
+.practice-task-menu{position:relative}
+.practice-task-menu-items{position:absolute;right:0;top:100%;z-index:5;display:grid;min-width:132px;padding:6px;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 6px 18px #0002}
+.practice-task-menu-items>.text-button{min-height:44px;text-align:left;padding:8px}
+.v041-secondary-tools>.practice-task-actions{margin-top:12px;border-top:1px solid var(--border);padding-top:8px}
+.practice-record-tabs{margin-bottom:16px;border-bottom:1px solid var(--border)}
+.practice-record-tabs>button{min-height:44px;padding:8px 12px}
+.practice-record-tabs>[aria-selected=true]{color:var(--primary);border-bottom:2px solid currentColor}
+.practice-record-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:18px 0;border-bottom:1px solid var(--border)}
+.practice-record-row>div:first-child{flex:1;min-width:130px;overflow-wrap:anywhere}
+.practice-record-row p{margin:5px 0;color:var(--muted-foreground)}
+.practice-record-row small{color:var(--muted-foreground)}
+.practice-record-actions{justify-content:flex-end;gap:8px}
+.practice-record-actions summary{cursor:pointer;min-height:44px;display:flex;align-items:center;padding:8px}
+.practice-record-actions details .text-button{min-height:44px}
+.practice-pending-time{margin-top:22px}
+.practice-today-copy small{overflow-wrap:anywhere}
+.practice-today-record-slot{min-height:1.5em;line-height:1.5;font-size:.875rem}
+.practice-today-record-slot>.text-button{padding:0;text-align:left;min-height:24px}
+.practice-history-question{border-top:1px solid var(--border);padding-top:18px;margin-top:12px;overflow-wrap:anywhere}
+.practice-history-question p,.practice-history-question li{line-height:1.7}
+.practice-history-question img{max-width:100%}
+@media(max-width:380px){.practice-task-row{gap:8px}.practice-task-row>span{min-width:110px}.practice-task-actions{flex:1 1 100%}.practice-task-controls{justify-content:flex-start}.practice-task-progress{text-align:left}.practice-record-actions{width:100%;justify-content:flex-start}.practice-tab-row .main-tabs{max-width:100%}}
+@media(prefers-reduced-motion:reduce){.practice-task-menu-items{scroll-behavior:auto}}
+
+.practice-task-row .practice-task-progress{display:none}
+.practice-today-copy>small{min-height:2.8em;line-height:1.4}
+.practice-today-record-slot{min-height:44px}
+.practice-today-record-slot>.text-button{min-height:44px}

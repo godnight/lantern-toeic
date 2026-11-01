@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const crypto=require('node:crypto');
-const root=path.resolve(__dirname,'..');
+const root=process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..');
 const ts=require(path.join(root,'node_modules/typescript'));
 const {IDBFactory}=require(path.join(root,'node_modules/fake-indexeddb'));
 const plain=value=>JSON.parse(JSON.stringify(value));
@@ -12,7 +12,7 @@ const cache=new Map();
 function load(file,overrides={},globals={}){
  const key=file+Object.keys(overrides).join();if(!Object.keys(overrides).length&&cache.has(key))return cache.get(key);
  const exports={},source=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;
- vm.runInNewContext(source,{exports,require(name){if(name in overrides)return overrides[name];if(name.endsWith('.json'))return JSON.parse(fs.readFileSync(path.resolve(path.dirname(path.join(root,file)),name),'utf8'));return load(path.relative(root,path.resolve(path.dirname(path.join(root,file)),name+'.ts')));},Date,Intl,Map,Set,Promise,Error,JSON,Number,Object,Array,Math,RegExp,Uint8Array,Uint32Array,DataView,TextEncoder,TextDecoder,structuredClone,crypto:crypto.webcrypto,setTimeout,clearTimeout,...globals},{filename:file});
+ vm.runInNewContext(source,{exports,require(name){if(name in overrides)return overrides[name];if(name.startsWith('@/'))return name.endsWith('.json')?JSON.parse(fs.readFileSync(path.join(root,name.slice(2)),'utf8')):load(name.slice(2)+'.ts');if(name.endsWith('.json'))return JSON.parse(fs.readFileSync(path.resolve(path.dirname(path.join(root,file)),name),'utf8'));return load(path.relative(root,path.resolve(path.dirname(path.join(root,file)),name+'.ts')));},Date,Intl,Map,Set,Promise,Error,JSON,Number,Object,Array,Math,RegExp,Uint8Array,Uint32Array,DataView,TextEncoder,TextDecoder,structuredClone,crypto:crypto.webcrypto,setTimeout,clearTimeout,...globals},{filename:file});
  if(!Object.keys(overrides).length)cache.set(key,exports);return exports;
 }
 const model=load('lib/vocabulary-model.ts');
@@ -20,7 +20,12 @@ const repository=load('lib/learning-domain-repository.ts');
 const actualCatalog=load('lib/workflow-catalog.ts');
 const word=(id,text=id)=>({id,word:text,pos:'adj',meaning:'释义 '+text,category:'office',example:'An example of '+text+'.',translation:'例句',collocation:''});
 const words=[word('quiet'),word('available'),word('invoice')];
-const catalog={WORKFLOW_WORDS:words,getWorkflowCatalog:book=>book==='expressions'?[word('expression')]:words};
+// This transition suite's explicit synthetic catalog has exact eligible pairs.
+// Real exhaustive content admission remains covered by catalog/compat suites.
+const syntheticCandidates=[...words,word('lookup-quiet','quiet')];
+const catalog={WORKFLOW_WORDS:words,getWorkflowCatalog:book=>book==='expressions'?[word('expression')]:words,
+ isWorkflowBookId:book=>book==='scene'||book==='expressions',getCandidateLearningWord:row=>syntheticCandidates.find(current=>['id','word','pos','meaning','category','example','translation','collocation'].every(key=>current[key]===row[key]))??null,
+ CANDIDATE_CONTENT_PENDING:'Synthetic pair was not admitted'};
 const {createVocabularyWorkflow,vocabularyDayWindow}=load('lib/vocabulary-workflow.ts',{'./workflow-catalog':catalog});
 const scope={kind:'web-local',partition:'existing-device'};
 const draft=(extra={})=>({bookId:'scene',goal:3,dailyNew:2,weekdays:[1,2,3,4,5,6,7],...extra});
@@ -39,7 +44,10 @@ const oldReview=(wordId,grade='remembered',id='old-'+wordId,createdAt='2026-09-0
 
 test('catalog reuses the real 807 scene IDs and 55 expression IDs without fabricated learning',()=>{
  assert.equal(actualCatalog.SCENE_WORDS.length,807);assert.equal(actualCatalog.EXPRESSION_WORDS.length,55);
- assert.equal(new Set(actualCatalog.WORKFLOW_WORDS.map(row=>row.id)).size,862);
+ const legacy=[...actualCatalog.SCENE_WORDS,...actualCatalog.EXPRESSION_WORDS];assert.equal(new Set(legacy.map(row=>row.id)).size,862);
+ assert.deepEqual(plain(actualCatalog.WORKFLOW_WORDS.slice(0,862)),plain(legacy),'All original IDs/bodies remain exact');
+ const current=load('lib/vocabulary-content-catalog.ts'),expected=new Set([...legacy,...current.LEGACY_PRIVATE_WORDS,...current.FULL4109_CURRENT_WORDS].map(row=>row.id));
+ assert.equal(new Set(actualCatalog.WORKFLOW_WORDS.map(row=>row.id)).size,expected.size);for(const id of expected)assert(actualCatalog.WORKFLOW_WORDS.some(row=>row.id===id),id);
  assert.equal(actualCatalog.SCENE_WORDS[0].id,JSON.parse(fs.readFileSync(path.join(root,'content/vocabulary.json'),'utf8'))[0].id);
 });
 test('initial projection does not create a plan, fake history, or classify old reviews as today',async()=>{
@@ -177,13 +185,76 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
 test('the public workflow refresh reopens a failed IDB service while timer refreshes never loop',async()=>{
  const f=await fixture(),projection=await f.service.readProjection(),h=reactHarness(),timers=[];let opens=0,closed=0;
  const options={owner:null,nativeMode:false,identityReady:true,timezone:'UTC',legacy:{ready:true,error:'',events:[],backup:()=>({events:[]}),readEvent:()=>undefined,reviewEvent:()=>false}};
- const hook=load('lib/use-vocabulary-workflow.ts',{react:h.react,'./vocabulary-workflow':{createVocabularyWorkflow:async()=>{const generation=++opens;return {readProjection:async()=>{if(generation===1)throw Error('IDB temporarily unavailable');return projection;},close:()=>closed++,candidateStatus:()=> 'available-new'};}}},{window:{addEventListener(){},removeEventListener(){}},setInterval:fn=>{timers.push(fn);return timers.length;},clearInterval(){}});
+ const hook=load('lib/use-vocabulary-workflow.ts',{react:h.react,'./learning-access':{useLearningAccess:()=>()=>true},'./vocabulary-workflow':{createVocabularyWorkflow:async()=>{const generation=++opens;return {readProjection:async()=>{if(generation===1)throw Error('IDB temporarily unavailable');return projection;},close:()=>closed++,candidateStatus:()=> 'available-new'};}}},{window:{addEventListener(){},removeEventListener(){}},setInterval:fn=>{timers.push(fn);return timers.length;},clearInterval(){}});
  const render=()=>h.render(()=>hook.useVocabularyWorkflow(options));render();await tick();let api=render();assert.equal(api.ready,false);assert.match(api.error,/unavailable/);timers.forEach(fn=>fn());await tick();api=render();assert.equal(opens,1);await api.refresh();render();await tick();api=render();assert.equal(opens,2);assert.equal(api.ready,true);assert.equal(api.error,'');assert.ok(closed>=1);
 });
 test('same-page legacy hooks observe invalidations and confirm fixed full review content',()=>{
  const storage=new Map(),listeners=new Map(),window={addEventListener(name,fn){if(!listeners.has(name))listeners.set(name,new Set());listeners.get(name).add(fn);},removeEventListener(name,fn){listeners.get(name)?.delete(fn);},dispatchEvent(event){for(const fn of listeners.get(event.type)||[])fn(event);return true;}};
  const localStorage={get length(){return storage.size;},key:i=>[...storage.keys()][i]??null,getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value)};
  class CustomEvent{constructor(type,options){this.type=type;this.detail=options.detail;}}
- function mounted(){const h=reactHarness(),hook=load('lib/use-vocabulary.ts',{react:h.react,sonner:{toast:{error(){}}}},{window,localStorage,CustomEvent});const render=()=>h.render(()=>hook.useVocabulary(null));render();return {render};}
+ function mounted(){const h=reactHarness(),hook=load('lib/use-vocabulary.ts',{react:h.react,'./learning-access':{useLearningAccess:()=>()=>true},sonner:{toast:{error(){}}}},{window,localStorage,CustomEvent});const render=()=>h.render(()=>hook.useVocabulary(null));render();return {render};}
  const a=mounted(),b=mounted(),fixed=oldReview('quiet','again','fixed-review','2026-09-01T12:00:00.000Z');assert.equal(b.render().events.length,0);assert.equal(a.render().reviewEvent(fixed),true);assert.deepEqual(plain(a.render().readEvent(fixed.id)),fixed);assert.equal(b.render().events.length,1);const entries=storage.size;assert.equal(a.render().reviewEvent({...fixed}),true);assert.equal(storage.size,entries);assert.equal(a.render().reviewEvent({...fixed,grade:'remembered'}),false);assert.equal(b.render().events[0].grade,'again');
+});
+
+function controlledWorkflowHook(create,legacy){
+ const h=reactHarness(),listeners=new Map(),timers=[];
+ let options={owner:null,nativeMode:false,identityReady:true,timezone:'UTC',legacy:legacy??{ready:true,error:'',events:[],backup:()=>({events:[]}),readEvent:()=>undefined,reviewEvent:()=>false}};
+ const hook=load('lib/use-vocabulary-workflow.ts',{react:h.react,'./learning-access':{useLearningAccess:()=>()=>true},'./vocabulary-workflow':{createVocabularyWorkflow:create}},{window:{addEventListener(name,fn){listeners.set(name,fn);},removeEventListener(name){listeners.delete(name);}},setInterval:fn=>{timers.push(fn);return timers.length;},clearInterval(){}});
+ return {render:()=>h.render(()=>hook.useVocabularyWorkflow(options)),update:change=>{options={...options,...change};},legacyChanged:events=>{options={...options,legacy:{...options.legacy,events}};},hint:()=>listeners.get('storage')?.()};
+}
+const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
+async function until(predicate){for(let i=0;i<100&&!predicate();i++)await tick();assert.ok(predicate(),'Expected asynchronous checkpoint');}
+
+test('an owned rating defers legacy hints until apply, then reads a verified receipt exactly once',async()=>{
+ const f=await fixture();successful(await f.plan());successful(await f.service.startGroup());
+ let reads=0,legacyWritten=false;const gate=deferred(),write=f.legacy.writeReview;
+ const h=controlledWorkflowHook(async()=>({...f.service,readProjection:async(...args)=>{reads++;return f.service.readProjection(...args);}}));
+ f.legacy.writeReview=async event=>{write(event);legacyWritten=true;h.legacyChanged([...f.events.values()]);h.render();await gate.promise;return true;};
+ h.render();await tick();await until(()=>h.render().ready);let api=h.render(),before=reads;
+ const pending=api.submitRating('known');await until(()=>legacyWritten);h.hint();h.hint();await tick();
+ assert.equal(reads,before,'No read/recovery may compete with the owned prepare/apply');
+ assert.equal(h.render().activeSession.currentStep.receipt,undefined,'No optimistic receipt');
+ gate.resolve();successful(await pending);api=h.render();
+ assert.equal(reads,before+1,'The complete post-action read covers prior invalidations');
+ assert.ok(api.activeSession.currentStep.receipt);assert.equal(api.projection.daily.newDone,1);assert.equal(f.writes.length,1);
+ await api.refresh();assert.equal(reads,before+2,'A later explicit read is never a cross-operation cached projection');f.service.close();
+});
+
+test('an invalidation arriving inside the final read gets a fresh projection after the operation',async()=>{
+ const f=await fixture();successful(await f.plan());successful(await f.service.startGroup());
+ let reads=0,hold=false,reading=false;const gate=deferred();
+ const h=controlledWorkflowHook(async()=>({...f.service,readProjection:async(...args)=>{reads++;const projection=await f.service.readProjection(...args);if(hold){hold=false;reading=true;await gate.promise;}return projection;}}));
+ h.render();await until(()=>h.render().ready);const before=reads;hold=true;
+ const pending=h.render().submitRating('known');await until(()=>reading);
+ f.events.set('external-invoice',oldReview('invoice'));h.legacyChanged([...f.events.values()]);h.render();h.hint();
+ assert.equal(reads,before+1);gate.resolve();successful(await pending);await until(()=>h.render().projection.counts.learned===2);
+ assert.equal(reads,before+2,'The hint newer than the final read must not be swallowed');
+ assert.equal(h.render().projection.daily.newDone,1,'An external legacy review does not invent workflow completion');f.service.close();
+});
+
+test('a rejected old-owner action never reads or changes the new owner service',async()=>{
+ const f=await fixture();successful(await f.plan());successful(await f.service.startGroup());const projection=await f.service.readProjection();
+ const gate=deferred();let opens=0,bReads=0,closed=0;
+ const h=controlledWorkflowHook(async()=>++opens===1?{readProjection:async()=>projection,submitRating:()=>gate.promise,close:()=>closed++}:{readProjection:async()=>{bReads++;return {...projection,counts:{...projection.counts,learned:2}};},close(){}});
+ h.update({owner:'alice'});h.render();await until(()=>h.render().ready);const pending=h.render().submitRating('known');h.hint();
+ h.update({owner:'bob'});h.render();await until(()=>h.render().ready&&h.render().projection.counts.learned===2);const before=bReads;
+ gate.reject(Error('old owner late failure'));assert.equal((await pending).status,'blocked');await tick();
+ const api=h.render();assert.equal(bReads,before);assert.equal(api.ready,true);assert.equal(api.error,'');assert.equal(api.projection.counts.learned,2);assert.equal(closed,1);f.service.close();
+});
+
+test('a failed final read remains blocked and does not auto-reopen or loop on covered hints',async()=>{
+ const f=await fixture();successful(await f.plan());successful(await f.service.startGroup());const projection=await f.service.readProjection();
+ const gate=deferred();let reads=0,fail=false,opens=0;
+ const h=controlledWorkflowHook(async()=>{opens++;return {readProjection:async()=>{reads++;if(fail)throw Error('readback unavailable');return projection;},submitRating:()=>gate.promise,close(){}};});
+ h.render();await until(()=>h.render().ready);const before=reads,pending=h.render().submitRating('known');h.hint();fail=true;gate.resolve({status:'applied'});await pending;await tick();
+ const api=h.render();assert.equal(reads,before+1);assert.equal(opens,1);assert.equal(api.ready,false);assert.match(api.error,/readback unavailable/);assert.equal(api.activeSession.currentStep.receipt,undefined);f.service.close();
+});
+
+test('overlapping actions retain the instance read barrier until each has its verified final read',async()=>{
+ const f=await fixture(),projection=await f.service.readProjection(),a=deferred(),b=deferred();let reads=0;
+ const h=controlledWorkflowHook(async()=>({readProjection:async()=>{reads++;return projection;},savePlan:draft=>draft.goal===2?a.promise:b.promise,close(){}}));
+ h.render();await until(()=>h.render().ready);const api=h.render(),before=reads;
+ const one=api.savePlan(draft({goal:2})),two=api.savePlan(draft({goal:3}));h.hint();a.resolve({status:'applied'});await one;
+ assert.equal(reads,before+1);h.hint();await tick();assert.equal(reads,before+1,'The other action still owns a barrier');
+ b.resolve({status:'applied'});await two;await tick();assert.equal(reads,before+2);assert.equal(h.render().ready,true);f.service.close();
 });

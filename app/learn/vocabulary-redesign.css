@@ -7,3 +7,8 @@
 .vocab-review-summary{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px;background:var(--card);border:1px solid var(--border);border-radius:20px}.vocab-review-summary h2{margin:8px 0;font-size:20px;line-height:1.4}.vocab-review-summary p{margin:0;font-size:14px;line-height:1.7;color:var(--muted-foreground)}.vocab-review-summary .button{min-height:44px}.vocab-review-summary .vocab-alert{margin:0}.vocab-review-summary .vocab-source-label{font-size:13px}@media(max-width:600px){.vocab-review-summary{display:flex;flex-direction:column;align-items:flex-start;padding:20px;gap:16px}.vocab-review-summary .button{font-size:16px}}
 @media(max-width:1023px){.vocab-page-heading{min-height:44px;margin-bottom:8px}.vocab-redesign .word-mode{padding:3px}.vocab-filter-line{margin-bottom:8px}}
 .vocab-redesign .word-search input::-webkit-search-cancel-button,.vocab-redesign .word-search input::-webkit-search-decoration{-webkit-appearance:none;display:none}.vocab-redesign .word-open:hover{background:var(--secondary)}.vocab-redesign .word-definition{max-width:72ch}
+
+/* Keep native library selectors within their label, including narrow screens. */
+.vocab-category{min-width:0;white-space:nowrap}
+.vocab-category select{min-width:0}
+@media(max-width:600px){.vocab-category select{margin-left:0}}

@@ -1,7 +1,7 @@
 {
-  "version": "0.3.7",
+  "version": "0.4.6",
   "prerelease": true,
-  "notes": "docs/releases/v0.3.7.md",
-  "qa": "docs/testing/PRACTICE-RELEASE-20261018.md",
-  "nativeHapAvailable": true
+  "notes": "docs/PROJECT_STATUS.md",
+  "qa": "docs/PROJECT_STATUS.md",
+  "nativeHapAvailable": false
 }

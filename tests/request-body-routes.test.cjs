@@ -1,6 +1,6 @@
 'use strict';
 
-// Execute personal Sites routes/SQLite with a synthetic platform identity header.
+// Execute real product-account auth and routes against local SQLite/R2 adapters.
 // No direct import of the proposed helper: old-source RED is behavioral.
 const assert=require('node:assert/strict');
 const test=require('node:test');

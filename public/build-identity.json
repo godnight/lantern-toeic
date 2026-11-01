@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "buildId": "release-practice-20261018-r2-cea0545b0af2",
-  "sourceInputsSha256": "cea0545b0af2af43e6b755a199ab7abc9df3943d994404ced2e0df43450592cf",
-  "inputCount": 1377,
+  "buildId": "v046-huawei-release-20069-73dc0119fd3c",
+  "sourceInputsSha256": "73dc0119fd3cf6760e17eaa3c3a3c235d16bd6cb932711d7925d2578107953d8",
+  "inputCount": 14188,
   "excludedSelf": "public/build-identity.json",
-  "versionName": "0.3.7",
-  "versionCode": 20040
+  "versionName": "0.4.6",
+  "versionCode": 20069
 }

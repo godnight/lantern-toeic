@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 1,
+  "status": "DERIVED_FROM_PRESERVED_USER_SELECTED_DESIGN_R1",
+  "originalsRetention": "Original PNG bytes remain in the frozen v041 final200 delivery/source and design archive; runtime carries only WebP derivatives.",
+  "rightsStatement": "Format conversion of the existing user-selected artwork; no new authorship, permission or licence claim.",
+  "encoding": {
+    "encoder": "sharp/webp",
+    "options": {
+      "quality": 88,
+      "effort": 6,
+      "alphaQuality": 100,
+      "smartSubsample": true
+    },
+    "operations": [
+      "decode original",
+      "encode full-size WebP"
+    ],
+    "versions": {
+      "sharp": "0.34.5",
+      "vips": "8.17.3",
+      "webp": "1.6.0"
+    }
+  },
+  "assets": [
+    {
+      "id": "hollow-home",
+      "path": "/design-r1/hollow-home.webp",
+      "source": {
+        "deliveryBuildId": "v041-final200-20261023-r1-777eaa0d5ab6",
+        "path": "public/design-r1/hollow-home.png",
+        "bytes": 1997284,
+        "sha256": "02037d7e56e2b5ee06e3fb1946a445702340c7d906466e81ffd56868cba67de9",
+        "width": 1672,
+        "height": 941
+      },
+      "composition": "Unchanged full frame; no crop, resize, rotation or new artwork",
+      "completeScene": false,
+      "bytes": 192446,
+      "sha256": "d18ffa57e5ff889775ee7d66599cbd48c8d80a4c72869d895243c5ee6e8da206",
+      "width": 1672,
+      "height": 941,
+      "psnrDb": 40.488
+    },
+    {
+      "id": "hollow-lake",
+      "path": "/design-r1/hollow-lake.webp",
+      "source": {
+        "deliveryBuildId": "v041-final200-20261023-r1-777eaa0d5ab6",
+        "path": "public/design-r1/hollow-lake.png",
+        "bytes": 2118927,
+        "sha256": "ec8407e9e739d3300f5fcadd8201f7f62bc2cdb0cf2ab23e092ac0697b0b2442",
+        "width": 1672,
+        "height": 941
+      },
+      "composition": "Unchanged full frame; no crop, resize, rotation or new artwork",
+      "completeScene": true,
+      "bytes": 219218,
+      "sha256": "de5f3a8f0ed4d61138e2f674649a21c56bddcaffa82edfdc96120465d96b3e30",
+      "width": 1672,
+      "height": 941,
+      "psnrDb": 40.337
+    },
+    {
+      "id": "hollow-rain",
+      "path": "/design-r1/hollow-rain.webp",
+      "source": {
+        "deliveryBuildId": "v041-final200-20261023-r1-777eaa0d5ab6",
+        "path": "public/design-r1/hollow-rain.png",
+        "bytes": 2401490,
+        "sha256": "6a0482ce4b182e81dea8058b45e263047db7448c68671d725c4f116e7f1ce50a",
+        "width": 1672,
+        "height": 941
+      },
+      "composition": "Unchanged full frame; no crop, resize, rotation or new artwork",
+      "completeScene": false,
+      "bytes": 319010,
+      "sha256": "f84697b6fb6c21d0389455c7ace0fdca1e4ff5024fbc753da154961739b3e445",
+      "width": 1672,
+      "height": 941,
+      "psnrDb": 38.015
+    },
+    {
+      "id": "hollow-station",
+      "path": "/design-r1/hollow-station.webp",
+      "source": {
+        "deliveryBuildId": "v041-final200-20261023-r1-777eaa0d5ab6",
+        "path": "public/design-r1/hollow-station.png",
+        "bytes": 2227763,
+        "sha256": "361150e02290fbea6e39d024f91f9f0d58b6f5d84021c410971a4142f75043c2",
+        "width": 1672,
+        "height": 941
+      },
+      "composition": "Unchanged full frame; no crop, resize, rotation or new artwork",
+      "completeScene": true,
+      "bytes": 255670,
+      "sha256": "8d8dfaf154dc7691853c9eacd94ec498fce6f7b3ddf79954c4a5ba2d24221a86",
+      "width": 1672,
+      "height": 941,
+      "psnrDb": 39.439
+    },
+    {
+      "id": "silk-calm",
+      "path": "/design-r1/silk-calm.webp",
+      "source": {
+        "deliveryBuildId": "v041-final200-20261023-r1-777eaa0d5ab6",
+        "path": "public/design-r1/silk-calm.png",
+        "bytes": 2845718,
+        "sha256": "7b3e3b0c67f04a909f5d726ac344c352b514504cd4f23a415d7c060a64ce2ce4",
+        "width": 1672,
+        "height": 941
+      },
+      "composition": "Unchanged full frame; no crop, resize, rotation or new artwork",
+      "completeScene": true,
+      "bytes": 409922,
+      "sha256": "7d7213a010b56daec417afa942a66f2245b3da7435e5cdf8cfd8336c2d5d5689",
+      "width": 1672,
+      "height": 941,
+      "psnrDb": 38.931
+    },
+    {
+      "id": "silk-forest",
+      "path": "/design-r1/silk-forest.webp",
+      "source": {
+        "deliveryBuildId": "v041-final200-20261023-r1-777eaa0d5ab6",
+        "path": "public/design-r1/silk-forest.png",
+        "bytes": 2891931,
+        "sha256": "7953907c3961065344c66e08be3f2b02e5c214c317b9f9d88a3a87a4169d35a2",
+        "width": 1672,
+        "height": 941
+      },
+      "composition": "Unchanged full frame; no crop, resize, rotation or new artwork",
+      "completeScene": false,
+      "bytes": 434074,
+      "sha256": "a2e4ac0336e1b722f5b0eede4403b88a68f9e75480b5cf34b67e7b195e618ff3",
+      "width": 1672,
+      "height": 941,
+      "psnrDb": 37.947
+    },
+    {
+      "id": "silk-home",
+      "path": "/design-r1/silk-home.webp",
+      "source": {
+        "deliveryBuildId": "v041-final200-20261023-r1-777eaa0d5ab6",
+        "path": "public/design-r1/silk-home.png",
+        "bytes": 2064566,
+        "sha256": "415e3ca465f537043b83d5cc5e37a55077a0b8e6bec783d67ff08edbc707dd12",
+        "width": 1672,
+        "height": 941
+      },
+      "composition": "Unchanged full frame; no crop, resize, rotation or new artwork",
+      "completeScene": false,
+      "bytes": 230388,
+      "sha256": "6b52e2da7ee26f8e6722a596040e96e28df08e52da1ef40513b165bbe2b6b7df",
+      "width": 1672,
+      "height": 941,
+      "psnrDb": 40.048
+    },
+    {
+      "id": "silk-library",
+      "path": "/design-r1/silk-library.webp",
+      "source": {
+        "deliveryBuildId": "v041-final200-20261023-r1-777eaa0d5ab6",
+        "path": "public/design-r1/silk-library.png",
+        "bytes": 2275856,
+        "sha256": "cc3e6ca010cfb6eda21fc1117477b2adad24d13c079e391ac9598b230a7b2a27",
+        "width": 1672,
+        "height": 941
+      },
+      "composition": "Unchanged full frame; no crop, resize, rotation or new artwork",
+      "completeScene": false,
+      "bytes": 266286,
+      "sha256": "0a87b2c3e1e157cc6d6a69e192803c65c91f9d0fde861a170f9a1b048aea1e46",
+      "width": 1672,
+      "height": 941,
+      "psnrDb": 39.55
+    }
+  ],
+  "totalSourceBytes": 18823535,
+  "totalDerivedBytes": 2327014,
+  "byteReduction": 0.876377417950454
+}

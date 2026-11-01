@@ -1,9 +1,9 @@
 'use client';
 import {useEffect, useRef, useState} from 'react';
-import {EXAM_LIBRARY_URL, checkedLibraryDownload, prepareLibraryFile, type LibraryItem} from '@/lib/exam-library';
+import {EXAM_LIBRARY_URL, libraryDownloadSource, prepareLibraryFile, type LibraryItem, type LibraryDownloadSource} from '@/lib/exam-library';
 import {getExamProfile} from '@/lib/exam-model';
 
-export default function ExamLibrary({ownerId, onImport, disabled}: {ownerId:string; onImport:(text:string)=>Promise<void>; disabled:boolean}) {
+export default function ExamLibrary({ownerId, onImport, disabled}: {ownerId:string; onImport:(source:LibraryDownloadSource)=>Promise<void>; disabled:boolean}) {
   const [items, setItems] = useState<LibraryItem[]>([]), [loaded, setLoaded] = useState(false);
   const [native, setNative] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState('');
   const [remove, setRemove] = useState<string|null>(null);
@@ -30,7 +30,7 @@ export default function ExamLibrary({ownerId, onImport, disabled}: {ownerId:stri
     let completed=0;
     for(const file of files) {
       active(); setNotice(`正在校验并上传 ${file.name}（${completed+1}/${files.length}）…`);
-      const manifest=await prepareLibraryFile(file); active();
+      const manifest=await prepareLibraryFile(file, {ownerId, signal}); active();
       await json(await fetch('/api/exam-library', {method:'POST',headers:{...headers,'Content-Type':'application/json','x-exam-manifest':encodeURIComponent(JSON.stringify(manifest))},body:file,signal}));
       completed++;
     }
@@ -47,12 +47,13 @@ export default function ExamLibrary({ownerId, onImport, disabled}: {ownerId:stri
       <p className="mock-muted">最多 32 份 / 2 GiB；每份不超过 96 MiB。本机最多保存 192 MiB。上传的是完整题包 JSON，原始 PDF / MP3 需先整理。</p>
       {error&&<div role="alert" className="mock-alert"><strong>这次操作未完成</strong><p>{error}；原文件和本机记录仍保留。刷新目录可核对已完成的上传。</p><button className="button secondary" disabled={busy||disabled} onClick={()=>void run(list)}>重试加载目录</button></div>}
       <p role="status" aria-live="polite">{busy?notice||'正在读取个人题包库…':notice}</p>
+      {busy&&<button className="button secondary" onClick={()=>controller.current?.abort(new Error('操作已取消；原题包和记录保留'))}>取消云端操作</button>}
       {loaded&&!items.length&&<div className="mock-cloud-empty" role="status"><h4>私人云库还是空的</h4><p>上传完整题包 JSON 后，可在其他设备登录下载。考试答案和成绩仍保存在作答设备。</p></div>}
       <div className="mock-library-list">{items.map(item=><article key={item.id} className="mock-library-item">
         <h4>{item.title}</h4><p className="mock-muted">{getExamProfile(item.format).label} · {(item.bytes/1024/1024).toFixed(1)} MiB · 版本 {item.version}</p>
         {item.state==='ready'?<div className="mock-actions"><button className="button primary" disabled={busy||disabled} onClick={()=>void run(async signal=>{
           setNotice('正在下载并核对题包…'); const response=await fetch(`/api/exam-library?id=${item.id}`,{headers,signal,cache:'no-store'});
-          const text=await checkedLibraryDownload(response,item); active(); await onImport(text); active();setNotice('已校验并保存到本机题包，可以开始音频预检。');
+          const source=libraryDownloadSource(response,item,signal); active(); await onImport(source); active();setNotice('已校验并保存到本机题包，可以开始音频预检。');
         })}>下载到本机题包</button><a className="button secondary" href={`/api/exam-library?id=${item.id}`} download>下载 JSON 文件</a></div>:<p>{item.state==='deleting'?'上次移除尚未完成，可重试。':'上传尚未完成；若已经中断，可取消后重新上传。'}</p>}
         {remove===item.id?<div className="mock-actions"><span>只移除云端文件，本机题包和成绩保留。</span><button className="button secondary" disabled={busy||disabled} onClick={()=>void run(async signal=>{await json(await fetch(`/api/exam-library?id=${item.id}`,{method:'DELETE',headers,signal}));active();setRemove(null);await list(signal);setNotice('已移除云端题包。');})}>确认移除云端文件</button><button className="text-button" onClick={()=>setRemove(null)}>取消</button></div>:<button className="text-button" disabled={busy||disabled} onClick={()=>setRemove(item.id)}>{item.state==='ready'?'移除云端文件':'取消未完成操作'}</button>}
       </article>)}</div>

@@ -63,3 +63,19 @@
 .mock-explanation.answer-correct h4{color:var(--mock-success)}
 .mock-explanation.answer-unanswered h4{color:var(--mock-warning)}
 .mock-explanation h4>svg{display:inline-block;vertical-align:middle;margin-right:6px}
+
+/* Native disclosure labels follow details.open without extra React state. */
+.mock-answer-card details>summary .mock-nav-collapse{display:none}
+.mock-answer-card details[open]>summary .mock-nav-expand{display:none}
+.mock-answer-card details[open]>summary .mock-nav-collapse{display:inline}
+/* Keep all five result columns visible within the narrow result panel. */
+@media(max-width:760px){
+ .mock-results table{table-layout:fixed;white-space:normal}
+ .mock-results th,.mock-results td{padding:12px 4px;white-space:normal;overflow-wrap:anywhere;vertical-align:top}
+ .mock-results thead th:nth-child(1){width:20%}
+ .mock-results thead th:nth-child(2){width:24%}
+ .mock-results thead th:nth-child(3){width:12%}
+ .mock-results thead th:nth-child(4){width:20%}
+ .mock-results thead th:nth-child(5){width:24%}
+ .mock-results tbody th small{white-space:normal;line-height:1.5}
+}

@@ -96,3 +96,21 @@ body[data-ui-theme="hollow"] .phase2-plan-heading h1 { font-family: Georgia,"Son
 @media(min-width:900px){.phase2-plan-cover .phase2-plan-stats { max-width: 540px; }.phase2-plan-editor form { max-width: 720px; }}
 @media(max-width:480px){.phase2-vocabulary-plan { gap: 16px; }.phase2-vocabulary-plan .panel,.phase2-today-vocabulary { padding: 18px; }.phase2-plan-heading { gap: 12px; }.phase2-plan-heading>.button { padding: 9px 11px; min-height: 42px; }.phase2-plan-number-fields { gap: 12px; }.phase2-weekday-picker { gap: 4px; }.phase2-weekday-picker span { font-size: 11px; }.phase2-plan-stats b,.phase2-today-counts b { font-size: 27px; }.phase2-rating-actions { gap: 7px; }.phase2-rating-actions .button { padding: 12px 8px; }.phase2-plan-cover h2 { font-size: 23px; }.phase2-vocab-heading { gap: 10px; }.phase2-local-badge { font-size: 11px; }.phase2-word-meaning { font-size: 16px; }.phase2-workflow-backup .button-row { align-items: stretch; flex-direction: column; }}
 @media(prefers-reduced-motion:reduce){.phase2-vocabulary-plan * { scroll-behavior: auto!important; }}
+
+/* Keep optional playback controls from squeezing the example label. */
+.phase2-vocabulary-session .phase2-word-meaning > .audio-player {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 66px;
+  gap: 10px;
+  align-items: center;
+}
+.phase2-vocabulary-session .phase2-word-meaning > .audio-player > .play-circle { grid-column: 1; grid-row: 1; }
+.phase2-vocabulary-session .phase2-word-meaning > .audio-player > .audio-meta { grid-column: 2; grid-row: 1; min-width: 0; overflow-wrap: anywhere; }
+.phase2-vocabulary-session .phase2-word-meaning > .audio-player > .speed-select { grid-column: 3; grid-row: 1; width: 66px!important; min-width: 0; margin-left: 0; }
+.phase2-vocabulary-session .phase2-word-meaning > .audio-player > .wave { display: none; }
+.phase2-vocabulary-session .phase2-word-meaning > .audio-player > .text-button { grid-column: 1 / -1; justify-self: start; }
+.phase2-vocabulary-session .phase2-word-meaning > .audio-player > .audio-seek { grid-column: 1 / -1; width: 100%; min-width: 0; }
+@media(max-width:360px) {
+  .phase2-vocabulary-session .phase2-word-meaning > .audio-player { grid-template-columns: 36px minmax(0, 1fr); }
+  .phase2-vocabulary-session .phase2-word-meaning > .audio-player > .speed-select { grid-column: 2; grid-row: 2; justify-self: start; }
+}

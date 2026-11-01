@@ -1,0 +1,42 @@
+'use client';
+import {useState,useRef,useEffect} from 'react';
+import {createId} from '@/lib/study-model';
+import {claimPracticeHistory,type PracticeHistoryTarget} from '@/lib/practice-history-browser';
+import {registerNativeBack} from '@/lib/native-host';
+import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription} from '@/components/ui/dialog';
+import {practiceSavedCount,practiceTaskLabel,practiceTaskOriginKey,sortPracticeSessions,type PracticeTaskOrigin} from '@/lib/practice-task';
+import type {PracticeSession} from '@/lib/practice-workflow';
+import type {PracticeWorkflowController} from '@/lib/use-practice-workflow';
+
+export function usePracticeSubviewBack(onClose:()=>void,priority:number){
+ const close=useRef(onClose);close.current=onClose;const lease=useRef({token:'',active:false,target:undefined as PracticeHistoryTarget|undefined,timer:null as ReturnType<typeof setTimeout>|null});if(!lease.current.token)lease.current.token=createId();
+ const back=()=>{if(window.history.state?.lanternPracticeSubview===lease.current.token&&window.location.href===lease.current.target?.href)window.history.back();else close.current();};
+ useEffect(()=>{
+  const current=lease.current,id=current.token;current.active=true;if(current.timer!==null){clearTimeout(current.timer);current.timer=null;}
+  const pop=(event:PopStateEvent)=>{if(event.state?.lanternPracticeSubview===id)return;if(priority===5&&document.querySelector('[role="dialog"][data-state="open"]')){window.history.pushState({...event.state,lanternPracticeSubview:id},'');window.dispatchEvent(new Event('lantern-practice-dialog-back'));return;}event.stopImmediatePropagation();close.current();};
+  const route=claimPracticeHistory(id,'lanternPracticeSubview',pop,current.target);current.target=route.target;
+  if(window.history.state?.lanternPracticeSubview!==id){if(route.reuse)window.history.replaceState({...route.base,lanternPracticeSubview:id},'');else window.history.pushState({...window.history.state,lanternPracticeSubview:id},'');}route.own();
+  const off=registerNativeBack(()=>{back();return true;},priority);
+  return()=>{current.active=false;off();route.release();if(current.timer!==null)clearTimeout(current.timer);current.timer=setTimeout(()=>{current.timer=null;if(!current.active&&window.history.state?.lanternPracticeSubview===id&&window.location.href===route.target.href){route.consume();window.history.back();}},0);};
+ },[]);
+ return back;
+}
+
+export function taskSessions(sessions:readonly PracticeSession[],origin:PracticeTaskOrigin){let key:string;try{key=practiceTaskOriginKey(origin);}catch{return [];}return sortPracticeSessions(sessions.filter(s=>s.status==='active'&&s.task&&practiceTaskOriginKey(s.task.origin)===key));}
+export function PracticeTaskActions({origin,label,sessions,disabled,onNew,onResume,onChoose,onRestart,startLabel='开始'}:{origin:PracticeTaskOrigin;label:string;sessions:readonly PracticeSession[];disabled:boolean;onNew:()=>void;onResume:(id:string)=>void;onChoose:(key:string)=>void;onRestart:(s:PracticeSession)=>void;startLabel?:string}){
+ const matches=taskSessions(sessions,origin),[menu,setMenu]=useState(false);let valid=true;try{practiceTaskOriginKey(origin);}catch{valid=false;}
+ const action=()=>matches.length===1?onResume(matches[0].id):matches.length>1?onChoose(practiceTaskOriginKey(origin)):onNew();
+ const text=matches.length===1?'继续':matches.length>1?'选择续练':startLabel;
+ return <div className="practice-task-actions"><div className="practice-task-progress" aria-live="polite">{matches.length===1?`已答 ${practiceSavedCount(matches[0])}/${matches[0].queue.length} 题`:matches.length>1?`${matches.length}组未完成`:''}</div><div className="practice-task-controls"><button data-task-primary type="button" className="button secondary" disabled={disabled||!valid} aria-label={label+' · '+text} onClick={action}>{text}</button><div className="practice-task-menu"><button type="button" className="text-button" aria-label={label+' · 更多'} aria-expanded={menu} disabled={disabled||!valid} onClick={()=>setMenu(v=>!v)}>更多</button>{menu&&<div className="practice-task-menu-items"><button type="button" className="text-button" disabled={disabled} onClick={()=>{setMenu(false);onNew();}}>新练一组</button>{matches.length===1&&<button type="button" className="text-button" disabled={disabled} onClick={()=>{setMenu(false);onRestart(matches[0]);}}>重新开始</button>}</div>}</div></div></div>;
+}
+export function PracticeRecords({workflow,filter,onBack,onRestart,onSettle,onView}:{workflow:PracticeWorkflowController;filter?:string;onBack:()=>void;onRestart:(s:PracticeSession)=>void;onSettle:(id:string)=>void;onView:(s:PracticeSession)=>void}){
+ const back=usePracticeSubviewBack(onBack,5);
+ const [tab,setTab]=useState<'active'|'ended'>('active');
+ const all=sortPracticeSessions(workflow.sessions.filter(s=>!filter||s.task&&practiceTaskOriginKey(s.task.origin)===filter));
+ const rows=all.filter(s=>tab==='active'?s.status==='active':s.status!=='active');
+ return <section className="practice-records"><div className="section-heading"><h2>练习记录</h2><button type="button" className="text-button" onClick={back}>返回练习</button></div><div className="practice-record-tabs" role="tablist" aria-label="练习记录分类"><button type="button" role="tab" aria-selected={tab==='active'} onClick={()=>setTab('active')}>未完成</button><button type="button" role="tab" aria-selected={tab==='ended'} onClick={()=>setTab('ended')}>已结束</button></div>{filter&&<p className="small muted">当前任务的练习</p>}{!workflow.ready?<p role="status">{workflow.error||'正在读取练习记录…'}</p>:rows.length?rows.map(s=><article className="practice-record-row" key={s.id} data-practice-record={s.id}><div><b>{practiceTaskLabel(s)}</b><p>已答 {practiceSavedCount(s)}/{s.queue.length} 题 · {s.status==='completed'?'已完成':s.status==='left'?'已结束':'未完成'}</p><small>{new Date(s.activityAt??s.startedAt).toLocaleString('zh-CN',{timeZone:s.timezone})}</small></div><div className="practice-record-actions"><button type="button" className="button secondary" disabled={workflow.busy||!!s.integrityError} onClick={()=>onView(s)}>{s.status==='active'?'继续':'查看'}</button><details><summary>更多</summary><button type="button" className="text-button" disabled={workflow.busy||!!s.integrityError} onClick={()=>onRestart(s)}>重新开始</button></details></div></article>):<p className="empty-inline">{tab==='active'?'暂无未完成练习':'暂无已结束练习'}</p>}{tab==='ended'&&workflow.pendingSettlements.length>0&&<details className="practice-pending-time"><summary>待确认的学习时间</summary><p className="small muted">已保存答题不受影响，确认后才计入学习时间。</p>{workflow.pendingSettlements.map(s=><div className="workspace-settings-row" key={s.id}><span>{practiceTaskLabel(s)} · 已答{practiceSavedCount(s)}题</span><button type="button" className="text-button" disabled={workflow.busy} onClick={()=>onSettle(s.id)}>确认这组时间</button></div>)}</details>}</section>;
+}
+export function PracticeRestartDialog({session,busy,error,onCancel,onConfirm}:{session:PracticeSession|null;busy:boolean;error:string;onCancel:()=>void;onConfirm:()=>void}){
+ useEffect(()=>{if(!session)return;const cancel=()=>{if(!busy)onCancel();};window.addEventListener('lantern-practice-dialog-back',cancel);const off=registerNativeBack(()=>{cancel();return true;},20);return()=>{off();window.removeEventListener('lantern-practice-dialog-back',cancel);};},[session,busy,onCancel]);
+ return <Dialog open={!!session} onOpenChange={open=>{if(!open&&!busy)onCancel();}}><DialogContent className="settings-dialog"><DialogHeader><DialogTitle>重新开始这组？</DialogTitle><DialogDescription>将结束当前这组并新建同题练习，已保存答案保留。原来的答题、听写、回听和时间记录仍在练习记录中。</DialogDescription></DialogHeader>{error&&<p role="alert">{error}</p>}<div className="button-row"><button type="button" className="button secondary" disabled={busy} onClick={onCancel}>取消</button><button type="button" className="button primary" disabled={busy} onClick={onConfirm}>重新开始</button></div></DialogContent></Dialog>;
+}

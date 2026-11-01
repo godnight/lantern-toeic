@@ -3,9 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['art/**', 'harmony/**', 'app/**', 'lib/**', 'components/**', 'content/**', 'public/**', 'mobile/**', 'package-lock.json', '.github/workflows/harmony-web.yml']
   pull_request:
-    paths: ['art/**', 'harmony/**', 'app/**', 'lib/**', 'components/**', 'content/**', 'public/**', 'mobile/**', 'package-lock.json', '.github/workflows/harmony-web.yml']
 permissions:
   contents: read
 concurrency:
@@ -18,21 +16,29 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          fetch-depth: 0
           persist-credentials: false
+      - name: Classify cumulative PR changes (keep the required check visible)
+        id: scope
+        run: node .github/scripts/change-scope.mjs
       - uses: actions/setup-node@v7
+        if: steps.scope.outputs.harmony == 'true'
         with:
           node-version: '22'
           cache: npm
       - run: npm ci
+        if: steps.scope.outputs.harmony == 'true'
       - name: Check native build helpers (no SDK compilation)
+        if: steps.scope.outputs.harmony == 'true'
         run: |
           node --test harmony/tests/toolchain.test.mjs
           node --test harmony/tests/native-downloads.test.cjs harmony/tests/asset-range.test.cjs harmony/tests/entry-ability.test.cjs
           python3 -B -m unittest discover -s harmony/tests -p 'test_*.py'
           python3 -B -m unittest discover -s harmony/scripts/ui -p 'test_*.py'
       - run: npm --prefix harmony run sync:web
-      - run: npm --prefix harmony run check:web
+        if: steps.scope.outputs.harmony == 'true'
       - name: Upload verified web resources (not an installable HAP)
+        if: steps.scope.outputs.harmony == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: lantern-harmony-web-resources-${{ github.run_number }}

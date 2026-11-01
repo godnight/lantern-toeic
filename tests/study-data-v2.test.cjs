@@ -8,10 +8,10 @@ const {DatabaseSync}=require('node:sqlite');
 const ts=require('typescript');
 const orm=require('drizzle-orm');
 const {drizzle}=require('drizzle-orm/sqlite-proxy');
-const root=path.resolve(__dirname,'..');
+const root=path.resolve(process.env.LANTERN_STUDY_TEST_ROOT||path.join(__dirname,'..'));
 function load(file,imports={}){
  const exports={};const source=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- vm.runInNewContext(source,{exports,require:name=>{if(!(name in imports))throw Error('Unexpected import '+name);return imports[name];},Date,Intl,Map,Set,structuredClone,Request,Response,Headers,crypto:{randomUUID}}, {filename:file});return exports;
+ vm.runInNewContext(source,{exports,require:name=>{if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:{}}).resolve(name,file);return imports[name];},Date,Intl,Map,Set,structuredClone,Request,Response,Headers,crypto:{randomUUID}}, {filename:file});return exports;
 }
 const plain=value=>JSON.parse(JSON.stringify(value));
 const model=load('lib/study-model.ts');
@@ -124,4 +124,66 @@ test('API validates references, real dates and account ownership, and reads only
   assert.equal((await (await api.GET()).json()).attempts.length,0,'Conflicting imports must not falsely create an account copy');
   owner=null;assert.equal((await api.GET()).status,401);
  }finally{sqlite.close();}
+});
+
+function trackedCatalogApi({rejectCatalog=false}={}){
+ const {sqlite,db}=database();let owner='alice',loads=0;
+ const imports={
+  'drizzle-orm':orm,zod:require('zod'),'@/db':{getDb:()=>db},'@/db/schema':schema,'@/db/mutable-study':statements,'@/lib/study-model':model,
+  '@/lib/request-body':load('lib/request-body.ts'),'@/lib/server-auth':{userId:async()=>owner,safeMutation:req=>req.headers.get('origin')==='https://test.local',privateJson:(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}})},
+  '@/content/questions.json':{default:questions},'@/content/resources-v2':resources,'@/content/exams/catalogue.json':{default:exams}
+ };
+ Object.defineProperty(imports,'@/lib/question-catalog',{enumerable:true,get(){loads++;if(rejectCatalog)throw Error('catalog admission rejected');return {QUESTIONS:questions};}});
+ const api=load('app/api/study/route.ts',imports);
+ const post=(type,data,extra={})=>api.POST(new Request('https://test.local/api/study',{method:'POST',headers:{origin:'https://test.local','Content-Type':'application/json','X-Lantern-Owner':owner,...extra},body:JSON.stringify({type,data})}));
+ return {api,sqlite,post,loads:()=>loads,owner:value=>{owner=value;}};
+}
+
+test('catalog startup boundary: auth, input rejection and unrelated operations never initialize teaching data',async()=>{
+ const h=trackedCatalogApi();
+ try{
+  assert.equal(h.loads(),0,'Route import initialized the catalog');
+  h.owner(null);assert.equal((await h.api.GET()).status,401);assert.equal((await h.post('attempt',{})).status,401);
+  h.owner('alice');assert.equal((await h.post('attempt',{}, {'X-Lantern-Owner':'bob'})).status,409);
+  assert.equal((await h.post('attempt',{}, {origin:'https://other.local'})).status,403);
+  assert.equal((await h.post('attempt',{id:randomUUID(),qid:questions[0].id,choice:4,createdAt:stamp,seconds:0})).status,400);
+  assert.equal((await h.post('questionMark',mark({reason:'invented'}))).status,400);
+  assert.equal((await h.post('checkin',{note:'x'.repeat(200001)})).status,413);
+  assert.equal((await h.api.GET()).status,200);
+  assert.equal((await h.post('theme',{theme:'hollow'})).status,200);
+  assert.equal((await h.post('checkin',{id:randomUUID(),date:'2026-01-01',minutes:5,load:'轻',note:'',createdAt:stamp})).status,200);
+  assert.equal((await h.post('resourceTask',task())).status,200);
+  assert.equal(h.loads(),0,'A route without a valid catalog operation initialized teaching data');
+ }finally{h.sqlite.close();}
+});
+
+test('catalog startup boundary: concurrent required operations share initialization and preserve scoring and replays',async()=>{
+ const h=trackedCatalogApi(),q=questions[0],first={id:randomUUID(),qid:q.id,choice:q.correctIndex,createdAt:stamp,seconds:5};
+ try{
+  const responses=await Promise.all([h.post('attempt',first),h.post('questionMark',mark())]);
+  assert.deepEqual(responses.map(r=>r.status),[200,200]);assert.equal(h.loads(),1);
+  const saved=h.sqlite.prepare('SELECT correct,mode FROM attempts WHERE id=?').get(first.id);
+  assert.equal(saved.correct,1);assert.equal(saved.mode,'first');
+  assert.equal((await h.post('attempt',first)).status,200);
+  const review={...first,id:randomUUID(),choice:(q.correctIndex+1)%q.options.length};
+  assert.equal((await h.post('attempt',review)).status,200);
+  assert.equal(h.sqlite.prepare('SELECT mode FROM attempts WHERE id=?').get(review.id).mode,'review');
+  assert.equal((await h.post('attempt',{...first,choice:review.choice})).status,409);
+  assert.equal(h.sqlite.prepare('SELECT count(*) AS n FROM attempts').get().n,2);
+  assert.equal(h.loads(),1);
+ }finally{h.sqlite.close();}
+});
+
+test('catalog startup boundary: failed admission stays closed without writes and leaves unrelated sync available',async()=>{
+ const h=trackedCatalogApi({rejectCatalog:true});
+ try{
+  assert.equal(h.loads(),0);
+  const a={id:randomUUID(),qid:questions[0].id,choice:0,createdAt:stamp,seconds:5};
+  assert.equal((await h.post('attempt',a)).status,503);
+  assert.equal((await h.post('questionMark',mark())).status,503);
+  assert.equal(h.loads(),1,'Concurrent or later requests retried a rejected module initializer');
+  assert.equal(h.sqlite.prepare('SELECT count(*) AS n FROM attempts').get().n,0);
+  assert.equal(h.sqlite.prepare('SELECT count(*) AS n FROM question_marks').get().n,0);
+  assert.equal((await h.post('theme',{theme:'paper'})).status,200);
+ }finally{h.sqlite.close();}
 });

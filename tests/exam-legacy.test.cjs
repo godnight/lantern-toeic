@@ -13,7 +13,7 @@ const packer=require('../scripts/pack-exam-pages.cjs');
 const plain=value=>JSON.parse(JSON.stringify(value));
 function load(file,imports={}) {
   const exports={},code=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-  vm.runInNewContext(code,{exports,require(name){assert.ok(name in imports);return imports[name];},Date,Map,Set,Error,JSON,Promise,structuredClone,TextEncoder,Uint8Array,Uint32Array,ArrayBuffer,Blob,URL,atob,btoa,crypto:crypto.webcrypto});
+  vm.runInNewContext(code,{exports,require(name){if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:{}}).resolve(name,file);return imports[name];},Date,Map,Set,Error,JSON,Promise,structuredClone,TextEncoder,Uint8Array,Uint32Array,ArrayBuffer,Blob,File,URL,Request,Response,Headers,ReadableStream,AbortController,TextDecoder,atob,btoa,crypto:crypto.webcrypto});
   return exports;
 }
 const model=load('lib/exam-model.ts'), storage=load('lib/exam-storage.ts',{'./exam-model':model});
@@ -127,11 +127,11 @@ test('packer accepts and propagates the explicit legacy format with correct Part
   const bad=recipe();bad.answers[10]='D';assert.throws(()=>packer.validateRecipe(bad,model),/Part 2/);
   const current=recipe(modern());assert.equal(packer.validateRecipe(current,model),current);assert.equal('format'in current.exam,false);
 });
-test('v3 database prevents older v2 clients from interpreting legacy format using current counters',async()=>{
+test('v4 database prevents older v2 clients from interpreting legacy format using current counters',async()=>{
   const factory=new IDBFactory(),r=await repo(factory,'format-version');await r.importPackage(legacy());r.close();
   await assert.rejects(new Promise((resolve,reject)=>{const req=factory.open('format-version',2);req.onsuccess=()=>{req.result.close();resolve();};req.onerror=()=>reject(req.error);}),e=>e.name==='VersionError');
 });
-test('v2 current-format package and active attempt survive v3 upgrade byte-for-byte',async()=>{
+test('v2 current-format package and active attempt survive v4 upgrade byte-for-byte',async()=>{
   const factory=new IDBFactory(),name='existing-v2',e=model.parseExamPackage(modern()),hash=await model.fingerprintExam(e);
   const a=model.answerQuestion(model.createAttempt(e,{id:'existing-active',ownerId:'alice',fingerprint:hash,ordinal:1,now:start}),7,2,start+100);
   const key=model.examKey(e),{assets,...definition}=e;
@@ -141,7 +141,7 @@ test('v2 current-format package and active attempt survive v3 upgrade byte-for-b
   };request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
   await new Promise((resolve,reject)=>{const tx=db.transaction(['packages','catalog','attempts'],'readwrite');for(const [table,row]of Object.entries(rows))tx.objectStore(table).add(row);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});db.close();
   const r=await repo(factory,name);r.close();
-  const upgraded=await new Promise((resolve,reject)=>{const request=factory.open(name,3);request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
+  const upgraded=await new Promise((resolve,reject)=>{const request=factory.open(name,4);request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
   for(const [table,row]of Object.entries(rows)) {
     const actual=await new Promise((resolve,reject)=>{const request=upgraded.transaction(table).objectStore(table).getAll();request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
     assert.equal(JSON.stringify(actual),JSON.stringify([row]));

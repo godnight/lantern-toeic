@@ -20,8 +20,8 @@ export type UiThemeDefinition = Readonly<{
 }>;
 
 export const UI_THEME_META = {
-  paper: {name: '奶油柔色', description: '奶油 · 嫩绿 · 柔桃', game: false, colorScheme: 'light'},
-  crystal: {name: '默认夜间', description: '炭灰 · 薄荷 · 无游戏元素', game: false, colorScheme: 'dark'},
+  paper: {name: '日间', description: '奶油 · 嫩绿 · 柔桃', game: false, colorScheme: 'light'},
+  crystal: {name: '夜间', description: '炭灰 · 薄荷 · 无游戏元素', game: false, colorScheme: 'dark'},
   hollow: {name: '空洞骑士', description: '蓝湖 · 雨城 · 小骑士', game: true, colorScheme: 'dark'},
   silk: {name: '丝之歌', description: '斜针 · 丝环 · 钟线', game: true, colorScheme: 'dark'},
 } as const satisfies Record<Theme, UiThemeDefinition>;
@@ -45,14 +45,12 @@ export type UiThemePalette = Readonly<{
   warningSoft: string;
 }>;
 
-/** S1-r3 day/hollow colors; night/silk remain compatible with the earlier UI.
- * CSS contains the same opaque palette. Decorative art is a separate layer. */
+/** Approved r1 theme tokens, shared with CSS; imagery is a separate layer. */
 export const UI_THEME_PALETTES = {
-  day: {canvas:'#f5eee2',surface:'#fffcf7',surfaceMuted:'#eee6d7',text:'#252b26',textSecondary:'#686c61',primary:'#607456',onPrimary:'#ffffff',selection:'#e0e7ce',divider:'#e1ddcf',controlBorder:'#7a877f',focus:'#526647',success:'#246b48',warning:'#825c1c',danger:'#aa3d38',dangerSoft:'#f8e8e5',warningSoft:'#f5eddb'},
-  // One-channel lift from #768a7c also keeps the border above 3:1 on selection.
-  night: {canvas:'#181d1c',surface:'#202724',surfaceMuted:'#2a332f',text:'#eef1ed',textSecondary:'#aab7af',primary:'#92c8b2',onPrimary:'#14251d',selection:'#2b4135',divider:'#3a453f',controlBorder:'#778b7d',focus:'#b1dec9',success:'#9ad2b2',warning:'#e3c17e',danger:'#f4a69e',dangerSoft:'#452d2c',warningSoft:'#423927'},
-  hollow: {canvas:'#0d1420',surface:'#141e2b',surfaceMuted:'#1c2a3b',text:'#e9edf1',textSecondary:'#a3b1c0',primary:'#c6d6e4',onPrimary:'#15202d',selection:'#27384b',divider:'#34465b',controlBorder:'#738ca7',focus:'#bdd7f2',success:'#a0cfb7',warning:'#e1c68c',danger:'#f0a8a4',dangerSoft:'#443039',warningSoft:'#403927'},
-  silk: {canvas:'#21191d',surface:'#2b2025',surfaceMuted:'#38282f',text:'#f1eae2',textSecondary:'#beabb0',primary:'#d397aa',onPrimary:'#2a1820',selection:'#4c2d39',divider:'#523b45',controlBorder:'#a17e8d',focus:'#f1b5c8',success:'#aad1b6',warning:'#e4c38e',danger:'#f3aea9',dangerSoft:'#503039',warningSoft:'#463629'},
+  day: {canvas:'#f4f1e9', surface:'#fffcf7', surfaceMuted:'#e9eddf', text:'#29342b', textSecondary:'#606c5f', primary:'#536c51', onPrimary:'#fffdf7', selection:'#e1e8d6', divider:'#d8dfd2', controlBorder:'#73816d', focus:'#4c6d4f', success:'#246b48', warning:'#825c1c', danger:'#9d3832', dangerSoft:'#f8e8e5', warningSoft:'#f5eddb'},
+  night: {canvas:'#121c23', surface:'#1b2932', surfaceMuted:'#253641', text:'#e4eff0', textSecondary:'#afc0c4', primary:'#9cc7ce', onPrimary:'#15252b', selection:'#2b424d', divider:'#3a505d', controlBorder:'#6f8994', focus:'#c0e3e8', success:'#a0d1bd', warning:'#e4c689', danger:'#e8aaa5', dangerSoft:'#482e35', warningSoft:'#443b2c'},
+  hollow: {canvas:'#101b29', surface:'#172435', surfaceMuted:'#213044', text:'#edf0ed', textSecondary:'#b0becb', primary:'#efbd75', onPrimary:'#291e12', selection:'#3b3540', divider:'#34485a', controlBorder:'#8093a2', focus:'#f3cd96', success:'#a0cfb7', warning:'#efcf8f', danger:'#f0aaa4', dangerSoft:'#48323d', warningSoft:'#443d2b'},
+  silk: {canvas:'#201822', surface:'#2b212d', surfaceMuted:'#362937', text:'#f2e9e4', textSecondary:'#c7b4c5', primary:'#f18b70', onPrimary:'#291712', selection:'#4a3038', divider:'#503c51', controlBorder:'#a889a4', focus:'#ffc0a8', success:'#abd4b9', warning:'#e6c58c', danger:'#f1b1ad', dangerSoft:'#50313c', warningSoft:'#493b2c'},
 } as const satisfies Record<UiTheme, UiThemePalette>;
 
 /** Call from an effect before any early-return branch. No settings are persisted. */

@@ -26,3 +26,22 @@
 .speaking-room-scroll{flex:1 1 auto;min-height:0;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .speaking-discard[data-slot=dialog-content]{height:auto;overflow-y:auto!important;overscroll-behavior:contain}
 @media(max-width:700px){.speaking-room[data-slot=dialog-content]{left:var(--speaking-dialog-left,0px)!important;top:var(--speaking-dialog-top,0px)!important;width:var(--speaking-dialog-width,100vw)!important;height:var(--speaking-dialog-height,100dvh);max-height:var(--speaking-dialog-height,100dvh)!important}}
+
+/* Local, manual text review. Controls keep real 44px targets. */
+.speaking-text-feedback{margin-top:24px;padding-top:24px;border-top:1px solid var(--border)}
+.speaking-text-feedback h3{font-size:18px;line-height:1.5;margin:0}
+.speaking-text-feedback fieldset{border:0;padding:0;margin:16px 0;min-width:0}
+.speaking-text-feedback label{display:block;margin:14px 0 8px;font-size:15px;line-height:1.7}
+.speaking-text-feedback textarea,.speaking-text-feedback select{display:block;box-sizing:border-box;width:100%;min-height:44px;border:1px solid var(--input);border-radius:10px;padding:10px 12px;color:var(--foreground);background:var(--card);font:inherit;line-height:1.7;resize:vertical}
+.speaking-text-feedback textarea:focus-visible,.speaking-text-feedback select:focus-visible,.speaking-text-confirm:has(:focus-visible){outline:2px solid var(--ring);outline-offset:3px}
+.speaking-text-feedback .speaking-text-confirm{display:flex;align-items:flex-start;gap:12px;min-height:44px;padding:10px 0}
+.speaking-text-confirm input{width:22px;height:22px;flex:0 0 22px;margin:3px 0 0;accent-color:var(--primary)}
+.speaking-text-feedback .button{min-height:44px;white-space:normal}
+.speaking-text-feedback fieldset:disabled{opacity:.7}
+.speaking-text-comparison{border-top:1px solid var(--border);padding-top:12px;overflow-wrap:anywhere}
+
+.speaking-text-feedback summary{min-height:44px;padding:10px 0;cursor:pointer;line-height:1.6}
+.speaking-text-file{display:block;min-height:44px;line-height:1.7}
+.speaking-text-file input{display:block;box-sizing:border-box;width:100%;max-width:100%;min-height:44px;white-space:normal;font:inherit}
+
+.speaking-local-asr-optin{display:flex;align-items:center;gap:10px;min-height:44px;line-height:1.6;cursor:pointer}.speaking-local-asr-optin input{flex:0 0 20px;width:20px;height:20px}

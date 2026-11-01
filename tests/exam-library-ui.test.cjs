@@ -2,8 +2,9 @@
 // Does not replace browser/ArkWeb acceptance.
 const assert=require('node:assert/strict'),test=require('node:test'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto');
 const root=process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..'),ts=require(path.join(root,'node_modules/typescript'));
-function load(file,imports={},globals={}){const exports={},code=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;vm.runInNewContext(code,{exports,require:name=>{assert.ok(name in imports,name);return imports[name];},Date,Map,Set,Error,JSON,Promise,TextEncoder,TextDecoder,Uint8Array,Uint32Array,ArrayBuffer,Blob,File,URL,Request,Response,Headers,ReadableStream,AbortController,atob,btoa,crypto:crypto.webcrypto,...globals},{filename:file});return exports;}
+function load(file,imports={},globals={}){const exports={},code=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{fileName:file,compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;vm.runInNewContext(code,{exports,require:name=>{if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals}).resolve(name,file);return imports[name];},Date,Map,Set,Error,JSON,Promise,TextEncoder,TextDecoder,Uint8Array,Uint32Array,ArrayBuffer,Blob,File,URL,Request,Response,Headers,ReadableStream,AbortController,atob,btoa,crypto:crypto.webcrypto,...globals},{filename:file});return exports;}
 const model=load('lib/exam-model.ts'),library=load('lib/exam-library.ts',{'@/lib/exam-model':model});
+const storage=load('lib/exam-storage.ts',{'./exam-model':model});
 const fixture=require(path.join(root,'tests/fixtures/synthetic-exam.cjs'));
 const body=JSON.stringify(fixture()),item={id:crypto.randomUUID(),examId:fixture().id,version:1,title:fixture().title,bytes:Buffer.byteLength(body),sha256:crypto.createHash('sha256').update(body).digest('hex'),createdAt:new Date().toISOString(),state:'ready'};
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};};
@@ -11,16 +12,22 @@ function nodes(tree,predicate){const out=[],queue=[tree];while(queue.length){con
 function textOf(n){return n==null||typeof n==='boolean'?'':typeof n==='object'?Array.isArray(n)?n.map(textOf).join(''):textOf(n.props?.children):String(n);}
 function harness({owner='alice',native=false,fetcher,prepare=library.prepareLibraryFile}={}){
  let slots=[],cursor=0,pending=[],tree,dead=false,writesAfterUnmount=0;const calls=[],imports=[];
+ const repository=storage.openExamRepository(owner,{factory:new (require('fake-indexeddb').IDBFactory)(),name:'synthetic-library-ui'});
  const same=(a,b)=>a&&b&&a.length===b.length&&a.every((v,i)=>Object.is(v,b[i]));
  const react={useState(initial){const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return [slots[i],value=>{if(dead)writesAfterUnmount++;slots[i]=typeof value==='function'?value(slots[i]):value;}];},useRef(initial){const i=cursor++;if(!(i in slots))slots[i]={current:initial};return slots[i];},useEffect(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps)){const old=slots[i];slots[i]={deps};pending.push(()=>{old?.cleanup?.();slots[i].cleanup=fn();});}}};
  const jsx=(type,props)=>({type,props});
  const component=load('app/learn/exam-library.tsx',{react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'@/lib/exam-library':{...library,prepareLibraryFile:prepare},'@/lib/exam-model':model},{window:{location:{origin:native?'https://lantern.local':'https://study.test'}},fetch:async(url,options={})=>{calls.push({url,options});return fetcher?fetcher(url,options):Response.json({items:[item]});}}).default;
- const render=()=>{cursor=0;tree=component({ownerId:owner,disabled:false,onImport:async text=>imports.push(text)});const effects=pending;pending=[];effects.forEach(fn=>fn());return tree;};
+ const render=()=>{cursor=0;tree=component({ownerId:owner,disabled:false,onImport:async source=>{const repo=await repository;const result=await repo.importPackageFile(source.file,{expected:source.expected,signal:source.signal});imports.push(JSON.stringify(await repo.getPackage(result.summary.key)));}});const effects=pending;pending=[];effects.forEach(fn=>fn());return tree;};
  const click=label=>{const button=nodes(tree,n=>n.type==='button'&&textOf(n)===label)[0];assert.ok(button,'Missing '+label);button.props.onClick();render();};
  const changeFiles=files=>{nodes(tree,n=>n.type==='input')[0].props.onChange({target:{files,value:'test'}});render();};
- return {render,click,changeFiles,calls,imports,get tree(){return tree;},get writesAfterUnmount(){return writesAfterUnmount;},unmount(){slots.forEach(s=>s?.cleanup?.());dead=true;}};
+ return {render,click,changeFiles,calls,imports,get tree(){return tree;},get busy(){return nodes(tree,n=>n.type==='button'&&['加载个人题包库','刷新个人题包库'].includes(textOf(n)))[0]?.props.disabled===true;},get writesAfterUnmount(){return writesAfterUnmount;},unmount(){slots.forEach(s=>s?.cleanup?.());dead=true;void repository.then(repo=>repo.close());}};
 }
-async function drain(h){for(let i=0;i<12;i++){await new Promise(r=>setTimeout(r,2));if(h)h.render();}}
+async function drain(h){
+ if(!h){for(let i=0;i<12;i++)await new Promise(r=>setTimeout(r,2));return;}
+ const deadline=Date.now()+5000;
+ do{await new Promise(r=>setTimeout(r,2));h.render();if(!h.busy)return;}while(Date.now()<deadline);
+ assert.fail('Actual cloud action did not settle within the bounded5s fixture deadline');
+}
 test('native mode exposes only authenticated-browser download guidance and performs no API calls',async()=>{
  const h=harness({native:true});h.render();h.render();assert.match(textOf(h.tree),/浏览器登录下载/);
  assert.equal(nodes(h.tree,n=>n.type==='a'&&n.props.href===library.EXAM_LIBRARY_URL).length,1);assert.equal(nodes(h.tree,n=>n.type==='input').length,0);assert.equal(h.calls.length,0);h.unmount();

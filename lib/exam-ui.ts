@@ -1,4 +1,4 @@
-import {LISTENING_MS, createAssetUrl, getListeningDurationMs, type ExamAttempt, type ExamPackage} from '@/lib/exam-model';
+import {LISTENING_MS, createAssetUrl, getListeningDurationMs, type ExamAsset, type ExamAttempt, type ExamPackage} from '@/lib/exam-model';
 import type {ExamRepository} from '@/lib/exam-storage';
 
 export class StaleExamOwner extends Error {
@@ -130,4 +130,108 @@ export class ExamAssetUrls {
     return url;
   }
   close() { if (!this.closed) { this.closed = true; this.urls.forEach(this.revoke); this.urls.clear(); } }
+}
+
+
+export type ExamAssetLease = {url: string; release: () => void};
+
+/** Schema-1 compatibility adapter. Decode only the requested asset, in 64 KiB
+ * base64 slices. This still produces a complete Blob; it is not disk streaming.
+ * The r2 Blob repository can replace this function via ExamAssetLeases.readAsset.
+ */
+export function examAssetBlob(asset: ExamAsset): Blob {
+  const text = asset.base64;
+  const maximum = asset.mime.startsWith('image/') ? 6 * 1024 ** 2 : 50 * 1024 ** 2;
+  if (!text.length || text.length % 4 || !/^[A-Za-z0-9+/]+={0,2}$/.test(text)) throw new Error('素材 base64 无效');
+  const length = text.length / 4 * 3 - (text.endsWith('==') ? 2 : text.endsWith('=') ? 1 : 0);
+  if (length > maximum || btoa(atob(text.slice(-4))) !== text.slice(-4)) throw new Error('素材大小或填充位无效');
+  const parts: ArrayBuffer[] = [];
+  for (let offset = 0; offset < text.length; offset += 64 * 1024) {
+    const binary = atob(text.slice(offset, offset + 64 * 1024));
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index);
+    parts.push(bytes.buffer);
+  }
+  return new Blob(parts, {type: asset.mime});
+}
+
+type AssetLeaseEntry = {refs: number; bytes: number; url?: string; promise: Promise<string>};
+
+/** Runtime port of the PM lazy-assets reference. No speculative loads or LRU
+ * eviction of live media. A final release or owner close immediately revokes.
+ */
+export class ExamAssetLeases {
+  private entries = new Map<string, AssetLeaseEntry>();
+  private closed = false;
+  private bytes = 0;
+  private readonly create: (blob: Blob) => string;
+  private readonly revoke: (url: string) => void;
+  private readonly maxBytes: number;
+  private readonly maxEntries: number;
+  constructor(private readonly readAsset: (id: string) => Promise<Blob>, options: {
+    create?: (blob: Blob) => string; revoke?: (url: string) => void;
+    maxBytes?: number; maxEntries?: number;
+  } = {}) {
+    this.create = options.create ?? (blob => URL.createObjectURL(blob));
+    this.revoke = options.revoke ?? (url => URL.revokeObjectURL(url));
+    this.maxBytes = options.maxBytes ?? 64 * 1024 ** 2;
+    this.maxEntries = options.maxEntries ?? 16;
+    if (!Number.isSafeInteger(this.maxBytes) || this.maxBytes < 1 || !Number.isSafeInteger(this.maxEntries) || this.maxEntries < 1) throw new Error('素材租约限额无效');
+  }
+  async acquire(id: string): Promise<ExamAssetLease> {
+    if (this.closed) throw new StaleExamOwner();
+    let entry = this.entries.get(id);
+    if (!entry) {
+      if (this.entries.size >= this.maxEntries) throw new Error('请先释放不用的材料，再加载新素材');
+      const created: AssetLeaseEntry = {refs: 0, bytes: 0, promise: Promise.resolve('')};
+      entry = created;
+      this.entries.set(id, created);
+      created.promise = Promise.resolve().then(() => {
+        if (this.closed || this.entries.get(id) !== created) throw new StaleExamOwner();
+        return this.readAsset(id);
+      }).then(blob => {
+        if (this.closed || this.entries.get(id) !== created) throw new StaleExamOwner();
+        if (!(blob instanceof Blob)) throw new Error('题包素材不存在');
+        if (blob.size > this.maxBytes - this.bytes) throw new Error('当前材料超出活跃素材限额，请先释放不用的材料');
+        const url = this.create(blob);
+        if (this.closed || this.entries.get(id) !== created) {this.remove(url); throw new StaleExamOwner();}
+        created.url = url; created.bytes = blob.size; this.bytes += blob.size;
+        return url;
+      }).catch(error => {if (this.entries.get(id) === created) this.entries.delete(id); throw error;});
+    }
+    entry.refs++;
+    const url = await entry.promise;
+    if (this.closed || this.entries.get(id) !== entry) throw new StaleExamOwner();
+    let released = false;
+    return {url, release: () => {
+      if (released) return;
+      released = true;
+      if (--entry.refs === 0 && this.entries.get(id) === entry) {
+        this.entries.delete(id); this.bytes -= entry.bytes;
+        if (entry.url !== undefined) this.remove(entry.url);
+      }
+    }};
+  }
+  private remove(url: string) {detachExamMediaUrl(url); this.revoke(url);}
+  close() {
+    if (this.closed) return;
+    this.closed = true;
+    for (const entry of this.entries.values()) if (entry.url !== undefined) this.remove(entry.url);
+    this.entries.clear(); this.bytes = 0;
+  }
+}
+
+/** Owner cleanup can precede child effect cleanup, so close also detaches DOM users. */
+export function detachExamMediaUrl(url: string, media?: Iterable<HTMLMediaElement | HTMLImageElement>) {
+  const players = media ?? (typeof document === 'undefined' ? [] : document.querySelectorAll<HTMLMediaElement | HTMLImageElement>('audio,video,img'));
+  for (const player of players) if (player.getAttribute('src') === url) {
+    if ('pause' in player) player.pause();
+    player.removeAttribute('src');
+    if ('load' in player) player.load();
+  }
+}
+/** Detach a live player before the URL's last lease can be revoked. */
+export function releaseExamAssetLease(lease: ExamAssetLease, media?: Iterable<HTMLMediaElement | HTMLImageElement>) {
+  detachExamMediaUrl(lease.url, media);
+  lease.release();
 }

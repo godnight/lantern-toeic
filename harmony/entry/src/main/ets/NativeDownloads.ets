@@ -12,6 +12,7 @@ function allowedBlob(name: string, mime: string): boolean {
     return type === 'application/json';
   }
   if (name === 'lantern-weekly-review.md') return type === 'text/markdown';
+  if (name === 'lantern-vocabulary-plan.txt') return type === 'text/plain';
   if (name === 'speaking-recording.m4a') return type === 'audio/mp4';
   if (name === 'speaking-recording.webm') return type === 'audio/webm';
   if (name === 'speaking-recording.wav') return type === 'audio/wav';

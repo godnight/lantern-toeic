@@ -4,10 +4,18 @@ import { webview } from '@kit.ArkWeb';
 import { BusinessError, systemDateTime } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { NativeDownloads } from '../NativeDownloads';
+import { NativeAuthHost } from '../auth/NativeAuthHost';
+import { SpeakingMediaHost } from '../media/SpeakingMediaHost';
 
 // This is an intercepted local origin. No server or certificate is required.
 const APP_ORIGIN: string = 'https://lantern.local';
 const APP_URL: string = APP_ORIGIN + '/';
+const SUPPORT_MAILTO: string = 'mailto:zzl1414179@qq.com';
+const SUPPORT_MAILTO_SUBJECT: string = SUPPORT_MAILTO + '?subject=%E5%BE%AE%E5%85%89%E6%89%98%E4%B8%9A%E9%97%AE%E9%A2%98%E5%8F%8D%E9%A6%88';
+
+function isSupportMailto(destination: string): boolean {
+  return destination === SUPPORT_MAILTO || destination === SUPPORT_MAILTO_SUBJECT;
+}
 
 // Process-local diagnostic budget. Never inspect arbitrary URLs, header values or bodies.
 const MEDIA_RANGE_LOG_LIMIT: number = 64;
@@ -507,6 +515,8 @@ struct Index {
   @State private backPending: boolean = false;
   private controller: webview.WebviewController = new webview.WebviewController();
   private downloads: NativeDownloads | undefined = undefined;
+  private authHost: NativeAuthHost | undefined = undefined;
+  private speakingMedia: SpeakingMediaHost | undefined = undefined;
   private attached: boolean = false;
   private alive: boolean = false;
   private documentGeneration: number = 0;
@@ -526,6 +536,10 @@ struct Index {
   }
 
   aboutToDisappear(): void {
+    this.speakingMedia?.dispose();
+    this.speakingMedia = undefined;
+    this.authHost?.dispose();
+    this.authHost = undefined;
     this.alive = false;
     this.downloads?.invalidate();
     this.lifecycleGeneration++;
@@ -574,6 +588,7 @@ struct Index {
   }
 
   private invalidateBridge(): void {
+    this.speakingMedia?.invalidate();
     this.bridgeReady = false;
     this.bridgeSequence++;
     if (this.bridgeRetryTimer !== -1) {
@@ -583,6 +598,7 @@ struct Index {
   }
 
   private onForegroundChanged(): void {
+    this.authHost?.onForegroundChanged(this.foreground);
     // @Watch runs synchronously. Even a background/foreground round trip
     // invalidates every earlier permission and Back callback.
     this.lifecycleGeneration++;
@@ -650,6 +666,7 @@ struct Index {
   }
 
   private pageBegin(): void {
+    this.authHost?.invalidate();
     this.downloads?.invalidate();
     this.documentGeneration++;
     this.pageReady = false;
@@ -693,6 +710,10 @@ struct Index {
         { headerKey: 'Accept-Ranges', headerValue: 'bytes' },
         { headerKey: 'Content-Length', headerValue: String(selected.length) }
       ];
+      if (path === 'web/index.html') {
+        headers.push({ headerKey: 'Content-Security-Policy',
+          headerValue: "frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'" });
+      }
       if (selected.contentRange !== '') {
         headers.push({ headerKey: 'Content-Range', headerValue: selected.contentRange });
       }
@@ -803,8 +824,9 @@ struct Index {
   }
 
   private openExternal(destination: string): void {
+    const supportMail: boolean = isSupportMailto(destination);
     if (!this.foreground || !this.pageReady || !this.bridgeReady || !this.isTrustedDocument() ||
-      isAppUrl(destination) || !/^https:\/\/[a-z0-9.-]+(?::[0-9]+)?(?:[/?#]|$)/i.test(destination)) {
+      isAppUrl(destination) || (!supportMail && !/^https:\/\/[a-z0-9.-]+(?::[0-9]+)?(?:[/?#]|$)/i.test(destination))) {
       return;
     }
     const now: number = Date.now();
@@ -815,12 +837,17 @@ struct Index {
     this.lastExternalAt = now;
     this.lastExitBackAt = 0;
     try {
+      if (supportMail) {
+        this.context().startAbility({ action: 'ohos.want.action.sendToData', uri: destination })
+          .catch((_error: BusinessError) => this.toast('未能打开邮件应用，请复制邮箱后发送'));
+        return;
+      }
       this.context().openLink(destination).catch((error: BusinessError) => {
         this.toast('暂时无法打开链接');
         console.warn('Unable to open external link: ' + error.code);
       });
     } catch {
-      this.toast('暂时无法打开链接');
+      this.toast(supportMail ? '未能打开邮件应用，请复制邮箱后发送' : '暂时无法打开链接');
     }
   }
 
@@ -950,6 +977,18 @@ struct Index {
         .mediaPlayGestureAccess(true)
         .onControllerAttached(() => {
           this.attached = true;
+          this.speakingMedia?.dispose();
+          this.speakingMedia = undefined;
+          this.authHost?.dispose();
+          this.authHost = new NativeAuthHost(this.controller,
+            () => this.alive && this.foreground && this.pageReady && this.isTrustedDocument(), () => this.context());
+          if (!this.authHost.attach()) this.authHost = undefined;
+          if (this.authHost !== undefined) {
+            this.speakingMedia = new SpeakingMediaHost(this.controller, () => this.context(),
+              () => this.alive && this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
+              this.authHost.trustedOwnerProvider());
+            if (!this.speakingMedia.attach()) { this.speakingMedia.dispose(); this.speakingMedia = undefined; }
+          }
           this.downloads?.invalidate();
           this.downloads = new NativeDownloads(() => this.context(),
             () => this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),

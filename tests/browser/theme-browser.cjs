@@ -14,16 +14,18 @@ const REPO = repoCandidates.find(candidate => require('node:fs').existsSync(path
 if (!REPO) throw new Error('Set LANTERN_THEME_QA_REPO to the repository containing app/study-app.tsx');
 const repoRequire = createRequire(path.join(REPO, 'package.json'));
 const {chromium} = repoRequire('playwright');
+const {NATIVE_ORIGIN,NATIVE_QA_USER,installNativeAccountFixture,fulfillNativePreview}=repoRequire('./tests/helpers/browser-native-auth.cjs');
 const UI_THEME_ORDER=['paper','crystal','hollow','silk'];
 const UI_THEME_BY_PERSISTED={paper:'day',crystal:'night',hollow:'hollow',silk:'silk'};
-const UI_THEME_META={paper:{name:'奶油柔色'},crystal:{name:'默认夜间'},hollow:{name:'空洞骑士'},silk:{name:'丝之歌'}};
-const EXPECTED_COLORS={paper:['rgb(245, 238, 226)','rgb(37, 43, 38)'],crystal:['rgb(24, 29, 28)','rgb(238, 241, 237)'],hollow:['rgb(13, 20, 32)','rgb(233, 237, 241)'],silk:['rgb(33, 25, 29)','rgb(241, 234, 226)']};
+const UI_THEME_META={paper:{name:'日间'},crystal:{name:'夜间'},hollow:{name:'空洞骑士'},silk:{name:'丝之歌'}};
+const EXPECTED_COLORS={paper:['rgb(244, 241, 233)','rgb(41, 52, 43)'],crystal:['rgb(18, 28, 35)','rgb(228, 239, 240)'],hollow:['rgb(16, 27, 41)','rgb(237, 240, 237)'],silk:['rgb(32, 24, 34)','rgb(242, 233, 228)']};
 
 const MODE=process.argv.includes('--web')?'web':process.env.LANTERN_THEME_QA_MODE||'native';
 assert.ok(['native','web'].includes(MODE),'LANTERN_THEME_QA_MODE must be native or web');
 const PORT = Number(process.env.LANTERN_THEME_QA_PORT || (MODE==='web'?4188:4187));
 assert.ok(Number.isInteger(PORT) && PORT >= 1024 && PORT <= 65535, 'Invalid local QA port');
-const ORIGIN = `http://127.0.0.1:${PORT}`;
+const PREVIEW_ORIGIN = `http://127.0.0.1:${PORT}`;
+const ORIGIN = MODE==='native'?NATIVE_ORIGIN:PREVIEW_ORIGIN;
 let OUT;
 const report = {scope:'Independent navigation scenes and palettes in isolated '+MODE+' frontend QA',mode:MODE,origin:ORIGIN,
   limitations:['Desktop Chrome at four viewport widths is not physical-device or ArkWeb acceptance.', 'Screenshot inspection remains a separate visual review step.'],
@@ -31,7 +33,7 @@ const report = {scope:'Independent navigation scenes and palettes in isolated '+
 let browser, context, page, preview, cleanupPromise;
 let ownsOutput = false;
 const ownerToken = crypto.randomBytes(24).toString('hex');
-const QA_OWNER='synthetic-theme-qa-'+ownerToken;
+let QA_OWNER=MODE==='native'?NATIVE_QA_USER.id:null,authFixture,authUser,nativeAccount;
 let webFixture;
 let mockCalls=[];
 
@@ -62,15 +64,18 @@ async function launchBrowser() {
   report.browser = {executable:executablePath || chromium.executablePath(),playwright:repoRequire('playwright/package.json').version};
   return chromium.launch({...(executablePath ? {executablePath} : {}),headless:true});
 }
+// Explicit remote-learning component mode retains the existing authenticated API
+// persistence regression; the deployed Web page currently keeps this switch off.
 async function prepareWebFixture(){
+ process.env.LANTERN_REVIEW_ROOT=REPO;authFixture=repoRequire('./tests/helpers/product-auth-harness.cjs').environment();authUser=await authFixture.register('themeqa_'+ownerToken.slice(0,12));QA_OWNER=authUser.id;const proof=await authFixture.call('session','GET',{cookie:authUser.cookie,headers:{'X-Lantern-Session-Proof':'2'}});assert.equal(proof.status,200);const verified=await proof.json();assert.equal(verified.user.id,QA_OWNER);assert.equal(verified.session.version,2);assert(verified.session.remainingMs>0);
  const directory=path.join(OUT,'web-fixture');await fs.mkdir(directory);
  const posix=file=>file.replaceAll('\\','/');
  const entry=`import React from ${JSON.stringify(posix(repoRequire.resolve('react')))};
 import {createRoot} from ${JSON.stringify(posix(repoRequire.resolve('react-dom/client')))};
 import StudyApp from ${JSON.stringify(posix(path.join(REPO,'app/study-app.tsx')))};
 import ${JSON.stringify(posix(path.join(REPO,'app/globals.css')))};
-import ${JSON.stringify(posix(path.join(REPO,'app/redesign.css')))};
-createRoot(document.getElementById('root')).render(React.createElement(React.StrictMode,null,React.createElement(StudyApp,{owner:${JSON.stringify(QA_OWNER)}})));
+${['redesign.css','v041-design-theme.css','learn/v041-vocabulary.css','learn/audio-redesign.css','v041-app-redesign.css','learn/legal-pages.css'].map(file=>'import '+JSON.stringify(posix(path.join(REPO,'app',file)))+';').join('\n')}
+createRoot(document.getElementById('root')).render(React.createElement(React.StrictMode,null,React.createElement(StudyApp,{owner:${JSON.stringify(QA_OWNER)},remoteLearningEnabled:true})));
 `;
  await fs.writeFile(path.join(directory,'entry.tsx'),entry,{flag:'wx'});
  await fs.writeFile(path.join(directory,'index.html'),'<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="root"></div><script type="module" src="./entry.tsx"></script></body></html>',{flag:'wx'});
@@ -79,8 +84,8 @@ import tailwind from ${JSON.stringify(pathToFileURL(repoRequire.resolve('@tailwi
 export default {root:${JSON.stringify(directory)},base:'./',publicDir:${JSON.stringify(path.join(REPO,'public'))},plugins:[react()],css:{postcss:{plugins:[tailwind()]}},resolve:{alias:{'@':${JSON.stringify(REPO)}},dedupe:['react','react-dom']},build:{outDir:'dist',emptyOutDir:true}};
 `;
  const configFile=path.join(directory,'vite.config.mjs');await fs.writeFile(configFile,config,{flag:'wx'});
- report.webFixture={syntheticOwner:QA_OWNER,directory,studyAppSha256:crypto.createHash('sha256').update(await fs.readFile(path.join(REPO,'app/study-app.tsx'))).digest('hex'),nativeMode:false,api:'context-local in-memory /api/study mock; no real login or production endpoint'};
- report.limitations.push('Web fixture tests real StudyApp with nativeMode=false and a synthetic owner; authentication, SSR and D1/R2 are not exercised.');
+ report.webFixture={syntheticOwner:QA_OWNER,directory,studyAppSha256:crypto.createHash('sha256').update(await fs.readFile(path.join(REPO,'app/study-app.tsx'))).digest('hex'),nativeMode:false,api:'Actual registration/password verification/session and study/vocabulary routes with synthetic Node SQLite+D1 I/O adapter; cookie kept in test Node process only'};
+ report.limitations.push('Web fixture uses real product registered-cookie/session proof with synthetic SQLite/R2 I/O. Browser routes forward that context cookie only in Node; no real HTTPS, deployed Worker, SSR, SMS or real account claim. Remote learning is explicitly enabled only for this existing API persistence regression; production currently disables it.');
  return{configFile,directory};
 }
 async function startPreview() {
@@ -101,11 +106,11 @@ async function startPreview() {
     preview.once('exit',(code,signal)=>{clearTimeout(timeout);reject(new Error(`Owned Vite preview exited (${code}/${signal}): ${logs}`));});
     preview.once('message',message=>{if(message?.ready && message.pid===preview.pid){clearTimeout(timeout);resolve();}else{clearTimeout(timeout);reject(new Error('Unexpected preview readiness message'));}});
   });
-  const response=await fetch(ORIGIN+'/',{signal:AbortSignal.timeout(10000),redirect:'error'});
+  const response=await fetch(PREVIEW_ORIGIN+'/',{signal:AbortSignal.timeout(10000),redirect:'error'});
   assert.equal(response.status,200,'Owned preview did not return HTML');
   assert.equal(response.headers.get('x-lantern-qa-owner'),ownerToken,'Port belongs to another process; refusing to test it');
   assert.equal(preview.exitCode,null); assert.equal(preview.signalCode,null);
-  report.preview={pid:preview.pid,origin:ORIGIN,ownershipVerified:true,htmlSha256:crypto.createHash('sha256').update(await response.text()).digest('hex')};
+  report.preview={pid:preview.pid,origin:PREVIEW_ORIGIN,ownershipVerified:true,htmlSha256:crypto.createHash('sha256').update(await response.text()).digest('hex')};
 }
 async function stopPreview() {
   if(!preview || preview.exitCode!==null || preview.signalCode!==null || !preview.pid)return;
@@ -140,7 +145,7 @@ async function cleanup() {
         const timeout=setTimeout(()=>reject(new Error('Browser close exceeded 10 seconds')),10000);
         Promise.resolve(browser.close()).then(resolve,reject).finally(()=>clearTimeout(timeout));
       });
-    }finally{await stopPreview();}
+    }finally{try{await stopPreview();}finally{authFixture?.close();}}
   })();
 }
 for (const signal of ['SIGINT','SIGTERM']) process.once(signal,()=>{
@@ -159,37 +164,71 @@ const PALETTES=[...UI_THEME_ORDER];
 let paletteSamples=[];
 async function step(name,action){const began=Date.now();try{const details=await action();report.steps.push({name,status:'passed',elapsedMs:Date.now()-began,...(details===undefined?{}:{details})});console.log(JSON.stringify({step:name,status:'passed'}));}catch(error){report.steps.push({name,status:'failed',elapsedMs:Date.now()-began,error:String(error.stack||error)});throw error;}}
 async function eventually(check,message,timeout=15000){const end=Date.now()+timeout;let last;do{try{const result=await check();if(result)return result;}catch(error){last=error;}await new Promise(resolve=>setTimeout(resolve,100));}while(Date.now()<end);throw new Error(message+(last?': '+last.message:''));}
-async function screenshot(name){const file=path.join(OUT,name+'.png');await page.screenshot({path:file,fullPage:true,animations:'disabled'});report.screenshots.push(file);}
+async function screenshot(name,{fullPage=true}={}){const file=path.join(OUT,name+'.png');await page.screenshot({path:file,fullPage,animations:'disabled'});report.screenshots.push(file);return file;}
+// PR60 moved the Blue Lake artwork to the review page backdrop.
+async function blueLakeViewportScreenshot(){
+ const originalViewport=page.viewportSize();
+ try{
+  await page.setViewportSize({width:390,height:844});await navigate('复习');
+  await page.evaluate(()=>scrollTo({top:0,left:0,behavior:'instant'}));
+  const backdrop=await sceneScreenshotReady('hollow','复习');
+  await accessibleControl(navigation().getByRole('button',{name:'复习',exact:true}));
+  const geometry=await layout('blue-lake-review');
+  const file=await screenshot('hollow-blue-lake-review-viewport-390',{fullPage:false});
+  report.blueLakeViewports??=[];report.blueLakeViewports.push({file,fullPage:false,backdrop,geometry});
+  return{backdrop,geometry};
+ }finally{await page.setViewportSize(originalViewport);await navigate('今日');}
+}
+async function homeViewportScreenshot(id,width,height){
+ const originalViewport=page.viewportSize(),saved=await page.evaluate(()=>({x:scrollX,y:scrollY}));
+ const frames=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ try{
+  await page.setViewportSize({width,height});await page.evaluate(()=>scrollTo({top:0,left:0,behavior:'instant'}));await frames();
+  await eventually(async()=>await page.locator('.workflow-resume .button.primary,.v040-word-action .button.primary').count()>0,'Today primary learning action did not mount');
+  const geometry=await page.evaluate(()=>{
+   const box=e=>{if(!e)return null;const r=e.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height,top:r.top,bottom:r.bottom,left:r.left,right:r.right};};
+   const nav=document.querySelector('.workspace-mobile-nav'),header=document.querySelector('.workspace-topbar');
+   const top=Math.max(0,header?.getBoundingClientRect().bottom??0),bottom=nav&&getComputedStyle(nav).position==='fixed'?Math.min(innerHeight,nav.getBoundingClientRect().top):innerHeight;
+   const actions=[...document.querySelectorAll('.workflow-resume .button.primary,.v040-word-action .button.primary')].filter(e=>e.getClientRects().length&&!e.disabled).map(e=>{const r=e.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return{text:e.textContent.trim(),rect:box(e),reachable:hit===e||e.contains(hit)};});
+   return{viewport:{width:innerWidth,height:innerHeight},scrollX,scrollY,header:box(header),nav:box(nav),usableTop:top,usableBottom:bottom,actions};
+  });
+  assert.equal(geometry.viewport.width,width);assert.equal(geometry.viewport.height,height);assert.equal(geometry.scrollY,0);
+  assert.ok(geometry.actions.some(action=>action.rect.top>=geometry.usableTop-1&&action.rect.bottom<=geometry.usableBottom+1&&action.rect.height>=44&&action.reachable),'No primary learning entry reachable in the initial viewport: '+JSON.stringify(geometry));
+  const file=await screenshot(`today-viewport-${id}-${width}x${height}`,{fullPage:false});
+  report.homeViewports??=[];report.homeViewports.push({file,fullPage:false,theme:id,geometry});return geometry;
+ }finally{await page.setViewportSize(originalViewport);await page.evaluate(saved=>scrollTo({left:saved.x,top:saved.y,behavior:'instant'}),saved);await frames();}
+}
 function webState(){return{owner:QA_OWNER,schemaVersion:2,profile:{name:'Synthetic theme QA',lrGoal:650,speakingGoal:0,examDate:'2026-12-20',dailyMinutes:25,timezone:'Asia/Shanghai',theme:'hollow',weeklyTarget:4,onboarded:true},hasProfile:true,attempts:[],checkins:[],recordings:[],questionMarks:[],resourceTasks:[]};}
 async function freshPage(width){
- if(context)await context.close();const remote=webState();
- context=await browser.newContext({viewport:{width,height:width===1440?1000:900},locale:'zh-CN',timezoneId:'Asia/Shanghai',reducedMotion:'no-preference',serviceWorkers:'block'});
+ if(context)await context.close();if(MODE==='web'){const seeded=await authFixture.call('study','POST',{cookie:authUser.cookie,owner:QA_OWNER,body:{type:'profile',data:webState().profile}});assert.equal(seeded.status,200);}
+ context=await browser.newContext({viewport:{width,height:width===1440?1000:900},locale:'zh-CN',timezoneId:'Asia/Shanghai',reducedMotion:'no-preference',serviceWorkers:'block',deviceScaleFactor:1});
+ if(MODE==='native')nativeAccount=await installNativeAccountFixture(context,{report});
  await context.route('**/*',async route=>{
   const request=route.request(),url=new URL(request.url());
   if((url.protocol==='http:'||url.protocol==='https:')&&url.origin!==ORIGIN){report.blockedExternal.push(url.origin+url.pathname);return route.abort('blockedbyclient');}
-  if(MODE==='web'&&url.pathname==='/api/study'){
-   const row={width,method:request.method(),at:Date.now()};mockCalls.push(row);
-   if(request.method()==='GET')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(remote)});
+  if(MODE==='web'&&['/api/auth/session','/api/study','/api/vocabulary'].includes(url.pathname)){
+   const api=url.pathname==='/api/auth/session'?'session':url.pathname.slice(5),row={width,method:request.method(),api};mockCalls.push(row);
+   const init={cookie:authUser.cookie,owner:request.headers()['x-lantern-owner'],query:url.search,headers:{'X-Lantern-Session-Proof':request.headers()['x-lantern-session-proof']}};
    if(request.method()==='POST'){
-    try{const operation=request.postDataJSON();row.type=operation.type;row.theme=operation.data?.theme;
-    assert.equal(request.headers()['x-lantern-owner'],QA_OWNER,'Web UI must identify the synthetic owner');
-    assert.equal(operation.type,'theme','Palette UI must use the dedicated theme operation');assert.deepEqual(Object.keys(operation.data),['theme'],'Theme operation must not send the entire profile');assert.ok(PALETTES.includes(operation.data.theme));
-    const before=structuredClone(remote);remote.profile={...remote.profile,theme:operation.data.theme};remote.hasProfile=true;assert.deepEqual({...remote,profile:{...remote.profile,theme:before.profile.theme},hasProfile:before.hasProfile},before,'Theme update changed other learning state');return route.fulfill({status:200,contentType:'application/json',body:'{"ok":true}'});
-    }catch(error){report.mockErrors||=[];report.mockErrors.push(String(error.stack||error));return route.fulfill({status:422,contentType:'application/json',body:JSON.stringify({error:'Synthetic QA contract failure'})});}
+    const operation=request.postDataJSON();row.type=operation.type;row.theme=operation.data?.theme;
+    assert.equal(init.owner,QA_OWNER,'Only independently registered/session-verified owner can sync');
+    assert.equal(operation.type,'theme','Palette UI must use the dedicated theme operation');assert.deepEqual(Object.keys(operation.data),['theme']);assert.ok(PALETTES.includes(operation.data.theme));init.body=operation;
    }
-   return route.fulfill({status:405,body:'Unsupported QA API method'});
+   const before=api==='study'&&request.method()==='POST'?await(await authFixture.call('study','GET',{cookie:authUser.cookie,owner:QA_OWNER})).json():null;
+   const response=await authFixture.call(api,request.method(),init);assert.equal(response.status,200,'Real authenticated product route must succeed');
+   if(before){const after=await(await authFixture.call('study','GET',{cookie:authUser.cookie,owner:QA_OWNER})).json();assert.deepEqual({...after,profile:{...after.profile,theme:before.profile.theme}},before,'Theme write changed other server facts');}
+   return route.fulfill({status:response.status,contentType:'application/json',body:await response.text()});
   }
-  if(MODE==='web'&&url.pathname==='/api/vocabulary')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({owner:QA_OWNER,events:[]})});
-  return route.continue();
+  return MODE==='native'?fulfillNativePreview(route,PREVIEW_ORIGIN):route.continue();
  });
- if(MODE==='native')await context.addInitScript(data=>{if(!localStorage.getItem('lantern-theme-qa-seeded')){const {owner,hasProfile,...localData}=data;localStorage.setItem('lantern-v1-device',JSON.stringify({data:localData}));localStorage.setItem('lantern-theme-qa-seeded','true');}},webState());
+ if(MODE==='native')await context.addInitScript(data=>{if(!localStorage.getItem('lantern-theme-qa-seeded')){const {owner,hasProfile,...localData}=data;localStorage.setItem('lantern-v1-'+owner,JSON.stringify({data:localData}));localStorage.setItem('lantern-theme-qa-seeded','true');}},webState());
  page=await context.newPage();page.setDefaultTimeout(15000);
  page.on('pageerror',error=>report.pageErrors.push(String(error)));
  page.on('console',msg=>{if(msg.type()==='error')report.consoleErrors.push(msg.text().slice(0,1000));});
  page.on('response',response=>{if(response.status()>=400&&response.url().startsWith(ORIGIN)&&!response.url().endsWith('/favicon.ico'))report.httpErrors.push({url:response.url(),status:response.status()});});
  await page.goto(ORIGIN+'/',{waitUntil:'networkidle'});assert.equal(new URL(page.url()).origin,ORIGIN);await ready();
 }
-async function ready(){await eventually(()=>page.getByRole('button',{name:'开始今日练习',exact:true}).isEnabled(),'Today screen did not become ready');}
+async function ready(){await page.getByRole('heading',{name:'今日学习',exact:true}).waitFor();if(MODE==='native')nativeAccount.assertVerified(page);await eventually(()=>page.locator('.v045-today-task').filter({has:page.getByText('听读练习',{exact:true})}).getByRole('button',{name:/^(选择题型|继续)$/}).isEnabled(),'Today screen did not become ready');}
 // Current workspace contract. The complete former atlas suite is retained in
 // theme-atlas-legacy.cjs; it is not claimed as passing against the redesigned UI.
 const NAV=['今日','单词','练习','复习','进度','资料'];
@@ -198,10 +237,84 @@ function navigation(){return page.getByRole('navigation',{name:page.viewportSize
 async function navigate(label){const button=navigation().getByRole('button',{name:label,exact:true});await button.click();await eventually(()=>button.getAttribute('aria-current').then(value=>value==='page'),'Current navigation is not '+label);await page.locator('#workspace-main').waitFor({state:'visible'});}
 async function layout(label){const dimensions=await page.evaluate(()=>({width:innerWidth,document:document.documentElement.scrollWidth,body:document.body.scrollWidth}));assert.ok(dimensions.document<=dimensions.width+1,label+' document overflow '+JSON.stringify(dimensions));assert.ok(dimensions.body<=dimensions.width+1,label+' body overflow '+JSON.stringify(dimensions));return dimensions;}
 async function accessibleControl(locator){await locator.scrollIntoViewIfNeeded();const result=await locator.evaluate(el=>{const r=el.getBoundingClientRect();const top=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:innerWidth,height:innerHeight,hit:top===el||el.contains(top)};});assert.ok(result.left>=-1&&result.right<=result.width+1&&result.top>=-1&&result.bottom<=result.height+1,'Control outside viewport '+JSON.stringify(result));assert.equal(result.hit,true,'Control covered '+JSON.stringify(result));return result;}
-async function facts(){return page.evaluate(()=>{const rows={};for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);let value;try{value=JSON.parse(localStorage.getItem(key));}catch{continue;}if(key==='lantern-v1-device'||key.startsWith('lantern-v1-owner:')){const data=value.data;if(data){rows[key]={...data,profile:{...data.profile,theme:undefined}};}}if(key.startsWith('lantern-vocab-v1:'))rows[key]=value;}return rows;});}
-async function imageInfo(locator){await locator.scrollIntoViewIfNeeded();await eventually(()=>locator.evaluate(img=>img.complete&&img.naturalWidth>0),'Image failed to decode');return locator.evaluate(async img=>{const r=img.getBoundingClientRect();const bitmap=await createImageBitmap(await(await fetch(img.currentSrc)).blob());const pixelWidth=bitmap.width;bitmap.close();return{pixelWidth,path:new URL(img.currentSrc).pathname,width:img.naturalWidth,height:img.naturalHeight,displayWidth:r.width,displayHeight:r.height,fit:getComputedStyle(img).objectFit};});}
-async function artwork(id){await navigate('今日');const brand=page.locator(page.viewportSize().width<1024?'.workspace-mobile-brand':'.workspace-brand');await accessibleControl(brand);const scenes=page.locator('.phase2-scene-window');if(id==='hollow'){assert.equal(await brand.locator('.phase2-brand-mark').count(),1);const icon=await imageInfo(brand.locator('img'));assert.match(icon.path,/\/phase2-theme\/knight-icon-(48|64|96|256)\.png$/);assert.equal(await scenes.count(),1);const image=await imageInfo(scenes.locator('img'));assert.match(image.path,/\/phase2-theme\/blue-lake-hd-[123]x\.webp$/);assert.equal(image.fit,'contain');assert.ok(Math.abs(image.displayWidth/image.displayHeight-image.width/image.height)<.01,'Complete scene aspect ratio changed');assert.ok(image.pixelWidth>=448);const art=await page.locator('.lantern-workspace').evaluate(el=>getComputedStyle(el,'::before').backgroundImage);assert.match(art,/rain-city-hd/);return{icon,image};}assert.equal(await scenes.count(),0,'Other themes must not inherit Hollow Knight scene');assert.equal(await brand.locator('.phase2-brand-mark').count(),0);assert.equal(await page.locator('.workspace-day-grid .phase2-brand-mark').count(),0);return{gameSceneAbsent:true};}
-async function choose(id,method){await page.locator('.workspace-topbar').getByRole('button',{name:'外观与偏好',exact:true}).click();const group=page.getByRole('group',{name:'界面主题',exact:true});await group.waitFor();assert.equal(await group.getByRole('button').count(),4);const button=group.getByRole('button',{name:new RegExp('^'+UI_THEME_META[id].name+'，')});await accessibleControl(button);if(method==='preview')await button.locator('.ui-theme-preview').click();else if(method==='caption')await button.locator('.ui-theme-caption-name').click();else{await button.focus();await page.keyboard.press(method==='space'?'Space':'Enter');}await eventually(()=>button.getAttribute('aria-pressed').then(value=>value==='true'),'Theme selection did not become pressed');assert.equal(await group.locator('button[aria-pressed="true"]').count(),1);await rootTheme(id);await accessibleControl(button);return layout('theme-picker-'+id);}
+function collectLearningFacts(storage = globalThis.localStorage) {
+ const rows = {};
+ const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+ const exactKeys = (value, keys) => record(value) && Object.keys(value).sort().join(',') === keys;
+ for (let i = 0; i < storage.length; i++) {
+  const key = storage.key(i);
+  let value;
+  try { value = JSON.parse(storage.getItem(key)); } catch { continue; }
+  if (key.startsWith('lantern-v1-')) {
+   if (key.includes(':op:')) {
+    // StudyOperation and enqueue/saveTheme persist one owner-scoped operation.
+    // Exempt only the complete theme-only schema; retain every other journal row.
+    const themeOnly = exactKeys(value, 'data,id,owner,type') && value.type === 'theme'
+     && typeof value.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value.id)
+     && (value.owner === null || (typeof value.owner === 'string' && value.owner.length > 0))
+     && key === 'lantern-v1-' + (value.owner === null ? 'device' : value.owner) + ':op:' + value.id
+     && exactKeys(value.data, 'theme') && ['paper', 'crystal', 'hollow', 'silk'].includes(value.data.theme);
+    if (!themeOnly) rows[key] = value;
+    continue;
+   }
+   const data = value?.data;
+   if (data) rows[key] = {...data, profile: {...data.profile, theme: undefined}};
+  }
+  if (key.startsWith('lantern-vocab-v1:')) rows[key] = value;
+ }
+ return rows;
+}
+async function facts(){return page.evaluate(collectLearningFacts);}
+const SCENE_VIEWS={'今日':'today','单词':'vocabulary','练习':'train','复习':'review','进度':'progress','资料':'resources'};
+function expectedScenePaths(id,label,width){
+ const hd=name=>[1,2,3].map(scale=>`/phase2-theme/${name}-hd-${scale}x.webp`);
+ const maps={hollow:{'今日':hd('dirtmouth'),'单词':[`/images/maps/greenpath${width<=520?'-mobile':''}.webp`],'练习':hd('rain-city'),'复习':hd('blue-lake'),'进度':hd('crystal-peak'),'资料':['/design-r1/hollow-station.webp']},
+  silk:{'今日':['/design-r1/silk-home.webp'],'单词':['/design-r1/silk-forest.webp'],'练习':[`/images/maps/greymoor${width<=520?'-mobile':''}.webp`],'复习':['/design-r1/silk-calm.webp'],'进度':['/images/themes-v3/snowy-ridge-wide.webp'],'资料':['/design-r1/silk-library.webp']}};
+ return maps[id]?.[label]||[];
+}
+// Read the rendered pseudo-element, not a test-injected image or CSS variable.
+// The current design uses a per-tab backdrop and hides duplicate scene windows.
+async function sceneScreenshotReady(id,label='今日'){
+ const expected=expectedScenePaths(id,label,page.viewportSize().width);
+ const detail=await page.locator('.v040-workspace-shell').evaluate(async(shell,{expected,label})=>{
+  const style=getComputedStyle(shell,'::before'),foreground=getComputedStyle(document.querySelector('#workspace-main'));
+  const paths=[...style.backgroundImage.matchAll(/url\(["']?([^"')]+)["']?\)/g)].map(match=>new URL(match[1],location.href).pathname);
+  const requested=performance.getEntriesByType('resource').map(entry=>new URL(entry.name,location.href).pathname);
+  const loaded=[];
+  // The CSS must already have requested the selected 1x asset (DPR is fixed at 1).
+  for(const source of expected.slice(0,1)){
+   if(!requested.includes(source))throw Error('Rendered backdrop was not requested: '+source);
+   const image=new Image();image.src=source;await image.decode();
+   loaded.push({source,width:image.naturalWidth,height:image.naturalHeight});
+  }
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  const visibleWindows=[...document.querySelectorAll('.workspace-main .v041-theme-scene')].filter(el=>el.getClientRects().length).length;
+  return{view:shell.dataset.v040View,paths,loaded,content:style.content,display:style.display,position:style.position,pointerEvents:style.pointerEvents,background:style.backgroundImage,backgroundSize:style.backgroundSize,foreground:foreground.color,fontSize:parseFloat(foreground.fontSize),visibleWindows,dpr:devicePixelRatio};
+ },{expected,label});
+ assert.equal(detail.view,SCENE_VIEWS[label]);assert.equal(detail.dpr,1);
+ assert.deepEqual(detail.paths,expected,'Exact accepted '+id+'/'+label+' backdrop mapping');
+ if(expected.length){
+  assert.equal(detail.content,'""');assert.notEqual(detail.display,'none');assert.equal(detail.position,'fixed');assert.equal(detail.pointerEvents,'none');
+  assert.match(detail.background,/linear-gradient/,'Backdrop keeps its readability shade');
+  assert.equal(detail.loaded.length,1);assert(detail.loaded.every(image=>image.width>0&&image.height>0));
+  assert(detail.fontSize>=12);assert.notEqual(detail.foreground,'rgba(0, 0, 0, 0)');
+  if(['今日','复习','资料'].includes(label))assert.equal(detail.visibleWindows,0,'Overview must not duplicate the background in decorative windows');
+ }else{assert.equal(detail.loaded.length,0);assert.equal(await page.locator('[data-scene-source]').count(),0,'Neutral themes must not inherit game scenes');}
+ return detail;
+}
+async function formalSurface(dialog){
+ const surface=await dialog.evaluate(el=>{const style=getComputedStyle(el);return{background:style.backgroundColor,foreground:style.color,image:style.backgroundImage};});
+ const channels=surface.background.match(/[\d.]+/g).map(Number);
+ assert(channels.length===3||(channels.length===4&&channels[3]===1),'Formal question surface must stay opaque: '+JSON.stringify(surface));
+ assert.equal(surface.image,'none','Artwork must stay outside the formal question surface');assert.notEqual(surface.background,surface.foreground);
+ return surface;
+}
+async function artwork(id){
+ await navigate('今日');const brand=page.locator(page.viewportSize().width<1024?'.workspace-mobile-brand':'.workspace-brand');
+ await accessibleControl(brand);assert.equal(await brand.locator('svg').count(),1);assert.equal(await brand.locator('img').count(),0,'Current brand is the shared Flame mark');
+ return{backdrop:await sceneScreenshotReady(id)};
+}
+async function choose(id,method){await page.getByRole('button',{name:'打开个人信息与设置',exact:true}).click();await page.getByRole('button',{name:/^外观主题/}).click();const group=page.getByRole('group',{name:'界面主题',exact:true});await group.waitFor();assert.equal(await group.getByRole('button').count(),4);const button=group.locator('[data-theme-choice="'+id+'"]');await accessibleControl(button);if(method==='preview')await button.locator('.v041-theme-thumb').click();else if(method==='caption')await button.locator('.v041-theme-option-name').click();else{await button.focus();await page.keyboard.press(method==='space'?'Space':'Enter');}await eventually(()=>button.getAttribute('aria-pressed').then(value=>value==='true'),'Theme selection did not become pressed');assert.equal(await group.locator('button[aria-pressed="true"]').count(),1);await rootTheme(id);await accessibleControl(button);return layout('theme-picker-'+id);}
 async function colors(id,width){const sample=await page.locator('body').evaluate(el=>({background:getComputedStyle(el).backgroundColor,foreground:getComputedStyle(el).color}));assert.deepEqual([sample.background,sample.foreground],EXPECTED_COLORS[id],'Rendered palette must match accepted workspace colors');paletteSamples.push({id,width,...sample});return sample;}
 (async()=>{
  await allocateOutput();await startPreview();browser=await launchBrowser();
@@ -210,10 +323,12 @@ async function colors(id,width){const sample=await page.locator('body').evaluate
   for(const [index,id] of PALETTES.entries()){
    const before=await facts();
    await step(`${width}px: ${id} selection via ${['preview','caption','enter','space'][index]} persists without changing learning facts`,async()=>{await choose(id,['preview','caption','enter','space'][index]);const sample=await colors(id,width);await page.reload({waitUntil:'networkidle'});await ready();await rootTheme(id);assert.deepEqual(await colors(id,width),sample);assert.deepEqual(await facts(),before,'Theme switch changed learning facts or goals');return{sample,layout:await layout('reloaded-'+id)};});
-   await step(`${width}px: ${id} artwork and all six route layouts`,async()=>{const art=await artwork(id);const layouts=[];for(const label of NAV){await navigate(label);await accessibleControl(navigation().getByRole('button',{name:label,exact:true}));await rootTheme(id);layouts.push({label,...await layout(id+'-'+label)});}await navigate('今日');await screenshot(`${id}-${width}`);assert.deepEqual(await facts(),before);return{art,layouts};});
-   await step(`${width}px: ${id} real practice dialog remains readable and closes without writing an answer`,async()=>{await page.getByRole('button',{name:'开始今日练习',exact:true}).click();const dialog=page.getByRole('dialog').filter({has:page.locator('.practice-footer')});await dialog.waitFor({state:'visible'});assert.ok(await dialog.getByRole('radio').count()>=3);const control=dialog.getByRole('button',{name:'确认答案',exact:true});assert.equal(await control.isDisabled(),true);await accessibleControl(control);const dimensions=await layout('practice-'+id);await screenshot(`practice-${id}-${width}`);await page.keyboard.press('Escape');const confirmation=page.getByRole('dialog',{name:'先结束这组练习？',exact:true});await confirmation.waitFor({state:'visible'});await confirmation.getByRole('button',{name:'保存并返回',exact:true}).click();await eventually(()=>page.getByRole('dialog').count().then(n=>n===0),'Practice did not close');assert.deepEqual(await facts(),before);return dimensions;});
+   await step(`${width}px: ${id} artwork and all six route layouts`,async()=>{const art=await artwork(id);const layouts=[];for(const label of NAV){await navigate(label);await accessibleControl(navigation().getByRole('button',{name:label,exact:true}));await rootTheme(id);const backdrop=await sceneScreenshotReady(id,label);await page.evaluate(()=>scrollTo({top:0,left:0,behavior:'instant'}));const file=await screenshot(`${id}-${width}-${SCENE_VIEWS[label]}-viewport`,{fullPage:false});layouts.push({label,...await layout(id+'-'+label),backdrop,screenshot:file});}await navigate('今日');const screenshotArt=await sceneScreenshotReady(id);await screenshot(`${id}-${width}`);const homeViewport=width===390?await homeViewportScreenshot(id,390,844):id==='paper'&&width===320?await homeViewportScreenshot(id,320,640):null;const lakeViewport=id==='hollow'&&width===390?await blueLakeViewportScreenshot():null;assert.deepEqual(await facts(),before);return{art,layouts,screenshotArt,homeViewport,lakeViewport};});
+   // Dialog unmount precedes Practice's asynchronous history.back cleanup.
+   // Wait for its exact prior entry before a later reload can start.
+   await step(`${width}px: ${id} real practice dialog remains readable and closes without writing an answer`,async()=>{await navigate('练习');const returnTarget=await page.evaluate(()=>({href:location.href,state:JSON.stringify(history.state)}));await page.getByRole('button',{name:/^阅读 · Part 5 · (开始|继续)$/}).click();const dialog=page.getByRole('dialog').filter({has:page.locator('.practice-footer')});await dialog.waitFor({state:'visible'});assert.ok(await dialog.getByRole('radio').count()>=3);const control=dialog.getByRole('button',{name:'确认答案',exact:true});assert.equal(await control.isDisabled(),true);await accessibleControl(control);const dimensions={...await layout('practice-'+id),surface:await formalSurface(dialog)};await screenshot(`practice-${id}-${width}`);await page.keyboard.press('Escape');const confirmation=page.getByRole('dialog',{name:'暂时退出练习？',exact:true});await confirmation.waitFor({state:'visible'});await confirmation.getByRole('button',{name:'保存并返回',exact:true}).click();await eventually(()=>page.getByRole('dialog').count().then(n=>n===0),'Practice did not close');await page.waitForFunction(target=>location.href===target.href&&!history.state?.lanternPracticeView&&JSON.stringify(history.state)===target.state,returnTarget);assert.deepEqual(await facts(),before);return dimensions;});
   }
-  await step(`${width}px: four distinct rendered palettes and reduced motion respected`,async()=>{const samples=paletteSamples.filter(x=>x.width===width);assert.equal(new Set(samples.map(x=>x.background)).size,4);assert.equal(new Set(samples.map(x=>x.foreground)).size,4);await page.emulateMedia({reducedMotion:'reduce'});const running=await page.evaluate(()=>document.getAnimations().filter(a=>a.playState==='running'&&Number(a.effect?.getComputedTiming().duration)>1).map(a=>({name:a.animationName,duration:a.effect.getComputedTiming().duration})));assert.deepEqual(running,[],'Reduced-motion preference left a long running animation');await page.reload({waitUntil:'networkidle'});await ready();await rootTheme('silk');await page.emulateMedia({reducedMotion:'no-preference'});return{palettes:4,reducedMotion:true};});
+  await step(`${width}px: four distinct rendered palettes and reduced motion respected`,async()=>{const samples=paletteSamples.filter(x=>x.width===width);assert.equal(new Set(samples.map(x=>x.background)).size,4);assert.equal(new Set(samples.map(x=>x.foreground)).size,4);await page.emulateMedia({reducedMotion:'reduce'});const running=await page.evaluate(()=>document.getAnimations().filter(a=>a.playState==='running'&&Number(a.effect?.getComputedTiming().duration)>1).map(a=>({name:a.animationName,duration:a.effect.getComputedTiming().duration})));assert.deepEqual(running,[],'Reduced-motion preference left a long running animation');await page.reload({waitUntil:'domcontentloaded'});await ready();await rootTheme('silk');await page.emulateMedia({reducedMotion:'no-preference'});return{palettes:4,reducedMotion:true};});
  }
  await step('no unhandled errors, failed local requests or external traffic',async()=>{assert.deepEqual(report.pageErrors,[]);assert.deepEqual(report.mockErrors||[],[]);assert.deepEqual(report.consoleErrors,[]);assert.deepEqual(report.httpErrors,[]);assert.deepEqual(report.blockedExternal,[]);if(MODE==='web'){assert.ok(mockCalls.some(x=>x.method==='GET'));for(const id of PALETTES)assert.ok(mockCalls.some(x=>x.method==='POST'&&x.type==='theme'&&x.theme===id),'Missing owner-scoped theme write '+id);}return{mockCalls:mockCalls.length};});report.status='passed';
 })().catch(async error=>{report.status='failed';report.error=String(error.stack||error);if(page&&!page.isClosed()){try{await screenshot('failure');report.lastUrl=page.url();report.lastBody=(await page.locator('body').innerText()).slice(0,15000);}catch{}}process.exitCode=1;}).finally(async()=>{try{await cleanup();}catch(error){report.status='failed';report.cleanupError=String(error.stack||error);process.exitCode=1;}report.finishedAt=new Date().toISOString();report.outputDirectory=OUT;report.mockCalls=mockCalls;report.paletteSamples=paletteSamples;if(ownsOutput)await fs.writeFile(path.join(OUT,'result.json'),JSON.stringify(report,null,2),{flag:'wx'});console.log(JSON.stringify({mode:MODE,status:report.status,passed:report.steps.filter(x=>x.status==='passed').length,failed:report.steps.filter(x=>x.status==='failed').length,output:OUT,error:report.error?.split('\n').slice(0,3).join('\n')}));if(report.cleanupError)setTimeout(()=>process.exit(1),100).unref();});

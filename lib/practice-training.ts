@@ -45,8 +45,18 @@ export function validatePracticeTraining(value:unknown,unitIds:readonly string[]
    if(!unlocked&&(item.step!=='answer'||item.dictationDraft!==''||item.checkedDraft!==null||item.dictationSkipped||item.listeningStatus!=='pending'))throw Error('practice-training-locked');
   }
   if(item.audio!==null){const a=item.audio;if(!plain(a))throw Error('practice-audio-corrupt');strict(a,['trackId','sourceId','kind','capability','positionSeconds','rate']);
-   if(typeof a.trackId!=='string'||!(/^(question|sentence:\d{1,3})$/).test(a.trackId)||typeof a.sourceId!=='string'||a.sourceId.length<1||a.sourceId.length>300||(a.kind==='tts'?!/^tts:[a-f0-9]{64}$/.test(a.sourceId):!/^bundled:[a-f0-9]{20}\.mp3:([a-f0-9]{64}|[a-f0-9]{20}\.mp3)$/.test(a.sourceId))||!['bundled','tts'].includes(String(a.kind))||a.capability!==(a.kind==='tts'?'sentence':'time')||typeof a.positionSeconds!=='number'||!Number.isFinite(a.positionSeconds)||a.positionSeconds<0||a.positionSeconds>21600||![0.7,0.85,1,1.15].includes(Number(a.rate))||a.kind==='tts'&&a.positionSeconds!==0)throw Error('practice-audio-corrupt');
-   if(queue){if(a.trackId!=='question'&&!queue.some((q,index)=>practiceUnitId(q)===item.unitId&&materialHash(q)===item.materialHash&&applied[index]))throw Error('practice-training-audio-locked');const q=queue.find(q=>practiceUnitId(q)===item.unitId&&materialHash(q)===item.materialHash)!;const lines=trainingText(q).split(/(?<=[.!?])\s+/).filter(Boolean);if(a.trackId!=='question'&&Number(a.trackId.slice(9))>=lines.length)throw Error('practice-audio-track-missing');}
+   if(typeof a.trackId!=='string'||!(/^(question|sentence:\d{1,3}|prompt:[A-Za-z0-9_-]{1,120})$/).test(a.trackId)||typeof a.sourceId!=='string'||a.sourceId.length<1||a.sourceId.length>300||(a.kind==='tts'?!/^tts:[a-f0-9]{64}$/.test(a.sourceId):!(/^bundled:[a-f0-9]{20}\.mp3:([a-f0-9]{64}|[a-f0-9]{20}\.mp3)$/.test(a.sourceId)||/^natural:v040-(?:kokoro|natural)-[a-f0-9]{12}:[a-f0-9]{64}:[a-f0-9]{64}$/.test(a.sourceId)))||!['bundled','tts'].includes(String(a.kind))||a.capability!==(a.kind==='tts'?'sentence':'time')||typeof a.positionSeconds!=='number'||!Number.isFinite(a.positionSeconds)||a.positionSeconds<0||a.positionSeconds>21600||![0.7,0.85,1,1.15].includes(Number(a.rate))||a.kind==='tts'&&a.positionSeconds!==0)throw Error('practice-audio-corrupt');
+   if(a.trackId.startsWith('prompt:')&&!queue)throw Error('practice-audio-track-unverified');
+   if(queue){
+    if(a.trackId.startsWith('prompt:')){
+     const qid=a.trackId.slice(7),index=queue.findIndex(q=>q.id===qid&&practiceUnitId(q)===item.unitId&&materialHash(q)===item.materialHash);
+     if(index<0||index>cursor||!questionIds.includes(qid))throw Error('practice-audio-track-missing');
+    }else{
+     if(a.trackId!=='question'&&!queue.some((q,index)=>practiceUnitId(q)===item.unitId&&materialHash(q)===item.materialHash&&applied[index]))throw Error('practice-training-audio-locked');
+     const q=queue.find(q=>practiceUnitId(q)===item.unitId&&materialHash(q)===item.materialHash)!;const lines=trainingText(q).split(/(?<=[.!?])\s+/).filter(Boolean);
+     if(a.trackId!=='question'&&Number(a.trackId.slice(9))>=lines.length)throw Error('practice-audio-track-missing');
+    }
+   }
   }
  }
  if(queue&&Number(value.viewIndex)<questionIds.length&&!applied[Number(value.viewIndex)]){const q=queue[Number(value.viewIndex)],item=value.materials.find(m=>m.unitId===practiceUnitId(q)&&m.materialHash===materialHash(q));if(item?.step!=='answer')throw Error('practice-training-locked');}

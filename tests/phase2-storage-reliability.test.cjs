@@ -6,14 +6,12 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const {webcrypto} = require('node:crypto');
-const root = path.resolve(__dirname, '..');
+const root = process.env.LANTERN_REVIEW_ROOT || path.resolve(__dirname, '..');
 const ts = require(path.join(root, 'node_modules/typescript'));
 const tick = () => new Promise(resolve => setImmediate(resolve));
-function load(file, imports = {}, globals = {}) {
-  const exports = {};
-  const code = ts.transpileModule(fs.readFileSync(path.join(root, file), 'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-  vm.runInNewContext(code, {exports,require(name){assert.ok(name in imports, 'Unexpected import: '+name);return imports[name];},Date,Intl,Map,Set,structuredClone,crypto:webcrypto,Blob,URL,AbortController,queueMicrotask,...globals}, {filename:file});
-  return exports;
+const {createSourceLoader}=require(path.join(root,'tests/helpers/actual-source-loader.cjs'));
+function load(file,imports={},globals={}){
+ return createSourceLoader({root,imports,globals:{queueMicrotask,...globals}}).load(file);
 }
 const model = load('lib/study-model.ts');
 const backup = load('lib/study-backup.ts', {'./study-model':model,zod:require(path.join(root,'node_modules/zod'))});

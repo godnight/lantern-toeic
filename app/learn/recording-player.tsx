@@ -1,4 +1,5 @@
 'use client';
+import {useLearningAccess} from '@/lib/learning-access';
 import {useEffect,useRef,useState} from 'react';
 import type {SyntheticEvent} from 'react';
 import {subscribeNativeState} from '@/lib/native-host';
@@ -17,6 +18,7 @@ const mediaMessage=(code:number|null)=>mediaMessages[code??0]||'音频加载或�
 
 /** The parent owns this URL. Media state never releases or replaces its bytes. */
 export function RecordingPlayer({src,autoPlay=false,className,label='回听录音',onRetry,downloadName}:{src:string;autoPlay?:boolean;className?:string;label?:string;onRetry?:()=>Promise<void>|void;downloadName?:string}){
+ const accountAccess=useLearningAccess();
  const audioRef=useRef<HTMLAudioElement|null>(null),sequence=useRef(0),owner=useRef<Lease|null>(null);
  const [attempt,setAttempt]=useState(0);
  const [rate,setRate]=useState(1);
@@ -35,7 +37,7 @@ export function RecordingPlayer({src,autoPlay=false,className,label='回听录�
    lease.timer=null;if(valid()&&lease.phase==='reading'){recordingMediaTrace('timeout',src,lease.audio);update('unavailable','暂未读取到可播放的音频信息，原因尚未确定。原录音保留，可重新读取。');}
   },10000);
  };
- const current=(event:SyntheticEvent<HTMLAudioElement>)=>valid()&&event.currentTarget===audioRef.current?event.currentTarget:null;
+ const current=(event:SyntheticEvent<HTMLAudioElement>)=>{if(!accountAccess()){event.currentTarget.pause();return null;}return valid()&&event.currentTarget===audioRef.current?event.currentTarget:null;};
  useEffect(()=>{
   lease.live=true;lease.audio=audioRef.current;recordingMediaTrace('reading',src,lease.audio);wait();
   const globalStop=()=>{if(valid())recordingMediaTrace('global-stop',src,lease.audio);};

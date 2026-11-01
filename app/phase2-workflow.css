@@ -10,3 +10,18 @@
 .practice-config{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-block:1rem}
 .practice-lookup-dialog .vocab-redesign{min-height:0}
 @media(max-width:440px){.practice-config{grid-template-columns:1fr}.practice-continuation .button{flex:1 1 40%}}
+
+/* Real decoded audio positions; layout keeps the slider usable on narrow screens. */
+.audio-player:has(.audio-seek){flex-wrap:wrap;}
+.audio-seek{display:flex;flex-direction:column;gap:4px;min-width:120px;flex:1 1 160px;}
+.audio-seek input{width:100%;min-height:44px;accent-color:var(--primary);}
+
+
+/* Practice listening keeps playback state internal; only actions belong here. */
+.practice-dialog .practice-audio-player{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:10px 12px;padding:14px;margin:14px 0;}
+.practice-dialog .practice-audio-player>.play-circle{width:44px;height:44px;min-width:44px;}
+.practice-dialog .practice-audio-player>.audio-meta{min-width:0;}
+.practice-dialog .practice-audio-player .audio-meta b{line-height:1.55;overflow-wrap:anywhere;}
+.practice-dialog .practice-audio-player>.speed-select{margin:0;width:68px!important;}
+.practice-dialog .practice-audio-restart{grid-column:2/-1;justify-self:start;font-size:13px;padding:2px 0;}
+.practice-dialog .practice-audio-player [role=alert]{color:var(--bad);}

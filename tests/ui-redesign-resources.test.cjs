@@ -28,6 +28,7 @@ function harness(initial={}){
   useMemo(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps))slots[i]={deps,value:fn()};return slots[i].value;},
   useEffect(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps)){const old=slots[i];slots[i]={deps};pending.push(()=>{old?.cleanup?.();slots[i].cleanup=fn();});}}
  };
+ react.useLayoutEffect=react.useEffect;
  const jsx=(type,props)=>({type,props});
  const icons=Object.fromEntries(['ArrowLeft','ArrowUpRight','BookOpen','Check','ChevronRight','Clock','Headphones','Info','NotebookPen'].map(name=>[name,'icon-'+name]));
  const component=load('app/learn/resource-library.tsx',{react,'react/jsx-runtime':{jsx,jsxs:jsx},'lucide-react':icons,'@/content/resources-v2':catalog,'@/lib/native-host':{registerNativeBack(fn,priority){assert.equal(priority,20);backHandler=fn;return()=>{if(backHandler===fn)backHandler=undefined;};}}},{window},sourceRoot).default;
