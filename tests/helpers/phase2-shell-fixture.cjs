@@ -8,13 +8,14 @@ exports.workflowShellFixture = function workflowShellFixture(react, selection) {
    const key=JSON.stringify([options.nativeMode,options.owner]);
    const [view,setView]=react.useState(null);
    const session=view?.key===key?view.session:null;
-   return {ready:options.ready,error:'',busy:false,session,sessions:session?[session]:[],pendingSettlements:[],refresh:async()=>{},
+   return {scopeKey:key,ready:options.ready,error:'',busy:false,session,sessions:session?[session]:[],pendingSettlements:[],refresh:async()=>{},
     start(queue,start){const id='fixture-session-'+key;setView({key,session:{id,queue,cursor:0,status:'active',chainId:start.chainId||id,unitIds:start.unitIds,steps:queue.map(q=>({status:'unanswered',choice:null,attempt:null})),settlement:{status:'draft',draft:{minutes:1,load:'刚好',note:''},payload:null}}});return Promise.resolve({status:'started',sessionId:id});},
     closeView(){setView(null);return Promise.resolve({status:'closed',sessionId:session?.id||''});},
     resume:async()=>({status:'restored'}),leave:async()=>({status:'updated'}),submit:async()=>({status:'applied'}),next:async()=>({status:'updated'}),updateSettlementDraft:async()=>({status:'updated'}),settle:async()=>({status:'applied'})};
   }},
   '@/lib/practice-selection':selection,
   './learn/practice-settlement':{default:'PracticeSettlement'},
+  './learn/learning-plan':{LearningPlanDialog:'LearningPlanDialog'},
   './learn/interactive-example':{InteractiveExample:'InteractiveExample'},
   './learn/vocabulary-plan':{VocabularyPlan:'VocabularyPlan',TodayVocabularyTask:'TodayVocabularyTask',CandidateAction:'CandidateAction'}
  };

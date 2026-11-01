@@ -1,0 +1,271 @@
+{
+  "schemaVersion": 1,
+  "checkedDate": "2026-10-24",
+  "source": "English Wiktionary contributors",
+  "license": "CC-BY-SA-4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "processing": "仅本次27个缺失教学词及resume已知同形异义核对；精确词头，限English Pronunciation，完整IPA去重，不生成、翻译或拼接发音。",
+  "entries": {
+    "additionally": {
+      "phonetics": [],
+      "revision": 93675172,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=additionally&oldid=93675172#English",
+      "sourceSha256": "a3b471548e267a6d4c07acaca7c1cde17b2b0f3b797bcc5addd7de4eb4246cc1",
+      "note": "该固定版本的English Pronunciation未提供IPA；保持缺失，不由拼写或词缀生成。"
+    },
+    "affordable": {
+      "phonetics": [
+        "/əˈfɔː(ɹ).də.bəl/",
+        "/əˈfɔɹ.də.bəl/"
+      ],
+      "revision": 93549007,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=affordable&oldid=93549007#English",
+      "sourceSha256": "35a3a3273c7c50716c1207bb37e23f01d7dc6a4b168d76257af4004beb4ce2f4"
+    },
+    "by-law": {
+      "phonetics": [
+        "/ˈbaɪ.lɔː/"
+      ],
+      "revision": 85292883,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=by-law&oldid=85292883#English",
+      "sourceSha256": "229f9b215b241e1abae7115fc6a099b9169278dd9b227ed574ecb44b4ba5b87a"
+    },
+    "café": {
+      "phonetics": [
+        "/ˌkæˈfeɪ/",
+        "/ˈkæfeɪ/"
+      ],
+      "revision": 93122905,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=caf%C3%A9&oldid=93122905#English",
+      "sourceSha256": "173878979cec77a4d3590b19793116e1a92bdd1791ce83b15c51ea7651383bef"
+    },
+    "consistently": {
+      "phonetics": [
+        "/kənˈsɪstəntli/"
+      ],
+      "revision": 90998600,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=consistently&oldid=90998600#English",
+      "sourceSha256": "7674ff5604cca0282738a61744a525c075fc33d0fe08684eba956c4cf9e01b01"
+    },
+    "conveniently": {
+      "phonetics": [
+        "/kənˈvinjəntli/",
+        "/kənˈviːnɪəntli/"
+      ],
+      "revision": 90560842,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=conveniently&oldid=90560842#English",
+      "sourceSha256": "50f5e6ab55848000bbc3c538bc3cbff493452184f227e33903e8e1a277ad1458"
+    },
+    "download": {
+      "phonetics": [
+        "/ˈdaʊnˌləʊd/",
+        "/ˌdaʊnˈləʊd/",
+        "/ˈdaʊnˌloʊd/"
+      ],
+      "revision": 93690590,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=download&oldid=93690590#English",
+      "sourceSha256": "5e4a8b75f75568a9be4ea3897b7538b4d4ebba99c2b1f84dedfed862a928d5c4"
+    },
+    "e-book": {
+      "phonetics": [
+        "/ˈiːbʊk/"
+      ],
+      "revision": 93691270,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=e-book&oldid=93691270#English",
+      "sourceSha256": "f292ab8829057094c59c304ce0809e484634c32977b3a1633bbf75c59395da50"
+    },
+    "electronically": {
+      "phonetics": [
+        "/ˌɛl.ɛkˈtɹɒn.ɪk.li/",
+        "/ˌɛl.ɪkˈtɹɒn.ɪk.li/",
+        "/ɪˌlɛkˈtɹɒn.ɪk.li/",
+        "/ɪˌlɛkˈtɹɑ.nɪk.li/",
+        "/ˌi.lɛkˈtɹɑ.nɪk.li/"
+      ],
+      "revision": 93525408,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=electronically&oldid=93525408#English",
+      "sourceSha256": "15c9882e7b1e6e40d1abc5e2d9877bd2d1268100ad749f1aa4416863a7f6ab81"
+    },
+    "environmentally": {
+      "phonetics": [],
+      "revision": 90567634,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=environmentally&oldid=90567634#English",
+      "sourceSha256": "e92a7282512a6069174bdad18cccd42ca74fd6b23ed61b08b63bd665d4deafc3",
+      "note": "该固定版本的English Pronunciation未提供IPA；保持缺失，不由拼写或词缀生成。"
+    },
+    "firework": {
+      "phonetics": [
+        "/ˈfaɪɚˌwɚk/"
+      ],
+      "revision": 92431974,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=firework&oldid=92431974#English",
+      "sourceSha256": "fe08d2fb9267c320c20785dabdb58a7e80fb573932e133e3b572dfbe563e5b66"
+    },
+    "freelance": {
+      "phonetics": [
+        "/ˈfɹiːlɑːns/",
+        "/ˈfɹiˌlæns/"
+      ],
+      "revision": 93695677,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=freelance&oldid=93695677#English",
+      "sourceSha256": "408cdf1bc5895229313a747df950bfbc713dad366697d53486d18c7f9528b9e7"
+    },
+    "laptop": {
+      "phonetics": [
+        "/ˈlæp.tɒp/",
+        "/ˈlæp.tɑp/"
+      ],
+      "revision": 93704352,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=laptop&oldid=93704352#English",
+      "sourceSha256": "d680fae9f26fe9302c335224c88d12152c8c0004e713a4f59c5983c7f9596169"
+    },
+    "login": {
+      "phonetics": [
+        "/ˈlɒɡ.ɪn/"
+      ],
+      "revision": 93552296,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=login&oldid=93552296#English",
+      "sourceSha256": "08a37589433ea8773258a8b65ccd2b3ccf18100a76262663f58ddff3e1f1c57d"
+    },
+    "online": {
+      "phonetics": [
+        "/ˈɒnlaɪn/",
+        "/ˈɔnlɑjn/",
+        "/ˈɑnlaɪn/",
+        "/ˈɔnlaɪn/",
+        "[ˈɒnlaɪn]",
+        "/ˈɔnlɑen/",
+        "[ˈɔ̟nlɑe̯n]",
+        "/ˈɔnlʌɪn/",
+        "/ɒnˈlaɪn/",
+        "/ɔnˈlɑjn/",
+        "/ɑnˈlaɪn/",
+        "/ɔnˈlaɪn/",
+        "[ɒnˈlaɪn]",
+        "/ɔnˈlɑen/",
+        "[ɔ̟nˈlɑe̯n]",
+        "/ɔnˈlʌɪn/"
+      ],
+      "revision": 93711739,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=online&oldid=93711739#English",
+      "sourceSha256": "2a8ee42ec040b61599fea7831c582632ee942f48ffb1a319af3191daedb5d96a"
+    },
+    "professionally": {
+      "phonetics": [],
+      "revision": 90594653,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=professionally&oldid=90594653#English",
+      "sourceSha256": "2e0f24e6118e632064c2cd5e590c46ed4806270a3a4abb341b34a03334cecda3",
+      "note": "该固定版本的English Pronunciation未提供IPA；保持缺失，不由拼写或词缀生成。"
+    },
+    "resume": {
+      "phonetics": [
+        "/ˈɹɛz.(j)ʊˌmeɪ/",
+        "/ɹɪˈzjuː.meɪ/",
+        "/ˈɹɛz.ə.meɪ/",
+        "/ˈɹɛ.sʊ.meɪ/"
+      ],
+      "revision": 93719176,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=resume&oldid=93719176#Etymology_2",
+      "sourceSha256": "e5d8cf578bf4b5b896f59f1cd9d386d76869014cfb6b48baec20ff0dfeac9cb3",
+      "partOfSpeech": "noun",
+      "overrideWordIds": [
+        "v-resume"
+      ],
+      "note": "仅English Etymology 2的CV名词；排除动词读法及/-ʃʊ-/片段，词卡需核对名词/简历语义。"
+    },
+    "résumé": {
+      "phonetics": [
+        "/ˈɹɛz.(j)ʊˌmeɪ/",
+        "/ɹɪˈzjuː.meɪ/",
+        "/ˈɹɛz.ə.meɪ/"
+      ],
+      "revision": 93139241,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=r%C3%A9sum%C3%A9&oldid=93139241#English",
+      "sourceSha256": "ea02b0705f39d33af55e6d1b4fce8790ceb917b8f4155fbd9244cde00b8a19c5"
+    },
+    "significantly": {
+      "phonetics": [
+        "/sɪɡˈnɪf.ɪ.kənt.li/"
+      ],
+      "revision": 92639844,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=significantly&oldid=92639844#English",
+      "sourceSha256": "2bd4aae43a200bde803118cfa63d8796cb9c2c3b676eed1aa7875eead853f5ee"
+    },
+    "surprisingly": {
+      "phonetics": [
+        "/səˈpɹaɪzɪŋli/"
+      ],
+      "revision": 93776410,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=surprisingly&oldid=93776410#English",
+      "sourceSha256": "bc91b4fb9d1b52cab19577ed02db937705dda871d2add2b233bc3133d247e517"
+    },
+    "takeover": {
+      "phonetics": [],
+      "revision": 93547974,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=takeover&oldid=93547974#English",
+      "sourceSha256": "3dfce032fb36652362fde175f633aa60966a39c547ad4ede5e455f6dbda8da8a",
+      "note": "该固定版本的English Pronunciation未提供IPA；保持缺失，不由拼写或词缀生成。"
+    },
+    "traditionally": {
+      "phonetics": [
+        "/tɹəˈdɪʃ.ə.nə.li/",
+        "/tɹəˈdɪʃ.nə.li/",
+        "/tɹəˈdɪʃ.ən.li/",
+        "[tɹəˈdɪʃ.n̩.li]"
+      ],
+      "revision": 93549471,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=traditionally&oldid=93549471#English",
+      "sourceSha256": "3f5911155b17730df91109b33d75cee121c5018f5a701e55864667649d1066e6"
+    },
+    "urgently": {
+      "phonetics": [],
+      "revision": 91422863,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=urgently&oldid=91422863#English",
+      "sourceSha256": "85eff0d79e7896cdec605a95fe72881e0232c6234847ec32e8eebf1f9f1c5ea7",
+      "note": "该固定版本的English Pronunciation未提供IPA；保持缺失，不由拼写或词缀生成。"
+    },
+    "webpage": {
+      "phonetics": [],
+      "revision": 85288741,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=webpage&oldid=85288741#English",
+      "sourceSha256": "e8aefde523d8e4beedada36aaad8f060c29fd538e4a668859dd21d480c2c9257",
+      "note": "该固定版本的English Pronunciation未提供IPA；保持缺失，不由拼写或词缀生成。"
+    },
+    "website": {
+      "phonetics": [
+        "/ˈwɛb(ˌ)saɪt/"
+      ],
+      "revision": 93476781,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=website&oldid=93476781#English",
+      "sourceSha256": "471991c50c2a99b6e24b0a91ad490e35da41cbf219ce2d53b60df61033091f19"
+    },
+    "willingness": {
+      "phonetics": [
+        "/ˈwɪlɪŋnəs/"
+      ],
+      "revision": 93790151,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=willingness&oldid=93790151#English",
+      "sourceSha256": "712c34ac12ab1db760221778c093097a0445f5d952e9f7676f0eba2e950f6274"
+    },
+    "workforce": {
+      "phonetics": [
+        "/ˈwɝk.foɹs/",
+        "[ˈwɚk.fo̞ɹs]",
+        "/ˈwɜːk.fɔːs/",
+        "/ˈwɝk.fo(ː)ɹs/",
+        "/ˈwɜːk.foəs/"
+      ],
+      "revision": 93567838,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=workforce&oldid=93567838#English",
+      "sourceSha256": "e616e3f0090c923cf2beacf7deb5da62d0532056e1f06441609cae1888c72570"
+    },
+    "workplace": {
+      "phonetics": [
+        "/ˈwɝkˌpleɪs/"
+      ],
+      "revision": 93604039,
+      "sourceUrl": "https://en.wiktionary.org/w/index.php?title=workplace&oldid=93604039#English",
+      "sourceSha256": "057bd32594f56611c175b1061a88ad8adddd2e7bcf99eac6b6bdc9e83d833807"
+    }
+  }
+}

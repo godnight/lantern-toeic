@@ -3,9 +3,10 @@ import {useEffect,useRef} from 'react';
 import {createId} from './study-model';
 
 /** Root dialogs consume one browser Back before their underlying workspace page. */
-export function useWorkspaceDialogHistory(kind:string|null,onClose:(kind:string)=>void){
+export function useWorkspaceDialogHistory(kind:string|null,onClose:(kind:string)=>void,beforeClose?:(kind:string)=>boolean){
  const current=useRef<{kind:string;token:string}|null>(null);
  const close=useRef(onClose);close.current=onClose;
+ const guard=useRef(beforeClose);guard.current=beforeClose;
  const consumed=useRef(false);
  useEffect(()=>{
   if(!kind){
@@ -27,7 +28,12 @@ export function useWorkspaceDialogHistory(kind:string|null,onClose:(kind:string)
    if(consumed.current){consumed.current=false;event.stopImmediatePropagation();return;}
    const active=current.current;
    if(!active||event.state?.lanternWorkspaceDialog===active.token)return;
-   event.stopImmediatePropagation();current.current=null;close.current(active.kind);
+   event.stopImmediatePropagation();
+   if(guard.current&&!guard.current(active.kind)){
+    // A dirty/pending editor owns this Back. Restore only this local dialog entry.
+    window.history.pushState({...event.state,lanternWorkspaceDialog:active.token},'');return;
+   }
+   current.current=null;close.current(active.kind);
   };
   window.addEventListener('popstate',pop,true);
   return()=>window.removeEventListener('popstate',pop,true);

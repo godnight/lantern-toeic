@@ -5,6 +5,26 @@ const {environment, ORIGIN, PASSWORD, COOKIE_NAME, plain, sha} = require('./help
 const backup = events => ({kind: 'lantern-vocabulary', schemaVersion: 1, events});
 const review = (overrides = {}) => ({id: 'shared-vocabulary-id', wordId: 'schedule', createdAt: '2026-01-01T00:00:00.000Z', type: 'review', grade: 'remembered', ...overrides});
 
+test('seven-character passwords fail, eight-character accounts work, and existing v1 credentials remain compatible', async t => {
+  const e = environment();t.after(() => e.close());
+  const rejected = await e.call('register', 'POST', {body: {username: 'minimum_user', password: 'short7!'}});
+  assert.equal(rejected.status, 400);assert.equal(e.rows('auth_users').length, 0);assert.equal(e.rows('auth_rate_limits').length, 0);
+  const eight = await e.register('minimum_user', 'eight888');
+  const login = await e.call('login', 'POST', {body: {username: 'minimum_user', password: 'eight888'}});
+  assert.equal(login.status, 200);assert.equal((await login.json()).user.id, eight.id);
+
+  // Synthetic pre-existing credential in the unchanged v1 format, independent
+  // of the current hashPassword implementation. No migration/reset is needed.
+  const legacyId = 'usr_' + crypto.randomUUID(), salt = Buffer.alloc(16, 0xab);
+  const key = crypto.scryptSync(PASSWORD, salt, 64, {N: 16384, r: 8, p: 5, maxmem: 64 * 1024 * 1024});
+  const legacyHash = '$lantern$scrypt$v=1$n=16384,r=8,p=5,k=64$' + salt.toString('hex') + '$' + key.toString('hex');
+  e.sqlite.prepare('INSERT INTO auth_users(id,username,created_at) VALUES(?,?,?)').run(legacyId, 'legacy_user', Date.now());
+  e.sqlite.prepare('INSERT INTO auth_password_credentials(user_id,password_hash) VALUES(?,?)').run(legacyId, legacyHash);
+  const legacyLogin = await e.call('login', 'POST', {body: {username: 'legacy_user', password: PASSWORD}});
+  assert.equal(legacyLogin.status, 200);assert.equal((await legacyLogin.json()).user.id, legacyId);
+  assert.equal(e.rows('auth_password_credentials').find(row => row.user_id === legacyId).password_hash, legacyHash);
+});
+
 test('registration uses random salted scrypt hashes and one case-insensitive stable identity', async t => {
   const e = environment();t.after(() => e.close());
   const alice = await e.register('  ALIce  '), bob = await e.register('bob', PASSWORD);

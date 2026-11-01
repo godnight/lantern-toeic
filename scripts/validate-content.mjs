@@ -13,8 +13,10 @@ assert.equal(gate.sourceFreezeSha256,'85c2a316aa5419505c0ec2c70e1c356404b1002e28
 const require=createRequire(import.meta.url),ts=require(process.env.LANTERN_DEPENDENCY_ROOT?process.env.LANTERN_DEPENDENCY_ROOT+'/node_modules/typescript':'typescript');
 const {createSourceLoader}=require('../tests/helpers/actual-source-loader.cjs');
 const catalogLoader=createSourceLoader({root:fileURLToPath(new URL('..',import.meta.url)),allowedFiles:[
- 'lib/domain-command.ts','lib/question-catalog.ts','lib/listening50-catalog.ts','lib/question-audio-bindings-v041.ts',
+ 'lib/domain-command.ts','lib/question-catalog.ts','lib/question-catalog-admission.ts','lib/practice-catalog-identity.ts','lib/listening50-catalog.ts','lib/question-audio-bindings-v041.ts',
  'lib/question-audio-dispatch-v041.ts','lib/listening150-package.ts','lib/listening150-catalog.ts','lib/natural-audio-catalog-index.ts','content/natural-audio-catalog-v1.json',
+ 'lib/listening150-package-admission.ts','lib/natural-audio-catalog-admission.ts','lib/prepare-listening150-package.ts','lib/prepare-natural-audio-catalog.ts',
+ 'lib/prepare-study-content.ts','lib/prepare-vocabulary-catalog.ts','lib/cooperative-task.ts','lib/preparation-timing.ts',
  'content/questions-v041-listening150.json','content/questions-v041-listening150-text-image-gates.json','content/questions-v041-listening150-media.json',
  'content/questions.json','content/questions-v040-b03-r2.json','content/questions-v040-b03-r2-gates.json','content/questions-v040-b03-r2-media.json','content/questions-v040-catalog-r1-snapshot.json',
  'content/questions-v041-listening50.json','content/questions-v041-listening50-text-image-gates.json','content/questions-v041-listening50-media.json'

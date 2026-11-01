@@ -36,13 +36,22 @@ function reject(code:string):never{throw Error('listening150-'+code);}
 function freeze<T>(value:T):T{if(value&&typeof value==='object'){Object.values(value).forEach(freeze);Object.freeze(value);}return value;}
 
 /** Additional package only. This never relaxes old 50/legacy or natural-media admission. */
-export function admitListening150Package(input:Listening150Input,pins:Listening150Pins){
+export function admitListening150PackageSteps(input:Listening150Input,pins:Listening150Pins){
  const value=JSON.parse(JSON.stringify(input)) as Listening150Input,policy=JSON.parse(JSON.stringify(pins)) as Listening150Pins;
+ return validateListening150Steps(value,policy);
+}
+function* validateListening150Steps(value:Listening150Input,policy:Listening150Pins){
+ yield;
  const {questions:rows,gate,media}=value,index=compiledNaturalAudioCatalog;
  if(!index||!nonempty(policy.sourceVersion)||!nonempty(policy.unitPrefix)||!/^\/[a-z0-9-]+\/$/.test(policy.imagePathPrefix)||
   ![policy.packageManifestSha256,policy.sourceQuestionsSha256,policy.questionsCanonicalSha256,policy.gateCanonicalSha256,
     policy.mediaCanonicalSha256,policy.combined313CanonicalSha256].every(hex))reject('sealed-pins-missing');
- if(hash(rows)!==policy.questionsCanonicalSha256||hash(gate)!==policy.gateCanonicalSha256||hash(media)!==policy.mediaCanonicalSha256)reject('sealed-content-changed');
+ if(hash(rows)!==policy.questionsCanonicalSha256)reject('sealed-content-changed');
+ yield;
+ if(hash(gate)!==policy.gateCanonicalSha256)reject('sealed-content-changed');
+ yield;
+ if(hash(media)!==policy.mediaCanonicalSha256)reject('sealed-content-changed');
+ yield;
  if(!Array.isArray(rows)||rows.length!==150||new Set(rows.map(q=>q.id)).size!==150||rows.some(q=>!/^v041-l200-p[1-4]-/.test(q.id)))reject('question-count-or-identity');
  if(gate.schemaVersion!==1||gate.sourceVersion!==policy.sourceVersion||gate.packageManifestSha256!==policy.packageManifestSha256||
   gate.sourceQuestionsSha256!==policy.sourceQuestionsSha256||gate.runtimeQuestionsCanonicalSha256!==policy.questionsCanonicalSha256||
@@ -71,6 +80,7 @@ export function admitListening150Package(input:Listening150Input,pins:Listening1
   tracks++;return freeze({...a,text:track.text,label:track.label,naturalOnly:true as const});
  };
  for(const unit of media.units){
+  yield;
   const members=rows.filter(q=>(q.groupId||q.id)===unit.materialId);
   if(seenMaterials.has(unit.materialId)||!members.length||unit.unitId!==policy.unitPrefix+':'+unit.materialId||
     !packIds.includes(unit.packId)||unit.contentVersion!==policy.sourceVersion||unit.sourceQuestionsSha256!==policy.sourceQuestionsSha256||
@@ -81,6 +91,7 @@ export function admitListening150Package(input:Listening150Input,pins:Listening1
   seenMaterials.add(unit.materialId);const body=audio(unit.body,unit,'body');
   if(unit.part>=3&&!exact(unit.questionTracks.map(q=>q.qid),unit.questionIds))reject('question-track-order');
   for(const q of members){
+   yield;
    const g=gates.get(q.id);
    if(!g||g.part!==q.part||g.materialId!==unit.materialId||g.contextHash!==unit.contextHash||g.sourceVersion!==policy.sourceVersion||
     g.textReviewStatus!=='PASS'||!hex(g.textReviewSha256)||!hex(g.questionCanonicalSha256)||!hex(g.materialCanonicalSha256)||
@@ -102,3 +113,9 @@ export function admitListening150Package(input:Listening150Input,pins:Listening1
   stats:Object.freeze({questions:150,materials:102,bodyTracks:102,questionTracks:72,imageCount:42}),
   getAudio:(qid:string)=>bindings.get(qid)??null});
 }
+
+/** Existing server and pure-call API runs precisely the same complete checks. */
+export function admitListening150Package(input:Listening150Input,pins:Listening150Pins){
+ const steps=admitListening150PackageSteps(input,pins);let next=steps.next();while(!next.done)next=steps.next();return next.value;
+}
+export type Listening150Admission=ReturnType<typeof admitListening150Package>;

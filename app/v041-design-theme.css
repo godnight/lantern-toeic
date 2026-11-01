@@ -60,6 +60,9 @@ body[data-ui-theme="silk"] :is(.thin-progress [data-slot="progress-indicator"],.
   .v041-theme-scene--home>img,.v041-theme-scene--dirtmouth>img{object-fit:contain;}
   .v041-theme-thumb{height:112px;}
 }
+@media(min-width:768px) and (max-width:1023px){
+  .v041-theme-scene--home>img{object-fit:cover;}
+}
 @media(max-width:360px){
   .v041-theme-chooser.ui-theme-chooser{gap:10px;}
   .v041-theme-option-name{padding:10px;gap:5px;}

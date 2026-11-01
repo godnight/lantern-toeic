@@ -38,12 +38,12 @@ test('usernames share one ASCII lowercase key and reject confusables/hidden char
 });
 
 test('password policy measures Unicode code points and preserves whitespace', () => {
-  for (const value of ['a'.repeat(15), 'a'.repeat(128), '😀'.repeat(15), '😀'.repeat(128),
-    ' '.repeat(15), '  Synthetic spaces  ', '合成学习口令没有真实凭证仅用于测试']) {
+  for (const value of ['a'.repeat(8), 'a'.repeat(15), 'a'.repeat(128), '😀'.repeat(8), '😀'.repeat(15), '😀'.repeat(128),
+    ' '.repeat(8), '  Synthetic spaces  ', '合成学习口令没有真实凭证仅用于测试']) {
     assert.equal(credential.validatePassword(value).ok, true, value.length);
   }
-  for (const value of [undefined, null, {}, 15, '', 'a'.repeat(14), 'a'.repeat(129),
-    '😀'.repeat(14), '😀'.repeat(129), 'a'.repeat(14) + '\0', 'a'.repeat(15) + '\ud800',
+  for (const value of [undefined, null, {}, 15, '', 'a'.repeat(7), 'a'.repeat(129),
+    '😀'.repeat(7), '😀'.repeat(129), 'a'.repeat(14) + '\0', 'a'.repeat(15) + '\ud800',
     'a'.repeat(15) + '\udfff']) {
     const result = credential.validatePassword(value);
     assert.equal(result.ok, false);

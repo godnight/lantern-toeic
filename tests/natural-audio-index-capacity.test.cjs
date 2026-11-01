@@ -6,10 +6,8 @@ const {createRequire}=require('node:module');
 const root=path.resolve(process.env.LANTERN_REVIEW_ROOT||path.resolve(__dirname,'..')),req=createRequire(path.join(root,'package.json'));
 const ts=req('typescript'),{createSourceLoader}=require(path.join(root,'tests/helpers/actual-source-loader.cjs'));
 const baseline=JSON.parse(fs.readFileSync(path.join(root,'content/natural-audio-catalog-v1.json'),'utf8'));
-const domain=createSourceLoader({root}).load('lib/domain-command.ts');
-const code=ts.transpileModule(fs.readFileSync(path.join(root,'lib/natural-audio-catalog-index.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;
 const clone=value=>JSON.parse(JSON.stringify(value)),bytes=value=>Buffer.byteLength(JSON.stringify(value),'utf8');
-function load(payload){const exports={};vm.runInNewContext(code,{exports,require(name){if(name==='../content/natural-audio-catalog-v1.json')return {__esModule:true,default:payload};if(name==='./domain-command')return domain;throw Error('Unexpected actual index dependency '+name);},TextEncoder,JSON,Object,Array,Number,Set,Error},{filename:'actual-natural-audio-catalog-index.ts'});return exports;}
+function load(payload){return createSourceLoader({root,imports:{'../content/natural-audio-catalog-v1.json':{__esModule:true,default:payload}}}).load('lib/natural-audio-catalog-index.ts');}
 function padded(size,template=baseline){const input=clone(template);input.catalogId='';const overhead=bytes(input);assert(size>=overhead,'Actual baseline already exceeds requested boundary');input.catalogId='x'.repeat(size-overhead);assert.equal(bytes(input),size);return input;}
 function accepted(input){const result=load(input);assert.equal(result.compiledNaturalAudioCatalogError,null);assert.ok(result.compiledNaturalAudioCatalog);assert.equal(Object.isFrozen(result.compiledNaturalAudioCatalog),true);return result.compiledNaturalAudioCatalog;}
 function rejected(input,pattern){const result=load(input);assert.equal(result.compiledNaturalAudioCatalog,null);assert.match(result.compiledNaturalAudioCatalogError,pattern);}

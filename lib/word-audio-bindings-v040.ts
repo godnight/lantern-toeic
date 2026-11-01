@@ -9,9 +9,25 @@ export type WordAudioSelection={audioKey:string;materialId:string;segmentId:stri
 export type WordAudioSnapshot=Pick<Word,'id'|'word'|'pos'|'meaning'|'example'|'translation'>;
 export type WordAudioBinding={wordId:string;slot:'headword'|'example';textSha256:string;snapshotContextSha256:string;requestContextHash?:string;mp3Sha256?:string;packId?:string;audio:WordAudioSelection;privatePracticeEligible:boolean;formalAllowed:boolean;publishAllowed:boolean;humanListeningPerformed:boolean;validatedLocale:unknown};
 type BindingTable={schemaVersion:number;packId:string;bindings:WordAudioBinding[];currentBindings?:WordAudioBinding[];globalPronunciationHoldKeys:string[]};
-const data=input as unknown as BindingTable;
+const freeze=<T>(value:T):T=>{if(value&&typeof value==='object'){Object.values(value).forEach(freeze);Object.freeze(value);}return value;};
+const data=freeze(input) as unknown as BindingTable;
 export const isPrivatePronunciationHold=(value:string)=>data.globalPronunciationHoldKeys.includes(pronunciationHoldKey(value));
-export function wordAudioSnapshotContext(word:WordAudioSnapshot):string{return canonicalHash(canonicalJson({word:word.word,pos:word.pos,meaning:word.meaning,example:word.example,translation:word.translation}));}
+type SnapshotHashes={context?:string;headword?:string;example?:string};
+const immutableSnapshotHashes=new WeakMap<object,SnapshotHashes>();
+function snapshotHashes(word:WordAudioSnapshot):SnapshotHashes|undefined{
+ const known=immutableSnapshotHashes.get(word);if(known)return known;
+ if(!Object.isFrozen(word)||!['id','word','pos','meaning','example','translation'].every(key=>{const field=Object.getOwnPropertyDescriptor(word,key);return !!field&&'value'in field&&typeof field.value==='string';}))return undefined;
+ const hashes:SnapshotHashes={};immutableSnapshotHashes.set(word,hashes);return hashes;
+}
+export function wordAudioSnapshotContext(word:WordAudioSnapshot):string{
+ const hashes=snapshotHashes(word);if(hashes?.context!==undefined)return hashes.context;
+ const context=canonicalHash(canonicalJson({word:word.word,pos:word.pos,meaning:word.meaning,example:word.example,translation:word.translation}));
+ if(hashes)hashes.context=context;return context;
+}
+function textDigest(word:WordAudioSnapshot,slot:'headword'|'example'):string{
+ const hashes=snapshotHashes(word);if(hashes?.[slot]!==undefined)return hashes[slot]!;
+ const digest=canonicalHash(slot==='headword'?word.word:word.example);if(hashes)hashes[slot]=digest;return digest;
+}
 const eligible=(row:WordAudioBinding)=>row.privatePracticeEligible===true&&row.formalAllowed===false&&row.publishAllowed===false&&row.humanListeningPerformed===false&&row.validatedLocale===null;
 const key=(wordId:string,slot:string,textSha256:string,snapshotContextSha256:string)=>[wordId,slot,textSha256,snapshotContextSha256].join('\u0000');
 function index(rows:WordAudioBinding[]):Map<string,WordAudioBinding[]>{const result=new Map<string,WordAudioBinding[]>();for(const row of rows){const id=key(row.wordId,row.slot,row.textSha256,row.snapshotContextSha256);const old=result.get(id);if(old)old.push(row);else result.set(id,[row]);}return result;}
@@ -34,7 +50,7 @@ function binding(wordId:string,slot:'headword'|'example',textSha256:string,snaps
 }
 /** Static compilation authority, independent of downloaded/resident shards. */
 export function getCurrentWordAudioBindingForSnapshot(word:WordAudioSnapshot,slot:'headword'|'example'):WordAudioBinding|null{
-  const chosen=binding(word.id,slot,canonicalHash(slot==='headword'?word.word:word.example),wordAudioSnapshotContext(word));
+  const chosen=binding(word.id,slot,textDigest(word,slot),wordAudioSnapshotContext(word));
   if(!chosen?.current)return null;
   if(isPrivatePronunciationHold(word.word)&&(pronunciationHoldKey(word.word)!=='resume'||!compiledCvWordException(chosen.packId,chosen.row,word)))return null;
   return chosen.row;
@@ -45,7 +61,7 @@ export function getCurrentWordAudioBindingDigest(word:WordAudioSnapshot,slot:'he
 /** Explicit recovery of shipped selectors; current preferences never erase
  * the old context/profile/source route used by an existing playback receipt. */
 export function getHistoricalWordAudioBindingForSnapshot(word:WordAudioSnapshot,slot:'headword'|'example'):WordAudioSelection|null{
-  const chosen=legacyBinding(word.id,slot,canonicalHash(slot==='headword'?word.word:word.example),wordAudioSnapshotContext(word));if(!chosen)return null;
+  const chosen=legacyBinding(word.id,slot,textDigest(word,slot),wordAudioSnapshotContext(word));if(!chosen)return null;
   if(isPrivatePronunciationHold(word.word)&&(pronunciationHoldKey(word.word)!=='resume'||!compiledCvWordException(chosen.packId,chosen.row,word)))return null;
   return {...chosen.row.audio,packId:chosen.packId,contextHash:chosen.row.requestContextHash};
 }
@@ -55,7 +71,7 @@ export function getWordAudioBinding(wordId:string,slot:'headword'|'example',text
   return chosen.current?{...chosen.row.audio,packId:chosen.packId,contextHash:chosen.row.requestContextHash}:chosen.row.audio;
 }
 export function getWordAudioBindingForSnapshot(word:WordAudioSnapshot,slot:'headword'|'example'):WordAudioSelection|null{
-  const chosen=binding(word.id,slot,canonicalHash(slot==='headword'?word.word:word.example),wordAudioSnapshotContext(word));if(!chosen)return null;
+  const chosen=binding(word.id,slot,textDigest(word,slot),wordAudioSnapshotContext(word));if(!chosen)return null;
   if(isPrivatePronunciationHold(word.word)&&(pronunciationHoldKey(word.word)!=='resume'||!compiledCvWordException(chosen.packId,chosen.row,word)))return null;
   return chosen.current?{...chosen.row.audio,packId:chosen.packId,contextHash:chosen.row.requestContextHash}:chosen.row.audio;
 }

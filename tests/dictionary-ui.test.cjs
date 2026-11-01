@@ -6,8 +6,9 @@ const ts=require(path.join(root,'node_modules/typescript'));
 const componentFile=process.env.LANTERN_SEARCH_COMPONENT||path.join(root,'app/learn/vocabulary-library.tsx');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function load(file,imports={},globals={}){
+ imports={...require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root),...imports};
  const exports={};const code=ts.transpileModule(fs.readFileSync(file==='app/learn/vocabulary-library.tsx'?componentFile:path.join(root,file),'utf8'),{fileName:file,compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
- vm.runInNewContext(code,{exports,require:name=>{if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals}).resolve(name,file);return imports[name];},Date,Map,Set,Intl,Error,crypto:crypto.webcrypto,setTimeout,clearTimeout,...globals},{filename:file});return exports;
+ vm.runInNewContext(code,{exports,require:name=>{if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals,permitLearningAccess:true}).resolve(name,file);return imports[name];},Date,Map,Set,Intl,Error,crypto:crypto.webcrypto,setTimeout,clearTimeout,...globals},{filename:file});return exports;
 }
 const study=load('lib/study-model.ts'),vocab=load('lib/vocabulary-model.ts',{'./study-model':study}),dict=load('lib/dictionary-model.ts',{'./vocabulary-model':vocab});
 const sourceEntry={id:'dict-0123456789abcdef0123',word:'foobarquux',phonetics:[],forms:['foobarquuxed'],senses:[{pos:'noun',meaning:'字典首义'},{pos:'verb',meaning:'预订座位独特'}]};

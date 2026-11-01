@@ -14,6 +14,9 @@ export type TodayDashboardProps = {
   wordSummary: string;
   reviewSummary: string;
   practiceSummary?: string;
+  practiceLabel?: string;
+  pendingPracticeCount?: number;
+  onPracticeRecords?: () => void;
   onOpenPlan: () => void;
   onOpenPractice: () => void;
   onOpenReview: () => void;
@@ -23,10 +26,10 @@ export type TodayDashboardProps = {
 
 /** Presentation only. The parent supplies projections and the existing workflow action. */
 export function TodayDashboard({theme='paper',dateLabel,wordTask,wordSummary,reviewSummary,
-  practiceSummary='按专项选择练习',onOpenPlan,onOpenPractice,onOpenReview,
+  practiceSummary='按专项选择练习',practiceLabel='选择题型',pendingPracticeCount=0,onPracticeRecords,onOpenPlan,onOpenPractice,onOpenReview,
   disabled=false,notices}:TodayDashboardProps) {
   const tasks=[
-    {key:'practice',icon:Headphones,title:'听读练习',summary:practiceSummary,label:'选择题型',onClick:onOpenPractice},
+    {key:'practice',icon:Headphones,title:'听读练习',summary:practiceSummary,label:practiceLabel,onClick:onOpenPractice},
     {key:'review',icon:RotateCcw,title:'今日复习',summary:reviewSummary,label:'查看复习',onClick:onOpenReview},
   ];
   return <div className="v040-page v040-today" data-v040-page="today">
@@ -37,7 +40,7 @@ export function TodayDashboard({theme='paper',dateLabel,wordTask,wordSummary,rev
       <div className="v040-section-heading"><h2 id="v040-tasks-title">今日安排</h2></div>
       <div className="v040-task-list v045-today-tasks">{tasks.map(task=><div className="v040-task-row v045-today-task" key={task.key}>
         <span className="v040-task-icon" aria-hidden="true"><task.icon size={22}/></span>
-        <div className="v040-task-copy"><strong>{task.title}</strong><small>{task.summary}</small></div>
+        <div className={'v040-task-copy'+(task.key==='practice'?' practice-today-copy':'')}><strong>{task.title}</strong><small>{task.summary}</small>{task.key==='practice'&&<div className="practice-today-record-slot">{pendingPracticeCount>1&&<button type="button" className="text-button" disabled={disabled} onClick={onPracticeRecords}>全部 {pendingPracticeCount} 组</button>}</div>}</div>
         <button type="button" className="v040-row-action v045-today-action" disabled={disabled} onClick={task.onClick}>
           <span>{task.label}</span><ArrowRight size={16} aria-hidden="true"/>
         </button>

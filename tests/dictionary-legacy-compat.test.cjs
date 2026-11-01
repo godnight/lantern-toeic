@@ -36,7 +36,7 @@ function harness(){
  const react={useState(initial){const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return[slots[i],next=>{slots[i]=typeof next==='function'?next(slots[i]):next;}];},useRef(initial){const i=cursor++;if(!(i in slots))slots[i]={current:initial};return slots[i];},useEffect(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps)){const previous=slots[i];slots[i]={deps};effects.push(()=>{previous?.cleanup?.();slots[i].cleanup=fn();});}}};
  const localStorage={get length(){return storage.size;},key:i=>[...storage.keys()][i]??null,getItem:key=>storage.get(key)??null,setItem(key,value){if(fail)throw Error('synthetic quota failure');storage.set(key,String(value));writes.push(key);}};
  const window={addEventListener(type,fn){listeners.set(type,fn);},removeEventListener(type){listeners.delete(type);}};
- const hook=createSourceLoader({root,imports:{react,sonner:{toast:{error(){}}}},globals:{localStorage,window,fetch(){throw Error('No remote API allowed');}}}).load('lib/use-vocabulary.ts');
+ const hook=createSourceLoader({root,permitLearningAccess:true,imports:{react,sonner:{toast:{error(){}}}},globals:{localStorage,window,fetch(){throw Error('No remote API allowed');}}}).load('lib/use-vocabulary.ts');
  const render=next=>{if(next!==undefined)owner=next;cursor=0;const result=hook.useVocabulary(owner,false);const pending=effects;effects=[];pending.forEach(run=>run());return result;};
  return{storage,localStorage,writes,render,setFail(value){fail=value;},cleanup(){slots.forEach(slot=>slot?.cleanup?.());}};
 }
@@ -64,8 +64,10 @@ test('the original1346 alias pairs retain their exact ordered values',()=>{
  assert.equal(require('node:crypto').createHash('sha256').update(JSON.stringify(pairs.slice(0,1346))).digest('hex'),'3531be753795475362544ebdc298d0d4d64204d9ef502b2e379e52d461ae11e9');
 });
 function getDictionaryLibrary(){
- const file=path.join(root,'tests/dictionary.test.cjs'),source=fs.readFileSync(file,'utf8'),end=source.indexOf('const merged =');assert(end>0);
- const exports={};require('node:vm').runInNewContext(source.slice(0,end)+'\nexports.proof={catalog,payload};',{exports,require:require('node:module').createRequire(file),__dirname:path.dirname(file),TextDecoder,TextEncoder,AbortController,setTimeout,clearTimeout,process:{env:{LANTERN_REVIEW_ROOT:root}}},{filename:file});return exports.proof;
+ // The UI consumes these exact post-admission exports; do not inject removed locals.
+ const catalog=createSourceLoader({root}).load('lib/learning-word-views.ts');
+ const metadata=JSON.parse(fs.readFileSync(path.join(root,'content/dictionary-metadata.json'),'utf8'));
+ return {catalog,payload:JSON.parse(fs.readFileSync(path.join(root,'public/dictionaries',metadata.file),'utf8'))};
 }
 test('appended aliases prove actual visible admitted teaching IDs and the exact same headword hash',()=>{
  const index=JSON.parse(fs.readFileSync(path.join(root,'content/dictionary-legacy-ids.json'),'utf8')),{catalog,payload}=getDictionaryLibrary(),current=createSourceLoader({root}).load('lib/vocabulary-content-catalog.ts');

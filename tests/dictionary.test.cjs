@@ -16,7 +16,8 @@ function load(file, imports = {}, globals = {}, append = '') {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
   }).outputText;
   vm.runInNewContext(code, { exports, require(name) {
-    if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals}).resolve(name,file); return name.endsWith('.json') ? {default:imports[name]} : imports[name];
+    // This suite extracts catalog construction without mounting an account UI.
+    if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals,permitLearningAccess:true}).resolve(name,file); return name.endsWith('.json') ? {default:imports[name]} : imports[name];
   }, Date, Intl, Map, Set, Error, JSON, Uint8Array, TextDecoder, AbortController,
   crypto: crypto.webcrypto, setTimeout, clearTimeout, ...globals }, { filename: file });
   return exports;
@@ -30,16 +31,20 @@ const payload = JSON.parse(bytes);
 const core = JSON.parse(read('content/vocabulary.json'));
 const expansion = JSON.parse(read('content/vocabulary-expansion.json'));
 const questions = JSON.parse(read('content/questions.json'));
-// Extract the actual component's catalog construction, rather than copying its merge algorithm.
+const learningWordViews = require('./helpers/actual-source-loader.cjs').createSourceLoader({root}).load('lib/learning-word-views.ts');
+// Extract the actual component's admitted catalog, rather than copying its merge algorithm.
 const catalog = load('app/learn/vocabulary-library.tsx', {
   react: {}, 'react/jsx-runtime': {}, 'lucide-react': {}, './vocabulary-redesign.css': {},
   './interactive-example': load('app/learn/interactive-example.tsx', {'react/jsx-runtime': {}}),
   '@/components/ui/dialog': {}, '@/components/ui/select': {}, sonner: {},
   '@/lib/native-host': {}, '@/lib/use-vocabulary': {}, '@/lib/vocabulary-model': vocab,
+  '@/lib/learning-word-views': learningWordViews,
   '@/content/vocabulary.json': core, '@/content/questions.json': questions,
   '@/content/vocabulary-expansion.json': expansion, '@/content/dictionary-metadata.json': metadata,
   '@/lib/dictionary-model': model, '@/lib/load-dictionary': {}, '@/lib/lesson-audio': {}, './practice': {},
-}, {}, '\nexport const __qaCatalog = {core, questionWords, extraWords, legacyLearningWords, learningWords};\n').__qaCatalog;
+}, {}, '\nexport const __qaCatalog = {core, questionWords, extraWords, learningWords};\n').__qaCatalog;
+// The historical lookup prefix is core/expressions/extra; its parts remain real view exports.
+catalog.legacyLearningWords = [...catalog.core, ...catalog.questionWords, ...catalog.extraWords];
 const merged = model.mergeWordCatalog(catalog.learningWords, payload.entries);
 const indexed = model.indexDictionary(merged);
 const legacyFields = ['id','word','pos','meaning','category','example','translation','collocation'];
@@ -87,6 +92,7 @@ test('dictionary parser rejects duplicate IDs and NFKC/case/whitespace-equivalen
 });
 
 test('actual UI catalog retains all original 295 IDs, definitions and example fields', () => {
+  assert.equal(catalog.learningWords, learningWordViews.learningWords);
   const legacy = plain([...catalog.core,...catalog.questionWords]);
   assert.equal(legacy.length,295);
   // Baseline captured from pre-upgrade HEAD; changing this digest requires an explicit legacy-content migration.

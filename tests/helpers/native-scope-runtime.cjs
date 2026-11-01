@@ -12,9 +12,11 @@ const idb = req('fake-indexeddb');
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const plain = value => JSON.parse(JSON.stringify(value));
 const allPins = new Map();
+const explicitLearningPermit=()=>true;
 
-function createRuntime({ react, globals = {} } = {}) {
+function createRuntime({ react, globals = {}, prepareWorkflowCatalog = false } = {}) {
   const cache = new Map();
+  let preparingCatalog = false;
   function load(relative) {
     let file = path.resolve(site, relative);
     if (!file.startsWith(site + path.sep)) throw new Error('Source escaped the explicit site root');
@@ -31,13 +33,21 @@ function createRuntime({ react, globals = {} } = {}) {
     const compiled = ts.transpileModule(bytes.toString('utf8'), { fileName: file, compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true, jsx: ts.JsxEmit.ReactJSX }, reportDiagnostics: true });
     assert.equal(compiled.diagnostics?.some(value => value.category === ts.DiagnosticCategory.Error) || false, false, 'Actual TypeScript transpiles');
     function imports(name) {
+      if (name === './learning-access' || name === '@/lib/learning-access') return {useLearningAccess:()=>explicitLearningPermit};
       if (name === 'react') { assert.ok(react, 'React hook harness must be explicit'); return react; }
       if (name === 'sonner') return { toast: { error() {}, success() {}, message() {} } };
       if (!name.startsWith('.') && !name.startsWith('@/')) return req(name);
       return load(path.relative(site, name.startsWith('@/') ? path.join(site, name.slice(2)) : path.resolve(path.dirname(file), name)));
     }
-    vm.runInNewContext(compiled.outputText, { exports, require: imports, Date, Intl, Map, Set, Promise, Error, RangeError, TypeError, SyntaxError, JSON, Number, Object, Array, Math, RegExp, Uint8Array, Uint32Array, ArrayBuffer, DataView, TextEncoder, TextDecoder, structuredClone, crypto: crypto.webcrypto, setTimeout, clearTimeout, setInterval, clearInterval, Request, Response, Headers, Blob, File, FormData, URL, URLSearchParams, AbortController, DOMException, ReadableStream, performance, atob, btoa, ...globals }, { filename: file });
+    vm.runInNewContext(compiled.outputText, { exports, require: imports, Date, Intl, Map, Set, Promise, Error, RangeError, TypeError, SyntaxError, JSON, Number, Object, Array, Math, RegExp, Uint8Array, Uint32Array, ArrayBuffer, DataView, TextEncoder, TextDecoder, structuredClone, crypto: crypto.webcrypto, setTimeout, clearTimeout, setInterval, clearInterval, Request, Response, Headers, Blob, File, FormData, URL, URLSearchParams, AbortController, DOMException, ReadableStream, performance, atob, btoa, ...globals, ...preparingCatalog ? { window: undefined } : {} }, { filename: file });
     return exports;
+  }
+  // This synchronous hook fixture must explicitly prepare the real immutable
+  // workflow catalogue before client-only consumers cross their readiness gate.
+  // The server entry uses the shipped complete/install validators, not a stub.
+  if (prepareWorkflowCatalog) {
+    preparingCatalog = true;
+    try { load('lib/learning-word-views.ts'); } finally { preparingCatalog = false; }
   }
   return { load };
 }
@@ -47,7 +57,7 @@ function memoryStorage() {
   return { get length() { return map.size; }, key(index) { return [...map.keys()][index] ?? null; }, getItem(key) { return map.get(String(key)) ?? null; }, setItem(key, value) { map.set(String(key), String(value)); }, removeItem(key) { map.delete(String(key)); }, clear() { map.clear(); } };
 }
 
-function hookHarness(componentFactory, props, { storage = memoryStorage(), transport, factory = new idb.IDBFactory() } = {}) {
+function hookHarness(componentFactory, props, { storage = memoryStorage(), transport, factory = new idb.IDBFactory(), prepareWorkflowCatalog = false } = {}) {
   let slots = [], cursor = 0, effects = [], dirty = false, disposed = false, value;
   let currentProps = props;
   const listeners = new Map(), timers = new Map(), calls = [];
@@ -72,7 +82,7 @@ function hookHarness(componentFactory, props, { storage = memoryStorage(), trans
     setInterval(work) { const id = ++timerId; timers.set(id, work); return id; }, clearInterval(id) { timers.delete(id); },
     fetch(url, options = {}) { calls.push({ url, options }); return transport ? transport(url, options) : Promise.reject(new Error('Unexpected network attempt in native local-only test')); },
   };
-  const runtime = createRuntime({ react, globals });
+  const runtime = createRuntime({ react, globals, prepareWorkflowCatalog });
   const component = componentFactory(runtime);
   function render(next = currentProps) {
     currentProps = next; cursor = 0; dirty = false;

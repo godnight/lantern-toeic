@@ -21,6 +21,14 @@ export const authPasswordCredentials=sqliteTable('auth_password_credentials',{us
 export const authSessions=sqliteTable('auth_sessions',{tokenHash:text('token_hash').primaryKey(),userId:text('user_id').notNull().references(()=>authUsers.id),createdAt:integer('created_at').notNull(),expiresAt:integer('expires_at').notNull()},table=>[index('auth_sessions_user').on(table.userId),index('auth_sessions_expiry').on(table.expiresAt)]);
 export const authRateLimits=sqliteTable('auth_rate_limits',{scope:text('scope').notNull(),windowStart:integer('window_start').notNull(),count:integer('count').notNull(),admissionId:text('admission_id').notNull().default('')},table=>[primaryKey({columns:[table.scope,table.windowStart]}),index('auth_rate_limits_expiry').on(table.windowStart)]);
 
+// Exact provider/audience/subject identity; product owners and passwords survive.
+export const authProviderBindings=sqliteTable('auth_provider_bindings',{
+ provider:text('provider').notNull(),audience:text('audience').notNull(),subject:text('subject').notNull(),userId:text('user_id').notNull().references(()=>authUsers.id),createdAt:integer('created_at').notNull(),
+},table=>[primaryKey({columns:[table.provider,table.audience,table.subject]}),uniqueIndex('auth_provider_bindings_owner').on(table.provider,table.audience,table.userId)]);
+export const authHuaweiCodes=sqliteTable('auth_huawei_codes',{
+ codeHash:text('code_hash').primaryKey(),ticket:text('ticket').notNull().unique(),purpose:text('purpose').notNull(),reservedAt:integer('reserved_at').notNull(),expiresAt:integer('expires_at').notNull(),committedUserId:text('committed_user_id').references(()=>authUsers.id),completedAt:integer('completed_at'),
+},table=>[index('auth_huawei_codes_expiry').on(table.reservedAt),check('auth_huawei_codes_hash',sql`length(${table.codeHash})=64`),check('auth_huawei_codes_purpose',sql`${table.purpose} IN ('login','bind')`),check('auth_huawei_codes_completion',sql`(${table.completedAt} IS NULL AND ${table.committedUserId} IS NULL) OR (${table.completedAt} IS NOT NULL AND ${table.committedUserId} IS NOT NULL)`)]);
+
 // Phone ownership attaches to existing product users only; no account migration.
 export const authPhoneBindings=sqliteTable('auth_phone_bindings',{
  phone:text('phone').primaryKey(),userId:text('user_id').notNull().unique().references(()=>authUsers.id),createdAt:integer('created_at').notNull(),

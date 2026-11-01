@@ -3,8 +3,9 @@ import {canonicalJson, canonicalHash, canonicalValue, type JsonValue} from './do
 import {validatePracticeWorkflowBackup} from './practice-workflow';
 import questions from '../content/questions.json';
 import type {Question} from './study-model';
-import {vocabularyId, vocabularyState, validVocabularyEvent, type VocabularyEvent, type Word} from './vocabulary-model';
+import {vocabularyId, vocabularyState, validVocabularyEvent,vocabularyReviewHash,parseVocabularyBackup,vocabularyBackup,type VocabularyCorrectionEvent, type VocabularyEvent, type Word} from './vocabulary-model';
 import {getWorkflowCatalog, WORKFLOW_WORDS, isWorkflowBookId, getCandidateLearningWord, CANDIDATE_CONTENT_PENDING, type WorkflowBookId} from './workflow-catalog';
+import {stableNewVocabularyOrder} from './vocabulary-new-order';
 import {FULL4109_CURRENT_MODE} from './vocabulary-content-catalog';
 
 export type VocabularyWorkflowScope = {kind:'web-owner'|'harmony-owner'; ownerId:string} | {kind:'web-local'|'harmony-device'; partition:'existing-device'};
@@ -13,6 +14,8 @@ export type VocabularyIntent = 'new'|'due-review'|'manual-review'|'reinforcement
 export type CandidateKind = 'new'|'manual-review';
 export type CandidateStatus = 'available-new'|'already-present'|'available-review'|'already-review'|'today-reviewed';
 export type VocabularyStepTarget = {sessionId:string;stepId:string};
+export type VocabularyCorrectionTarget=VocabularyStepTarget&{commandId:string;reviewId:string};
+export type VocabularyCorrection={event:VocabularyCorrectionEvent;status:'prepared'|'applied';receipt?:{eventId:string;eventHash:string;originalCommandId:string}};
 export type VocabularyReviewEvent = VocabularyEvent & {type:'review'};
 export type VocabularyPlanDraft = {bookId:WorkflowBookId; goal:number; dailyNew:number; weekdays:number[]};
 export type VocabularyPlan = VocabularyPlanDraft & {id:string; schemaVersion:1; revision:number; createdAt:string; updatedAt:string};
@@ -20,13 +23,13 @@ export type VocabularyDayWindow = {id:string; localDate:string; timezone:string;
 export type VocabularyGoalCoverage = {goal:number; coverage:{wordId:string;eventId:string;eventHash:string}[]};
 export type VocabularyDay = {schemaVersion:1; window:VocabularyDayWindow; newDone:string[]; reviewDone:string[]; goalCompleted:boolean; goalCoverage?:VocabularyGoalCoverage; carryFromDayId?:string};
 export type VocabularyCandidate = {schemaVersion:1; word:Word; contentSource:string; kind:CandidateKind; dayId?:string; createdAt:string};
-export type VocabularyStep = {id:string; wordId:string; word:Word; intent:VocabularyIntent; reasons:string[]; activeCommandId?:string; receipt?:VocabularyReceipt; pendingRating?:RawVocabularyRating};
+export type VocabularyStep = {id:string; wordId:string; word:Word; intent:VocabularyIntent; reasons:string[]; activeCommandId?:string; receipt?:VocabularyReceipt; pendingRating?:RawVocabularyRating;correctionPending?:boolean;correctedToForgotten?:boolean};
 export type VocabularySession = {id:string; schemaVersion:1; planRevision:number; dayWindow:VocabularyDayWindow; createdAt:string; queue:VocabularyStep[]; cursor:number; status:'active'|'completed'; currentStep?:VocabularyStep; blockedReason?:string};
 export type VocabularyReceipt = {commandId:string; legacyEventId:string; legacyPayloadHash:string; occurredAt:string; rawRating:RawVocabularyRating; intent:VocabularyIntent; ratingPolicy:'three-label-conservative-v1'};
-export type VocabularyCommand = {schemaVersion:1; id:string; sessionId:string; stepId:string; expectedRevision:number; occurredAt:string; payloadHash:string; intent:VocabularyIntent; legacyPayload:VocabularyReviewEvent; rawRating:RawVocabularyRating; ratingPolicy:'three-label-conservative-v1'; status:'prepared'|'applied'|'blocked'|'reference-unverified'; receipt?:VocabularyReceipt};
+export type VocabularyCommand = {schemaVersion:1; id:string; sessionId:string; stepId:string; expectedRevision:number; occurredAt:string; payloadHash:string; intent:VocabularyIntent; legacyPayload:VocabularyReviewEvent; rawRating:RawVocabularyRating; ratingPolicy:'three-label-conservative-v1'; status:'prepared'|'applied'|'blocked'|'reference-unverified'; receipt?:VocabularyReceipt;correction?:VocabularyCorrection};
 export type VocabularyProjection = {plan:VocabularyPlan|null; counts:{capacity:number; learned:number; remaining:number; reviewDue:number}; daily:{window:VocabularyDayWindow; newDone:number; reviewDone:number; newRemaining:number; reviewRemaining:number; newWordIds:string[]; reviewWordIds:string[]; goalCompleted:boolean; isLearningDay:boolean}; activeSession:VocabularySession|null; candidates:VocabularyCandidate[]; learnedWordIds:string[]; unresolvedReviewWordIds:string[]};
 export type VocabularyWorkflowResult = {status:'applied'|'replayed'|'already-present'|'already-review'|'today-reviewed'|'stage-changed'|'empty'|'pending'|'unknown'|'conflict'|'blocked'; reason?:string; id?:string; receipt?:VocabularyReceipt; session?:VocabularySession; added?:number};
-export type VocabularyLegacyAdapter = {readEvents:()=>VocabularyEvent[]|Promise<VocabularyEvent[]>; readEvent:(id:string)=>VocabularyEvent|undefined|Promise<VocabularyEvent|undefined>; writeReview:(event:VocabularyReviewEvent)=>unknown|Promise<unknown>};
+export type VocabularyLegacyAdapter = {readEvents:()=>VocabularyEvent[]|Promise<VocabularyEvent[]>; readEvent:(id:string)=>VocabularyEvent|undefined|Promise<VocabularyEvent|undefined>; writeReview:(event:VocabularyReviewEvent)=>unknown|Promise<unknown>;writeCorrection?:(event:VocabularyCorrectionEvent)=>unknown|Promise<unknown>};
 export type VocabularyWorkflowOptions = {scope:VocabularyWorkflowScope; legacy:VocabularyLegacyAdapter; words?:Word[]; practiceQuestionCatalogs?:readonly (readonly Question[])[]; now?:()=>Date; repository?:Awaited<ReturnType<typeof openLearningDomainRepository>>; databaseName?:string; factory?:IDBFactory; isCurrent?:()=>boolean};
 
 const PLAN_ID='vocab:plan', ACTIVE_ID='vocab:active', POLICY='three-label-conservative-v1' as const;
@@ -108,9 +111,15 @@ function validateValue(collection:DomainCollection,id:string,value:unknown) {
     const row=value as unknown as VocabularyCommand;
     const review=legacyReview(row.legacyPayload);
     if(row.id!==id||!review||!same(review,row.legacyPayload)||!['known','fuzzy','forgotten'].includes(row.rawRating)||!['new','due-review','manual-review','reinforcement'].includes(row.intent)||review.grade!==(row.rawRating==='known'?'remembered':'again')||row.ratingPolicy!==POLICY||row.payloadHash!==canonicalHash(canonicalJson(review))||!['prepared','applied','blocked','reference-unverified'].includes(row.status)||!stamp(row.occurredAt)||row.occurredAt!==review.createdAt||!Number.isSafeInteger(row.expectedRevision)||row.expectedRevision<1||typeof row.sessionId!=='string'||typeof row.stepId!=='string')throw Error('词汇反馈命令损坏。');
+    if(row.correction!==undefined)validateCorrection(row);
   }else throw Error('词汇工作流包含未知记录。');
 }
 
+function correctionReceipt(command:VocabularyCommand){return {eventId:command.correction!.event.id,eventHash:canonicalHash(canonicalJson(command.correction!.event)),originalCommandId:command.id};}
+function validateCorrection(command:VocabularyCommand){
+ const value=command.correction!,event=value?.event;
+ if(!object(value)||!event||!validVocabularyEvent(event)||event.type!=='review-correction'||!same(event,parseVocabularyBackup(vocabularyBackup([event])).events[0])||event.wordId!==command.legacyPayload.wordId||event.reviewId!==command.legacyPayload.id||event.reviewHash!==vocabularyReviewHash(command.legacyPayload)||Date.parse(event.createdAt)<Date.parse(command.occurredAt)||command.status!=='applied'||command.rawRating!=='known'||!['prepared','applied'].includes(value.status)||Object.keys(value).some(key=>!['event','status','receipt'].includes(key))||value.status==='applied'&&(!value.receipt||!same(value.receipt,correctionReceipt(command))))throw Error('词汇改判引用或回执损坏。');
+}
 /** Pure preflight, shared by every whole-scope restore entry point. It validates
  * vocabulary metadata without treating an imported receipt as a learning fact. */
 export function validateVocabularyWorkflowBackup(input:unknown,expectedScopeKey?:string):void {
@@ -132,6 +141,7 @@ export function validateVocabularyWorkflowBackup(input:unknown,expectedScopeKey?
     const command=row.value,session=sessions.find(item=>item.id===command.sessionId),step=session?.value.queue.find(item=>item.id===command.stepId);
     if(!step||step.activeCommandId!==command.id||step.wordId!==command.legacyPayload.wordId||step.intent!==command.intent||seenLegacyIds.has(command.legacyPayload.id))throw Error('词汇反馈与固定词组关联损坏。');
     seenLegacyIds.add(command.legacyPayload.id);
+    if(command.correction?.status==='prepared'&&(session!.value.status!=='active'||![session!.value.cursor,session!.value.cursor-1].includes(session!.value.queue.findIndex(row=>row.id===step.id))))throw Error('未确认改判不属于当前或上一词。');
     if(command.status==='applied'&&(!command.receipt||!same(command.receipt,receiptFor(command))||!step.receipt||!same(step.receipt,command.receipt)))throw Error('词汇反馈回执损坏。');
   }
   for(const row of sessions){
@@ -157,7 +167,7 @@ export async function createVocabularyWorkflow(options:VocabularyWorkflowOptions
   async function read<T>(collection:DomainCollection,id:string){const row=await repo.read<T>(collection,id);if(row)validateValue(collection,id,row.value);return row;}
   const write=(collection:DomainCollection,id:string,value:unknown,row?:DomainRecord<unknown>):DomainWrite=>({collection,id,revision:(row?.revision??0)+1,value:json(value)});
   const expected=(collection:DomainCollection,id:string,row?:DomainRecord<unknown>):DomainExpectation=>({collection,id,revision:row?.revision??null});
-  async function commit(id:string,payload:unknown,writes:DomainWrite[],guards:DomainExpectation[],occurredAt=now().toISOString()){assertCurrent();return resultOf(await repo.commit({commandId:id,occurredAt,payload:json(payload),writes,expected:guards}));}
+  async function commit(id:string,payload:unknown,writes:DomainWrite[],guards:DomainExpectation[],occurredAt=now().toISOString()){assertCurrent();return resultOf(await repo.commit({commandId:id,occurredAt,payload:json(payload),writes,expected:guards},assertCurrent));}
   async function dayFor(timezone:string,dayRows:DomainRecord<VocabularyDay>[]) {
     const time=now().getTime(),open=dayRows.filter(row=>Date.parse(row.value.window.startAt)<=time&&time<Date.parse(row.value.window.endAt)).sort((a,b)=>Date.parse(b.value.window.startAt)-Date.parse(a.value.window.startAt))[0];
     if(open)return {row:open,value:open.value};
@@ -189,19 +199,22 @@ export async function createVocabularyWorkflow(options:VocabularyWorkflowOptions
     // stale candidates must not override a current admitted new-group snapshot.
     const byId=new Map([...knownWords,...memberWords.map(word=>[word.id,word] as const),...candidates.filter(row=>row.kind==='manual-review'||learned.has(row.word.id)||admittedNewCandidate(row)).map(row=>[row.word.id,row.word] as const)]);
     const verified=new Set(commands.filter(row=>{const event=legacyReview(eventMap.get(row.value.legacyPayload.id));return !!event&&same(event,row.value.legacyPayload);}).map(row=>row.id));
+    const verifiedCorrections=new Set(commands.filter(row=>row.value.correction&&same(eventMap.get(row.value.correction.event.id)??null,row.value.correction.event)&&verified.has(row.id)).map(row=>row.id));
     const pointer=sessions.find(row=>row.id===ACTIVE_ID) as unknown as DomainRecord<{schemaVersion:1;sessionId:string}>|undefined;
     if(pointer)validateValue('sessions',ACTIVE_ID,pointer.value);
     const active=sessions.find(row=>row.id===pointer?.value.sessionId);
     // Imported receipts are display-inert until the old journal confirms them.
     let activeValue=active?withCurrent({...active.value,queue:active.value.queue.map(step=>{
-      const command=commands.find(row=>row.id===step.activeCommandId)?.value,copy={...step};delete copy.receipt;
+      const command=commands.find(row=>row.id===step.activeCommandId)?.value,copy={...step};delete copy.receipt;delete copy.pendingRating;delete copy.correctionPending;delete copy.correctedToForgotten;
       if(command&&command.sessionId===active.id&&command.stepId===step.id&&command.legacyPayload.wordId===step.wordId&&command.intent===step.intent){
         copy.pendingRating=command.rawRating;
+        if(command.correction){copy.correctionPending=command.correction.status!=='applied'||!verifiedCorrections.has(command.id);copy.correctedToForgotten=command.correction.status==='applied'&&verifiedCorrections.has(command.id);}
         if(command.status==='applied'&&verified.has(command.id))copy.receipt=receiptFor(command);
       }
       return copy;
     })}):null;
     if(activeValue){const missing=activeValue.queue.findIndex((step,index)=>(index<activeValue!.cursor||!!step.activeCommandId&&commands.find(row=>row.id===step.activeCommandId)?.value.status==='applied')&&!step.receipt);if(missing>=0)activeValue=withCurrent({...activeValue,cursor:missing,status:'active',blockedReason:'工作流备份尚缺对应旧词卡事件；恢复旧词卡备份后才能确认完成。'});}
+    if(activeValue&&activeValue.queue.some(step=>{const command=commands.find(row=>row.id===step.activeCommandId)?.value;return command?.correction?.status==='applied'&&!verifiedCorrections.has(command.id);}))activeValue={...activeValue,blockedReason:'工作流备份尚缺对应改判事件；请恢复原词库备份再重新核对。'};
     const carryDay=days.find(row=>row.id===day.value.carryFromDayId),carryValid=!!carryDay&&carryDay.value.window.endAt===day.value.window.startAt&&carryDay.value.window.timezone!==day.value.window.timezone&&Date.parse(day.value.window.startAt)-Date.parse(carryDay.value.window.startAt)<=48*3600000;
     const dayCommands=commands.filter(row=>verified.has(row.id)&&row.value.status==='applied'&&(()=>{const session=sessions.find(session=>session.id===row.value.sessionId);return session?.value.dayWindow.id===day.value.window.id||(carryValid&&session?.value.dayWindow.id===carryDay!.id);})());
     const newDone=unique(dayCommands.filter(row=>row.value.intent==='new').map(row=>row.value.legacyPayload.wordId));
@@ -217,10 +230,10 @@ export async function createVocabularyWorkflow(options:VocabularyWorkflowOptions
     const weekday=((new Date(day.value.window.localDate+'T12:00:00.000Z').getUTCDay()+6)%7)+1,isLearningDay=!!plan?.value.weekdays.includes(weekday);
     const newRemaining=plan&&isLearningDay?Math.max(0,Math.min(plan.value.dailyNew-newDone.length,plan.value.goal-learnedCount)):0;
     const requestedNew=candidates.filter(row=>row.kind==='new'&&!learned.has(row.word.id)&&admittedNewCandidate(row)).sort((a,b)=>a.createdAt.localeCompare(b.createdAt)||a.word.id.localeCompare(b.word.id)).map(row=>row.word.id);
-    const newIds=unique([...requestedNew,...memberWords.filter(word=>!learned.has(word.id)).map(word=>word.id)]).slice(0,newRemaining);
+    const newIds=unique([...requestedNew,...stableNewVocabularyOrder(memberWords,plan?.value.bookId??'scene').filter(word=>!learned.has(word.id)).map(word=>word.id)]).slice(0,newRemaining);
     const coverage=day.value.goalCoverage,coveredFact=day.value.goalCompleted&&!!coverage&&coverage.coverage.every(ref=>{const event=legacyReview(eventMap.get(ref.eventId));return event?.wordId===ref.wordId&&canonicalHash(canonicalJson(event))===ref.eventHash;});
     const projection:VocabularyProjection={plan:plan?.value??null,counts:{capacity:memberWords.length,learned:learnedCount,remaining:Math.max(0,(plan?.value.goal??memberWords.length)-learnedCount),reviewDue:dueIds.length},daily:{window:day.value.window,newDone:newDone.length,reviewDone:reviewDone.length,newRemaining,reviewRemaining:reviewIds.length,newWordIds:newIds,reviewWordIds:reviewIds,goalCompleted:coveredFact||(!!plan&&learnedCount>=plan.value.goal),isLearningDay},activeSession:activeValue,candidates,learnedWordIds:[...learned],unresolvedReviewWordIds:reviewIds.filter(id=>!byId.has(id))};
-    cached=projection;cachedReviewDone=new Set(reviewDone);return {projection,plan,day,candidateRows,sessions,commands,events,learned,verified,byId,pointer,active};
+    cached=projection;cachedReviewDone=new Set(reviewDone);return {projection,plan,day,candidateRows,sessions,commands,events,learned,verified,byId,pointer,active,verifiedCorrections};
   }
   async function readProjection(timezone='UTC'):Promise<VocabularyProjection> {
     await confirmVocabularyRows();
@@ -228,6 +241,8 @@ export async function createVocabularyWorkflow(options:VocabularyWorkflowOptions
     // Recover a write-before-crash without resubmitting an absent old event.
     const command=state.commands.find(row=>row.value.status==='prepared'&&state.verified.has(row.id));
     if(command){const recovered=await apply(command.value);if(good(recovered))return (await load(timezone)).projection;}
+    const correction=state.commands.find(row=>row.value.correction?.status==='prepared'&&state.verifiedCorrections.has(row.id));
+    if(correction){const recovered=await applyCorrection(correction.value);if(good(recovered))return (await load(timezone)).projection;}
     return state.projection;
   }
   async function savePlan(draft:VocabularyPlanDraft,expectedRevision:number|null,timezone='UTC'):Promise<VocabularyWorkflowResult> {
@@ -283,7 +298,7 @@ export async function createVocabularyWorkflow(options:VocabularyWorkflowOptions
       if(state.active?.value.status==='active')return {status:'replayed',id:state.active.id,session:withCurrent(state.active.value)};
       const reviewIds=intent==='new'?[]:state.projection.daily.reviewWordIds;
       let newIds=intent==='review'?[]:state.projection.daily.newWordIds;
-      if(intent==='extra')newIds=members(state.plan.value,state.projection.candidates).filter(word=>!state.learned.has(word.id)).map(word=>word.id);
+      if(intent==='extra')newIds=stableNewVocabularyOrder(members(state.plan.value,state.projection.candidates),state.plan.value.bookId).filter(word=>!state.learned.has(word.id)).map(word=>word.id);
       const available=unique([...reviewIds,...newIds]);
       if(intent==='extra'&&!available.length)available.push(...members(state.plan.value,state.projection.candidates).filter(word=>state.learned.has(word.id)).map(word=>word.id));
       const selected=available.filter(id=>state.byId.has(id)).slice(0,20);if(!selected.length)return available.length?{status:'blocked',reason:`还有 ${available.length} 个旧词条待定位；请通过查词选择其明确词条后再复习，旧记录已保留。`}:{status:'empty',reason:'当前没有待开始的词卡；可调整计划或明确加入主动复练。'};
@@ -349,12 +364,52 @@ export async function createVocabularyWorkflow(options:VocabularyWorkflowOptions
       assertCurrent();return await apply(command);
     }catch(error){return {status:'unknown',reason:error instanceof Error?error.message:'反馈未确认，当前词卡保留。'};}
   }
+  async function applyCorrection(command:VocabularyCommand):Promise<VocabularyWorkflowResult>{
+    try{
+      assertCurrent();const stored=await read<VocabularyCommand>('commands',command.id),correction=stored?.value.correction;
+      if(!stored||!correction)return {status:'blocked',reason:'改判记录缺失，请重新读取。'};
+      const [original,actual]=await Promise.all([options.legacy.readEvent(stored.value.legacyPayload.id),options.legacy.readEvent(correction.event.id)]);assertCurrent();
+      if(!same(original??null,stored.value.legacyPayload)||!same(actual??null,correction.event))return {status:'pending',reason:'改判尚未确认，请重试原操作。'};
+      if(correction.status==='applied')return {status:'replayed',id:stored.id};
+      const session=await read<VocabularySession>('sessions',stored.value.sessionId),pointer=await read<{schemaVersion:1;sessionId:string}>('sessions',ACTIVE_ID);
+      const index=session?.value.queue.findIndex(step=>step.id===stored.value.stepId)??-1;
+      if(!session||pointer?.value.sessionId!==session.id||session.value.status!=='active'||![session.value.cursor,session.value.cursor-1].includes(index)||session.value.queue[index]?.activeCommandId!==stored.id)return {status:'conflict',reason:'原词组已切换，未替其他词提交改判。'};
+      const value={...stored.value,correction:{...correction,status:'applied' as const,receipt:correctionReceipt(stored.value)}};
+      const response=await commit('vocab:correct-apply:'+stored.id,{event:correction.event},[write('commands',stored.id,value,stored),write('sessions',session.id,session.value,session)],[expected('commands',stored.id,stored),expected('sessions',session.id,session),expected('sessions',ACTIVE_ID,pointer)],correction.event.createdAt);
+      if(response.status==='conflict'){const latest=await read<VocabularyCommand>('commands',stored.id);if(latest?.value.correction?.status==='applied')return {status:'replayed',id:stored.id};}
+      return good(response)?{...response,id:stored.id}:response;
+    }catch(error){return {status:'unknown',reason:error instanceof Error?error.message:'改判结果尚未确认，请保留当前词卡。'};}
+  }
+  async function correctRating(timezone='UTC',target?:VocabularyCorrectionTarget):Promise<VocabularyWorkflowResult>{
+    try{
+      if(!target||!options.legacy.writeCorrection)return {status:'blocked',reason:'当前无法改判，请重新读取词卡。'};
+      const state=await load(timezone),session=state.active,index=session?.value.queue.findIndex(step=>step.id===target.stepId)??-1,step=session?.value.queue[index];
+      if(!session||session.value.status!=='active'||target.sessionId!==session.id||![session.value.cursor,session.value.cursor-1].includes(index)||!step||step.activeCommandId!==target.commandId)return {status:'conflict',reason:'词卡已切换，只能改判当前词或上一词。'};
+      if(state.projection.activeSession?.blockedReason)return {status:'blocked',reason:state.projection.activeSession.blockedReason};
+      let stored=await read<VocabularyCommand>('commands',target.commandId);
+      if(!stored||stored.value.legacyPayload.id!==target.reviewId||stored.value.rawRating!=='known'||stored.value.status!=='applied'||!state.verified.has(stored.id))return {status:'blocked',reason:'请先确认原来的认识反馈，原记录保留。'};
+      if(!stored.value.correction){
+        const event:VocabularyCorrectionEvent={id:vocabularyId(),wordId:step.wordId,createdAt:new Date(Math.max(now().getTime(),Date.parse(stored.value.occurredAt))).toISOString(),type:'review-correction',reviewId:target.reviewId,reviewHash:vocabularyReviewHash(stored.value.legacyPayload),grade:'again'};
+        const value={...stored.value,correction:{event,status:'prepared' as const}};validateCorrection(value);
+        const response=await commit('vocab:correct-prepare:'+stored.id,{event},[write('commands',stored.id,value,stored),write('sessions',session.id,session.value,session)],[expected('commands',stored.id,stored),expected('sessions',session.id,session),expected('sessions',ACTIVE_ID,state.pointer)],event.createdAt);
+        if(!good(response))return response;
+        stored=await read<VocabularyCommand>('commands',stored.id);
+      }
+      assertCurrent();if(!stored?.value.correction)return {status:'unknown',reason:'请重新核对原词改判。'};
+      if(stored.value.correction.status==='applied')return applyCorrection(stored.value);
+      const event=stored.value.correction.event,actual=await options.legacy.readEvent(event.id);assertCurrent();
+      if(actual&&!same(actual,event))return {status:'blocked',reason:'更正事件标识冲突，原记录保留。'};
+      if(!actual)try{await options.legacy.writeCorrection(event);}catch{/* Exact readback decides, including lost replies. */}
+      assertCurrent();return applyCorrection(stored.value);
+    }catch(error){return {status:'unknown',reason:error instanceof Error?error.message:'改判结果尚未确认，请重试。'};}
+  }
   async function nextStep(timezone='UTC',target?:VocabularyStepTarget):Promise<VocabularyWorkflowResult> {
     try{
       if(!target)return {status:'blocked',reason:'缺少当前可见词卡标识，未切换词卡。'};
       const state=await load(timezone),session=state.active;if(!session)return {status:'blocked',reason:'没有活动词组。'};
       if(state.projection.activeSession?.blockedReason)return {status:'blocked',reason:state.projection.activeSession.blockedReason};
       if(session.value.status==='completed')return {status:'replayed',id:session.id,session:withCurrent(session.value)};
+      if(state.commands.some(row=>row.value.sessionId===session.id&&row.value.correction?.status==='prepared'))return {status:'pending',reason:'请先确认原词的改判结果，再切换词卡。'};
       const step=session.value.queue[session.value.cursor],command=state.commands.find(row=>row.id===step?.activeCommandId);
       if(target&&(target.sessionId!==session.id||target.stepId!==step?.id))return {status:'conflict',reason:'词卡已在另一窗口切换，请重新读取。'};
       if(!step?.receipt||!command||command.value.status!=='applied'||!state.verified.has(command.id))return {status:'blocked',reason:'请先完成并确认当前词的反馈。'};
@@ -370,7 +425,7 @@ export async function createVocabularyWorkflow(options:VocabularyWorkflowOptions
     if(!loaded.some(group=>group.records.some(row=>row.provenance==='restored-unverified')))return;
     const commandRows=loaded.find(group=>group.collection==='commands')!.records as DomainRecord<VocabularyCommand>[],sessionRows=loaded.find(group=>group.collection==='sessions')!.records as DomainRecord<VocabularySession>[];
     const actual=new Map((await facts()).map(event=>[event.id,event]));
-    const safeCommand=(command:VocabularyCommand)=>command.status==='prepared'||(command.status==='applied'&&!!legacyReview(actual.get(command.legacyPayload.id))&&same(legacyReview(actual.get(command.legacyPayload.id)),command.legacyPayload));
+    const safeCommand=(command:VocabularyCommand)=>command.status==='prepared'||(command.status==='applied'&&!!legacyReview(actual.get(command.legacyPayload.id))&&same(legacyReview(actual.get(command.legacyPayload.id)),command.legacyPayload)&&(!command.correction||command.correction.status==='prepared'||same(actual.get(command.correction.event.id)??null,command.correction.event)));
     const safeSession=(session:VocabularySession)=>session.queue.every((step,index)=>{
       if(!step.activeCommandId)return !step.receipt&&index>=session.cursor;
       const command=commandRows.find(row=>row.id===step.activeCommandId)?.value;
@@ -395,7 +450,7 @@ export async function createVocabularyWorkflow(options:VocabularyWorkflowOptions
   async function restoreWorkflow(input:unknown,timezone='UTC'):Promise<VocabularyWorkflowResult> {
     try{assertCurrent();validateBackup(input);const result=await repo.restoreBackup(input);if('reason'in result)return {status:result.status,reason:result.reason};await readProjection(timezone);return {status:result.status==='committed'?'applied':'replayed',added:result.addedRecords,reason:'工作流已合并；旧词卡备份另行恢复，缺失引用不计完成。'};}catch(error){return {status:'blocked',reason:error instanceof Error?error.message:'工作流恢复失败，原数据保留。'};}
   }
-  return {repository:repo,readProjection,savePlan,candidateStatus,addCandidate,startGroup,submitRating,nextStep,readCommand:(id:string)=>read<VocabularyCommand>('commands',id),exportWorkflow,restoreWorkflow,close:()=>repo.close()};
+  return {repository:repo,readProjection,savePlan,candidateStatus,addCandidate,startGroup,submitRating,correctRating,nextStep,readCommand:(id:string)=>read<VocabularyCommand>('commands',id),exportWorkflow,restoreWorkflow,close:()=>repo.close()};
 }
 
 function receiptFor(command:VocabularyCommand):VocabularyReceipt {

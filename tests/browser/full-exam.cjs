@@ -10,18 +10,21 @@ const net = require('node:net');
 const { spawn } = require('node:child_process');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
+const {NATIVE_ORIGIN,NATIVE_QA_USER,installNativeAccountFixture,fulfillNativePreview}=require('../helpers/browser-native-auth.cjs');
 
 const PORT = 4175;
-const ORIGIN = `http://127.0.0.1:${PORT}`;
+const PREVIEW_ORIGIN = `http://127.0.0.1:${PORT}`;
+const ORIGIN = NATIVE_ORIGIN;
 const REPO = path.resolve(__dirname, '../..');
 let OUT;
-const OWNER = 'harmony-local-device';
+// MockExam keeps the verified native account in its Harmony-specific partition.
+const OWNER = 'harmony-' + NATIVE_QA_USER.id;
 const DB = 'lantern-private-exams-v1';
 const BASE_TIME = new Date('2026-10-11T06:00:00.000Z');
 const report = { scope: 'Local production Harmony shared frontend; synthetic QA only', origin: ORIGIN,
   limitations: ['Synthetic 200-question structures are not TOEIC test papers.', '20-second and 45:53 silent WAVs check decoder/playback events and timing compatibility, not audible sound or complete listening content.', 'Desktop Chrome with resized viewports is not ArkWeb/real-device acceptance.', 'Clock fast-forward validates deadline logic, not two-hour endurance.'],
   startedAt: new Date().toISOString(), steps: [], screenshots: [], pageErrors: [], consoleErrors: [], blockedExternal: [], httpErrors: [] };
-let browser, context, page, preview, cleanupPromise;
+let browser, context, page, preview, cleanupPromise, nativeAccount;
 let ownsOutput = false;
 const ownerToken = crypto.randomBytes(24).toString('hex');
 
@@ -69,11 +72,11 @@ async function startPreview() {
     preview.once('exit',(code,signal)=>{clearTimeout(timeout);reject(new Error(`Owned Vite preview exited (${code}/${signal}): ${logs}`));});
     preview.once('message',message=>{if(message?.ready && message.pid===preview.pid){clearTimeout(timeout);resolve();}else{clearTimeout(timeout);reject(new Error('Unexpected preview readiness message'));}});
   });
-  const response=await fetch(ORIGIN+'/',{signal:AbortSignal.timeout(10000),redirect:'error'});
+  const response=await fetch(PREVIEW_ORIGIN+'/',{signal:AbortSignal.timeout(10000),redirect:'error'});
   assert.equal(response.status,200,'Owned preview did not return HTML');
   assert.equal(response.headers.get('x-lantern-qa-owner'),ownerToken,'Port belongs to another process; refusing to test it');
   assert.equal(preview.exitCode,null); assert.equal(preview.signalCode,null);
-  report.preview={pid:preview.pid,origin:ORIGIN,ownershipVerified:true,htmlSha256:crypto.createHash('sha256').update(await response.text()).digest('hex')};
+  report.preview={pid:preview.pid,origin:PREVIEW_ORIGIN,ownershipVerified:true,htmlSha256:crypto.createHash('sha256').update(await response.text()).digest('hex')};
 }
 async function stopPreview() {
   if(!preview || preview.exitCode!==null || preview.signalCode!==null || !preview.pid)return;
@@ -192,21 +195,21 @@ async function newPage(at = BASE_TIME) {
 async function freshContext() {
   if(context)await context.close();
   context=await browser.newContext({viewport:{width:390,height:844},locale:'zh-CN',timezoneId:'Asia/Shanghai',acceptDownloads:true,serviceWorkers:'block'});
+  nativeAccount=await installNativeAccountFixture(context,{report});
   await context.route('**/*', route=>{
     const url=new URL(route.request().url());
     if ((url.protocol==='http:' || url.protocol==='https:') && url.origin!==ORIGIN) {
       report.blockedExternal.push(url.origin+url.pathname);return route.abort('blockedbyclient');
     }
-    return route.continue();
+    return url.origin===ORIGIN?fulfillNativePreview(route,PREVIEW_ORIGIN):route.continue();
   });
 }
 async function enter(section = '练习') {
   // At 390px the app has a visible mobile nav, while its sidebar duplicate is hidden.
   await page.setViewportSize({width:390,height:844});
   const nav = page.getByRole('navigation', {name:'手机主导航',exact:true});
-  const welcome=page.locator('[data-first-run="welcome"]');
-  await Promise.race([welcome.waitFor(),nav.waitFor()]);
-  if(await welcome.isVisible())await welcome.locator('[data-first-run-action="guest"]').click();
+  await visible(nav);
+  nativeAccount.assertVerified(page);
   await (await visible(nav.getByRole('button', {name:section,exact:true}))).click();
   if(section==='资料'){await page.getByText('题包与模考',{exact:true}).click();await click('本机题包与模考');}
   else await (await visible(page.getByRole('button', {name:/完整听读模考/}))).click();

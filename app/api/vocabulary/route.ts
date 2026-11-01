@@ -1,12 +1,12 @@
 import {getDb} from '@/db';
 import {sql} from 'drizzle-orm';
 import {userId,safeMutation,privateJson} from '@/lib/server-auth';
-import {parseVocabularyBackup} from '@/lib/vocabulary-model';
+import {parseVocabularyBackup,vocabularyBackup} from '@/lib/vocabulary-model';
 import {readBoundedRequestBody,RequestBodyTooLargeError} from '@/lib/request-body';
 
 export async function GET(request:Request){
  const owner=await userId(request);if(!owner)return privateJson({error:'请登录后同步'},401);
- try{const rows=await getDb().all<{body:string}>(sql`SELECT body FROM vocabulary_events WHERE user_id = ${owner}`);return privateJson({owner,kind:'lantern-vocabulary',schemaVersion:1,events:rows.map(row=>JSON.parse(row.body))});}
+ try{const rows=await getDb().all<{body:string}>(sql`SELECT body FROM vocabulary_events WHERE user_id = ${owner}`);return privateJson({owner,...vocabularyBackup(rows.map(row=>JSON.parse(row.body)))});}
  catch{return privateJson({error:'词库同步暂时不可用，本机记录会保留'},503);}
 }
 export async function POST(request:Request){

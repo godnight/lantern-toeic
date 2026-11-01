@@ -4,8 +4,13 @@ import path from 'node:path';
 import {repoRoot,wranglerConfig,localProfile,trustedLocalTls,assertPortFree,assertLocalEnvironment} from '../tools/auth-local/profile.mjs';
 
 const action=process.argv[2]||'check';
-if(!['check','migrate','serve'].includes(action)||process.argv.length>3){
- console.error('用法：npm run auth:local -- check|migrate|serve；详见 docs/testing/AUTH-LOCAL-HTTPS-RUNBOOK.md');process.exitCode=2;
+if(action==='prepare'){
+ const {prepareFromFiles}=await import('../tools/auth-local/prepare.mjs');
+ const report=await prepareFromFiles(process.argv.slice(3),Object.keys(process.env));
+ console.log(JSON.stringify(report,null,2));
+ if(report.status!=='PLAN_ONLY')process.exitCode=2;
+}else if(!['check','migrate','serve'].includes(action)||process.argv.length>3){
+ console.error('用法：npm run auth:local -- prepare [--target metadata.json --inventory inventory.json] | check | migrate | serve；详见 tools/auth-local/README.md');process.exitCode=2;
 }else{
  let server;
  try{

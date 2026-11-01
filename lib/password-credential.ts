@@ -30,7 +30,7 @@ export function validatePassword(input: unknown): PasswordValidationResult {
   const bytes = Buffer.from(input, 'utf8');
   // Reject ill-formed UTF-16 rather than silently encoding it as a replacement
   // character, which could make two different input strings the same password.
-  if (points < 15 || points > 128 || bytes.length > 512 || bytes.toString('utf8') !== input) {
+  if (points < 8 || points > 128 || bytes.length > 512 || bytes.toString('utf8') !== input) {
     return { ok: false, error: 'invalid-password' };
   }
   return { ok: true };

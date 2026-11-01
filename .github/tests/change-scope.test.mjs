@@ -117,3 +117,19 @@ test('malformed event/classification failure fails the command without writing s
   assert.notEqual(result.status, 0); assert.equal(readFileSync(output, 'utf8'), '');
   assert.throws(() => classifyChanges([change('harmony/AppScope/app.json5')], () => { throw Error('git show failed'); }), /git show failed/);
 });
+
+
+test('word-card presentation and its data stay targeted while workflow mutations and deletions remain full', () => {
+  const paths = ['app/learn/vocabulary-plan.tsx', 'app/learn/v041-vocabulary.css', 'app/learn/word-card-reference.ts', 'content/word-card-reference.json', 'content/word-card-phonetic-supplement.json', 'scripts/build-word-card-reference.py', 'tests/phase2-vocabulary-ui.test.cjs', 'tests/browser/word-card-layout.cjs', 'tests/browser/word-card-layout.fixture.jsx'];
+  for (const status of ['A', 'M']) {
+    const result = classifyChanges(paths.map(path => change(path, status)));
+    assert.equal(result.level, 'ui'); assert.equal(result.vocabulary_ui, true);
+    assert.equal(result.full, false); assert.equal(result.harmony, false); assert.equal(result.ui, false);
+  }
+  for (const status of ['D', 'T']) assert.equal(classifyChanges([change(paths[0], status)]).full, true);
+  for (const risky of ['lib/vocabulary-workflow.ts', 'lib/use-vocabulary-workflow.ts', 'content/word-card-unknown.json']) {
+    const result = classify([...paths, risky]); assert.equal(result.full, true); assert.equal(result.vocabulary_ui, false);
+  }
+  const mixed = classify([paths[0], 'app/learn/today-dashboard.tsx', '.github/workflows/core.yml']);
+  assert.equal(mixed.vocabulary_ui, true); assert.equal(mixed.ui, true); assert.equal(mixed.tooling, true);
+});

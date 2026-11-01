@@ -29,7 +29,7 @@ test('full Core preserves broad regressions while presentation UI only runs type
     assert.ok(step, `full regression missing: ${command}`);
     assert.match(step, /if: steps\.scope\.outputs\.full == 'true'/);
   }
-  const uiSteps = allSteps.filter(step => /if: steps\.scope\.outputs\.ui == 'true'(?: \|\| steps\.scope\.outputs\.theme_web == 'true')?\n/.test(step)).join('\n');
+  const uiSteps = allSteps.filter(step => /if: steps\.scope\.outputs\.ui == 'true'(?: \|\| steps\.scope\.outputs\.(?:theme_web|vocabulary_ui) == 'true')*\n/.test(step)).join('\n');
   assert.match(uiSteps, /npm ci/); assert.match(uiSteps, /npm run typecheck/);
   assert.match(uiSteps, /tests\/theme-atmosphere\.test\.cjs/);
   assert.doesNotMatch(uiSteps, /poppler|playwright|npm run build|sync:web|scripts\/codex-setup/);
@@ -56,4 +56,13 @@ test('source releases are explicit-only and normal sync does not immediately rep
     assert.match(workflow(name), /npm --prefix harmony run sync:web/);
     assert.doesNotMatch(workflow(name), /npm --prefix harmony run check:web/);
   }
+});
+
+
+test('the word-card fast path checks its actual component and browser without the unrelated product matrix', () => {
+  const selected = steps(workflow('core')).filter(step => /if: steps\.scope\.outputs\.vocabulary_ui == 'true'/.test(step)).join('\n');
+  assert.match(workflow('core'), /if: steps\.scope\.outputs\.ui == 'true' \|\| steps\.scope\.outputs\.vocabulary_ui == 'true'\n\s+run: npm run typecheck/);
+  assert.match(selected, /node --test tests\/phase2-vocabulary-ui\.test\.cjs/);
+  assert.match(selected, /node tests\/browser\/word-card-layout\.cjs --reference-only/);
+  assert.doesNotMatch(selected, /poppler|sync:web|--prefix mobile|test:dictionary|test:browser|codex-setup/);
 });

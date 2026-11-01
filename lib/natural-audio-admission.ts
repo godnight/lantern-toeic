@@ -40,15 +40,30 @@ const sameOptional=(a:string|undefined,b:string|undefined)=>a===b;
 export function matchesNaturalAudioAdmission(row:NaturalAudioAdmission,clip:AdmissionClip,ref:AdmissionReference):boolean{
   return row.clipId===clip.id&&row.cacheKey===clip.cacheKey&&row.encodedSha256===clip.sha256&&row.masterWavSha256===clip.sourceWavSha256&&row.textSha256===clip.textSha256&&row.voiceProfileId===clip.voiceProfileId&&row.engine===clip.engine&&row.provenanceSha256===clip.provenanceSha256&&sameOptional(row.legacySourceId,clip.legacySourceId)&&sameOptional(row.encodingObservationSha256,clip.encodingObservationSha256)&&row.materialId===ref.materialId&&row.segmentId===ref.segmentId&&row.contextHash===ref.contextHash&&(row.activationAssetKey??row.cacheKey)===(ref.activationAssetKey??clip.cacheKey);
 }
+const immutableRowsByClip=new WeakMap<readonly NaturalAudioAdmission[],Map<string,NaturalAudioAdmission[]>>();
 export function compiledNaturalAudioAdmission(packId:string,manifestSha256:string,clip:AdmissionClip,ref:AdmissionReference):NaturalAudioAdmission|null{
-  const rows=compiledNaturalAudioRows(packId,manifestSha256).filter(row=>matchesNaturalAudioAdmission(row,clip,ref));
+  const compiled=compiledNaturalAudioRows(packId,manifestSha256);
+  let byClip=immutableRowsByClip.get(compiled);
+  if(!byClip){byClip=new Map();for(const row of compiled){const rows=byClip.get(row.clipId);if(rows)rows.push(row);else byClip.set(row.clipId,[row]);}immutableRowsByClip.set(compiled,byClip);}
+  const rows=(byClip.get(clip.id)??[]).filter(row=>matchesNaturalAudioAdmission(row,clip,ref));
   return rows.length===1?rows[0]:null;
 }
 export type AdmissionWordBinding={wordId:string;slot:string;textSha256:string;snapshotContextSha256:string;requestContextHash?:string;mp3Sha256?:string;audio:{audioKey:string;materialId:string;segmentId:string;voiceProfileId:string}};
+const immutableBindingRows=new WeakMap<AdmissionTable,Map<string,NaturalAudioAdmission[]>>();
+const bindingRowKey=(materialId:string,segmentId:string,voiceProfileId:string,textSha256:string,contextHash:string|undefined,encodedSha256:string|undefined)=>JSON.stringify([materialId,segmentId,voiceProfileId,textSha256,contextHash,encodedSha256]);
+function bindingCandidates(table:AdmissionTable,binding:AdmissionWordBinding):NaturalAudioAdmission[]{
+ let index=immutableBindingRows.get(table);
+ if(!index){
+  index=new Map();for(const row of table.entries){const key=bindingRowKey(row.materialId,row.segmentId,row.voiceProfileId,row.textSha256,row.contextHash,row.encodedSha256),rows=index.get(key);if(rows)rows.push(row);else index.set(key,[row]);}
+  immutableBindingRows.set(table,index);
+ }
+ const audio=binding.audio;return index.get(bindingRowKey(audio.materialId,audio.segmentId,audio.voiceProfileId,binding.textSha256,binding.requestContextHash,binding.mp3Sha256))??[];
+}
 export function compiledBindingAdmission(packId:string,binding:AdmissionWordBinding):NaturalAudioAdmission|null{
   const selected=table.packId===packId?table:lazyTables.get(packId)?.table;if(!selected)return null;
   const audio=binding.audio;
-  const rows=selected.entries.filter(row=>[row.cacheKey,row.activationAssetKey,row.clipId].includes(audio.audioKey)&&row.materialId===audio.materialId&&row.segmentId===audio.segmentId&&row.voiceProfileId===audio.voiceProfileId&&row.textSha256===binding.textSha256&&row.contextHash===binding.requestContextHash&&row.encodedSha256===binding.mp3Sha256);
+  // Candidate indexing never replaces the exact match or duplicate rejection.
+  const rows=bindingCandidates(selected,binding).filter(row=>[row.cacheKey,row.activationAssetKey,row.clipId].includes(audio.audioKey)&&row.materialId===audio.materialId&&row.segmentId===audio.segmentId&&row.voiceProfileId===audio.voiceProfileId&&row.textSha256===binding.textSha256&&row.contextHash===binding.requestContextHash&&row.encodedSha256===binding.mp3Sha256);
   return rows.length===1?rows[0]:null;
 }
 export function compiledCvWordException(packId:string,binding:AdmissionWordBinding,word?:{pos:string;meaning:string;example:string;translation:string}):boolean{

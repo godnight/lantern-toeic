@@ -26,7 +26,7 @@ function load(file, imports = {}, globals = {}) {
     module:ts.ModuleKind.CommonJS, target:ts.ScriptTarget.ES2022, jsx:ts.JsxEmit.ReactJSX,
   }}).outputText;
   vm.runInNewContext(code, {exports, require(name) {
-    if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals:globals}).resolve(name,file);
+    if(!Object.hasOwn(imports,name))return require('./helpers/actual-source-loader.cjs').createSourceLoader({permitLearningAccess:true,root,imports,globals:globals}).resolve(name,file);
     return imports[name];
   }, Date, Intl, Map, Set, structuredClone, crypto:{randomUUID}, Blob, URL,
   URLSearchParams, AbortController, ...globals}, {filename:file});
@@ -170,7 +170,8 @@ function workspace(data, {failDownload = false} = {}) {
   for (const name of ['dialog','tabs','select','radio-group','progress','sonner'])imports['@/components/ui/'+name]=stubs;
   const selection=load('lib/practice-selection.ts',{'./study-model':model},browser);
   Object.assign(imports,require(path.join(root,'tests/helpers/phase2-shell-fixture.cjs')).workflowShellFixture(react,selection));
-  const app=load('app/study-app.tsx',imports,browser);
+  Object.assign(imports,require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root));
+ const app=load('app/study-workspace.tsx',imports,browser);
   function render(){cursor=0;tree=app.StudyWorkspace({owner:null,nativeMode:true});const pending=effects;effects=[];pending.forEach(run=>run());return tree;}
   function button(label){const found=nodes(tree,node=>node.type==='button'&&(textOf(node)===label||label==='我的'&&node.props['aria-label']==='打开个人信息与设置'))[0];assert.ok(found,`Missing real UI button: ${label}`);return found;}
   function preserved(){assert.equal(JSON.stringify(data),before.data,'Input study data changed.');

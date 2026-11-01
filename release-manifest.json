@@ -1,7 +1,7 @@
 {
-  "version": "0.4.5",
+  "version": "0.4.6",
   "prerelease": true,
-  "notes": "docs/releases/v0.4.5-today-actions.md",
-  "qa": "docs/testing/V045-TODAY-ACTIONS-20261024.md",
+  "notes": "docs/PROJECT_STATUS.md",
+  "qa": "docs/PROJECT_STATUS.md",
   "nativeHapAvailable": false
 }

@@ -13,6 +13,7 @@ const {pathToFileURL} = require('node:url');
 
 const REPO = path.resolve(process.env.LANTERN_WORDCARD_QA_REPO || path.join(__dirname, '../..'));
 const repoRequire = createRequire(path.join(REPO, 'package.json'));
+const REFERENCE_ONLY = process.argv.includes('--reference-only');
 const CONDITIONS = [
   {id: 'paper-320', theme: 'paper', width: 320, height: 640, font: 100},
   {id: 'hollow-390', theme: 'hollow', width: 390, height: 844, font: 100},
@@ -20,11 +21,11 @@ const CONDITIONS = [
   {id: 'night-wide', theme: 'crystal', width: 1024, height: 768, font: 100},
   {id: 'paper-short', theme: 'paper', width: 320, height: 480, font: 100},
   {id: 'hollow-font200', theme: 'hollow', width: 390, height: 844, font: 200},
-];
+].filter(condition => !REFERENCE_ONLY || ['paper-320', 'hollow-390', 'hollow-font200'].includes(condition.id));
 const RATINGS = ['known', 'fuzzy', 'forgotten'];
 const LABELS = {known: '认识', fuzzy: '模糊', forgotten: '忘记'};
 const report = {
-  schemaVersion: 1, status: 'RUNNING', scope: 'Actual word-card/source CSS geometry with isolated synthetic workflow I/O',
+  schemaVersion: 1, status: 'RUNNING', mode: REFERENCE_ONLY ? 'reference-only' : 'full-word-card', scope: 'Actual word-card/source CSS geometry with isolated synthetic workflow I/O',
   startedAt: new Date().toISOString(), conditions: [], screenshots: [], pageErrors: [], blockedExternal: [],
   limitations: [
     'Synthetic promises/receipts validate component transitions and callback counts, not IndexedDB durability or actual SRS scheduling.',
@@ -55,7 +56,7 @@ async function pins() {
   const inputs = ['app/learn/vocabulary-plan.tsx', 'app/learn/workspace-shell.tsx', 'app/globals.css',
     'app/redesign.css', 'app/v041-design-theme.css', 'app/learn/v041-vocabulary.css',
     'app/learn/audio-redesign.css', 'app/v041-app-redesign.css', 'app/learn/legal-pages.css',
-    'public/build-identity.json'];
+    'app/learn/word-card-reference.ts', 'content/word-card-reference.json', 'public/build-identity.json'];
   report.sourcePins = [];
   for (const relative of inputs) {
     const bytes = await fs.readFile(path.join(REPO, relative));
@@ -287,9 +288,25 @@ async function inputPreparationControl(condition) {
   control.scrollRestoration='NONE_CONTEXT_IS_DISCARDED';
   return control;
 }
-async function audioStatusPressure(condition, wordIndex, reference, expectedReadingScroll = null) {
+async function audioStatusPressure(condition, wordIndex, reference, preserveReading = false) {
   const feedback = page.locator('.v041-word-heading .speech-audio-feedback');
   assert.equal(await feedback.count(), 1, 'Actual SpeechPlayer status slot missing');
+  // A growing status above the text may change scrollTop to preserve its visual anchor.
+  // Compare the same teaching paragraph in the viewport, including after clearing status.
+  const readingAnchor = () => page.locator('.phase2-word-content').evaluate(element => {
+    const paragraph = element.querySelector('.phase2-word-etymology > p') || element.querySelector('.phase2-word-meaning > p:last-child');
+    const rect = paragraph.getBoundingClientRect();
+    return {text: paragraph.textContent, top: rect.top, bottom: rect.bottom};
+  });
+  const anchored = preserveReading ? await readingAnchor() : null;
+  const assertReadingAnchor = async row => {
+    if (!anchored) return;
+    const current = await readingAnchor();
+    row.readingAnchor = {...current, topDelta: current.top - anchored.top, bottomDelta: current.bottom - anchored.bottom};
+    assert.equal(current.text, anchored.text, 'Audio status replaced the current reading paragraph');
+    assert.ok(Math.abs(row.readingAnchor.topDelta) <= 2 && Math.abs(row.readingAnchor.bottomDelta) <= 2,
+      'Audio status moved the current reading paragraph in the viewport');
+  };
   for (const [phase, message] of [['loading', '正在准备音频…'], ['error', '合成音频失败：请稍后重试。此处仅验证较长错误文字不撑动卡片和操作位。'], ['replay', '合成重播状态：音频已更新，请从头播放。']]) {
     await feedback.evaluate((element, message) => {
       const span = document.createElement('span'); span.dataset.qaSyntheticAudio = 'true';
@@ -297,11 +314,11 @@ async function audioStatusPressure(condition, wordIndex, reference, expectedRead
     }, message);
     const actual = await snapshot(condition, wordIndex, `synthetic-audio-${phase}`, {syntheticAudioStateOnly: true});
     stable(reference, actual);
-    if (expectedReadingScroll !== null) assert.ok(Math.abs(actual.content.scrollTop - expectedReadingScroll) <= 2,
-      'Audio status pressure reset the current reading position');
+    await assertReadingAnchor(actual);
     await feedback.locator('[data-qa-synthetic-audio]').evaluateAll(elements => elements.forEach(element => element.remove()));
     const neutral=await snapshot(condition,wordIndex,`synthetic-audio-${phase}-cleared-neutral`,{syntheticAudioStateOnly:true});
     stable(reference,neutral);
+    await assertReadingAnchor(neutral);
   }
 }
 async function openFixturePage(config) {
@@ -331,16 +348,30 @@ async function openFixturePage(config) {
   await page.goto(`${origin}/?theme=${config.theme}&font=${config.font}`, {waitUntil: 'networkidle'});
   await page.waitForFunction(() => !!window.__wordCardQA);
   await page.locator('.v045-stable-word-card').waitFor({state: 'visible'});
-  await reachControls();
+  if (config.prepareControls !== false) await reachControls();
 }
 async function runFreshPreparationControl(){
   let control;
   try{await openFixturePage({...CONDITIONS[0],id:'paper-320-independent-trial'});control=await inputPreparationControl({id:'paper-320-independent-trial'});}
   finally{await context?.close();context=null;page=null;if(control)control.contextClosedBeforeMatrix=true;}
 }
+async function assertWordReference(word, revealed) {
+  const phonetic = page.locator('.word-phonetic');
+  assert.equal((await phonetic.innerText()).trim(), word.phonetics.length ? word.phonetics.join(' · ') : '暂无音标');
+  const layout = await phonetic.evaluate(element => {
+    const style = getComputedStyle(element);
+    return {clientWidth: element.clientWidth, scrollWidth: element.scrollWidth, lineClamp: style.webkitLineClamp, overflow: style.overflow};
+  });
+  assert.ok(layout.scrollWidth <= layout.clientWidth + 1, 'Phonetic variants overflow horizontally');
+  assert.ok(!layout.lineClamp || layout.lineClamp === 'none', 'Phonetics were line-clamped');
+  assert.notEqual(layout.overflow, 'hidden', 'Phonetics were clipped');
+  const etymology = page.locator('.phase2-word-etymology');
+  assert.equal(await etymology.count(), revealed && word.etymology ? 1 : 0, 'Etymology revealed before a confirmed rating or missing after it');
+  if(revealed && word.etymology) assert.equal((await etymology.locator('p').innerText()).trim(), word.etymology.trim());
+}
 async function runCondition(config) {
   const condition = {...config, status: 'RUNNING', geometry: [], flow: []}; report.conditions.push(condition);
-  await openFixturePage(config);
+  await openFixturePage({...config, prepareControls: config.id !== 'hollow-390'});
   const first = await snapshot(condition, 0, 'before');
   await screenshot(condition, 'before');
   await audioStatusPressure(condition, 0, first);
@@ -349,6 +380,7 @@ async function runCondition(config) {
     assert.equal(beforeState.cursor, index);
     assert.equal(await page.getByText(word.answerMarker, {exact: false}).count(), 0, 'Unrevealed answer is mounted in DOM');
     assert.equal(await page.locator('.phase2-word-meaning').count(), 0);
+    await assertWordReference(word, false);
     const before = index === 0 ? first : await snapshot(condition, index, 'before'); stable(first, before);
     const savedBefore = beforeState.saved.length, attemptBefore = beforeState.attempts.length;
     await visiblePointerClick(page.getByRole('button', {name: label, exact: true}),condition,index,'rating',first);
@@ -382,21 +414,38 @@ async function runCondition(config) {
     assert.equal(saved.saved.at(-1).rating, rating);
     assert.equal(saved.next.length, index, 'Next callback ran before explicit Next');
     assert.ok((await page.locator('.phase2-word-meaning').innerText()).includes(word.answerMarker));
+    await assertWordReference(word, true);
     const revealed = await snapshot(condition, index, 'revealed'); stable(first, revealed);
     assert.equal(await page.evaluate(() => document.activeElement?.matches('.phase2-word-content')), true,
       'First confirmed reveal lost focus instead of moving to the reading region');
+    if (config.id === 'hollow-390' && index === 0) {
+      const visible = await page.locator('.phase2-word-content').evaluate(element => {
+        const area = element.getBoundingClientRect();
+        const targets = [...element.querySelectorAll('.phase2-current-word,.word-phonetic,.phase2-word-meaning > p,.phase2-word-example,.phase2-word-etymology')];
+        const button = element.querySelector('.phase2-word-example .speech-audio-icon');
+        const rect = button.getBoundingClientRect(), hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+        return {scrollTop: element.scrollTop, fits: element.scrollHeight <= element.clientHeight + 1,
+          allVisible: targets.every(target => {const r = target.getBoundingClientRect(); return r.top >= Math.max(0, area.top) - 1 && r.bottom <= Math.min(innerHeight, area.bottom) + 1;}),
+          exampleAudioHit: hit === button || button.contains(hit)};
+      });
+      assert.deepEqual(visible, {scrollTop: 0, fits: true, allVisible: true, exampleAudioHit: true},
+        'Typical revealed card must show phonetics, meaning, example, translation and etymology with a reachable example-audio target before scrolling');
+      condition.typicalFirstScreen = visible;
+      await screenshot(condition, 'typical-revealed-first-screen');
+    }
     const reading = await page.locator('.phase2-word-content').evaluate(element => {
       element.scrollTop = element.scrollHeight;
-      const last = element.querySelector('.phase2-word-meaning > p:last-child');
+      const last = element.querySelector('.phase2-word-etymology > p') || element.querySelector('.phase2-word-meaning > p:last-child');
       const r = element.getBoundingClientRect(), l = last.getBoundingClientRect();
       return {scrollTop: element.scrollTop, scrollHeight: element.scrollHeight, clientHeight: element.clientHeight,
         lastText: last.textContent, lastBottom: l.bottom, contentBottom: r.bottom, lastHeight: l.height};
     });
-    assert.ok(reading.lastText.includes(word.finalMarker));
+    assert.ok((await page.locator('.phase2-word-meaning').innerText()).includes(word.finalMarker));
+    assert.ok(reading.lastText.includes(word.etymology || word.finalMarker));
     assert.ok(reading.lastBottom <= reading.contentBottom + 2 && reading.lastHeight > 0, 'Last teaching text cannot be scrolled into reading slot');
     if (word.long) assert.ok(reading.scrollHeight > reading.clientHeight && reading.scrollTop > 0, 'Long-content fixture did not exercise reading scroll');
     if (index === 1) {
-      await audioStatusPressure(condition, index, first, reading.scrollTop);
+      await audioStatusPressure(condition, index, first, true);
       await screenshot(condition, 'long-meaning-end');
     }
     condition.flow.push({wordIndex: index, rating, saveAttempts: saved.attempts.filter(item => item.cursor === index).length, savedOnce: true, reading});

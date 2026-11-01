@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "platform": "sites",
+  "purpose": "isolated-auth-test",
+  "accountId": "",
+  "projectId": "",
+  "origin": "",
+  "database": {"id": "", "name": "", "binding": "DB"},
+  "vars": {"LANTERN_AUTH_ENABLED": "false"},
+  "dataPolicy": "synthetic-only-empty"
+}

@@ -35,7 +35,9 @@ test("renders the production learning shell and install metadata", async () => {
   assert.match(html, /<link(?=[^>]*rel="manifest")(?=[^>]*href="\/manifest.webmanifest")[^>]*>/);
   // SSR has no device first-run inventory and this fixture has no account.
   // The real client must verify those gates before mounting a learning partition.
-  assert.match(html, /<h1>正在准备微光<\/h1>/);
+  assert.match(html, /<h1[^>]*>微光账号<\/h1>/);
+  assert.match(html, /role="status"[^>]*>正在确认账号，请稍候。<\/p>/);
+  assert.doesNotMatch(html, /自然音频目录仍在核验|学习内容仍在核验|VocabularyCatalogPendingError|StudyContentPendingError/);
   assert.match(html, /aria-busy="true"/);
   assert.match(html, /href="\/privacy"/);
   assert.match(html, /href="\/terms"/);

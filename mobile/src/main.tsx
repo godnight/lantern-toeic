@@ -10,7 +10,7 @@ import "../../app/v041-app-redesign.css";
 import "../../app/learn/legal-pages.css";
 import {PublicInfoBoundary} from "../../app/learn/legal-pages";
 import {installHarmonyHost} from '../../lib/native-host';
-import {installBundledLessonAudio} from '../../lib/lesson-audio';
+import {installBundledLessonAudio} from '../../lib/bundled-lesson-audio';
 import audio from '../offline-audio/manifest.json';
 installBundledLessonAudio(audio.clips);
 installHarmonyHost();

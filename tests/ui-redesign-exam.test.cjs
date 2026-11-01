@@ -91,7 +91,7 @@ const {renderToStaticMarkup}=require(path.join(siteRoot,'node_modules/react-dom/
 const icons=require(path.join(siteRoot,'node_modules/lucide-react'));
 function load(file,imports={},globals={}) {
   const exports={},code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
-  vm.runInNewContext(code,{exports,require:name=>{assert.ok(name in imports,`Unexpected import: ${name}`);return imports[name];},
+  vm.runInNewContext(code,{exports,require:name=>{if(name==='@/lib/learning-access')return {useLearningAccess:()=>()=>true};assert.ok(name in imports,`Unexpected import: ${name}`);return imports[name];},
     Date,Intl,Map,Set,Promise,Error,JSON,URL,Blob,AbortController,TextEncoder,Uint8Array,Uint32Array,ArrayBuffer,atob,btoa,setTimeout,clearTimeout,crypto:globalThis.crypto,...globals},{filename:file});
   return exports;
 }

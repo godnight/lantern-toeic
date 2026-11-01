@@ -9,7 +9,7 @@ const backup=z.object({
  profile,
  attempts:z.array(z.object({id,qid:z.string().min(1).max(100),choice:z.number().int().min(0).max(3),correct:z.boolean(),createdAt:stamp,seconds:z.number().int().min(0).max(7200),mode:z.enum(['first','review'])})),
  checkins:z.array(z.object({id,date:z.string().refine(validStudyDate),minutes:z.number().int().min(1).max(240),load:z.enum(['轻','刚好','重']),note:z.string().max(1000),createdAt:stamp})),
- recordings:z.array(z.object({id,promptId:z.string().min(1).max(100),title:z.string().max(200),createdAt:stamp,duration:z.number().min(0).max(7200),mime:z.string().min(1).max(100),uploaded:z.boolean().optional(),note:z.string().max(1000).optional()})),
+ recordings:z.array(z.object({id,promptId:z.string().min(1).max(100),title:z.string().max(200),createdAt:stamp,duration:z.number().min(0).max(7200),mime:z.string().min(1).max(100),uploaded:z.boolean().optional(),note:z.string().max(1000).optional(),captureImplementation:z.enum(['arkweb-pcm-wav','harmony-avrecorder-aac','browser-mediarecorder']).optional()})),
  questionMarks:z.array(z.custom<QuestionMark>(validQuestionMark)).default([]),
  resourceTasks:z.array(z.custom<ResourceTask>(validResourceTask)).default([])
 });

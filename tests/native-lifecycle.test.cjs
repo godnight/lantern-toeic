@@ -10,7 +10,8 @@ const ts = require(root + '/node_modules/typescript');
 // Exercise the shipped TypeScript and TSX together. The mocks below model browser
 // events and React hook slots; they do not copy the native or recording logic.
 function load(file, imports = {}, globals = {}) {
-  const dependencies=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals});
+ imports={...require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root),...imports};
+  const dependencies=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals,permitLearningAccess:true});
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(path.join(root, file), 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX }

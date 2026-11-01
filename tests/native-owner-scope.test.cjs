@@ -72,8 +72,11 @@ function combinedFactory(runtime) {
 const ready = value => value.study.ready && value.vocabulary.ready && value.flow.ready && value.practice.ready;
 
 test('actual native hooks keep owner A/B and old guest locally writable while remoteEnabled=false prevents fetch', async t => {
-  const h = hookHarness(combinedFactory, { owner: null }); t.after(() => h.dispose());
+  const h = hookHarness(combinedFactory, { owner: null }, { prepareWorkflowCatalog: true }); t.after(() => h.dispose());
   await h.settle(ready);
+  const preparedAudio = h.runtime.load('lib/prepare-natural-audio-catalog.ts').readPreparedNaturalAudioCatalog();
+  assert.ok(preparedAudio.index, 'The hook fixture prepared the real packaged catalogue before loading browser consumers');
+  assert.equal(preparedAudio.error, null);
   const model = h.runtime.load('lib/study-model.ts');
   const domain = h.runtime.load('lib/learning-domain-repository.ts');
   const sharedReviewId = 'native-scope-shared-review';
