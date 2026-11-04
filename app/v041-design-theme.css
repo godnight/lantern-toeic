@@ -53,6 +53,8 @@
 body[data-ui-theme] .button.primary{background:var(--ui-primary);color:var(--ui-on-primary);border-color:transparent;border-radius:12px;}
 body[data-ui-theme] .text-button{color:var(--ui-primary);}
 body[data-ui-theme] :is(.workspace-sidebar nav,.workspace-mobile-nav) button[aria-current="page"]{color:var(--ui-primary);background:var(--ui-selection);box-shadow:none;}
+/* Intentional silk motif: the woven "needle" asymmetry on primary actions is a
+   deliberate style choice (approved in the r1 theme review), not a typo. */
 body[data-ui-theme="silk"] :is(.button.primary,.practice-footer>.primary,.phase2-rating-actions>.primary){border-radius:17px 8px 17px 8px;}
 body[data-ui-theme="silk"] :is(.thin-progress [data-slot="progress-indicator"],.session-strip>span){background:linear-gradient(90deg,var(--ui-primary),#b59c76);}
 

@@ -64,7 +64,7 @@ export function ThemeScene({theme,scene='blue-lake',caption,className='',loading
 export function ThemeMotif(_props:ThemeMotifProps){return null;}
 
 export type ThemeChooserProps={theme:Theme;onChange:(theme:Theme)=>void;disabled?:boolean};
-const NAMES:Record<Theme,string>={paper:'日间',crystal:'夜间',hollow:'空洞骑士',silk:'丝之歌'};
+const NAMES:Record<Theme,string>={paper:'日间',crystal:'夜间',hollow:'圣巢之夜',silk:'丝歌之夜'};
 
 /** One real theme change action; the parent remains the only persisted-state writer. */
 export function ThemeChooser({theme,onChange,disabled=false}:ThemeChooserProps){
