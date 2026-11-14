@@ -15,7 +15,7 @@ export type WorkspaceShellProps={
  nav:string;theme:Theme;name:string;scope:string;syncLabel:string;reviewCount:number;
  onNavigate:(nav:string)=>void;onSearch:()=>void;onSync:()=>void;focused?:boolean;children:ReactNode;
  /** Parent owns navigation/history and may override the default personal-page hierarchy. */
- onBack?:()=>void;backLabel?:string;onProfile?:()=>void;
+ onBack?:()=>void;backLabel?:string;onProfile?:()=>void;discoveryFeedActive?:boolean;
 };
 
 const TITLES:Record<string,string>={today:'今日学习',train:'练习',review:'复习',progress:'进度',resources:'发现',
@@ -41,13 +41,13 @@ function Brand({onClick,mobile=false}:{onClick:()=>void;mobile?:boolean}){
 }
 
 export function WorkspaceShell({nav,theme,name,scope,syncLabel,reviewCount,onNavigate,onSearch,onSync,
- focused=false,children,onBack,backLabel,onProfile}:WorkspaceShellProps){
+ focused=false,children,onBack,backLabel,onProfile,discoveryFeedActive=false}:WorkspaceShellProps){
  const subpage=PERSONAL_PAGES.has(nav);
  const parent=nav==='profile'?'today':'profile';
  const parentLabel=backLabel||(parent==='today'?'今日学习':'我的');
  const goBack=onBack||(()=>onNavigate(parent));
  const openProfile=onProfile||(()=>onNavigate('profile'));
- return <div className={`lantern-workspace v040-workspace-shell${focused?' workspace-focused':''}${subpage?' v040-workspace-subpage':''}`} data-v040-view={nav}>
+ return <div className={`lantern-workspace v040-workspace-shell${focused?' workspace-focused':''}${subpage?' v040-workspace-subpage':''}${discoveryFeedActive?' workspace-discovery-feed':''}`} data-v040-view={nav}>
   <a className="workspace-skip" href="#workspace-main">跳到学习内容</a>
 
   <aside className="workspace-sidebar" aria-label="学习空间">

@@ -21,8 +21,13 @@ function fixture(file,initial){
  const window={localStorage:local,sessionStorage:session,scrollY:0,scrollTo(value){this.scrollY=value.top;scrolls.push(value.top);},addEventListener(name,fn){const set=events.get(name)??new Set();set.add(fn);events.set(name,set);},removeEventListener(name,fn){events.get(name)?.delete(fn);}};
  const same=(a,b)=>a&&b&&a.length===b.length&&a.every((value,i)=>Object.is(value,b[i]));
  const react={useState(value){const i=cursor++;if(!(i in slots))slots[i]=typeof value==='function'?value():value;return [slots[i],value=>{slots[i]=typeof value==='function'?value(slots[i]):value;dirty=true;}];},useRef(value){const i=cursor++;if(!(i in slots))slots[i]={current:value};return slots[i];},useMemo(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps))slots[i]={deps,value:fn()};return slots[i].value;},useEffect(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps)){const prior=slots[i];slots[i]={deps,work:fn};pending.push(()=>{prior?.cleanup?.();slots[i].cleanup=fn();});}}};react.useLayoutEffect=react.useEffect;
- const jsx=(type,props)=>({type,props}),icons=Object.fromEntries(['ArrowLeft','ArrowUpRight','Bookmark','Search','BookOpen','Check','ChevronRight','Clock','Headphones','Info','NotebookPen'].map(name=>[name,'icon-'+name]));
- const loader=createSourceLoader({root,imports:{react,'react/jsx-runtime':{jsx,jsxs:jsx},'lucide-react':icons,'@/lib/native-host':{registerNativeBack(fn){backHandler=fn;return()=>{if(backHandler===fn)backHandler=null;};}}},globals:{window,requestAnimationFrame:fn=>{fn();return 1;},cancelAnimationFrame(){}}});
+ const jsx=(type,props)=>({type,props}),icons=Object.fromEntries(['ArrowLeft','ArrowUpRight','Bookmark','Search','BookOpen','Check','ChevronRight','ChevronLeft','Clock','Headphones','Info','NotebookPen','FileText','Library','RefreshCw','SlidersHorizontal','Video','X'].map(name=>[name,'icon-'+name]));
+ // Product component and actual curated data, with network held pending so this
+ // synchronous React fixture verifies interaction rather than pretending to test fetch.
+ const entries=require('../content/discovery-native.json').entries;
+ const sources=[...new Map(entries.map(item=>[item.sourceId,{id:item.sourceId,label:item.platform,mode:'curated'}])).values()];
+ const feed={DISCOVERY_SEED:entries,readDiscoveryFeedCache:()=>({entries,sources,status:'seed',refreshedAt:null}),refreshDiscoveryFeed:()=>new Promise(()=>{})};
+ const loader=createSourceLoader({root,imports:{react,'react/jsx-runtime':{jsx,jsxs:jsx},'lucide-react':icons,'@/lib/discovery-feed':feed,'@/lib/native-host':{registerNativeBack(fn){backHandler=fn;return()=>{if(backHandler===fn)backHandler=null;};}}},globals:{window,requestAnimationFrame:fn=>{fn();return 1;},cancelAnimationFrame(){}}});
  const Component=loader.load(file).default;
  const render=()=>{let loops=0;do{dirty=false;cursor=0;tree=Component(props);for(const node of nodes(tree,node=>node.props?.ref)){const element={focus(){}};if(typeof node.props.ref==='function')node.props.ref(element);else node.props.ref.current=element;}while(pending.length)pending.shift()();assert(++loops<10,'React fixture did not settle');}while(dirty);return tree;};
  render();return {get tree(){return tree;},local,session,window,events,scrolls,libraryActive,loader,render,update(next){props={...props,...next};return render();},find(predicate){const found=nodes(tree,predicate)[0];assert(found,'Missing rendered node');return found;},click(predicate){this.find(node=>node.type==='button'&&predicate(node)).props.onClick();return render();},back(){const result=backHandler?.();render();return result;},replayEffects(){slots.filter(slot=>slot?.work).forEach(slot=>slot.cleanup?.());slots.filter(slot=>slot?.work).forEach(slot=>{slot.cleanup=slot.work();});return render();},unmount(){slots.forEach(slot=>slot?.cleanup?.());}};
@@ -32,13 +37,13 @@ const kind=id=>node=>node.props?.['data-discovery-category']===id;
 test('real discovery component searches, filters, saves after storage success and retains the mounted library',()=>{
  const changes=[],library={type:'stateful-library-fixture',props:{}},access=()=>true,h=fixture('app/learn/discovery-view.tsx',{owner:A,canAccess:access,library,onLibraryActiveChange:value=>changes.push(value)});
  try{
-  assert.equal(nodes(h.tree,node=>node.props?.className==='discovery-card').length,3);
-  h.find(node=>node.type==='input').props.onChange({target:{value:'Jobs'}});h.render();assert.equal(nodes(h.tree,node=>node.props?.className==='discovery-card').length,1);
+  assert.equal(nodes(h.tree,node=>node.type==='article'&&hasClass(node,'discovery-card')).length,require('../content/discovery-native.json').entries.length);
+  h.find(node=>node.type==='input').props.onChange({target:{value:'Jobs'}});h.render();assert.equal(nodes(h.tree,node=>node.type==='article'&&hasClass(node,'discovery-card')).length,1);
   h.click(node=>node.props?.['data-discovery-save']==='stanford-jobs-2005');assert.equal(h.find(node=>node.props?.['data-discovery-save']==='stanford-jobs-2005').props['aria-pressed'],true);
-  h.click(kind('library'));assert.equal(h.find(node=>node.props?.className==='discovery-library').props.hidden,false);assert.equal(nodes(h.tree,node=>node===library).length,1);
-  h.click(kind('all'));assert.equal(h.find(node=>node.props?.className==='discovery-library').props.hidden,true);assert.equal(nodes(h.tree,node=>node===library).length,1);
+  h.click(node=>node.props?.['aria-label']==='资料库');assert.equal(h.find(node=>node.props?.className==='discovery-library').props.hidden,false);assert.equal(nodes(h.tree,node=>node===library).length,1);
+  h.click(node=>node.props?.className==='discovery-library-back');assert.equal(h.find(node=>node.props?.className==='discovery-library').props.hidden,true);assert.equal(nodes(h.tree,node=>node===library).length,1);
   h.update({libraryFocused:true});assert(h.find(node=>node.props?.className==='discovery-categories'));
-  h.click(kind('library'));assert.equal(nodes(h.tree,node=>node.props?.className==='discovery-categories').length,0);
+  h.click(node=>node.props?.['aria-label']==='资料库');assert.equal(nodes(h.tree,node=>node.props?.className==='discovery-categories').length,0);
  }finally{h.unmount();}
 });
 
@@ -69,10 +74,10 @@ test('StrictMode effect replay reopens only the current generation and rejected 
 
 test('directory source remembers same-owner query/category/scroll and does not claim playback or study completion',()=>{
  const access=()=>true,h=fixture('app/learn/discovery-view.tsx',{owner:A,canAccess:access,library:null});
- try{h.click(kind('person'));h.find(node=>node.type==='input').props.onChange({target:{value:'Jobs'}});h.render();h.window.scrollY=412;
+ try{h.click(kind('article'));h.find(node=>node.type==='input').props.onChange({target:{value:'Jobs'}});h.render();h.window.scrollY=412;
   let prevented=false;h.find(node=>node.props?.['data-discovery-source']==='stanford-jobs-2005').props.onClick({preventDefault(){prevented=true;}});assert.equal(prevented,false);
-  const state=h.loader.load('lib/discovery-return.ts').readDiscoveryReturn(A,h.session);assert.equal(state.category,'person');assert.equal(state.query,'Jobs');assert.equal(state.scroll,412);
-  assert.equal(nodes(h.tree,node=>node.type==='video'||node.type==='audio'||node.type==='iframe').length,0);assert.match(text(h.tree),/不会自动记作听完/);
+  const state=h.loader.load('lib/discovery-return.ts').readDiscoveryReturn(A,h.session);assert.equal(state.category,'article');assert.equal(state.query,'Jobs');assert.equal(state.scroll,412);
+  assert.equal(nodes(h.tree,node=>node.type==='video'||node.type==='audio'||node.type==='iframe').length,0);
  }finally{h.unmount();}
 });
 
@@ -99,55 +104,39 @@ test('default discovery stays quiet while actual favorite success and rejected w
   h.click(node=>node.props?.['data-discovery-save']==='stanford-jobs-2005');
   assert.equal(notices().length,1);assert.equal(notices()[0].props.role,'status');assert.equal(notices()[0].props['aria-live'],'polite');assert(text(notices()[0]).includes('收藏未能保存'));
   assert.equal(h.find(node=>node.props?.['data-discovery-save']==='stanford-jobs-2005').props['aria-pressed'],true,'Rejected cancellation cannot pretend the saved item was removed');
-  h.click(kind('person'));assert.equal(notices().length,0,'The next browsing intent clears the operation feedback');
+  h.click(kind('article'));assert.equal(notices().length,0,'The next browsing intent clears the operation feedback');
  }finally{h.unmount();}
 });
 
-test('real card metadata presents known facts and keeps full uncertainty and source conditions in closed disclosures',()=>{
+test('curated cards show original titles, safe covers and functional source actions',()=>{
  const h=fixture('app/learn/discovery-view.tsx',{owner:A,canAccess:()=>true,library:null});
  try{
-  const entries=h.loader.load('lib/discovery-catalog.ts').discoveryEntries;
+  const entries=require('../content/discovery-native.json').entries;
   const cards=nodes(h.tree,node=>node.type==='article'&&hasClass(node,'discovery-card'));
   assert.equal(cards.length,entries.length);
-  const cardFor=id=>cards.find(card=>nodes(card,node=>node.props?.['data-discovery-source']===id).length===1);
   for(const entry of entries){
-   const card=cardFor(entry.id);assert(card,'Actual catalog entry must remain visible');
-   const surface=visibleText(card),details=nodes(card,node=>node.type==='details'&&hasClass(node,'discovery-rights'));
-   assert.equal(details.length,1);assert.equal(Boolean(details[0].props.open),false);
-   assert(surface.includes(entry.title));assert(surface.includes(entry.author));assert(surface.includes(entry.publisher));assert(surface.includes(entry.description));
-   const link=nodes(card,node=>node.props?.['data-discovery-source']===entry.id)[0];assert.equal(link.props.href,entry.sourceUrl);assert.equal(link.props.target,'_blank');assert.equal(link.props.rel,'noopener noreferrer');
-   assert.equal(nodes(card,node=>node.props?.['data-discovery-save']===entry.id).length,1);
-   for(const placeholder of ['时长以原站为准','字幕以原站为准','难度暂未评估'])assert(!surface.includes(placeholder),'Unknown metadata must not occupy the default card');
-   const explanation=text(details[0]);assert(explanation.includes(entry.availability.note));assert(explanation.includes('打开原站不会自动记作听完，也不增加学习时长。'));
-   for(const url of entry.rights.evidenceUrls)assert(nodes(details[0],node=>node.type==='a'&&node.props.href===url).length===1);
-   assert(Object.values(entry.rights.capabilities).every(value=>value===false),'The real catalog must keep all media/AI capabilities closed');
+   const card=cards.find(card=>nodes(card,node=>node.props?.['data-discovery-source']===entry.id).length===1);assert(card);
+   const headings=nodes(card,node=>node.type==='h2');assert.equal(headings.length,1);assert.equal(text(headings[0]),entry.title);
+   const images=nodes(card,node=>node.type==='img');
+   if(entry.cover){assert.equal(images.length,1);assert.equal(images[0].props.src,entry.cover.src);assert(text(card).includes(entry.cover.credit));}
+   else assert.equal(images.length,0);
    assert.equal(nodes(card,node=>['video','audio','iframe'].includes(node.type)).length,0);
+   const link=nodes(card,node=>node.props?.['data-discovery-source']===entry.id)[0];assert.equal(link.props.href,entry.sourceUrl);
+   assert.equal(link.props.target,'_blank');assert.equal(link.props.rel,'noopener noreferrer');
   }
-  const nasa=entries.find(entry=>entry.id==='nasa-kennedy-rice-1962');assert.equal(nasa.durationSeconds,null);assert.equal(nasa.durationLabel,null);assert.equal(nasa.captions,null);assert.equal(nasa.difficulty,null);
-  assert.equal(nodes(cardFor(nasa.id),node=>hasClass(node,'discovery-meta')).length,0);
-  const stanford=entries.find(entry=>entry.id==='stanford-jobs-2005');assert.equal(stanford.captions,'原站有英文演讲稿；视频字幕未核');
-  const stanfordCard=cardFor(stanford.id),stanfordMeta=nodes(stanfordCard,node=>hasClass(node,'discovery-meta'));
-  assert.equal(stanfordMeta.length,1);assert.equal(text(stanfordMeta[0]),'英文稿');assert(!visibleText(stanfordCard).includes(stanford.captions));assert(text(nodes(stanfordCard,node=>node.type==='details')[0]).includes(stanford.captions));
-  const film=entries.find(entry=>entry.id==='blender-tears-of-steel');assert.equal(film.durationLabel,'约 12 分钟（官方标注）');
-  assert(visibleText(cardFor(film.id)).includes(film.durationLabel));
  }finally{h.unmount();}
 });
 
-test('real content titles lead cards without invented covers or duplicate category labels while actions and disclosures remain usable',()=>{
+test('source selection filters content, including selecting no sources and resetting',()=>{
  const h=fixture('app/learn/discovery-view.tsx',{owner:A,canAccess:()=>true,library:null});
  try{
-  const catalog=h.loader.load('lib/discovery-catalog.ts'),cards=nodes(h.tree,node=>node.type==='article'&&hasClass(node,'discovery-card'));
-  assert.equal(cards.length,catalog.discoveryEntries.length);
-  for(const entry of catalog.discoveryEntries){
-   const card=cards.find(card=>nodes(card,node=>node.props?.['data-discovery-source']===entry.id).length===1);assert(card);
-   assert.equal(nodes(card,node=>node.type==='img'||hasClass(node,'discovery-cover')||typeof node.props?.className==='string'&&node.props.className.split(' ').some(name=>name.startsWith('discovery-cover-'))).length,0,'No unlicensed or invented cover stands in for the content');
-   const headings=nodes(card,node=>['h2','h3'].includes(node.type));assert.equal(headings.length,1);assert.equal(text(headings[0]),entry.title,'The real content title is the sole card heading');
-   for(const generic of ['分类图','声音与表达','人生中的选择','银幕里的对话'])assert(!text(card).includes(generic),'Generic category art titles must not compete with the real title');
-   const category=catalog.DISCOVERY_KINDS[entry.kind];assert.equal(nodes(card,node=>node.type==='span'&&visibleText(node)===category).length,1,'Each card carries one explicit category label');
-   const disclosure=nodes(card,node=>node.type==='details'&&hasClass(node,'discovery-rights'))[0];assert(disclosure);assert.equal(Boolean(disclosure.props.open),false);assert.equal(text(nodes(disclosure,node=>node.type==='summary')[0]),'来源与访问说明');assert(text(disclosure).includes(entry.availability.note));
-   h.click(node=>node.props?.['data-discovery-save']===entry.id);assert.equal(h.find(node=>node.props?.['data-discovery-save']===entry.id).props['aria-pressed'],true,'Removing decoration must keep the real save action');
-   const link=h.find(node=>node.props?.['data-discovery-source']===entry.id);assert.equal(link.props.href,entry.sourceUrl);let prevented=false;link.props.onClick({preventDefault(){prevented=true;}});assert.equal(prevented,false);
-   assert.equal(h.loader.load('lib/discovery-return.ts').readDiscoveryReturn(A,h.session).entryId,entry.id,'The real source action still prepares the same entry for return');
-  }
+  h.click(node=>node.props?.['aria-label']==='内容来源');
+  let options=nodes(h.tree,node=>node.type==='input'&&node.props.type==='checkbox');assert(options.length>1);
+  for(const option of options){const label=option.props['aria-label'];h.find(node=>node.type==='input'&&node.props['aria-label']===label).props.onChange();h.render();}
+  h.click(node=>node.props?.['aria-label']==='关闭');
+  assert.equal(nodes(h.tree,node=>node.type==='article'&&hasClass(node,'discovery-card')).length,0);
+  assert.match(text(h.tree),/选择一个内容来源/);
+  h.click(node=>text(node)==='查看全部内容');
+  assert.equal(nodes(h.tree,node=>node.type==='article'&&hasClass(node,'discovery-card')).length,require('../content/discovery-native.json').entries.length);
  }finally{h.unmount();}
 });
