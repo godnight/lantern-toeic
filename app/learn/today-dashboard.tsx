@@ -33,7 +33,7 @@ export function TodayDashboard({theme='paper',dateLabel,wordTask,wordSummary,rev
     {key:'review',icon:RotateCcw,title:'今日复习',summary:reviewSummary,label:'查看复习',onClick:onOpenReview},
   ];
   return <div className="v040-page v040-today" data-v040-page="today">
-    <div className="v041-today-scene"><ThemeScene theme={theme} scene="home"/><div className="v040-page-heading"><p className="v040-date">{dateLabel}</p><h1>今日学习</h1></div></div>
+    <div className="v041-today-scene"><ThemeScene theme={theme} scene="todayHero"/><div className="v040-page-heading"><p className="v040-date">{dateLabel}</p><h1>今日学习</h1></div></div>
     {notices}
     <div className="v040-word-action">{wordTask}</div>
     <section aria-labelledby="v040-tasks-title">
@@ -46,6 +46,6 @@ export function TodayDashboard({theme='paper',dateLabel,wordTask,wordSummary,rev
         </button>
       </div>)}</div>
     </section>
-    {(theme==='hollow'||theme==='silk'||theme==='whale-bay'||theme==='whale-moon')&&<ThemeScene theme={theme} scene={theme==='hollow'?'blue-lake':'calm'} className="v041-today-calm"/>}
+    <ThemeScene theme={theme} scene="todayRest" className="v041-today-calm"/>
   </div>;
 }

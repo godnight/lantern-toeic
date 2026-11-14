@@ -92,20 +92,30 @@ test('theme chooser exposes six concise choices, selected state and approved wha
  assert(!/<p(?:\s|>)/.test(html));assert(!/聊天|奖励|已完成学习/.test(html));
 });
 
+const slots=['todayHero','todayRest','vocabularyOverview','reviewOverview','progressOverview','practiceOverview','resourceLibrary','wordComplete'];
+const pageScenes={
+ 'whale-bay':{vocabularyOverview:'bay-word-lighthouse',practiceOverview:'bay-practice-dawn-pier',reviewOverview:'bay-review-tide-garden',progressOverview:'bay-progress-cliff',resourceLibrary:'bay-resource-bookshop'},
+ 'whale-moon':{vocabularyOverview:'moon-word-gallery',practiceOverview:'moon-practice-reef',reviewOverview:'moon-review-moonlit-cove',progressOverview:'moon-progress-star-observatory',resourceLibrary:'moon-resource-bookshop'},
+};
 for(const theme of whaleThemes){
- test(`${theme} places a complete character scene only in calm/completion slots`,()=>{
-  for(const scene of ['calm','dirtmouth']){
+ test(`${theme} uses approved page-specific scenes and the complete character only for rest and word completion`,()=>{
+  for(const scene of slots){
    const html=render(ThemeScene,{theme,scene});
-   assert(html.includes(`/images/whale-themes/${theme}-home.webp`));assert(html.includes('v041-theme-scene--complete'));
+   const character=scene==='todayRest'||scene==='wordComplete';
+   assert(html.includes(`data-scene="${scene}"`));
+   const expected=character?`${theme}-home`:scene==='todayHero'?`${theme}-study`:pageScenes[theme][scene];
+   const directory=character||scene==='todayHero'?'whale-themes':'whale-scenes-20261115';
+   assert(html.includes(`data-scene-source="${expected}"`),`${theme}/${scene} must use its approved scene`);
+   assert(html.includes(`/images/${directory}/${expected}.webp`));
+   assert.equal(html.includes(`/images/whale-themes/${theme}-home.webp`),character,`${scene} must not repeat the character`);
    assert(html.includes('width="1672"'));assert(html.includes('height="941"'));
   }
-  for(const scene of ['home','ambient','resources','blue-lake'])assert.equal(render(ThemeScene,{theme,scene}),'',scene+' must not duplicate the character image');
  });
 }
 
 test('the retained blue-lake full scene and brand asset remain available',()=>{
  const lake=render(ThemeScene,{theme:'hollow',scene:'blue-lake'});
- assert(lake.includes('/design-r1/hollow-lake.webp'));assert(lake.includes('v041-theme-scene--complete'));
+ assert(lake.includes('/design-r1/hollow-lake.webp'));assert(lake.includes('data-scene=\"todayRest\"'));
  const brand=render(ThemeBrandMark,{size:40});assert(brand.includes('/phase2-theme/knight-icon-96.png'));
  assert(brand.includes('/phase2-theme/knight-icon-48.png'));assert(brand.includes('/phase2-theme/knight-icon-256.png'));
 });

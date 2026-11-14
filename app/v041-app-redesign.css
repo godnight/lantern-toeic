@@ -164,18 +164,10 @@ body[data-ui-theme="silk"] .v040-workspace-shell{
  --tab-shade:rgba(26,16,30,.57);
  --tab-shade-mid:rgba(32,24,34,.79);
 }
-body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="today"]{--tab-scene:image-set(url('/phase2-theme/dirtmouth-hd-1x.webp') 1x,url('/phase2-theme/dirtmouth-hd-2x.webp') 2x,url('/phase2-theme/dirtmouth-hd-3x.webp') 3x);}
-body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="vocabulary"]{--tab-scene:url('/images/maps/greenpath.webp');}
-body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="review"]{--tab-scene:image-set(url('/phase2-theme/blue-lake-hd-1x.webp') 1x,url('/phase2-theme/blue-lake-hd-2x.webp') 2x,url('/phase2-theme/blue-lake-hd-3x.webp') 3x);}
-body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="progress"]{--tab-scene:image-set(url('/phase2-theme/crystal-peak-hd-1x.webp') 1x,url('/phase2-theme/crystal-peak-hd-2x.webp') 2x,url('/phase2-theme/crystal-peak-hd-3x.webp') 3x);}
-body[data-ui-theme="hollow"] .v040-workspace-shell:is([data-v040-view="resources"],[data-v040-view="profile"],[data-v040-view="themes"],[data-v040-view="about"],[data-v040-view="settings"]){--tab-scene:url('/design-r1/hollow-station.webp');}
-body[data-ui-theme="silk"] .v040-workspace-shell[data-v040-view="today"]{--tab-scene:url('/design-r1/silk-home.webp');}
-body[data-ui-theme="silk"] .v040-workspace-shell[data-v040-view="vocabulary"]{--tab-scene:url('/design-r1/silk-forest.webp');}
-body[data-ui-theme="silk"] .v040-workspace-shell[data-v040-view="train"]{--tab-scene:url('/images/maps/greymoor.webp');}
-body[data-ui-theme="silk"] .v040-workspace-shell[data-v040-view="review"]{--tab-scene:url('/design-r1/silk-calm.webp');}
-body[data-ui-theme="silk"] .v040-workspace-shell[data-v040-view="progress"]{--tab-scene:url('/images/themes-v3/snowy-ridge-wide.webp');}
-body[data-ui-theme="silk"] .v040-workspace-shell:is([data-v040-view="resources"],[data-v040-view="profile"],[data-v040-view="themes"],[data-v040-view="about"],[data-v040-view="settings"]){--tab-scene:url('/design-r1/silk-library.webp');}
-body[data-ui-theme="hollow"] .v040-workspace-shell:not([data-v040-view="train"])::before,
+/* The shell supplies the same page-purpose asset used by its image window. */
+.v040-workspace-shell{--tab-scene:var(--page-scene,none);}
+body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="review"]{--tab-shade:rgba(6,14,25,.90);--tab-shade-mid:rgba(9,19,32,.95);}
+body[data-ui-theme="hollow"] .v040-workspace-shell::before,
 body[data-ui-theme="silk"] .v040-workspace-shell::before{
  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
  background-color:var(--ui-canvas);
@@ -208,8 +200,7 @@ body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .
 body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell .progress-columns>.panel{background:var(--tab-chart);border-color:var(--tab-edge);box-shadow:none;}
 body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell :is(.vocab-detail,.word-flashcard){background:var(--ui-surface);}
 @media(max-width:520px){
- body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="vocabulary"]{--tab-scene:url('/images/maps/greenpath-mobile.webp');}
- body[data-ui-theme="silk"] .v040-workspace-shell[data-v040-view="train"]{--tab-scene:url('/images/maps/greymoor-mobile.webp');}
+ .v040-workspace-shell{--tab-scene:var(--page-scene-mobile,var(--page-scene,none));}
 }
 
 /* One quiet study scene per whale theme; character art stays outside task text. */
@@ -221,7 +212,6 @@ body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v040-workspac
  --tab-edge:#cbd9dd;
  --tab-shade:rgba(244,241,233,.12);
  --tab-shade-mid:rgba(244,241,233,.68);
- --tab-scene:url('/images/whale-themes/whale-bay-study.webp');
 }
 body[data-ui-theme="whale-moon"] .v040-workspace-shell{
  --tab-overview:rgba(23,38,62,.82);
@@ -230,7 +220,6 @@ body[data-ui-theme="whale-moon"] .v040-workspace-shell{
  --tab-edge:#3c506b;
  --tab-shade:rgba(15,27,48,.18);
  --tab-shade-mid:rgba(15,27,48,.68);
- --tab-scene:url('/images/whale-themes/whale-moon-study.webp');
 }
 body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v040-workspace-shell::before{
  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
@@ -256,24 +245,24 @@ body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v040-workspac
 body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .v040-workspace-shell :is(.vocab-detail,.word-flashcard){background:var(--ui-surface);}
 body:is([data-ui-theme="whale-bay"],[data-ui-theme="whale-moon"]) .workspace-heading{background:none!important;border:0;box-shadow:none;}
 
-/* Approved hollow overview illustrations; study cards retain their original layout. */
-body[data-ui-theme="hollow"] .v040-workspace-shell .v041-vocabulary-overview-art,
-body[data-ui-theme="hollow"] .v040-workspace-shell .v041-progress-overview-art{margin:0;overflow:hidden;border-radius:14px;aspect-ratio:16/9;background:#101b29;min-width:0}
-body[data-ui-theme="hollow"] .v040-workspace-shell :is(.v041-vocabulary-overview-art,.v041-progress-overview-art)>img{display:block;width:100%;height:100%;object-fit:cover}
-body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="vocabulary"] .workspace-main>section[data-workflow-origin]:has(.phase2-vocabulary-session,.phase2-word-finished,.lp-editor,.vocab-detail-open,.vocab-session-open)>.v041-vocabulary-overview-art,
-body[data-ui-theme="hollow"] .v040-workspace-shell.workspace-focused[data-v040-view="vocabulary"] .v041-vocabulary-overview-art{display:none}
+/* Overview slots use the same frame, ordering and breakpoints for every theme. */
+.v040-workspace-shell .workspace-main .workspace-heading{padding:0;gap:24px}
+.v040-workspace-shell .workspace-main .workspace-heading h1,
+.v040-workspace-shell .workspace-main .phase2-plan-heading h1{font-family:var(--ui-font);font-weight:700;letter-spacing:0}
+.v040-workspace-shell :is(.v041-vocabulary-overview-art,.v041-progress-overview-art){margin:0;overflow:hidden;border-radius:14px;aspect-ratio:16/9;height:auto;min-width:0}
+.v040-workspace-shell :is(.v041-vocabulary-overview-art,.v041-progress-overview-art)>img{display:block;width:100%;height:100%;object-fit:cover}
+.v040-workspace-shell[data-v040-view="vocabulary"] .workspace-main>section[data-workflow-origin]:has(.phase2-vocabulary-session,.phase2-word-finished,.lp-editor,.vocab-detail-open,.vocab-session-open)>.v041-vocabulary-overview-art,
+.v040-workspace-shell.workspace-focused[data-v040-view="vocabulary"] .v041-vocabulary-overview-art{display:none}
 @media(max-width:767px){
- body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="vocabulary"] .v041-vocabulary-overview-art{margin-bottom:18px}
- body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="progress"] .v041-progress-overview-art{margin-bottom:16px}
+ .v040-workspace-shell[data-v040-view="vocabulary"] .v041-vocabulary-overview-art{margin-bottom:18px}
+ .v040-workspace-shell[data-v040-view="progress"] .v041-progress-overview-art{margin-bottom:16px}
 }
 @media(min-width:768px){
- body[data-ui-theme="hollow"] .v040-workspace-shell:not(.workspace-focused)[data-v040-view="vocabulary"] .workspace-main>section[data-workflow-origin]:has(>.v041-vocabulary-overview-art):not(:has(.phase2-vocabulary-session,.phase2-word-finished,.lp-editor,.vocab-detail-open,.vocab-session-open)){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr;gap:16px 22px;align-items:start}
- body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="vocabulary"] .workspace-main>section[data-workflow-origin]>.v041-vocabulary-overview-art{grid-column:1;grid-row:1 / span 2}
- body[data-ui-theme="hollow"] .v040-workspace-shell:not(.workspace-focused)[data-v040-view="vocabulary"] .workspace-main>section[data-workflow-origin]:has(>.v041-vocabulary-overview-art):not(:has(.phase2-vocabulary-session,.phase2-word-finished,.lp-editor,.vocab-detail-open,.vocab-session-open))>.phase2-vocabulary-plan{grid-column:2;grid-row:1;min-width:0}
- body[data-ui-theme="hollow"] .v040-workspace-shell:not(.workspace-focused)[data-v040-view="vocabulary"] .workspace-main>section[data-workflow-origin]:has(>.v041-vocabulary-overview-art):not(:has(.phase2-vocabulary-session,.phase2-word-finished,.lp-editor,.vocab-detail-open,.vocab-session-open))>details{grid-column:2;grid-row:2;min-width:0}
- body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="progress"] .v041-progress-overview{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:center;margin-bottom:24px}
- body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="progress"] .v041-progress-overview .metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0}
-
+ .v040-workspace-shell:not(.workspace-focused)[data-v040-view="vocabulary"] .workspace-main>section[data-workflow-origin]:has(>.v041-vocabulary-overview-art):not(:has(.phase2-vocabulary-session,.phase2-word-finished,.lp-editor,.vocab-detail-open,.vocab-session-open)){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr;gap:16px 22px;align-items:start}
+ .v040-workspace-shell[data-v040-view="vocabulary"] .workspace-main>section[data-workflow-origin]>.v041-vocabulary-overview-art{grid-column:1;grid-row:1 / span 2}
+ .v040-workspace-shell:not(.workspace-focused)[data-v040-view="vocabulary"] .workspace-main>section[data-workflow-origin]:has(>.v041-vocabulary-overview-art):not(:has(.phase2-vocabulary-session,.phase2-word-finished,.lp-editor,.vocab-detail-open,.vocab-session-open))>.phase2-vocabulary-plan{grid-column:2;grid-row:1;min-width:0}
+ .v040-workspace-shell:not(.workspace-focused)[data-v040-view="vocabulary"] .workspace-main>section[data-workflow-origin]:has(>.v041-vocabulary-overview-art):not(:has(.phase2-vocabulary-session,.phase2-word-finished,.lp-editor,.vocab-detail-open,.vocab-session-open))>details{grid-column:2;grid-row:2;min-width:0}
+ .v040-workspace-shell[data-v040-view="progress"] .v041-progress-overview{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:center;margin-bottom:24px}
+ .v040-workspace-shell[data-v040-view="progress"] .v041-progress-overview .metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0}
 }
-
 body[data-ui-theme="hollow"] .v040-workspace-shell[data-v040-view="progress"] .v041-progress-overview .metrics-grid>.metric{background:rgba(16,27,41,.78)}

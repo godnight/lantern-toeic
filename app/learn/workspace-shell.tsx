@@ -1,9 +1,9 @@
 'use client';
 
 import {Flame,BookOpen,ChartNoAxesCombined,ChevronLeft,Cloud,CloudOff,Headphones,Home,Library,RotateCcw,Search,UserRound} from 'lucide-react';
-import type {ReactNode} from 'react';
+import type {CSSProperties,ReactNode} from 'react';
 import type {Theme} from '@/lib/study-model';
-import {ThemeMotif} from './ui-theme';
+import {ThemeMotif,workspaceSceneBackdrop} from './ui-theme';
 
 export const WORKSPACE_NAV = [
  {id:'today',label:'今日',icon:Home},{id:'vocabulary',label:'单词',icon:BookOpen},
@@ -47,7 +47,9 @@ export function WorkspaceShell({nav,theme,name,scope,syncLabel,reviewCount,onNav
  const parentLabel=backLabel||(parent==='today'?'今日学习':'我的');
  const goBack=onBack||(()=>onNavigate(parent));
  const openProfile=onProfile||(()=>onNavigate('profile'));
- return <div className={`lantern-workspace v040-workspace-shell${focused?' workspace-focused':''}${subpage?' v040-workspace-subpage':''}${discoveryFeedActive?' workspace-discovery-feed':''}`} data-v040-view={nav}>
+ const backdrop=workspaceSceneBackdrop(theme,nav,discoveryFeedActive);
+ const sceneStyle=backdrop?({'--page-scene':backdrop.background,'--page-scene-mobile':backdrop.mobileBackground} as CSSProperties):undefined;
+ return <div className={`lantern-workspace v040-workspace-shell${focused?' workspace-focused':''}${subpage?' v040-workspace-subpage':''}${discoveryFeedActive?' workspace-discovery-feed':''}`} data-v040-view={nav} data-scene-background={backdrop?.id} style={sceneStyle}>
   <a className="workspace-skip" href="#workspace-main">跳到学习内容</a>
 
   <aside className="workspace-sidebar" aria-label="学习空间">
