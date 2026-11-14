@@ -108,3 +108,14 @@ test('return restores source selection including none and protects prior state o
   assert.equal(back.rememberDiscoveryReturn(A,{...base,sourceIds},data,1200),false);assert.equal(data.getItem(key),before);
  }
 });
+
+test('external returns preserve the actual triggering control and reject malformed values',()=>{
+ const data=storage(),base={category:'video',query:'',savedOnly:false,scroll:420,entryId:'nasa-kennedy-rice-1962'};
+ for(const entryControl of ['cover','title','source']){
+  const state={...base,entryControl};assert(back.rememberDiscoveryReturn(A,state,data,1000));
+  assert.deepEqual(plain(back.readDiscoveryReturn(A,data,1100)),state);
+ }
+ const key='lantern-discovery-return-v1:'+JSON.stringify(A),before=data.getItem(key);
+ assert.equal(back.rememberDiscoveryReturn(A,{...base,entryControl:'other'},data,1200),false);
+ assert.equal(data.getItem(key),before);
+});

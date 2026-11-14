@@ -1,6 +1,6 @@
 export type DiscoveryCategory='all'|'video'|'podcast'|'article'|'library';
 export type ResourceLibraryReturnState={category:string;query:string;selectedId:string|null;listPosition:{scroll:number;id:string};scroll:number};
-export type DiscoveryReturnState={category:DiscoveryCategory;query:string;savedOnly:boolean;scroll:number;entryId:string|null;sourceIds?:string[];library?:ResourceLibraryReturnState};
+export type DiscoveryReturnState={category:DiscoveryCategory;query:string;savedOnly:boolean;scroll:number;entryId:string|null;entryControl?:'cover'|'title'|'source';sourceIds?:string[];library?:ResourceLibraryReturnState};
 type ReturnStorage=Pick<Storage,'getItem'|'setItem'|'removeItem'>;
 const CATEGORIES:readonly string[]=['all','video','podcast','article','library','talk','person','film'];
 const LEGACY_CATEGORIES:Readonly<Record<string,DiscoveryCategory>>={talk:'video',person:'article',film:'video'};
@@ -24,12 +24,13 @@ export function readDiscoveryReturn(owner:string|null,storage:ReturnStorage|null
    !Number.isFinite(state.scroll)||state.scroll<0||state.scroll>10000000||!(state.entryId===null||typeof state.entryId==='string'&&/^[a-z0-9][a-z0-9-]{0,79}$/.test(state.entryId)))return null;
   const sourceIds=state.sourceIds;
   if(sourceIds!==undefined&&(!Array.isArray(sourceIds)||sourceIds.length>50||!sourceIds.every((id:unknown)=>typeof id==='string'&&/^[a-z0-9][a-z0-9-]{0,79}$/.test(id))||new Set(sourceIds).size!==sourceIds.length))return null;
+  if(state.entryControl!==undefined&&!['cover','title','source'].includes(state.entryControl))return null;
   const library=state.library;
   if(library!==undefined&&(!library||typeof library.category!=='string'||library.category.length>40||typeof library.query!=='string'||library.query.length>1000||
    !(library.selectedId===null||typeof library.selectedId==='string'&&library.selectedId.length<=100)||
    !library.listPosition||!Number.isFinite(library.listPosition.scroll)||library.listPosition.scroll<0||library.listPosition.scroll>10000000||typeof library.listPosition.id!=='string'||library.listPosition.id.length>100||
    !Number.isFinite(library.scroll)||library.scroll<0||library.scroll>10000000))return null;
-  return {category:LEGACY_CATEGORIES[state.category]??state.category,query:state.query,savedOnly:state.savedOnly,scroll:state.scroll,entryId:state.entryId,...sourceIds===undefined?{}:{sourceIds:[...sourceIds]},...library?{library:{category:library.category,query:library.query,selectedId:library.selectedId,listPosition:{scroll:library.listPosition.scroll,id:library.listPosition.id},scroll:library.scroll}}:{}};
+  return {category:LEGACY_CATEGORIES[state.category]??state.category,query:state.query,savedOnly:state.savedOnly,scroll:state.scroll,entryId:state.entryId,...state.entryControl===undefined?{}:{entryControl:state.entryControl},...sourceIds===undefined?{}:{sourceIds:[...sourceIds]},...library?{library:{category:library.category,query:library.query,selectedId:library.selectedId,listPosition:{scroll:library.listPosition.scroll,id:library.listPosition.id},scroll:library.scroll}}:{}};
  }catch{return null;}
 }
 export function hasDiscoveryReturn(owner:string|null):boolean{return readDiscoveryReturn(owner)!==null;}

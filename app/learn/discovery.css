@@ -1,6 +1,7 @@
 /* The approved discovery feed has its own header; the library retains its existing shell. */
 body[data-ui-theme] .v040-workspace-shell.workspace-discovery-feed .workspace-topbar{display:none!important;}
 body[data-ui-theme] .v040-workspace-shell.workspace-discovery-feed .workspace-main{padding-top:0!important;}
+body[data-ui-theme] .v040-workspace-shell.workspace-discovery-feed .workspace-body{z-index:auto;}
 body[data-ui-theme] .v040-workspace-shell.workspace-discovery-feed::before{background-image:none!important;background-color:var(--ui-canvas);}
 .discovery-view{min-width:0;color:var(--ui-text);font-size:1rem;}
 .discovery-view[data-discovery-mode="feed"]{width:100%;max-width:560px;margin-inline:auto;}
@@ -35,6 +36,8 @@ body[data-ui-theme] .v040-workspace-shell .workspace-main .discovery-view .disco
 .discovery-cover-link{display:block;position:relative;margin:7px 7px 0;aspect-ratio:16/9;overflow:hidden;border-radius:14px;background:var(--ui-surface-muted);}
 .discovery-cover-link img{display:block;width:100%;height:100%;object-fit:cover;}
 .discovery-cover-link::after{content:"";position:absolute;inset:50% 0 0;background:linear-gradient(transparent,#0008);pointer-events:none;}
+.discovery-cover-link--unavailable::after{display:none;}
+.discovery-cover-link--unavailable .discovery-kind-tag{color:var(--ui-text-secondary);}
 .discovery-kind-tag,.discovery-duration{position:absolute;bottom:10px;z-index:1;color:#fff;font-size:.6875rem;line-height:1.4;}
 .discovery-kind-tag{left:11px;display:inline-flex;align-items:center;gap:5px;}
 .discovery-duration{right:10px;background:#0009;border-radius:5px;padding:2px 6px;font-variant-numeric:tabular-nums;}

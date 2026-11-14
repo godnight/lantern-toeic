@@ -48,8 +48,9 @@ function isCandidate(value: unknown): value is Candidate {
 }
 function podcastItem(row: Candidate): DiscoveryItem | null {
   if (!row.guid || !UUID.test(row.guid) || !row.title || row.title.length > 500 || !podUrl(row.link) || row.descriptionTruncated) return null;
-  if (row.language && !/^en(?:[-_][a-z0-9]+)*$/i.test(row.language)) return null;
-  const text = (row.title + ' ' + (row.description || '')).normalize('NFKC').replace(/[\u200b-\u200f\ufeff]/g, '');
+  if (row.language !== null && !/^en(?:[-_][a-z0-9]+)*$/i.test(row.language)) return null;
+  const text = (row.title + ' ' + (row.description || '')).normalize('NFKC').replace(/[\u200b-\u200f\ufeff]/g, '')
+    .replace(/\b(?:translated\s+)?(?:subtitles?|captions?)(?:\s+(?:translated\s+)?(?:into|in|to)\s+[a-z]+)?\b/gi, ' ');
   if (/中文配音|中配|AI配音|机器翻译|译配|\btranslat(?:ed|ion)\b|\bdubb(?:ed|ing)\b|(?:audio|voice|narrat(?:ion|ed))\s+(?:in\s+)?(?:mandarin|chinese|spanish|french)\b|\ben español\b|\ben français\b/i.test(text)) return null;
   const guid = row.guid.toLowerCase();
   if (guid === ORIGINAL_EPISODE) return DISCOVERY_SEED.find(x => x.id === '99pi-white-house-solar-panels') || null;
@@ -89,7 +90,7 @@ function readCache(storage: StorageLike | null): { cache: Cache; writable: boole
 }
 function snapshot(cache: Cache, mode: 'seed' | 'fresh' | 'cached' | 'offline', live = new Set<string>()): DiscoveryFeedSnapshot {
   const added: DiscoveryItem[] = [];
-  for (const row of cache.sources.nasa?.items || []) { const item = reviewedNasaItem(row.link); if (item) added.push(item); }
+  for (const row of cache.sources.nasa?.items || []) { const item = row.language === null || /^en(?:[-_][a-z0-9]+)*$/i.test(row.language) ? reviewedNasaItem(row.link) : undefined; if (item) added.push(item); }
   for (const row of cache.sources['99pi']?.items || []) { const item = podcastItem(row); if (item) added.push(item); }
   // The approved leading artwork stays first, followed by current source items.
   const entries: DiscoveryItem[] = [], ids = new Set<string>(), urls = new Set<string>();
@@ -118,7 +119,12 @@ async function fetchSource(source: typeof SOURCES[number], fetcher: typeof fetch
   try {
     const work = (async () => {
       const response = await fetcher(source.url,{signal:controller.signal,credentials:'omit',redirect:'error',referrerPolicy:'no-referrer',headers:{Accept:'application/rss+xml, application/xml, text/xml'}});
-      return await readRssItems(response,{signal:controller.signal});
+      const rows = await readRssItems(response,{signal:controller.signal,scanToEnd:true});
+      const channelLanguage = (rows as typeof rows & {channelLanguage:string|null}).channelLanguage;
+      // An explicit feed-level conflict invalidates the source policy. Missing
+      // language is judged only by the individual/source review policies.
+      if (channelLanguage !== null && !/^en(?:[-_][a-z0-9]+)*$/i.test(channelLanguage)) throw new Error('Feed language conflicts with source policy');
+      return rows;
     })();
     return await Promise.race([work,cancellation]);
   } finally { clearTimeout(timer); outer?.removeEventListener('abort',cancel); }
@@ -136,7 +142,7 @@ export async function refreshDiscoveryFeed(options: DiscoveryFeedOptions = {}): 
     const source = SOURCES[i], result = results[i];
     if (result.status !== 'fulfilled') continue;
     // Retain only rows that pass the same policy applied when the cache is read.
-    const items = result.value.filter(isCandidate).filter(row => source.id === 'nasa' ? !!reviewedNasaItem(row.link) : !!podcastItem(row));
+    const items = result.value.filter(isCandidate).filter(row => source.id === 'nasa' ? (row.language === null || /^en(?:[-_][a-z0-9]+)*$/i.test(row.language)) && !!reviewedNasaItem(row.link) : !!podcastItem(row));
     // An upstream layout change or policy failure must not erase the most
     // recently usable source. A valid empty RSS is not a usable update here.
     if (!items.length) continue;

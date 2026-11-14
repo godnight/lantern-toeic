@@ -112,7 +112,7 @@ test('actual discovery view renders a saved episode absent from the current feed
 // Deferred animation frames allow a test to model expiry, replacement, and
 // owner changes between scheduling restoration and actually restoring it.
 function returnFixture(initialState,session,access=()=>true){
- const local=memory(),frames=[],scrolls=[];let props={owner:A,canAccess:access,library:null,initialReturn:initialState,onReturnConsumed:()=>{consumed++;}},cursor=0,dirty=true,tree,consumed=0;
+ const local=memory(),frames=[],scrolls=[],focuses=[];let props={owner:A,canAccess:access,library:null,initialReturn:initialState,onReturnConsumed:()=>{consumed++;}},cursor=0,dirty=true,tree,consumed=0;
  const slots=[],pending=[],same=(a,b)=>a&&b&&a.length===b.length&&a.every((v,i)=>Object.is(v,b[i]));
  const react={useState(value){const i=cursor++;if(!(i in slots))slots[i]=typeof value==='function'?value():value;return [slots[i],v=>{slots[i]=typeof v==='function'?v(slots[i]):v;dirty=true;}];},useRef(value){const i=cursor++;if(!(i in slots))slots[i]={current:value};return slots[i];},useEffect(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps)){const prior=slots[i];slots[i]={deps};pending.push(()=>{prior?.cleanup?.();slots[i].cleanup=fn();});}}};react.useLayoutEffect=react.useEffect;
  const icons=Object.fromEntries(['ArrowUpRight','Bookmark','BookOpen','ChevronLeft','FileText','Headphones','Library','RefreshCw','Search','SlidersHorizontal','Video','X'].map(x=>[x,'icon-'+x]));
@@ -121,8 +121,9 @@ function returnFixture(initialState,session,access=()=>true){
  const sourceFeed={DISCOVERY_SEED:feed.DISCOVERY_SEED,readDiscoveryFeedCache:()=>seed,refreshDiscoveryFeed:()=>new Promise(()=>{})};
  const uiLoader=createSourceLoader({root,imports:{react,'react/jsx-runtime':{jsx:(type,props)=>({type,props}),jsxs:(type,props)=>({type,props})},'lucide-react':icons,'@/lib/discovery-feed':sourceFeed},globals:{window,requestAnimationFrame:fn=>{frames.push({fn,cancelled:false});return frames.length;},cancelAnimationFrame:id=>{if(frames[id-1])frames[id-1].cancelled=true;}}});
  const Component=uiLoader.load('app/learn/discovery-view.tsx').default;
- const render=()=>{let loops=0;do{dirty=false;cursor=0;tree=Component(props);while(pending.length)pending.shift()();assert(++loops<10);}while(dirty);};
- render();return {frames,scrolls,session,get consumed(){return consumed;},render,update(next){props={...props,...next};render();},flush(){for(const frame of frames.splice(0)){if(!frame.cancelled)frame.fn();}render();},unmount(){slots.forEach(slot=>slot?.cleanup?.());}};
+ const attach=(node,id=null)=>{if(!node||typeof node!=='object')return;if(Array.isArray(node)){node.forEach(child=>attach(child,id));return;}const next=node.props?.['data-discovery-id']??id,ref=node.props?.ref;if(typeof ref==='function')ref({focus(){focuses.push({id:next,control:node.props?.['data-discovery-control']});}});attach(node.props?.children,next);};
+ const render=()=>{let loops=0;do{dirty=false;cursor=0;tree=Component(props);attach(tree);while(pending.length)pending.shift()();assert(++loops<10);}while(dirty);};
+ render();return {frames,scrolls,focuses,session,get consumed(){return consumed;},render,update(next){props={...props,...next};render();},flush(){for(const frame of frames.splice(0)){if(!frame.cancelled)frame.fn();}render();},unmount(){slots.forEach(slot=>slot?.cleanup?.());}};
 }
 const returns=loader.load('lib/discovery-return.ts');
 const savedReturn={category:'all',query:'',savedOnly:false,scroll:315,entryId:null};
@@ -130,6 +131,14 @@ const savedReturn={category:'all',query:'',savedOnly:false,scroll:315,entryId:nu
 test('current owner restoration scrolls once, consumes the return and clears the session record',()=>{
  const session=memory();assert(returns.rememberDiscoveryReturn(A,savedReturn,session));const h=returnFixture(savedReturn,session);
  try{h.flush();assert.deepEqual(h.scrolls,[315]);assert.equal(h.consumed,1);assert.equal(returns.readDiscoveryReturn(A,session),null);h.render();h.flush();assert.deepEqual(h.scrolls,[315]);assert.equal(h.consumed,1);}finally{h.unmount();}
+});
+
+test('return restores the exact originating control at a nonzero scroll position, with legacy fallback',()=>{
+ for(const control of ['cover','title','source',undefined]){
+  const state={...savedReturn,scroll:640,entryId:'nasa-skywatching-nov2026',...control?{entryControl:control}:{}};
+  const session=memory();assert(returns.rememberDiscoveryReturn(A,state,session));const h=returnFixture(state,session);
+  try{h.flush();assert.deepEqual(h.scrolls,[640]);assert.deepEqual(h.focuses,[{id:state.entryId,control:control??'source'}]);assert.equal(h.consumed,1);assert.equal(returns.readDiscoveryReturn(A,session),null);}finally{h.unmount();}
+ }
 });
 
 test('expired or replaced return does not scroll or clear newer session, but consumes old in-memory return',()=>{

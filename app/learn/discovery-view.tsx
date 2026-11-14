@@ -12,6 +12,7 @@ const categories=[['all','全部'],['video','视频'],['podcast','播客'],['art
 const kindLabels:Record<DiscoveryContentKind,string>={video:'视频',podcast:'播客',article:'文章'};
 const kindIcons={video:Video,podcast:Headphones,article:FileText};
 type FeedCategory='all'|DiscoveryContentKind;
+type SourceControl='cover'|'title'|'source';
 type View={scope:string;category:FeedCategory|'library';query:string;savedOnly:boolean;sourceIds?:string[]};
 type Props={owner:string|null;canAccess:()=>boolean;library:ReactNode;active?:boolean;libraryFocused?:boolean;
  initialReturn?:DiscoveryReturnState|null;initialReturnToken?:string|null;onReturnConsumed?:()=>void;onLibraryActiveChange?:(active:boolean)=>void};
@@ -47,7 +48,12 @@ export default function DiscoveryView({owner,canAccess,library,active=true,libra
  const store=useRef<ReturnType<typeof createDiscoveryFavoritesStore>|null>(null);
  const initialSnapshot=canAccess()?readDiscoveryReturnSnapshot(owner):null;
  const resume=useRef<{owner:string|null;state:DiscoveryReturnState|null;token:string|null}>({owner,state:canAccess()?(initialReturn===undefined?initialSnapshot?.state??null:initialReturn):null,token:initialReturnToken===undefined?initialSnapshot?.token??null:initialReturnToken});
- const sourceLinks=useRef(new Map<string,HTMLAnchorElement>()),sourceButton=useRef<HTMLButtonElement>(null),searchInput=useRef<HTMLInputElement>(null),sheetClose=useRef<HTMLButtonElement>(null),sheet=useRef<HTMLDivElement>(null),resultsTitle=useRef<HTMLParagraphElement>(null);
+ const sourceLinks=useRef(new Map<string,Partial<Record<SourceControl,HTMLAnchorElement>>>()),sourceButton=useRef<HTMLButtonElement>(null),searchInput=useRef<HTMLInputElement>(null),sheetClose=useRef<HTMLButtonElement>(null),sheet=useRef<HTMLDivElement>(null),resultsTitle=useRef<HTMLParagraphElement>(null);
+ const setSourceLink=(id:string,control:SourceControl,node:HTMLAnchorElement|null)=>{
+  const links=sourceLinks.current.get(id)??{};
+  if(node){links[control]=node;sourceLinks.current.set(id,links);}
+  else{delete links[control];if(Object.keys(links).length)sourceLinks.current.set(id,links);else sourceLinks.current.delete(id);}
+ };
  const allowed=canAccess();
  useEffect(()=>{
   if(current.current.generation!==generation||current.current.owner!==owner||current.current.canAccess!==canAccess)return;
@@ -104,7 +110,7 @@ export default function DiscoveryView({owner,canAccess,library,active=true,libra
    // Never clear a newer return for this owner, or anything belonging to another.
    const currentSnapshot=readDiscoveryReturnSnapshot(owner);
    if(!pending.token||currentSnapshot?.token!==pending.token||JSON.stringify(currentSnapshot.state)!==JSON.stringify(saved)){resume.current.state=null;onReturnConsumed?.();return;}
-   sourceLinks.current.get(saved.entryId??'')?.focus({preventScroll:true});window.scrollTo({top:saved.scroll,behavior:'auto'});resume.current.state=null;clearDiscoveryReturn(owner);onReturnConsumed?.();
+   const links=sourceLinks.current.get(saved.entryId??'');(links?.[saved.entryControl??'source']??links?.source)?.focus({preventScroll:true});window.scrollTo({top:saved.scroll,behavior:'auto'});resume.current.state=null;clearDiscoveryReturn(owner);onReturnConsumed?.();
   });
   return()=>cancelAnimationFrame(frame);
  },[active,owner,canAccess,allowed,ready,view.category,view.query,view.savedOnly,view.sourceIds,feedState.pending,snapshot.entries]);
@@ -115,13 +121,13 @@ export default function DiscoveryView({owner,canAccess,library,active=true,libra
   if(result?.status==='ready'){setFavorites({scope,result});setNotice(result.ids.includes(entry.id)?'已收藏。':'已取消收藏。');}
   else setNotice('收藏未能保存，原记录已保留。请稍后重试。');
  };
- const beforeExternal=(entry:DiscoveryItem)=>{
+ const beforeExternal=(entry:DiscoveryItem,entryControl:SourceControl)=>{
   if(!permitted()||!current.current.active||!active||!safeDiscoveryUrl(entry.sourceUrl))return false;
-  const saved=rememberDiscoveryReturn(owner,{category:view.category,query:view.query,savedOnly:view.savedOnly,scroll:window.scrollY,entryId:entry.id,...view.sourceIds!==undefined?{sourceIds:[...view.sourceIds]}:{}});
+  const saved=rememberDiscoveryReturn(owner,{category:view.category,query:view.query,savedOnly:view.savedOnly,scroll:window.scrollY,entryId:entry.id,entryControl,...view.sourceIds!==undefined?{sourceIds:[...view.sourceIds]}:{}});
   if(!saved)setNotice('返回位置未能保存，原站尚未打开。请稍后重试。');
   return saved;
  };
- const externalClick=(entry:DiscoveryItem)=>(event:MouseEvent<HTMLAnchorElement>)=>{if(!beforeExternal(entry))event.preventDefault();};
+ const externalClick=(entry:DiscoveryItem,control:SourceControl)=>(event:MouseEvent<HTMLAnchorElement>)=>{if(!beforeExternal(entry,control))event.preventDefault();};
  const refresh=()=>{if(permitted()&&current.current.active)setRefreshCount(count=>count+1);};
  const closeSources=()=>{setSourcesOpen(false);requestAnimationFrame(()=>{if(permitted()&&current.current.active)sourceButton.current?.focus({preventScroll:true});});};
  const sourceKey=(event:KeyboardEvent<HTMLDivElement>)=>{
@@ -145,14 +151,14 @@ export default function DiscoveryView({owner,canAccess,library,active=true,libra
    {view.savedOnly&&<p className="discovery-storage-note">收藏仅保存在此设备，不随学习记录备份导出。</p>}
    {blocked&&<p className="discovery-notice" role="alert">收藏暂时无法读取，已有记录未修改。原站目录仍可浏览。</p>}
    <div className="discovery-results">{found.map(entry=>{
-    const saved=ids.includes(entry.id),KindIcon=kindIcons[entry.kind],cover=entry.cover&&safeCover(entry.cover.src)&&!failedCovers.has(entry.id)?entry.cover:null;
-    const publisher=cover?.credit||entry.publisher;
+    const saved=ids.includes(entry.id),KindIcon=kindIcons[entry.kind],cover=entry.cover&&safeCover(entry.cover.src)?entry.cover:null,coverFailed=failedCovers.has(entry.id);
+    const publisher=(!coverFailed&&cover?.credit)||entry.publisher;
     const sameSource=(name:string)=>name.trim().toLocaleLowerCase().replace(/\s+university$/u,'');
     const sourceName=entry.platform&&sameSource(entry.platform)!==sameSource(entry.publisher)&&sameSource(entry.platform)!==sameSource(publisher)?`${publisher} · ${entry.platform}`:publisher;
     return <article className={`discovery-card${cover?'':' discovery-card--no-cover'}`} key={entry.id} data-discovery-id={entry.id}>
-     {cover&&<a className="discovery-cover-link" href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`打开原站：${entry.title}`} onClick={externalClick(entry)}><img src={cover.src} alt={cover.alt} loading="lazy" onError={()=>{if(matching())setFailedCovers(previous=>new Set([...previous,entry.id]));}}/><span className="discovery-kind-tag"><KindIcon size={13} aria-hidden="true"/>{kindLabels[entry.kind]}</span>{entry.durationLabel&&<span className="discovery-duration">{entry.durationLabel}</span>}</a>}
-     <div className="discovery-copy"><div className="discovery-source"><span className="discovery-source-mark" aria-hidden="true">{entry.publisher.slice(0,1).toUpperCase()}</span><span className="discovery-source-name">{sourceName}</span>{(cover?entry.tags[0]:kindLabels[entry.kind])&&<span className="discovery-source-kind">{cover?entry.tags[0]:kindLabels[entry.kind]}</span>}</div><h2 lang="en"><a href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" onClick={externalClick(entry)}>{entry.title}</a></h2>{entry.author&&<p className="discovery-author" lang="en">{entry.author}</p>}</div>
-     <div className="discovery-actions"><a ref={node=>{if(node)sourceLinks.current.set(entry.id,node);else sourceLinks.current.delete(entry.id);}} data-discovery-source={entry.id} href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" onClick={externalClick(entry)}>{entry.kind==='article'?'阅读原文':'打开原站'}<ArrowUpRight size={16} aria-hidden="true"/><span className="sr-only">：{entry.title}</span></a><button type="button" className="discovery-bookmark" data-discovery-save={entry.id} aria-label={`${saved?'取消收藏':'收藏'}：${entry.title}`} aria-pressed={saved} disabled={!allowed||!ready} onClick={()=>toggle(entry)}><Bookmark size={19} aria-hidden="true"/></button></div>
+     {cover&&<a ref={node=>setSourceLink(entry.id,'cover',node)} data-discovery-control="cover" className={`discovery-cover-link${coverFailed?' discovery-cover-link--unavailable':''}`} href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`打开原站：${entry.title}`} onClick={externalClick(entry,'cover')}>{!coverFailed&&<img src={cover.src} alt={cover.alt} loading="lazy" onError={()=>{if(matching())setFailedCovers(previous=>new Set([...previous,entry.id]));}}/>}<span className="discovery-kind-tag"><KindIcon size={13} aria-hidden="true"/>{kindLabels[entry.kind]}</span>{entry.durationLabel&&<span className="discovery-duration">{entry.durationLabel}</span>}</a>}
+     <div className="discovery-copy"><div className="discovery-source"><span className="discovery-source-mark" aria-hidden="true">{entry.publisher.slice(0,1).toUpperCase()}</span><span className="discovery-source-name">{sourceName}</span>{(cover?entry.tags[0]:kindLabels[entry.kind])&&<span className="discovery-source-kind">{cover?entry.tags[0]:kindLabels[entry.kind]}</span>}</div><h2 lang="en"><a ref={node=>setSourceLink(entry.id,'title',node)} data-discovery-control="title" href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" onClick={externalClick(entry,'title')}>{entry.title}</a></h2>{entry.author&&<p className="discovery-author" lang="en">{entry.author}</p>}</div>
+     <div className="discovery-actions"><a ref={node=>setSourceLink(entry.id,'source',node)} data-discovery-control="source" data-discovery-source={entry.id} href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" onClick={externalClick(entry,'source')}>{entry.kind==='article'?'阅读原文':'打开原站'}<ArrowUpRight size={16} aria-hidden="true"/><span className="sr-only">：{entry.title}</span></a><button type="button" className="discovery-bookmark" data-discovery-save={entry.id} aria-label={`${saved?'取消收藏':'收藏'}：${entry.title}`} aria-pressed={saved} disabled={!allowed||!ready} onClick={()=>toggle(entry)}><Bookmark size={19} aria-hidden="true"/></button></div>
     </article>;
    })}</div>
    {!found.length&&<div className="discovery-empty"><p>{view.savedOnly&&!ids.length?'还没有收藏。看到喜欢的内容，点一下书签。':selectedSources.size===0?'选择一个内容来源，开始浏览。':'没有找到相关内容。换个关键词试试。'}</p>{(view.query||view.category!=='all'||view.savedOnly||view.sourceIds!==undefined)&&<button type="button" onClick={()=>change({query:'',category:'all',savedOnly:false,sourceIds:undefined})}>查看全部内容</button>}</div>}

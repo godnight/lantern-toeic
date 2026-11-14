@@ -93,3 +93,24 @@ test('aborted or stale owner request cannot commit after a fetch ignores cancell
  for(const p of pending)p.resolve(response(p.url===NASA?rss(NASA_ITEM):rss(EP_A)));
  await new Promise(resolve=>setTimeout(resolve,30));assert.equal(store.writes.length,0);assert.equal(store.m.size,0);
 });
+
+test('channel-level non-English conflicts reject a source and preserve cache, even after item limit',async()=>{
+ const feed=sources(),store=memory();
+ const first=await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(rss(NASA_ITEM),rss(EP_A)),canCommit:()=>true});
+ assert(first.entries.some(e=>e.title==='An English original episode'));const prior=store.writes.at(-1)[1];
+ const chinese=rss('<language>zh-CN</language>'+EP_B);
+ const conflict=await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(new Error('offline'),chinese),canCommit:()=>true});
+ assert.equal(conflict.status,'cached');assert(!conflict.entries.some(e=>e.title==='A new English episode'));assert.equal(store.writes.at(-1)[1],prior);
+ const afterLimit=rss(EP_B.repeat(51)+'<language>zh-CN</language>');
+ const late=await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(new Error('offline'),afterLimit),canCommit:()=>true});
+ assert.equal(late.status,'cached');assert(!late.entries.some(e=>e.title==='A new English episode'));assert.equal(store.writes.at(-1)[1],prior);
+ const subtitles=item(UUID_B,'https://99percentinvisible.org/episode/another-city/','A new English episode','<language>en-US</language><description>English original with subtitles translated into Chinese.</description>');
+ const accepted=await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(new Error('offline'),rss('<language>en</language>'+subtitles)),canCommit:()=>true});
+ assert(accepted.entries.some(e=>e.title==='A new English episode'));
+ const explicitItem=item(UUID_B,'https://99percentinvisible.org/episode/another-city/','A new English episode','<language>zh</language>');
+ const itemRejected=await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(new Error('offline'),rss('<language>en</language>'+explicitItem)),canCommit:()=>true});
+ assert.equal(itemRejected.status,'cached');
+ const malformed=item(UUID_B,'https://99percentinvisible.org/episode/another-city/','Invalid language','<language><bad>en</bad></language>');
+ const malformedRejected=await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(new Error('offline'),rss('<language>en</language>'+malformed)),canCommit:()=>true});
+ assert.equal(malformedRejected.status,'cached');assert(!malformedRejected.entries.some(e=>e.title==='Invalid language'));
+});
