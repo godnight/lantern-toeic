@@ -58,6 +58,7 @@ let slots=[],cursor=0,effects=[],frame=[],navigation=[],tree,nativeBack;
 const same=(a,b)=>a&&b&&a.length===b.length&&a.every((x,i)=>Object.is(x,b[i]));
 const hooks={useState(value){const i=cursor++;if(!(i in slots))slots[i]=typeof value==='function'?value():value;return[slots[i],next=>{slots[i]=typeof next==='function'?next(slots[i]):next;}];},useRef(value){const i=cursor++;if(!(i in slots))slots[i]={current:value};return slots[i];},useEffect(fn,deps){const i=cursor++,old=slots[i];if(!old||!same(old.deps,deps))effects.push(()=>{old?.cleanup?.();slots[i]={deps,cleanup:fn()};});}};
 hooks.useLayoutEffect=hooks.useEffect;
+hooks.useCallback=(fn,deps)=>{const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps))slots[i]={value:fn,deps};return slots[i].value;};
  const listeners=new Map(),scrolls=[];let focused=null,controls=[];
 class Element {
  constructor({tag='BUTTON',label='来源按钮',text='来源控件',identity='source'}={}){this.tagName=tag;this.label=label;this.textContent=text;this.identity=identity;this.isConnected=true;this.focusCount=0;}

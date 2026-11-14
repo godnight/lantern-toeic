@@ -70,7 +70,7 @@ test('rejected writes and stale owner/access callbacks cannot report a successfu
 });
 
 test('external return restores only the same owner within its short lifetime and does not touch learning storage',()=>{
- const data=storage(),state={category:'person',query:'Jobs',savedOnly:true,scroll:460,entryId:'stanford-jobs-2005'};
+ const data=storage(),state={category:'article',query:'Jobs',savedOnly:true,scroll:460,entryId:'stanford-jobs-2005'};
  data.setItem('existing-learning-records','keep');assert.equal(back.rememberDiscoveryReturn(A,state,data,1000),true);
  assert.deepEqual(plain(back.readDiscoveryReturn(A,data,2000)),state);assert.equal(back.readDiscoveryReturn(B,data,2000),null);
  assert.equal(back.readDiscoveryReturn(A,data,1000+30*60*1000+1),null);assert.equal(back.readDiscoveryReturn(A,data,999),null);
@@ -83,4 +83,28 @@ test('return records validate actual shape, library state and write failure with
  assert(back.rememberDiscoveryReturn(A,base,data,1000));assert.deepEqual(plain(back.readDiscoveryReturn(A,data,1100)),base);
  for(const altered of [{...base,scroll:-1},{...base,category:'injected'},{...base,query:'x'.repeat(201)},{...base,library:{...base.library,selectedId:{}}}])assert.equal(back.rememberDiscoveryReturn(A,altered,data,1000),false);
  assert.equal(back.rememberDiscoveryReturn(A,base,{...data,setItem(){throw Error('denied');}},1000),false);
+});
+
+
+test('old v1 return categories retain their intended content type and owner isolation',()=>{
+ const data=storage(),key='lantern-discovery-return-v1:'+JSON.stringify(A);
+ for(const [oldCategory,category] of [['talk','video'],['person','article'],['film','video']]){
+  const state={category:oldCategory,query:'original',savedOnly:false,scroll:123,entryId:'stanford-jobs-2005'};
+  data.setItem(key,JSON.stringify({schemaVersion:1,owner:A,savedAt:1000,state}));
+  assert.deepEqual(plain(back.readDiscoveryReturn(A,data,1100)),{...state,category});
+  assert.equal(back.readDiscoveryReturn(B,data,1100),null);
+ }
+});
+
+test('return restores source selection including none and protects prior state on malformed filters',()=>{
+ const data=storage(),base={category:'podcast',query:'space',savedOnly:true,scroll:345,entryId:'nasa-curious-mars-alpha'};
+ for(const sourceIds of [['nasa','ted-bilibili'],[]]){
+  const state={...base,sourceIds};assert(back.rememberDiscoveryReturn(A,state,data,1000));
+  assert.deepEqual(plain(back.readDiscoveryReturn(A,data,1100)),state);
+  assert.equal(back.readDiscoveryReturn(B,data,1100),null);
+ }
+ const key='lantern-discovery-return-v1:'+JSON.stringify(A),before=data.getItem(key);
+ for(const sourceIds of [['nasa','nasa'],['unsafe/id'],['x'.repeat(81)],Array(51).fill('nasa'),null]){
+  assert.equal(back.rememberDiscoveryReturn(A,{...base,sourceIds},data,1200),false);assert.equal(data.getItem(key),before);
+ }
 });

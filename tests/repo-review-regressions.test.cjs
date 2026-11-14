@@ -135,6 +135,9 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
     '@/lib/study-model':h.model, '@/lib/study-backup':h.backup, '@/lib/speaking-recovery':load('lib/speaking-recovery.ts',{}),
     '@/lib/native-host':{registerNativeBack(fn){h.backs.add(fn);return()=>h.backs.delete(fn);}},
     '@/lib/ui-theme':themeModel, './learn/workspace-shell':workspace, './learn/ui-theme':themeUi,
+    // Discovery is outside these workspace/recording regressions; preserve its
+    // library prop as a visible fixture boundary without loading feed content.
+    './learn/discovery-view':{default:'DiscoveryView'},
     './learn/exam-collection':{default:'ExamCollection'}, './learn/resource-library':{default:'ResourceLibrary'},
     './learn/practice':{default:'Practice'},
     './learn/speaking':{default:'SpeakingRoom',SpeakingTaskCatalog:speaking.SpeakingTaskCatalog,SpeakingRecordingHistory:speaking.SpeakingRecordingHistory},

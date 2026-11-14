@@ -1,0 +1,417 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "id": "nasa-skywatching-nov2026",
+      "kind": "article",
+      "title": "What’s Up: November 2026 Skywatching Tips from NASA",
+      "author": "Raquel Villanueva",
+      "publisher": "NASA",
+      "platform": "NASA",
+      "sourceId": "nasa",
+      "sourceUrl": "https://science.nasa.gov/solar-system/skywatching/whats-up-november-2026-skywatching-tips-from-nasa/",
+      "tags": [
+        "Science",
+        "Space"
+      ],
+      "durationLabel": "4 min read",
+      "language": "en",
+      "originalLanguage": "en",
+      "cover": {
+        "src": "/images/discovery/voyager.jpg",
+        "alt": "Voyager spacecraft in interstellar space",
+        "credit": "NASA/JPL-Caltech",
+        "evidenceUrl": "https://science.nasa.gov/solar-system/skywatching/whats-up-november-2026-skywatching-tips-from-nasa/"
+      },
+      "verification": {
+        "checkedAt": "2026-11-14",
+        "basis": "Manual editorial assessment of the NASA original English article and accompanying English transcript; NASA does not declare an original-language metadata field.",
+        "evidenceUrls": [
+          "https://science.nasa.gov/solar-system/skywatching/whats-up-november-2026-skywatching-tips-from-nasa/",
+          "https://www.nasa.gov/nasa-brand-center/images-and-media/"
+        ]
+      }
+    },
+    {
+      "id": "nasa-kennedy-rice-1962",
+      "kind": "video",
+      "title": "President Kennedy's Speech at Rice University",
+      "author": "John F. Kennedy",
+      "publisher": "NASA",
+      "platform": "NASA",
+      "sourceId": "nasa",
+      "sourceUrl": "https://ntrs.nasa.gov/citations/19940010921",
+      "tags": [
+        "History",
+        "Space",
+        "Speech"
+      ],
+      "durationLabel": null,
+      "language": "en",
+      "originalLanguage": "en",
+      "cover": {
+        "src": "/images/discovery/kennedy.jpg",
+        "alt": "President John F. Kennedy speaking at Rice University",
+        "credit": "NASA / YouTube",
+        "evidenceUrl": "https://ntrs.nasa.gov/citations/19940010921"
+      },
+      "verification": {
+        "checkedAt": "2026-11-14",
+        "basis": "Manual assessment of the NASA archive record for Kennedy’s original English Rice University speech; this is a link to the archive, not a new playback or image-rights verification. The prototype image is a YouTube thumbnail of the officially linked video; frame-level correspondence has not been verified. NASA’s public-use statement applies to the unedited film, not a separate verification of thumbnail rights.",
+        "evidenceUrls": [
+          "https://ntrs.nasa.gov/citations/19940010921",
+          "https://www.youtube.com/watch?v=VaFTVR-hZqg"
+        ]
+      }
+    },
+    {
+      "id": "99pi-white-house-solar-panels",
+      "kind": "podcast",
+      "title": "100 Objects #24: White House Solar Panels",
+      "author": null,
+      "publisher": "99% Invisible",
+      "platform": "99% Invisible",
+      "sourceId": "99pi",
+      "sourceUrl": "https://99percentinvisible.org/episode/100-objects-024-white-house-solar-panels/",
+      "tags": [
+        "Design",
+        "History",
+        "Roman Mars",
+        "Bill McKibben"
+      ],
+      "durationLabel": "39:27",
+      "language": "en",
+      "originalLanguage": "en",
+      "cover": null,
+      "verification": {
+        "checkedAt": "2026-11-14",
+        "basis": "Manual editorial assessment of the individually reviewed original 99% Invisible episode page and English transcript: Roman Mars is host and Bill McKibben is a guest; neither is asserted as the author. Feed metadata is not proof of audio playback.",
+        "evidenceUrls": [
+          "https://99percentinvisible.org/episode/100-objects-024-white-house-solar-panels/",
+          "https://feeds.simplecast.com/BqbsxVfO"
+        ]
+      }
+    },
+    {
+      "id": "stanford-jobs-2005",
+      "kind": "article",
+      "title": "You've got to find what you love, Jobs says",
+      "author": null,
+      "publisher": "Stanford University",
+      "platform": "Stanford",
+      "sourceId": "stanford",
+      "sourceUrl": "https://news.stanford.edu/stories/2005/06/youve-got-find-love-jobs-says",
+      "tags": [
+        "Speech",
+        "Work",
+        "Steve Jobs"
+      ],
+      "durationLabel": null,
+      "language": "en",
+      "originalLanguage": "en",
+      "cover": null,
+      "verification": {
+        "checkedAt": "2026-11-14",
+        "basis": "Manual assessment of Stanford’s official English transcript of Steve Jobs’s commencement speech; Jobs is the speaker, and the article author is not asserted.",
+        "evidenceUrls": [
+          "https://news.stanford.edu/stories/2005/06/youve-got-find-love-jobs-says"
+        ]
+      }
+    },
+    {
+      "id": "nasa-curious-mars-alpha",
+      "kind": "podcast",
+      "title": "Encore: A Year In Mars Dune Alpha",
+      "author": null,
+      "publisher": "NASA",
+      "platform": "NASA",
+      "sourceId": "nasa",
+      "sourceUrl": "https://www.nasa.gov/podcasts/curious-universe/encore-a-year-in-mars-dune-alpha/",
+      "tags": [
+        "Science",
+        "Mars",
+        "Space"
+      ],
+      "durationLabel": null,
+      "language": "en",
+      "originalLanguage": "en",
+      "cover": null,
+      "verification": {
+        "checkedAt": "2026-11-14",
+        "basis": "Manual assessment of NASA’s original Curious Universe episode page and English transcript; the program is a 2026 encore of a 2023 episode. Audio playback was not tested.",
+        "evidenceUrls": [
+          "https://www.nasa.gov/podcasts/curious-universe/encore-a-year-in-mars-dune-alpha/"
+        ]
+      }
+    },
+    {
+      "id": "blender-tears-of-steel",
+      "kind": "video",
+      "title": "Tears of Steel - Blender VFX Open Movie",
+      "author": "Ian Hubert",
+      "publisher": "Blender Foundation",
+      "platform": "YouTube",
+      "sourceId": "blender",
+      "sourceUrl": "https://www.youtube.com/watch?v=R6MlUcmOul8",
+      "tags": [
+        "Film",
+        "Science fiction"
+      ],
+      "durationLabel": "12 min",
+      "language": "en",
+      "originalLanguage": "en",
+      "cover": null,
+      "verification": {
+        "checkedAt": "2026-11-14",
+        "basis": "Blender Institute’s indexed official film page explicitly states “Language: English spoken” and names Ian Hubert writer and director. The official YouTube listing describes the same production in English. Player and audio were not auditioned in this review; the Blender site was unavailable when opened directly.",
+        "evidenceUrls": [
+          "https://www.youtube.com/watch?v=R6MlUcmOul8",
+          "https://mango.blender.org/about/"
+        ]
+      }
+    },
+    {
+      "id": "nasa-gemini-earth-observation",
+      "kind": "article",
+      "title": "Gemini Astronaut Photos Inspired Early Earth Observation Program",
+      "author": "NASA History Office",
+      "publisher": "NASA",
+      "platform": "NASA",
+      "sourceId": "nasa",
+      "sourceUrl": "https://www.nasa.gov/image-article/gemini-astronaut-photos-inspired-early-earth-observation-program/",
+      "tags": [
+        "History",
+        "Space",
+        "Earth"
+      ],
+      "durationLabel": null,
+      "language": "en",
+      "originalLanguage": "en",
+      "cover": null,
+      "verification": {
+        "checkedAt": "2026-11-14",
+        "basis": "Manual editorial assessment of the individually reviewed NASA History Office English original article. NASA’s feed does not declare an original-language field; its creator field may identify an editor.",
+        "evidenceUrls": [
+          "https://www.nasa.gov/image-article/gemini-astronaut-photos-inspired-early-earth-observation-program/",
+          "https://www.nasa.gov/feed/"
+        ]
+      }
+    },
+    {
+      "id": "nasa-artemis-katie-spicer",
+      "kind": "article",
+      "title": "I Am Artemis Katie Spicer",
+      "author": "Beverly Perry",
+      "publisher": "NASA",
+      "platform": "NASA",
+      "sourceId": "nasa",
+      "sourceUrl": "https://www.nasa.gov/missions/artemis/i-am-artemis-katie-spicer/",
+      "tags": [
+        "Space",
+        "People",
+        "Work"
+      ],
+      "durationLabel": null,
+      "language": "en",
+      "originalLanguage": "en",
+      "cover": null,
+      "verification": {
+        "checkedAt": "2026-11-14",
+        "basis": "Manual editorial assessment of the individually reviewed NASA English original article and interview. NASA’s feed does not declare an original-language field; its creator field may identify an editor.",
+        "evidenceUrls": [
+          "https://www.nasa.gov/missions/artemis/i-am-artemis-katie-spicer/",
+          "https://www.nasa.gov/feed/"
+        ]
+      }
+    },
+    {
+      "id": "nasa-ames-stars-november-2026",
+      "kind": "article",
+      "title": "NASA Ames Stars of the Month: November 2026",
+      "author": "Aaron McKinnon",
+      "publisher": "NASA",
+      "platform": "NASA",
+      "sourceId": "nasa",
+      "sourceUrl": "https://www.nasa.gov/general/nasa-ames-stars-of-the-month-november-2026/",
+      "tags": [
+        "Science",
+        "People",
+        "Work"
+      ],
+      "durationLabel": null,
+      "language": "en",
+      "originalLanguage": "en",
+      "cover": null,
+      "verification": {
+        "checkedAt": "2026-11-14",
+        "basis": "Manual editorial assessment of the individually reviewed NASA English original article and interview context. NASA’s feed does not declare an original-language field; its creator field may identify an editor.",
+        "evidenceUrls": [
+          "https://www.nasa.gov/general/nasa-ames-stars-of-the-month-november-2026/",
+          "https://www.nasa.gov/feed/"
+        ]
+      }
+    },
+    {
+      "id": "guardian-weekly-cinema-nov-14-2026",
+      "kind": "article",
+      "title": "Guilty or redeemed? Our critics’ verdicts on this week’s UK cinema releases",
+      "author": null,
+      "publisher": "The Guardian",
+      "platform": "The Guardian",
+      "sourceId": "guardian",
+      "sourceUrl": "https://www.theguardian.com/film/ng-interactive/2026/nov/14/this-week-uk-cinema-releases-cynthia-erivo-prima-facie-johnny-depp-ebenezer",
+      "tags": [
+        "Film",
+        "Culture"
+      ],
+      "durationLabel": null,
+      "language": "en",
+      "originalLanguage": "en",
+      "cover": null,
+      "verification": {
+        "checkedAt": "2026-11-14",
+        "basis": "Manual editorial assessment of the original English film reviews on The Guardian’s page, credited to its named critics. No original-language metadata field was supplied; no translated-audio claim is made.",
+        "evidenceUrls": [
+          "https://www.theguardian.com/film/ng-interactive/2026/nov/14/this-week-uk-cinema-releases-cynthia-erivo-prima-facie-johnny-depp-ebenezer"
+        ]
+      }
+    },
+    {
+      "id": "ted-julian-treasure-speaking",
+      "kind": "video",
+      "title": "How to speak so that people want to listen",
+      "author": "Julian Treasure",
+      "publisher": "TED",
+      "platform": "TED",
+      "sourceId": "ted",
+      "sourceUrl": "https://www.ted.com/talks/julian_treasure_how_to_speak_so_that_people_want_to_listen",
+      "tags": [
+        "Communication",
+        "Speaking"
+      ],
+      "durationLabel": null,
+      "language": "en",
+      "originalLanguage": "en",
+      "cover": null,
+      "verification": {
+        "checkedAt": "2026-11-14",
+        "basis": "Manual editorial assessment of the official TED conference talk and English transcript, including the speaker’s original English delivery and wordplay. Audio playback was not auditioned in this review.",
+        "evidenceUrls": [
+          "https://www.ted.com/talks/julian_treasure_how_to_speak_so_that_people_want_to_listen?view=transcript"
+        ]
+      }
+    },
+    {
+      "id": "ted-ken-robinson-creativity",
+      "kind": "video",
+      "title": "Do schools kill creativity?",
+      "author": "Sir Ken Robinson",
+      "publisher": "TED",
+      "platform": "TED",
+      "sourceId": "ted",
+      "sourceUrl": "https://www.ted.com/talks/sir_ken_robinson_do_schools_kill_creativity",
+      "tags": [
+        "Education",
+        "Creativity"
+      ],
+      "durationLabel": null,
+      "language": "en",
+      "originalLanguage": "en",
+      "cover": null,
+      "verification": {
+        "checkedAt": "2026-11-14",
+        "basis": "Manual editorial assessment of the official TED conference talk and English transcript, including the speaker’s original English delivery and wordplay. Audio playback was not auditioned in this review.",
+        "evidenceUrls": [
+          "https://www.ted.com/talks/sir_ken_robinson_do_schools_kill_creativity?view=transcript",
+          "https://blog.ted.com/the-2000th-ted-talk/"
+        ]
+      }
+    },
+    {
+      "id": "ted-tim-urban-procrastination",
+      "kind": "video",
+      "title": "Inside the mind of a master procrastinator",
+      "author": "Tim Urban",
+      "publisher": "TED",
+      "platform": "TED",
+      "sourceId": "ted",
+      "sourceUrl": "https://www.ted.com/talks/tim_urban_inside_the_mind_of_a_master_procrastinator",
+      "tags": [
+        "Work",
+        "Psychology"
+      ],
+      "durationLabel": null,
+      "language": "en",
+      "originalLanguage": "en",
+      "cover": null,
+      "verification": {
+        "checkedAt": "2026-11-14",
+        "basis": "Manual editorial assessment of the official TED conference talk and English transcript, including the speaker’s original English delivery and wordplay. Audio playback was not auditioned in this review.",
+        "evidenceUrls": [
+          "https://www.ted.com/talks/tim_urban_inside_the_mind_of_a_master_procrastinator?view=transcript"
+        ]
+      }
+    }
+  ],
+  "held": [
+    {
+      "id": "ted-julian-speaking-bilibili",
+      "title": "How to speak so that people want to listen",
+      "sourceUrl": "https://www.bilibili.com/video/BV13x411t79M/?p=2",
+      "originalUrl": "https://www.ted.com/talks/julian_treasure_how_to_speak_so_that_people_want_to_listen?language=en",
+      "publisher": "TED",
+      "platform": "bilibili",
+      "status": "HOLD_UNVERIFIED_AUDIO",
+      "reason": "The official TED original and indexed subtitle variants do not establish the current Bilibili audio track. The source research reports no audio audition or playback verification; several requests received HTTP 412 and were not bypassed."
+    },
+    {
+      "id": "ted-ken-creativity-bilibili",
+      "title": "Do schools kill creativity?",
+      "sourceUrl": "https://www.bilibili.com/video/BV1wx411W7qj/?p=2",
+      "originalUrl": "https://www.ted.com/talks/sir_ken_robinson_do_schools_kill_creativity?language=en",
+      "publisher": "TED",
+      "platform": "bilibili",
+      "status": "HOLD_UNVERIFIED_AUDIO",
+      "reason": "The official TED original and indexed subtitle variants do not establish the current Bilibili audio track. The source research reports no audio audition or playback verification; several requests received HTTP 412 and were not bypassed."
+    },
+    {
+      "id": "ted-tim-procrastinator-bilibili",
+      "title": "Inside the mind of a master procrastinator",
+      "sourceUrl": "https://www.bilibili.com/video/BV1o1421R7yR/",
+      "originalUrl": "https://www.ted.com/talks/tim_urban_inside_the_mind_of_a_master_procrastinator?language=en",
+      "publisher": "TED",
+      "platform": "bilibili",
+      "status": "HOLD_UNVERIFIED_AUDIO",
+      "reason": "The official TED original and indexed subtitle variants do not establish the current Bilibili audio track. The source research reports no audio audition or playback verification; several requests received HTTP 412 and were not bypassed."
+    },
+    {
+      "id": "ted-celeste-conversation-bilibili",
+      "title": "10 ways to have a better conversation",
+      "sourceUrl": "https://www.bilibili.com/video/BV1Pt411C7YM/?p=2",
+      "originalUrl": "https://www.ted.com/talks/celeste_headlee_10_ways_to_have_a_better_conversation?language=en",
+      "publisher": "TED / TEDxCreativeCoast",
+      "platform": "bilibili",
+      "status": "HOLD_UNVERIFIED_AUDIO",
+      "reason": "The official TED original and indexed subtitle variants do not establish the current Bilibili audio track. The source research reports no audio audition or playback verification; several requests received HTTP 412 and were not bypassed."
+    },
+    {
+      "id": "bilibili-chinese-dub-ted-ed",
+      "title": "Why can't you divide by zero?",
+      "sourceUrl": "https://www.bilibili.com/video/BV17Ad2BAEAy/",
+      "originalUrl": "https://www.youtube.com/watch?v=NKmGVE85GUU",
+      "publisher": "TED-Ed",
+      "platform": "bilibili",
+      "status": "REJECT_CHINESE_DUB",
+      "reason": "The indexed title identifies Chinese dubbing and the description identifies YouDub AI translation/dubbing; an English original title or source link does not make the posted audio original English."
+    },
+    {
+      "id": "aeon-fugitive-imagination",
+      "title": "Those forced to cross borders are imagining a radical new world",
+      "sourceUrl": "https://aeon.co/essays/those-forced-to-cross-borders-are-imagining-a-radical-new-world",
+      "publisher": "Aeon",
+      "platform": "Aeon",
+      "status": "HOLD_ORIGINAL_LANGUAGE_UNKNOWN",
+      "reason": "The English article and its byline alone do not establish the work’s original language."
+    }
+  ]
+}
