@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "buildId": "v046-auth-connect-20064-r2-c5dc9db6fba7",
-  "sourceInputsSha256": "c5dc9db6fba73ffd3a11fb57974cd7286c1f844cc9c5ae0086460ffc16d99717",
-  "inputCount": 14180,
+  "buildId": "v047-theme-20075-r1-4cbce063f21a",
+  "sourceInputsSha256": "4cbce063f21a5037f66e6c59e85398f7c687cc25817d15bb37ddd1f02026414b",
+  "inputCount": 14223,
   "excludedSelf": "public/build-identity.json",
-  "versionName": "0.4.6",
-  "versionCode": 20064
+  "versionName": "0.4.7",
+  "versionCode": 20075
 }

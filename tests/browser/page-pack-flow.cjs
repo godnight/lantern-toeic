@@ -80,7 +80,7 @@ async function eventually(check, message) {
 }
 
 module.exports = async function pagePackFlow({page,step,click,importViaUI,preflight,idle,enter,currentAttempt,screenshot,layout,resultSummary,fixtureDir}) {
-  assert.equal(new URL(page.url()).origin,'http://127.0.0.1:4175','Only the owned full-exam QA preview may run this module');
+  assert.equal(new URL(page.url()).origin,require('../helpers/browser-native-auth.cjs').NATIVE_ORIGIN,'Only the authenticated native full-exam QA preview may run this module');
   let fixture,attemptId;
   const activeArticle=number=>page.getByRole('article',{name:`第 ${number} 题`,exact:true});
   async function select(number) {
