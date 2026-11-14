@@ -1,24 +1,24 @@
 'use client';
 
 import {Flame,BookOpen,ChartNoAxesCombined,ChevronLeft,Cloud,CloudOff,Headphones,Home,Library,RotateCcw,Search,UserRound} from 'lucide-react';
-import type {ReactNode} from 'react';
+import type {CSSProperties,ReactNode} from 'react';
 import type {Theme} from '@/lib/study-model';
-import {ThemeMotif} from './ui-theme';
+import {ThemeMotif,workspaceSceneBackdrop} from './ui-theme';
 
 export const WORKSPACE_NAV = [
  {id:'today',label:'今日',icon:Home},{id:'vocabulary',label:'单词',icon:BookOpen},
  {id:'train',label:'练习',icon:Headphones},{id:'review',label:'复习',icon:RotateCcw},
- {id:'progress',label:'进度',icon:ChartNoAxesCombined},{id:'resources',label:'资料',icon:Library},
+ {id:'progress',label:'进度',icon:ChartNoAxesCombined},{id:'resources',label:'发现',icon:Library},
 ];
 
 export type WorkspaceShellProps={
  nav:string;theme:Theme;name:string;scope:string;syncLabel:string;reviewCount:number;
  onNavigate:(nav:string)=>void;onSearch:()=>void;onSync:()=>void;focused?:boolean;children:ReactNode;
  /** Parent owns navigation/history and may override the default personal-page hierarchy. */
- onBack?:()=>void;backLabel?:string;onProfile?:()=>void;
+ onBack?:()=>void;backLabel?:string;onProfile?:()=>void;discoveryFeedActive?:boolean;
 };
 
-const TITLES:Record<string,string>={today:'今日学习',train:'练习',review:'复习',progress:'进度',resources:'资料',
+const TITLES:Record<string,string>={today:'今日学习',train:'练习',review:'复习',progress:'进度',resources:'发现',
  vocabulary:'单词',search:'查词',profile:'我的',themes:'选择主题',about:'关于微光',
  settings:'学习偏好',account:'账号与安全',backups:'数据管理',art:'内容与来源'};
 const PERSONAL_PAGES=new Set(['profile','themes','about','account','settings','backups','art']);
@@ -41,13 +41,15 @@ function Brand({onClick,mobile=false}:{onClick:()=>void;mobile?:boolean}){
 }
 
 export function WorkspaceShell({nav,theme,name,scope,syncLabel,reviewCount,onNavigate,onSearch,onSync,
- focused=false,children,onBack,backLabel,onProfile}:WorkspaceShellProps){
+ focused=false,children,onBack,backLabel,onProfile,discoveryFeedActive=false}:WorkspaceShellProps){
  const subpage=PERSONAL_PAGES.has(nav);
  const parent=nav==='profile'?'today':'profile';
  const parentLabel=backLabel||(parent==='today'?'今日学习':'我的');
  const goBack=onBack||(()=>onNavigate(parent));
  const openProfile=onProfile||(()=>onNavigate('profile'));
- return <div className={`lantern-workspace v040-workspace-shell${focused?' workspace-focused':''}${subpage?' v040-workspace-subpage':''}`} data-v040-view={nav}>
+ const backdrop=workspaceSceneBackdrop(theme,nav,discoveryFeedActive);
+ const sceneStyle=backdrop?({'--page-scene':backdrop.background,'--page-scene-mobile':backdrop.mobileBackground} as CSSProperties):undefined;
+ return <div className={`lantern-workspace v040-workspace-shell${focused?' workspace-focused':''}${subpage?' v040-workspace-subpage':''}${discoveryFeedActive?' workspace-discovery-feed':''}`} data-v040-view={nav} data-scene-background={backdrop?.id} style={sceneStyle}>
   <a className="workspace-skip" href="#workspace-main">跳到学习内容</a>
 
   <aside className="workspace-sidebar" aria-label="学习空间">

@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "designId": "CMP-THEME-01",
+  "designSpec": "交付/鲸鱼娘主题插画-20261101/README.md",
+  "promptRecord": "交付/鲸鱼娘主题插画-20261101/prompts.json",
+  "assets": [
+    {
+      "id": "whale-bay-home",
+      "path": "/images/whale-themes/whale-bay-home.webp",
+      "width": 1672,
+      "height": 941,
+      "bytes": 288772,
+      "sha256": "00645224c373ce59d532a8a97cd20a4e34098c5b10e1fc9c9cdd2c7caea50fe4",
+      "encoding": {
+        "format": "webp",
+        "quality": 90,
+        "effort": 6,
+        "resized": false,
+        "cropped": false
+      },
+      "source": {
+        "path": "交付/鲸鱼娘主题插画-20261101/chibi-home-v1.png",
+        "sha256": "7109187c5c37e165d74a39a5e50669ac62ab15dbe0d0284757312851ff871688",
+        "bytes": 2359184,
+        "width": 1672,
+        "height": 941
+      },
+      "author": "OpenAI imagegen; scenes adapted from user-approved whale-maiden character references",
+      "createdAt": "2026-11-01",
+      "rights": "AI-generated scene based on user-approved character references; no CC0, exclusive-rights or third-party official authorization claim.",
+      "status": "approved",
+      "approvalBasis": "designer-reviewed; user authorized implementation; final user visual acceptance pending"
+    },
+    {
+      "id": "whale-bay-study",
+      "path": "/images/whale-themes/whale-bay-study.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 193098,
+      "sha256": "b394437949058e67943f0ed8bb24a19c99c86dc16dfaf7f4a94a4c5f5e5c18d6",
+      "encoding": {
+        "format": "webp",
+        "quality": 90,
+        "effort": 6,
+        "resized": false,
+        "cropped": false
+      },
+      "source": {
+        "path": "交付/鲸鱼娘主题插画-20261101/chibi-study-v1.png",
+        "sha256": "1a05291b609f531443d337b0598da07be664599daeba3b73bfc08a8d287352c4",
+        "bytes": 2021040,
+        "width": 1024,
+        "height": 1536
+      },
+      "author": "OpenAI imagegen; scenes adapted from user-approved whale-maiden character references",
+      "createdAt": "2026-11-01",
+      "rights": "AI-generated scene based on user-approved character references; no CC0, exclusive-rights or third-party official authorization claim.",
+      "status": "approved",
+      "approvalBasis": "designer-reviewed; user authorized implementation; final user visual acceptance pending"
+    },
+    {
+      "id": "whale-moon-home",
+      "path": "/images/whale-themes/whale-moon-home.webp",
+      "width": 1672,
+      "height": 941,
+      "bytes": 279176,
+      "sha256": "8c8f9328c4f13df1b88b54342a987bbcb33bd1d567ed06492c34b1ecc53518e1",
+      "encoding": {
+        "format": "webp",
+        "quality": 90,
+        "effort": 6,
+        "resized": false,
+        "cropped": false
+      },
+      "source": {
+        "path": "交付/鲸鱼娘主题插画-20261101/adult-home-v1.png",
+        "sha256": "d8b3edaba68927e0b226bfc7f7f377fdfd48ad061efc96bf08fb88e148aeea24",
+        "bytes": 2276080,
+        "width": 1672,
+        "height": 941
+      },
+      "author": "OpenAI imagegen; scenes adapted from user-approved whale-maiden character references",
+      "createdAt": "2026-11-01",
+      "rights": "AI-generated scene based on user-approved character references; no CC0, exclusive-rights or third-party official authorization claim.",
+      "status": "approved",
+      "approvalBasis": "designer-reviewed; user authorized implementation; final user visual acceptance pending"
+    },
+    {
+      "id": "whale-moon-study",
+      "path": "/images/whale-themes/whale-moon-study.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 168754,
+      "sha256": "fa7f0316231c3a1be8febdc6529186de4e6edfd5461f8630fa5862d4513d30cd",
+      "encoding": {
+        "format": "webp",
+        "quality": 90,
+        "effort": 6,
+        "resized": false,
+        "cropped": false
+      },
+      "source": {
+        "path": "交付/鲸鱼娘主题插画-20261101/adult-study-v1.png",
+        "sha256": "ca81f9dba6cb72e17450b4deada60f14634178ede5ece09449b445669bc2e2d4",
+        "bytes": 1942491,
+        "width": 1024,
+        "height": 1536
+      },
+      "author": "OpenAI imagegen; scenes adapted from user-approved whale-maiden character references",
+      "createdAt": "2026-11-01",
+      "rights": "AI-generated scene based on user-approved character references; no CC0, exclusive-rights or third-party official authorization claim.",
+      "status": "approved",
+      "approvalBasis": "designer-reviewed; user authorized implementation; final user visual acceptance pending"
+    }
+  ],
+  "totalDerivedBytes": 929800
+}

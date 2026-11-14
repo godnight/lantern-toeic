@@ -58,6 +58,7 @@ let slots=[],cursor=0,effects=[],frame=[],navigation=[],tree,nativeBack;
 const same=(a,b)=>a&&b&&a.length===b.length&&a.every((x,i)=>Object.is(x,b[i]));
 const hooks={useState(value){const i=cursor++;if(!(i in slots))slots[i]=typeof value==='function'?value():value;return[slots[i],next=>{slots[i]=typeof next==='function'?next(slots[i]):next;}];},useRef(value){const i=cursor++;if(!(i in slots))slots[i]={current:value};return slots[i];},useEffect(fn,deps){const i=cursor++,old=slots[i];if(!old||!same(old.deps,deps))effects.push(()=>{old?.cleanup?.();slots[i]={deps,cleanup:fn()};});}};
 hooks.useLayoutEffect=hooks.useEffect;
+hooks.useCallback=(fn,deps)=>{const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps))slots[i]={value:fn,deps};return slots[i].value;};
  const listeners=new Map(),scrolls=[];let focused=null,controls=[];
 class Element {
  constructor({tag='BUTTON',label='来源按钮',text='来源控件',identity='source'}={}){this.tagName=tag;this.label=label;this.textContent=text;this.identity=identity;this.isConnected=true;this.focusCount=0;}
@@ -93,7 +94,7 @@ function shell(){return nodes(tree).find(node=>node.type==='WorkspaceShell');}
 function settle(){let count=0;while(navigation.length){assert.ok(++count<20);navigation.shift()();render();}render();}
 function key(values={}){let prevented=false;const event={key:'k',ctrlKey:true,metaKey:false,isComposing:false,keyCode:0,preventDefault(){prevented=true;},...values};for(const fn of [...listeners.get('keydown')||[]])fn(event);render();return prevented;}
 
-const actualShell=load('app/learn/workspace-shell.tsx',{'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':proxy,'./ui-theme':{ThemeMotif:'ThemeMotif'}}).WorkspaceShell;
+const actualShell=load('app/learn/workspace-shell.tsx',{'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':proxy,'./ui-theme':{ThemeMotif:'ThemeMotif',workspaceSceneBackdrop:()=>null}}).WorkspaceShell;
 cursor=0;effects=[];tree=app({owner:'bob',nativeMode:false});effects.forEach(fn=>fn());
 const props=shell().props,output=actualShell(props);
 const nameNode=nodes(output).find(n=>n.type==='div'&&n.props?.className==='workspace-identity');

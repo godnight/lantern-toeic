@@ -85,7 +85,8 @@ function nodes(tree, predicate) {
     const node = queue.shift();
     if (!node) continue;
     if (Array.isArray(node)) {queue.push(...node); continue;}
-    if (typeof node === 'object') {if (predicate(node)) found.push(node); queue.push(node.props?.children);}
+    // Discovery retains the original resource surface in its library slot.
+    if (typeof node === 'object') {if (predicate(node)) found.push(node); queue.push(node.props?.children,node.props?.library);}
   }
   return found;
 }
@@ -134,6 +135,9 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
     '@/lib/study-model':h.model, '@/lib/study-backup':h.backup, '@/lib/speaking-recovery':load('lib/speaking-recovery.ts',{}),
     '@/lib/native-host':{registerNativeBack(fn){h.backs.add(fn);return()=>h.backs.delete(fn);}},
     '@/lib/ui-theme':themeModel, './learn/workspace-shell':workspace, './learn/ui-theme':themeUi,
+    // Discovery is outside these workspace/recording regressions; preserve its
+    // library prop as a visible fixture boundary without loading feed content.
+    './learn/discovery-view':{default:'DiscoveryView'},
     './learn/exam-collection':{default:'ExamCollection'}, './learn/resource-library':{default:'ResourceLibrary'},
     './learn/practice':{default:'Practice'},
     './learn/speaking':{default:'SpeakingRoom',SpeakingTaskCatalog:speaking.SpeakingTaskCatalog,SpeakingRecordingHistory:speaking.SpeakingRecordingHistory},
@@ -245,7 +249,7 @@ test('I09: nested lookup preserves the same practice queue and restores its look
 function navigateApp(render, id) {
   if(id==='profile'){const entry=nodes(render(),n=>n.type==='button'&&n.props['aria-label']==='打开个人信息与设置')[0]||nodes(render(),n=>n.type==='button'&&textOf(n)==='我的与设置')[0];assert.ok(entry,'Actual personal entry');entry.props.onClick();return;}
   const nav=nodes(render(),n=>n.type==='nav'&&n.props['aria-label']==='桌面主导航')[0];
-  const labels={today:'今日',train:'练习',resources:'资料',profile:'我的'};
+  const labels={today:'今日',train:'练习',resources:'发现',profile:'我的'};
   const button=nodes(nav,n=>n.type==='button'&&textOf(n)===labels[id])[0];
   assert.ok(button,'Find the real WorkspaceShell navigation button for '+id);
   button.props.onClick();

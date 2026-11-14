@@ -414,3 +414,75 @@ test('Huawei binding succeeds only for the same live owner; unknown exchange sta
   h.value.suspend(true,true);h.value.resume();await tick();assert.equal(h.calls.length,5);assert.equal(h.value.getSnapshot().status,'blocked');
  }finally{h.value.dispose();}
 });
+
+test('real account proof signals abort synchronously on background, account switch, logout and dispose',async()=>{
+ for(const action of ['background','switch','logout','dispose']){
+  const h=controller();let pending;
+  try{
+   const first=await initial(h),signal=first.access.sessionSignal;assert(signal);assert.equal(signal.aborted,false);let notifications=0;
+   signal.addEventListener('abort',()=>{notifications++;assert.equal(first.access.canAccess(),false);});
+   if(action==='background')h.value.suspend();
+   else if(action==='dispose')h.value.dispose();
+   else pending=action==='switch'?h.value.mutate('login',credentials):h.value.mutate('logout');
+   assert.equal(signal.aborted,true,`${action} must abort before returning`);assert.equal(notifications,1);
+   if(action==='switch'){
+    h.reply(1,{status:200,body:{ok:true}});await tick();h.reply(2,session(B));assert.equal(await pending,true);
+    const next=h.value.getSnapshot().access;assert.notEqual(next.sessionSignal,signal);assert.equal(next.sessionSignal.aborted,false);assert.equal(next.owner,B.id);
+   }else if(action==='logout'){
+    h.reply(1,{status:200,body:{ok:true}});await tick();h.reply(2,guest);assert.equal(await pending,true);
+    assert.equal(h.value.getSnapshot().access.sessionSignal,undefined);
+   }
+  }finally{h.value.dispose();if(pending)await pending;}
+ }
+});
+
+test('proof expires synchronously and recheck establishes an independent signal even for the same user',async()=>{
+ const h=controller();try{
+  const first=await initial(h),signal=first.access.sessionSignal;let aborts=0;signal.addEventListener('abort',()=>aborts++);
+  h.timer.advance(3600000);assert.equal(signal.aborted,true);assert.equal(aborts,1);assert.equal(h.value.getSnapshot().status,'blocked');
+  h.value.recheck();h.reply(1,session(A));await tick();const next=h.value.getSnapshot();
+  assert.equal(next.user.id,A.id);assert.notEqual(next.access.sessionSignal,signal);assert.equal(next.access.sessionSignal.aborted,false);assert.equal(signal.aborted,true);
+ }finally{h.value.dispose();}
+});
+
+
+test('phone binding identity mismatch never exposes a new account proof or signal',async()=>{
+ const h=controller();try{
+  const first=await initial(h),published=[];h.value.subscribe(state=>{if(state.status==='ready')published.push(state.access);});
+  const pending=h.value.mutatePhone('bind',{challengeId:'c'.repeat(32),phone:'+8613800138000',code:'731428'});
+  assert.equal(first.access.sessionSignal.aborted,true);
+  h.reply(1,{status:200,body:{user:B,capabilities:caps,ok:true,phone:'+8613800138000'}});await tick();h.reply(2,session(B));
+  assert.equal(await pending,undefined);assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(published.length,0);
+  h.value.suspend();h.value.resume();await tick();assert.equal(h.calls.length,3);assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(published.length,0);
+  h.value.recheck();assert.equal(h.calls.length,4);h.reply(3,session(B));await tick();assert.equal(h.value.getSnapshot().user.id,B.id);assert.equal(published.length,1);
+ }finally{h.value.dispose();}
+});
+
+test('real controller background abort rolls back an in-flight isolated exam copy',async()=>{
+ const {IDBFactory,IDBObjectStore}=require('fake-indexeddb');
+ const {createSourceLoader}=require('./helpers/actual-source-loader.cjs');
+ const {openExamRepository}=createSourceLoader({root:ROOT}).load('lib/exam-storage.ts');
+ const fixture=require('./fixtures/synthetic-exam.cjs'),factory=new IDBFactory(),h=controller();
+ const source=await openExamRepository('harmony-local-device',{factory,name:'account-proof-copy-test'});
+ const destination=await openExamRepository('harmony-'+A.id,{factory,name:'account-proof-copy-test'});
+ const put=IDBObjectStore.prototype.put;
+ try{
+  const proof=(await initial(h)).access,{summary}=await source.importPackage(fixture());let triggered=false;
+  IDBObjectStore.prototype.put=function(value,...args){
+   if(!triggered&&this.name==='v040ImportRuns'&&value.ownerId==='harmony-'+A.id&&value.status==='active'){
+    triggered=true;h.value.suspend();assert.equal(proof.sessionSignal.aborted,true);
+   }
+   return put.call(this,value,...args);
+  };
+  await assert.rejects(source.copySelectedLegacyPackageTo(destination,{key:summary.key,fingerprint:summary.fingerprint,targetOwnerId:'harmony-'+A.id,confirmed:true,accountIsCurrent:proof.assertAccess},{signal:proof.sessionSignal}));
+  assert.equal(triggered,true);assert.equal((await source.listPackages()).length,1);assert.equal((await destination.listPackages()).length,0);
+ }finally{IDBObjectStore.prototype.put=put;source.close();destination.close();h.value.dispose();}
+});
+
+test('phone binding with the same verified account keeps the replacement proof active',async()=>{
+ const h=controller();try{
+  const first=await initial(h),pending=h.value.mutatePhone('bind',{challengeId:'c'.repeat(32),phone:'+8613800138000',code:'731428'});
+  h.reply(1,{status:200,body:{user:A,capabilities:caps,ok:true,phone:'+8613800138000'}});await tick();h.reply(2,session(A));
+  assert.equal((await pending).status,200);const next=h.value.getSnapshot();assert.equal(next.user.id,A.id);assert.equal(first.access.sessionSignal.aborted,true);assert.equal(next.access.sessionSignal.aborted,false);assert(next.access.canAccess());
+ }finally{h.value.dispose();}
+});

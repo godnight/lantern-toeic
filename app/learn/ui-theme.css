@@ -170,3 +170,47 @@ body[data-ui-theme] .mock-choices label {
 .ui-theme-heading{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;}
 .ui-theme-heading>*{min-width:0;}
 .phase2-brand-mark{display:block;object-fit:contain;flex-shrink:0;}
+
+/* CMP-THEME-01: independent whale maiden palettes; reading surfaces remain opaque. */
+html[data-ui-theme="whale-bay"],
+body[data-ui-theme="whale-bay"],
+.ui-theme-preview[data-ui-theme="whale-bay"] {
+  --ui-canvas: #f4f1e9;
+  --ui-surface: #fffdf8;
+  --ui-surface-muted: #e5eef1;
+  --ui-text: #213642;
+  --ui-text-secondary: #536873;
+  --ui-primary: #285f79;
+  --ui-on-primary: #ffffff;
+  --ui-selection: #d6e8ee;
+  --ui-divider: #cbd9dd;
+  --ui-control-border: #728a95;
+  --ui-focus: #1d658d;
+  --ui-success: #246b48;
+  --ui-warning: #825c1c;
+  --ui-danger: #9d3832;
+  --ui-danger-soft: #f8e8e5;
+  --ui-warning-soft: #f5eddb;
+  color-scheme: light;
+}
+html[data-ui-theme="whale-moon"],
+body[data-ui-theme="whale-moon"],
+.ui-theme-preview[data-ui-theme="whale-moon"] {
+  --ui-canvas: #0f1b30;
+  --ui-surface: #17263e;
+  --ui-surface-muted: #24364f;
+  --ui-text: #edf3f9;
+  --ui-text-secondary: #afbfd3;
+  --ui-primary: #c5def2;
+  --ui-on-primary: #13233a;
+  --ui-selection: #2c4663;
+  --ui-divider: #3c506b;
+  --ui-control-border: #8199b7;
+  --ui-focus: #9ccff2;
+  --ui-success: #a0d1bd;
+  --ui-warning: #e4c689;
+  --ui-danger: #e8aaa5;
+  --ui-danger-soft: #482e35;
+  --ui-warning-soft: #443b2c;
+  color-scheme: dark;
+}

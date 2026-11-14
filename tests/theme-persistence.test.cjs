@@ -31,7 +31,7 @@ function load(file, imports = {}) {
 const plain = value => JSON.parse(JSON.stringify(value));
 const model = load('lib/study-model.ts');
 const backup = load('lib/study-backup.ts', {'./study-model': model, zod: fromRepo('zod')});
-const themes = ['hollow', 'silk', 'paper', 'crystal'];
+const themes = ['hollow', 'silk', 'paper', 'crystal', 'whale-bay', 'whale-moon'];
 const stamp = '2026-01-01T10:00:00.000Z';
 const later = '2026-01-02T10:00:00.000Z';
 const uuid = n => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
@@ -98,7 +98,7 @@ for (const theme of themes.slice(0, 3)) {
 test('switching only the theme through each choice preserves first/review history and all records', () => {
   let current = populated('hollow');
   const original = plain(current);
-  for (const theme of ['silk', 'paper', 'crystal', 'hollow']) {
+  for (const theme of ['silk', 'paper', 'crystal', 'hollow', 'whale-bay', 'whale-moon']) {
     current = model.mergeData(current, {...current, profile: {...current.profile, theme}});
     assert.equal(current.profile.theme, theme);
     assert.deepEqual({...plain(current.profile), theme: original.profile.theme}, original.profile);
@@ -129,7 +129,7 @@ test('unknown or malformed themes fail backup parsing and leave existing records
   }
 });
 
-test('profile API persists the four theme IDs, rejects arbitrary themes and does not touch study records', async () => {
+test('profile API persists all six theme IDs, rejects arbitrary themes and does not touch study records', async () => {
   const orm = fromRepo('drizzle-orm');
   const {drizzle} = fromRepo('drizzle-orm/sqlite-proxy');
   const schema = load('db/schema.ts', {'drizzle-orm/sqlite-core': fromRepo('drizzle-orm/sqlite-core')});
@@ -205,7 +205,7 @@ test('theme-only API atomically preserves existing settings, isolates users and 
   sqlite.prepare('INSERT INTO profiles(user_id,body,updated_at) VALUES(?,?,?)').run('alice',JSON.stringify(cloud),stamp);
   sqlite.prepare('INSERT INTO profiles(user_id,body,updated_at) VALUES(?,?,?)').run('bob',bob,stamp);
   const post=(data,headerOwner=owner,type='theme')=>api.POST(new Request('https://test.local/api/study',{method:'POST',headers:{origin:'https://test.local','Content-Type':'application/json','X-Lantern-Owner':headerOwner},body:JSON.stringify({type,data})}));
-  for(const theme of ['hollow','paper','silk','crystal']){
+  for(const theme of themes){
    assert.equal((await post({theme})).status,200);
    assert.deepEqual(JSON.parse(sqlite.prepare('SELECT body FROM profiles WHERE user_id=?').get('alice').body),{...cloud,theme});
    assert.equal(sqlite.prepare('SELECT body FROM profiles WHERE user_id=?').get('bob').body,bob);

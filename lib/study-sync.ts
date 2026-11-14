@@ -1,4 +1,4 @@
-import {DATA_SCHEMA_VERSION,DEFAULT_PROFILE,migrateStudyData,mergeData,validQuestionMark,validResourceTask,type StudyData,type Profile} from './study-model';
+import {THEME_IDS,DATA_SCHEMA_VERSION,DEFAULT_PROFILE,migrateStudyData,mergeData,validQuestionMark,validResourceTask,type StudyData,type Profile} from './study-model';
 
 export const STUDY_SYNC_PROTOCOL='pages-v1' as const;
 export const STUDY_SYNC_PAGE_SIZE=100;
@@ -78,7 +78,7 @@ function validChange(change:StudySyncChange):boolean {
 function validProfile(value:unknown):value is Profile {
  if(!value||typeof value!=='object'||Array.isArray(value))return false;
  const p=value as Profile;
- return typeof p.name==='string'&&p.name.trim().length>0&&p.name.length<=40&&Number.isInteger(p.lrGoal)&&p.lrGoal>=10&&p.lrGoal<=990&&Number.isInteger(p.speakingGoal)&&p.speakingGoal>=0&&p.speakingGoal<=200&&typeof p.examDate==='string'&&typeof p.timezone==='string'&&p.timezone.length>0&&p.timezone.length<=100&&Number.isInteger(p.dailyMinutes)&&p.dailyMinutes>=5&&p.dailyMinutes<=120&&Number.isInteger(p.weeklyTarget)&&p.weeklyTarget>=1&&p.weeklyTarget<=7&&typeof p.onboarded==='boolean'&&['paper','crystal','hollow','silk'].includes(p.theme);
+ return typeof p.name==='string'&&p.name.trim().length>0&&p.name.length<=40&&Number.isInteger(p.lrGoal)&&p.lrGoal>=10&&p.lrGoal<=990&&Number.isInteger(p.speakingGoal)&&p.speakingGoal>=0&&p.speakingGoal<=200&&typeof p.examDate==='string'&&typeof p.timezone==='string'&&p.timezone.length>0&&p.timezone.length<=100&&Number.isInteger(p.dailyMinutes)&&p.dailyMinutes>=5&&p.dailyMinutes<=120&&Number.isInteger(p.weeklyTarget)&&p.weeklyTarget>=1&&p.weeklyTarget<=7&&typeof p.onboarded==='boolean'&&THEME_IDS.includes(p.theme);
 }
 export function parseLegacyStudySync(value:unknown,owner:string):StudyData&{owner:string;hasProfile:boolean} {
  const p=value as StudyData&{owner:string;hasProfile:boolean};

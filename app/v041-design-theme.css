@@ -6,22 +6,17 @@
   background:var(--ui-surface-muted);box-shadow:none;pointer-events:none;
 }
 .v041-theme-scene>img{
-  display:block;width:100%;height:100%;max-height:none;object-fit:cover;
+  display:block;position:absolute;inset:0;width:100%;height:100%;max-height:none;object-fit:cover;
   object-position:var(--scene-position,50% 50%);opacity:1;filter:none;
 }
-.v041-theme-scene--home{height:clamp(112px,22svh,180px);}
-.v041-theme-scene--dirtmouth{height:clamp(160px,45vw,220px);}
-.v041-theme-scene--ambient{height:clamp(112px,34vw,164px);}
-.v041-theme-scene--resources{height:clamp(160px,45vw,220px);}
-.v041-theme-scene--complete{height:auto;aspect-ratio:1672/941;}
-.v041-theme-scene--complete>img{width:100%;height:auto;aspect-ratio:1672/941;object-fit:contain;object-position:50% 50%;}
-.v041-theme-scene[data-scene="blue-lake"]{border:0;max-height:none;}
-.v041-theme-scene[data-scene="blue-lake"]>img{height:auto;aspect-ratio:1672/941;object-fit:contain;filter:none;opacity:1;}
-.v041-theme-scene>figcaption{font:inherit;font-size:.8125rem;line-height:1.6;color:var(--ui-text-secondary);padding:10px 14px;background:var(--ui-surface);}
-.v041-scene-placeholder{position:relative;width:100%;height:100%;min-height:inherit;background:var(--ui-surface-muted);overflow:hidden;}
-.v041-theme-scene--complete>.v041-scene-placeholder{aspect-ratio:1672/941;}
+/* Every page owns its frame; asset choice changes only pixels within it. */
+.v041-theme-scene{height:auto;aspect-ratio:16/9;}
+.v041-theme-scene--todayHero{height:clamp(112px,22svh,180px);aspect-ratio:auto;}
+.v041-theme-scene--contain>img{object-fit:contain;}
+.v041-theme-scene>figcaption{position:absolute;inset:auto 0 0;font:inherit;font-size:.8125rem;line-height:1.6;color:var(--ui-text-secondary);padding:10px 14px;background:var(--ui-surface);}
+.v041-scene-placeholder{position:absolute;inset:0;width:100%;height:100%;background:var(--ui-surface-muted);overflow:hidden;}
 .v041-scene-placeholder>span{position:absolute;inset:20% 15%;border-bottom:1px solid var(--ui-divider);border-radius:50%;}
-.v041-theme-neutral{background:var(--ui-surface-muted);height:clamp(56px,10svh,88px);}
+.v041-theme-neutral{background:var(--ui-surface-muted);}
 .v041-neutral-page{position:absolute;right:16%;top:25%;height:48%;width:25%;max-width:150px;transform:rotate(-8deg);border:1px solid var(--ui-control-border);border-radius:8px 2px 2px 8px;background:var(--ui-surface);box-shadow:10px 8px 0 var(--ui-selection);}
 .v041-neutral-page:before{content:"";position:absolute;inset:20% 18%;border-top:2px solid var(--ui-primary);border-bottom:1px solid var(--ui-divider);}
 .v041-neutral-page:after{content:"";position:absolute;left:10%;top:8%;height:84%;border-left:1px solid var(--ui-divider);}
@@ -40,6 +35,8 @@
 .v041-theme-chooser .v041-theme-option:disabled{opacity:.65;cursor:default;}
 .v041-theme-thumb{display:block;position:relative;width:100%;height:100px;overflow:hidden;background:var(--ui-surface-muted);}
 .v041-theme-thumb>img{display:block;width:100%;height:100%;object-fit:cover;opacity:1;filter:none;}
+.v041-theme-chooser .v041-theme-thumb:is(.v041-theme-thumb--whale-bay,.v041-theme-thumb--whale-moon){height:auto;aspect-ratio:1672/941;}
+.v041-theme-chooser .v041-theme-thumb:is(.v041-theme-thumb--whale-bay,.v041-theme-thumb--whale-moon)>img{height:auto;aspect-ratio:1672/941;object-fit:contain;}
 .v041-theme-thumb--paper{background:#e9eddf;}
 .v041-theme-thumb--paper:before{content:"";position:absolute;width:38%;height:50%;left:29%;top:23%;border-radius:5px;background:#fffcf7;box-shadow:7px 6px 0 #607456;transform:rotate(-7deg);}
 .v041-theme-thumb--crystal{background:#121c23;}
@@ -57,11 +54,7 @@ body[data-ui-theme="silk"] :is(.button.primary,.practice-footer>.primary,.phase2
 body[data-ui-theme="silk"] :is(.thin-progress [data-slot="progress-indicator"],.session-strip>span){background:linear-gradient(90deg,var(--ui-primary),#b59c76);}
 
 @media(min-width:700px){
-  .v041-theme-scene--home>img,.v041-theme-scene--dirtmouth>img{object-fit:contain;}
   .v041-theme-thumb{height:112px;}
-}
-@media(min-width:768px) and (max-width:1023px){
-  .v041-theme-scene--home>img{object-fit:cover;}
 }
 @media(max-width:360px){
   .v041-theme-chooser.ui-theme-chooser{gap:10px;}

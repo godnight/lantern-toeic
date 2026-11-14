@@ -1,6 +1,7 @@
 import {recommendLearningParts} from './learning-recommendation';
 import {studyDayKey} from './study-format';
-export type Theme = 'hollow' | 'silk' | 'paper' | 'crystal';
+export const THEME_IDS = ['hollow','silk','paper','crystal','whale-bay','whale-moon'] as const;
+export type Theme = typeof THEME_IDS[number];
 // randomUUID is restricted to secure contexts in some browsers; getRandomValues
 // still provides cryptographic randomness in local HTTP development previews.
 export function createId():string {

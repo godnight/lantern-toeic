@@ -5,6 +5,7 @@ import {ArrowLeft,ArrowUpRight,BookOpen,Check,ChevronRight,Clock,Headphones,Info
 import {resources,type LearningResource} from '@/content/resources-v2';
 import {registerNativeBack} from '@/lib/native-host';
 import type {Checkin} from '@/lib/study-model';
+import type {ResourceLibraryReturnState} from '@/lib/discovery-return';
 
 const categories=[['all','全部'],['official','托业官方'],['listening','听力精听'],['reading','阅读积累'],['speaking','开口表达']] as const;
 
@@ -14,13 +15,23 @@ type ResourceLibraryProps={
  checkinOpen?:boolean;
  recordsReady?:boolean;
  onDetailChange?:(open:boolean)=>void;
+ initialReturn?:ResourceLibraryReturnState;
+ onBeforeExternal?:(state:ResourceLibraryReturnState)=>boolean;
 };
 
-export default function ResourceLibrary({checkins,onRecord,checkinOpen=false,recordsReady=true,onDetailChange}:ResourceLibraryProps){
- const [category,setCategory]=useState('all');
- const [query,setQuery]=useState('');
- const [selectedId,setSelectedId]=useState<string|null>(null);
- const listPosition=useRef({scroll:0,id:''});
+export function validResourceLibraryReturn(value:ResourceLibraryReturnState|undefined):value is ResourceLibraryReturnState{
+ return !!value&&categories.some(([id])=>id===value.category)&&typeof value.query==='string'&&value.query.length<=1000&&
+  (value.selectedId===null||resources.some(resource=>resource.id===value.selectedId))&&
+  !!value.listPosition&&Number.isFinite(value.listPosition.scroll)&&value.listPosition.scroll>=0&&value.listPosition.scroll<=10000000&&
+  (value.listPosition.id===''||resources.some(resource=>resource.id===value.listPosition.id))&&Number.isFinite(value.scroll)&&value.scroll>=0&&value.scroll<=10000000;
+}
+export default function ResourceLibrary({checkins,onRecord,checkinOpen=false,recordsReady=true,onDetailChange,initialReturn,onBeforeExternal}:ResourceLibraryProps){
+ const resume=validResourceLibraryReturn(initialReturn)?initialReturn:undefined;
+ const [category,setCategory]=useState(resume?.category??'all');
+ const [query,setQuery]=useState(resume?.query??'');
+ const [selectedId,setSelectedId]=useState<string|null>(resume?.selectedId??null);
+ const listPosition=useRef(resume?.listPosition??{scroll:0,id:''});
+ const initialRestore=useRef(resume);
  const restoreList=useRef(false);
  const detailTitle=useRef<HTMLHeadingElement>(null);
  const itemButtons=useRef(new Map<string,HTMLButtonElement>());
@@ -43,7 +54,9 @@ export default function ResourceLibrary({checkins,onRecord,checkinOpen=false,rec
   restoreList.current=true;
   setSelectedId(null);
  };
+ const beforeExternal=()=>onBeforeExternal?.({category,query,selectedId,listPosition:{...listPosition.current},scroll:window.scrollY})!==false;
  useLayoutEffect(()=>{
+  if(initialRestore.current){const scroll=initialRestore.current.scroll;initialRestore.current=undefined;window.scrollTo({top:scroll,behavior:'auto'});if(selectedId)detailTitle.current?.focus({preventScroll:true});return;}
   if(selectedId){window.scrollTo({top:0,behavior:'auto'});detailTitle.current?.focus({preventScroll:true});return;}
   if(restoreList.current){
    restoreList.current=false;
@@ -79,12 +92,12 @@ export default function ResourceLibrary({checkins,onRecord,checkinOpen=false,rec
      <ol className="rs-steps">{selected.steps.map((step,index)=><li key={step}><span className="rs-step-number" aria-hidden="true">{String(index+1).padStart(2,'0')}</span><p>{step}</p></li>)}</ol>
     </section>
     <section className="rs-access" aria-labelledby="resource-access-title"><Info size={18} aria-hidden="true"/><div><h3 id="resource-access-title">访问这份材料</h3><p>{selected.accessNote}</p></div></section>
-    <section className="rs-source" aria-labelledby="resource-source-title"><h3 id="resource-source-title">来源与使用说明</h3><p>{selected.licenseNote}</p><a href={selected.licenseUrl} target="_blank" rel="noopener noreferrer">查看来源的使用说明<ArrowUpRight size={15} aria-hidden="true"/><span className="sr-only">（在新窗口打开）</span></a></section>
+    <section className="rs-source" aria-labelledby="resource-source-title"><h3 id="resource-source-title">来源与使用说明</h3><p>{selected.licenseNote}</p><a href={selected.licenseUrl} target="_blank" rel="noopener noreferrer" onClick={event=>{if(!beforeExternal())event.preventDefault();}}>查看来源的使用说明<ArrowUpRight size={15} aria-hidden="true"/><span className="sr-only">（在新窗口打开）</span></a></section>
    </div>
    <aside className="rs-panel rs-learning" aria-labelledby="resource-learning-title">
     <h3 id="resource-learning-title">完成这一小步</h3>
     <p>先在原网站使用材料，学完后记下实际用时。</p>
-    <a className="rs-action rs-primary" href={selected.url} target="_blank" rel="noopener noreferrer">打开材料<ArrowUpRight size={17} aria-hidden="true"/><span className="sr-only">（在新窗口打开）</span></a>
+    <a className="rs-action rs-primary" href={selected.url} target="_blank" rel="noopener noreferrer" onClick={event=>{if(!beforeExternal())event.preventDefault();}}>打开材料<ArrowUpRight size={17} aria-hidden="true"/><span className="sr-only">（在新窗口打开）</span></a>
     <button type="button" className="rs-action rs-secondary" disabled={!recordsReady||checkinOpen} onClick={()=>{if(recordsReady&&!checkinOpen)onRecord(selected);}}><NotebookPen size={17} aria-hidden="true"/>学完记一笔</button>
     <p className="rs-action-help">打开材料不会自动记录学习。按你实际完成的分钟打卡即可。</p>
     <div className="rs-saved-summary">{summary(selected)}</div>

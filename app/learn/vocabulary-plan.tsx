@@ -299,7 +299,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   if(session.status==='completed')return <section className="phase2-word-finished panel" aria-label="词组完成">
     <CheckCircle2 size={34}/><h2>本组完成</h2><p>已记录 {session.queue.length} 个词的反馈。</p>
     <button type="button" className="button primary" disabled={overlayBlocked} onClick={onFinish}>回到单词计划<ArrowRight size={16}/></button>
-    <ThemeScene theme={theme} scene="dirtmouth"/>
+    <ThemeScene theme={theme} scene="wordComplete"/>
   </section>;
   if(!step)return <WorkflowNotice workflow={workflow}/>;
   const revealed=!!step.receipt;

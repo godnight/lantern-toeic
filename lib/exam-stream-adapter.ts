@@ -15,7 +15,7 @@ export type StreamStage = {
   read: (id: string) => AsyncGenerator<Uint8Array>;
   retain: (ids: string[]) => Promise<void>;
   discard: () => Promise<void>;
-  activate: (manifest: StreamManifest, options?: {stores?: string[]; signal?: AbortSignal; write?: (tx: IDBTransaction, manifest: StreamManifest) => Promise<void>}) => Promise<void>;
+  activate: (manifest: StreamManifest, options?: {stores?: string[]; signal?: AbortSignal; finalGuard?: () => void; write?: (tx: IDBTransaction, manifest: StreamManifest) => Promise<void>}) => Promise<void>;
 };
 export const SPOOL_RUNS = 'v040ImportRuns';
 export const SPOOL_CHUNKS = 'v040ImportChunks';
