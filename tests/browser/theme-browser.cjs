@@ -65,7 +65,7 @@ async function launchBrowser() {
   return chromium.launch({...(executablePath ? {executablePath} : {}),headless:true});
 }
 async function prepareWebFixture(){
- process.env.LANTERN_REVIEW_ROOT=REPO;authFixture=repoRequire('./tests/helpers/product-auth-harness.cjs').environment();authUser=await authFixture.register('themeqa_'+ownerToken.slice(0,12));QA_OWNER=authUser.id;const proof=await authFixture.call('session','GET',{cookie:authUser.cookie});assert.equal(proof.status,200);assert.equal((await proof.json()).user.id,QA_OWNER);
+ process.env.LANTERN_REVIEW_ROOT=REPO;authFixture=repoRequire('./tests/helpers/product-auth-harness.cjs').environment();authUser=await authFixture.register('themeqa_'+ownerToken.slice(0,12));QA_OWNER=authUser.id;const proof=await authFixture.call('session','GET',{cookie:authUser.cookie,headers:{'X-Lantern-Session-Proof':'2'}});assert.equal(proof.status,200);const proofBody=await proof.json();assert.equal(proofBody.user.id,QA_OWNER);assert.equal(proofBody.session.version,2);assert.ok(proofBody.session.remainingMs>0);
  const directory=path.join(OUT,'web-fixture');await fs.mkdir(directory);
  const posix=file=>file.replaceAll('\\','/');
  const entry=`import React from ${JSON.stringify(posix(repoRequire.resolve('react')))};
@@ -73,7 +73,7 @@ import {createRoot} from ${JSON.stringify(posix(repoRequire.resolve('react-dom/c
 import StudyApp from ${JSON.stringify(posix(path.join(REPO,'app/study-app.tsx')))};
 import ${JSON.stringify(posix(path.join(REPO,'app/globals.css')))};
 ${['redesign.css','v041-design-theme.css','learn/v041-vocabulary.css','learn/audio-redesign.css','v041-app-redesign.css','learn/legal-pages.css'].map(file=>'import '+JSON.stringify(posix(path.join(REPO,'app',file)))+';').join('\n')}
-createRoot(document.getElementById('root')).render(React.createElement(React.StrictMode,null,React.createElement(StudyApp,{owner:${JSON.stringify(QA_OWNER)}})));
+createRoot(document.getElementById('root')).render(React.createElement(React.StrictMode,null,React.createElement(StudyApp,{owner:${JSON.stringify(QA_OWNER)},remoteLearningEnabled:true})));
 `;
  await fs.writeFile(path.join(directory,'entry.tsx'),entry,{flag:'wx'});
  await fs.writeFile(path.join(directory,'index.html'),'<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="root"></div><script type="module" src="./entry.tsx"></script></body></html>',{flag:'wx'});
@@ -83,7 +83,7 @@ export default {root:${JSON.stringify(directory)},base:'./',publicDir:${JSON.str
 `;
  const configFile=path.join(directory,'vite.config.mjs');await fs.writeFile(configFile,config,{flag:'wx'});
  report.webFixture={syntheticOwner:QA_OWNER,directory,studyAppSha256:crypto.createHash('sha256').update(await fs.readFile(path.join(REPO,'app/study-app.tsx'))).digest('hex'),nativeMode:false,api:'Actual registration/password verification/session and study/vocabulary routes with synthetic Node SQLite+D1 I/O adapter; cookie kept in test Node process only'};
- report.limitations.push('Web fixture uses real product registered-cookie/session proof with synthetic SQLite/R2 I/O. Browser routes forward that context cookie only in Node; no real HTTPS, deployed Worker, SSR, SMS or real account claim.');
+ report.limitations.push('Web fixture explicitly enables the optional remote-learning path to test authenticated theme persistence; that opt-in does not mean cloud sync is enabled for users. It uses real product registered-cookie/session proof with synthetic SQLite/R2 I/O. Browser routes forward that context cookie only in Node; no real HTTPS, deployed Worker, SSR, SMS or real account claim.');
  return{configFile,directory};
 }
 async function startPreview() {
@@ -229,7 +229,9 @@ async function freshPage(width){
   if((url.protocol==='http:'||url.protocol==='https:')&&url.origin!==ORIGIN){report.blockedExternal.push(url.origin+url.pathname);return route.abort('blockedbyclient');}
   if(MODE==='web'&&['/api/auth/session','/api/study','/api/vocabulary'].includes(url.pathname)){
    const api=url.pathname==='/api/auth/session'?'session':url.pathname.slice(5),row={width,method:request.method(),api};mockCalls.push(row);
-   const init={cookie:authUser.cookie,owner:request.headers()['x-lantern-owner'],query:url.search};
+   const proof=request.headers()['x-lantern-session-proof'];
+   if(api==='session')assert.equal(proof,'2','Web session must request the current session proof');
+   const init={cookie:authUser.cookie,owner:request.headers()['x-lantern-owner'],query:url.search,...(api==='session'?{headers:{'X-Lantern-Session-Proof':proof}}:{})};
    if(request.method()==='POST'){
     const operation=request.postDataJSON();row.type=operation.type;row.theme=operation.data?.theme;
     assert.equal(init.owner,QA_OWNER,'Only independently registered/session-verified owner can sync');
@@ -237,6 +239,7 @@ async function freshPage(width){
    }
    const before=api==='study'&&request.method()==='POST'?await(await authFixture.call('study','GET',{cookie:authUser.cookie,owner:QA_OWNER})).json():null;
    const response=await authFixture.call(api,request.method(),init);assert.equal(response.status,200,'Real authenticated product route must succeed');
+   if(api==='session'){const value=await response.clone().json();assert.equal(value.user.id,QA_OWNER);assert.equal(value.session.version,2);assert.ok(value.session.remainingMs>0);}
    if(before){const after=await(await authFixture.call('study','GET',{cookie:authUser.cookie,owner:QA_OWNER})).json();assert.deepEqual({...after,profile:{...after.profile,theme:before.profile.theme}},before,'Theme write changed other server facts');}
    return route.fulfill({status:response.status,contentType:'application/json',body:await response.text()});
   }

@@ -15,6 +15,7 @@ const {NATIVE_ORIGIN,NATIVE_QA_USER,installNativeAccountFixture,fulfillNativePre
 const PORT = 4175;
 const PREVIEW_ORIGIN = `http://127.0.0.1:${PORT}`;
 const ORIGIN = NATIVE_ORIGIN;
+const MOCK_DISCOVERY_FEEDS = new Set(['https://www.nasa.gov/feed/','https://feeds.simplecast.com/BqbsxVfO']);
 const REPO = path.resolve(__dirname, '../..');
 let OUT;
 // MockExam keeps the verified native account in its Harmony-specific partition.
@@ -23,7 +24,7 @@ const DB = 'lantern-private-exams-v1';
 const BASE_TIME = new Date('2026-10-11T06:00:00.000Z');
 const report = { scope: 'Local production Harmony shared frontend; synthetic QA only', origin: ORIGIN,
   limitations: ['Synthetic 200-question structures are not TOEIC test papers.', '20-second and 45:53 silent WAVs check decoder/playback events and timing compatibility, not audible sound or complete listening content.', 'Desktop Chrome with resized viewports is not ArkWeb/real-device acceptance.', 'Clock fast-forward validates deadline logic, not two-hour endurance.'],
-  startedAt: new Date().toISOString(), steps: [], screenshots: [], pageErrors: [], consoleErrors: [], blockedExternal: [], httpErrors: [] };
+  startedAt: new Date().toISOString(), steps: [], screenshots: [], pageErrors: [], consoleErrors: [], blockedExternal: [], mockedDiscoveryFeeds: [], httpErrors: [] };
 let browser, context, page, preview, cleanupPromise, nativeAccount;
 let ownsOutput = false;
 const ownerToken = crypto.randomBytes(24).toString('hex');
@@ -198,6 +199,10 @@ async function freshContext() {
   nativeAccount=await installNativeAccountFixture(context,{report});
   await context.route('**/*', route=>{
     const url=new URL(route.request().url());
+    if (route.request().method()==='GET' && MOCK_DISCOVERY_FEEDS.has(url.href)) {
+      report.mockedDiscoveryFeeds.push(url.href);
+      return route.fulfill({status:200,contentType:'application/rss+xml',headers:{'Access-Control-Allow-Origin':'*'},body:'<?xml version="1.0"?><rss version="2.0"><channel><title>Synthetic browser fixture</title><language>en</language></channel></rss>'});
+    }
     if ((url.protocol==='http:' || url.protocol==='https:') && url.origin!==ORIGIN) {
       report.blockedExternal.push(url.origin+url.pathname);return route.abort('blockedbyclient');
     }
@@ -210,8 +215,8 @@ async function enter(section = '练习') {
   const nav = page.getByRole('navigation', {name:'手机主导航',exact:true});
   await visible(nav);
   nativeAccount.assertVerified(page);
-  await (await visible(nav.getByRole('button', {name:section,exact:true}))).click();
-  if(section==='资料'){await page.getByText('题包与模考',{exact:true}).click();await click('本机题包与模考');}
+  await (await visible(nav.getByRole('button', {name:section==='资料'?'发现':section,exact:true}))).click();
+  if(section==='资料'){await click('资料库');await page.getByText('题包与模考',{exact:true}).click();await click('本机题包与模考');}
   else await (await visible(page.getByRole('button', {name:/完整听读模考/}))).click();
   await visible(page.getByRole('button', {name:'导入题包 JSON',exact:true}));
   await idle();
@@ -481,7 +486,7 @@ async function downloadBackup(name) {
   }
   await require('./listening-duration-flow.cjs')({getPage:()=>page,step,click,importViaUI,preflight,idle,enter,currentAttempt,
     screenshot,state,freshContext,newPage,eventually,visible,output:OUT,basePackage:packages[0]});
-  await step('no uncaught JS errors, local HTTP failures or external requests',async()=>{assert.deepEqual(report.pageErrors,[]); assert.deepEqual(report.httpErrors,[]);assert.deepEqual(report.blockedExternal,[]);return {pageErrors:0,httpErrors:0,blockedExternal:0,consoleErrors:report.consoleErrors};});
+  await step('no uncaught JS errors, local HTTP failures or unmocked external requests',async()=>{assert.deepEqual(report.pageErrors,[]); assert.deepEqual(report.httpErrors,[]);assert.deepEqual(report.blockedExternal,[]);assert.deepEqual(new Set(report.mockedDiscoveryFeeds),MOCK_DISCOVERY_FEEDS);return {pageErrors:0,httpErrors:0,blockedExternal:0,mockedDiscoveryFeeds:report.mockedDiscoveryFeeds.length,consoleErrors:report.consoleErrors};});
   report.status='passed';
 })().catch(async error=>{
   report.status='failed'; report.error=String(error.stack||error);
