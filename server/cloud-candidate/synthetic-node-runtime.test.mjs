@@ -48,11 +48,11 @@ test('Node Worker and SQLite serve only synthetic loopback, survive restart and 
   try {
     await writeFile(path.join(dir, 'SYNTHETIC-ONLY'), 'lantern-node-runtime-v1\n');
     await writeFile(path.join(dir, 'synthetic-worker.mjs'), (await buildAccountWorker()).bytes);
-    const opensslConfig = path.join(dir, 'openssl.cnf'); await writeFile(opensslConfig, '[req]\ndistinguished_name=dn\n[dn]\n');
+    const opensslConfig = path.join(dir, 'openssl.cnf'); await writeFile(opensslConfig, '[req]\ndistinguished_name=dn\nx509_extensions=v3_req\n[dn]\n[v3_req]\nsubjectAltName=DNS:synthetic.invalid\n');
     const openssl = process.platform === 'win32' && existsSync('C:/Program Files/Git/usr/bin/openssl.exe') ? 'C:/Program Files/Git/usr/bin/openssl.exe' : 'openssl';
     execFileSync(openssl, ['req', '-config', opensslConfig, '-x509', '-newkey', 'rsa:2048', '-nodes', '-sha256',
       '-keyout', path.join(dir, 'synthetic-key.pem'), '-out', path.join(dir, 'synthetic-cert.pem'), '-days', '1',
-      '-subj', '/CN=synthetic.invalid', '-addext', 'subjectAltName=DNS:synthetic.invalid'], { stdio: 'ignore', timeout: 15000 });
+      '-subj', '/CN=synthetic.invalid', '-extensions', 'v3_req'], { stdio: 'ignore', timeout: 15000 });
     const cert = await readFile(path.join(dir, 'synthetic-cert.pem'));
     sqlite = new DatabaseSync(database); sqlite.exec('PRAGMA foreign_keys=ON; CREATE TABLE _lantern_local_migrations(name TEXT PRIMARY KEY,sha TEXT NOT NULL)');
     for (const name of migrations) {
