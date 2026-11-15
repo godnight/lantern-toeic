@@ -187,6 +187,7 @@ export class NativeAccountController {
     if(!this.alive||this.mutationPending||!['bind','login'].includes(purpose)||this.state.status!=='ready'||this.state.unavailable||purpose==='bind'&&!this.state.user)return;
     const previousUser=this.state.user?.id??null;
     this.mutationAttempted=true;
+    this.held=true;
     const generation=this.begin('手机号操作进行中，旧学习分区已暂停。',true);this.mutationPending=true;
     try{
       if(this.syncTransitionGuard&&!await this.prepareSyncTransition(generation))return;
@@ -194,8 +195,11 @@ export class NativeAccountController {
       const reply=await pending;if(!this.current(generation))return;
       const outcome=parsePhoneOutcome(reply);
       if(outcome.code==='auth-state-unknown'||outcome.status>=500&&!['auth-disabled','phone-auth-disabled','phone-provider-unavailable','phone-unavailable','native-auth-unavailable'].includes(outcome.code)){
+        this.held=true;
         this.update({status:'blocked',message:'手机号操作结果未知，学习分区保持暂停。请重新核对账号。'});return;
       }
+      // Preserve the hold until the independent session proof completes.
+      this.held=true;
       this.update({status:'checking',message:'正在独立核对服务器会话，尚未切换学习分区。'});
       await this.probe(generation,outcome.status===200?'':'手机号操作未获确认；以下账号状态来自独立会话核对。',purpose==='bind'?previousUser!:undefined,'手机号操作后的账号身份未获预期确认，学习分区保持暂停。请重新核对账号。');
       if(!this.current(generation))return;
@@ -205,10 +209,11 @@ export class NativeAccountController {
         this.deadline?.close();this.deadline=null;
         this.update({status:'blocked',message:'手机号操作后的账号身份未获预期确认，学习分区保持暂停。请重新核对账号。'});return;
       }
+      this.held=false;
       if(outcome.status===200&&this.syncTransitionGuard)await this.completeSyncTransition(generation);
       return this.current(generation)?outcome:undefined;
     }catch{
-      if(this.current(generation))this.update({status:'blocked',message:'手机号操作结果未知，不能假定已发送、绑定或登录。请重新核对账号。'});
+      if(this.current(generation)){this.held=true;this.update({status:'blocked',message:'手机号操作结果未知，不能假定已发送、绑定或登录。请重新核对账号。'});}
     }finally{if(this.current(generation))this.mutationPending=false;}
   }
   dispose(){if(!this.alive)return;this.alive=false;++this.generation;this.huaweiGeneration=null;this.foregroundWait?.();this.foregroundWait=null;this.deadline?.close();this.deadline=null;this.transport.dispose();this.listeners.clear();}
