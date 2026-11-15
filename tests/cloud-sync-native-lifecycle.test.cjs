@@ -13,7 +13,7 @@ const capabilities={passwordLogin:true,phoneLogin:false},tick=()=>new Promise(re
 function deferred(){let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};}
 function fakeClock(){let now=0;const timers=new Map();let id=0;return {now:()=>now,set(fn,ms){const key=++id;timers.set(key,{fn,at:now+ms});return key;},clear:key=>timers.delete(key),advance(ms){now+=ms;for(const [key,t]of [...timers])if(t.at<=now){timers.delete(key);t.fn();}}};}
 function nativePort(){let owner=A.id,seq=0,listener=()=>{},drain=()=>Promise.resolve();return {
- port:{snapshot:async()=>({owner,seq}),subscribeRevocation(fn){listener=fn;return()=>{listener=()=>{};};},drain:()=>drain(),hold:async()=>{},resume:async()=>{}},
+ port:{snapshot:async()=>({owner,seq}),subscribeRevocation(fn){listener=fn;return()=>{listener=()=>{};};},drain:()=>drain(),hold:async()=>{},complete:async()=>{},resume:async()=>{}},
  switch(uid){owner=uid;seq++;listener();},setDrain(fn){drain=fn;},get sequence(){return seq;}};}
 function read(db,owner){return new Promise((resolve,reject)=>{const r=db.transaction(STORE).objectStore(STORE).get(owner);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 async function setup(){
@@ -64,7 +64,7 @@ test('account change barrier waits for native drain and does not send auth first
 test('late native snapshot after revocation is rejected without activating a queue',async()=>{
  let resolveSnapshot,revoked=()=>{},cancelCount=0,activated=0;
  const proof=new AbortController(),state={status:'ready',unavailable:false,user:A,access:{owner:A.id,user:A,epoch:1,sessionSignal:proof.signal,assertAccess:()=>true,canAccess:()=>true}},account={getSnapshot:()=>state,subscribe:()=>()=>{}};
- const client={async cancel(){cancelCount++;},async activate(){activated++;}},native={drain:async()=>{},hold:async()=>{},resume:async()=>{},snapshot:()=>new Promise(resolve=>{resolveSnapshot=resolve;}),subscribeRevocation(fn){revoked=fn;return()=>{};}};
+ const client={async cancel(){cancelCount++;},async activate(){activated++;}},native={drain:async()=>{},hold:async()=>{},complete:async()=>{},resume:async()=>{},snapshot:()=>new Promise(resolve=>{resolveSnapshot=resolve;}),subscribeRevocation(fn){revoked=fn;return()=>{};}};
  const adapter=createNativeSyncLifecycle(account,client,native);try{
   for(let i=0;i<5&&!resolveSnapshot;i++)await tick();assert.equal(typeof resolveSnapshot,'function');revoked();resolveSnapshot({owner:A.id,seq:0});await adapter.settled();
   assert.equal(activated,0);assert.ok(cancelCount>=2);assert.equal(adapter.status().phase,'blocked');
@@ -78,7 +78,7 @@ test('late activation must settle and be cancelled before a new owner activates'
  function state(user){const signal=new AbortController().signal;return {status:'ready',unavailable:false,user,access:{owner:user.id,user,epoch:1,sessionSignal:signal,assertAccess:()=>true,canAccess:()=>true}};}
  let current=state(A);const account={getSnapshot:()=>current,subscribe(fn){listener=fn;return()=>{};}};
  const client={async cancel(){calls.push('cancel');},async activate(owner){calls.push('start:'+owner);if(owner===A.id){entered.resolve();await d.promise;}calls.push('end:'+owner);}};
- const native={drain:async()=>{},hold:async()=>{},resume:async()=>{},snapshot:async()=>({owner:current.user.id,seq}),subscribeRevocation(){return()=>{};}};
+ const native={drain:async()=>{},hold:async()=>{},complete:async()=>{},resume:async()=>{},snapshot:async()=>({owner:current.user.id,seq}),subscribeRevocation(){return()=>{};}};
  const adapter=createNativeSyncLifecycle(account,client,native);try{
   await entered.promise;current=state(B);seq++;listener(current,true);await tick();assert.equal(calls.includes('start:'+B.id),false);
   d.resolve();await adapter.settled();assert.equal(adapter.status().owner,B.id);
@@ -88,18 +88,18 @@ test('late activation must settle and be cancelled before a new owner activates'
 test('cancellation failure poisons this lifecycle and prevents later activation',async()=>{
  const signal=new AbortController().signal;function state(user){return {status:'ready',unavailable:false,user,access:{owner:user.id,user,epoch:1,sessionSignal:signal,assertAccess:()=>true,canAccess:()=>true}};}
  let current=state(A),listener=()=>{},calls=0,activations=0;const account={getSnapshot:()=>current,subscribe(fn){listener=fn;return()=>{};}};
- const client={async cancel(){if(++calls===1)throw Error('synthetic storage failure');},async activate(){activations++;}},native={drain:async()=>{},hold:async()=>{},resume:async()=>{},snapshot:async()=>({owner:current.user.id,seq:1}),subscribeRevocation:()=>()=>{}};
+ const client={async cancel(){if(++calls===1)throw Error('synthetic storage failure');},async activate(){activations++;}},native={drain:async()=>{},hold:async()=>{},complete:async()=>{},resume:async()=>{},snapshot:async()=>({owner:current.user.id,seq:1}),subscribeRevocation:()=>()=>{}};
  const adapter=createNativeSyncLifecycle(account,client,native);try{
   await adapter.settled();assert.equal(adapter.status().phase,'blocked');current=state(B);listener(current,true);await adapter.settled();assert.equal(activations,0);assert.equal(adapter.status().phase,'blocked');
  }finally{adapter.dispose();}
 });
 test('unexpected native lease fields are rejected rather than propagated',async()=>{
  const signal=new AbortController().signal,state={status:'ready',unavailable:false,user:A,access:{owner:A.id,user:A,epoch:1,sessionSignal:signal,assertAccess:()=>true,canAccess:()=>true}};let activations=0;
- const account={getSnapshot:()=>state,subscribe:()=>()=>{}},client={cancel:async()=>{},activate:async()=>{activations++;}},native={drain:async()=>{},hold:async()=>{},resume:async()=>{},snapshot:async()=>({owner:A.id,seq:1,token:'synthetic-unexpected'}),subscribeRevocation:()=>()=>{}};
+ const account={getSnapshot:()=>state,subscribe:()=>()=>{}},client={cancel:async()=>{},activate:async()=>{activations++;}},native={drain:async()=>{},hold:async()=>{},complete:async()=>{},resume:async()=>{},snapshot:async()=>({owner:A.id,seq:1,token:'synthetic-unexpected'}),subscribeRevocation:()=>()=>{}};
  const adapter=createNativeSyncLifecycle(account,client,native);try{await adapter.settled();assert.equal(activations,0);assert.equal(adapter.status().phase,'blocked');assert.equal(JSON.stringify(adapter.status()).includes('synthetic-unexpected'),false);}finally{adapter.dispose();}
 });
 test('unresponsive native drain times out and leaves the queue disabled',async()=>{
  const signal=new AbortController().signal,state={status:'ready',unavailable:false,user:A,access:{owner:A.id,user:A,epoch:1,sessionSignal:signal,assertAccess:()=>true,canAccess:()=>true}};let activated=0;
- const account={getSnapshot:()=>state,subscribe:()=>()=>{}},client={cancel:async()=>{},activate:async()=>{activated++;}},native={drain:()=>new Promise(()=>{}),hold:async()=>{},resume:async()=>{},snapshot:async()=>({owner:A.id,seq:1}),subscribeRevocation:()=>()=>{}};
+ const account={getSnapshot:()=>state,subscribe:()=>()=>{}},client={cancel:async()=>{},activate:async()=>{activated++;}},native={drain:()=>new Promise(()=>{}),hold:async()=>{},complete:async()=>{},resume:async()=>{},snapshot:async()=>({owner:A.id,seq:1}),subscribeRevocation:()=>()=>{}};
  const adapter=createNativeSyncLifecycle(account,client,native,{nativeTimeoutMs:10});try{await adapter.settled();assert.equal(adapter.status().phase,'blocked');assert.equal(activated,0);}finally{adapter.dispose();}
 });

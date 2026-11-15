@@ -11,6 +11,7 @@ export type NativeSyncLeasePort={
   // hold freezes both bridges and remains latched across ordinary revocations;
   // resume cannot bypass a hold, even for a current verified lease.
   hold:()=>Promise<void>;
+  complete:()=>Promise<void>;
   resume:()=>Promise<void>;
 };
 export type LocalSyncClient={activate:(owner:string)=>Promise<unknown>;cancel:()=>Promise<unknown>};
@@ -35,11 +36,11 @@ function snapshot(value:unknown):NativeLeaseSnapshot|null {
  * not enable synchronization, initiate auth requests, or accept credentials.
  * Native notifications and IDB commits are asynchronous, not one transaction.
  */
-export function createNativeSyncLifecycle(account:Pick<NativeAccountController,'getSnapshot'|'subscribe'>,
+export function createNativeSyncLifecycle(account:Pick<NativeAccountController,'getSnapshot'|'subscribe'>&Partial<Pick<NativeAccountController,'setSyncTransitionGuard'>>,
  client:LocalSyncClient,native:NativeSyncLeasePort,options?:{nativeTimeoutMs?:number}){
   if(!account||typeof account.getSnapshot!=='function'||typeof account.subscribe!=='function'||
     !client||typeof client.activate!=='function'||typeof client.cancel!=='function'||
-    !native||typeof native.snapshot!=='function'||typeof native.drain!=='function'||typeof native.hold!=='function'||typeof native.resume!=='function'||typeof native.subscribeRevocation!=='function')throw Error('native sync lifecycle unavailable');
+    !native||typeof native.snapshot!=='function'||typeof native.drain!=='function'||typeof native.hold!=='function'||typeof native.complete!=='function'||typeof native.resume!=='function'||typeof native.subscribeRevocation!=='function')throw Error('native sync lifecycle unavailable');
   const nativeTimeoutMs=options?.nativeTimeoutMs??10000;
   if(!Number.isSafeInteger(nativeTimeoutMs)||nativeTimeoutMs<1||nativeTimeoutMs>30000)throw Error('invalid native timeout');
   function bounded<T>(work:()=>Promise<T>):Promise<T>{
@@ -48,7 +49,7 @@ export function createNativeSyncLifecycle(account:Pick<NativeAccountController,'
       Promise.resolve().then(work).then(value=>{if(!settled){settled=true;clearTimeout(timer);resolve(value);}},error=>{if(!settled){settled=true;clearTimeout(timer);reject(error);}});
     });
   }
-  let generation=0,disposed=false,poisoned=false,phase:LifecycleStatus['phase']='blocked',owner:string|null=null;
+  let generation=0,disposed=false,poisoned=false,transition=false,phase:LifecycleStatus['phase']='blocked',owner:string|null=null;
   let observed:AccountAccess|null=null,removeAbort:(()=>void)|null=null,tail:Promise<void>=Promise.resolve();
   const same=(id:number,state:NativeAccountState,access:AccountAccess)=>!disposed&&!poisoned&&generation===id&&
     account.getSnapshot()===state&&access.sessionSignal?.aborted===false&&access.canAccess();
@@ -65,6 +66,7 @@ export function createNativeSyncLifecycle(account:Pick<NativeAccountController,'
   }
   function onState(state:NativeAccountState):void {
     if(disposed)return;
+    if(transition){void invalidate().catch(()=>{});return;}
     const next=candidate(state);
     if(next&&phase==='ready'&&observed===next.access&&owner===next.owner)return;
     const cancelled=invalidate(),id=generation;
@@ -100,16 +102,27 @@ export function createNativeSyncLifecycle(account:Pick<NativeAccountController,'
   try{unsubscribeNative=native.subscribeRevocation(()=>{if(!disposed)void invalidate().catch(()=>{});});if(typeof unsubscribeNative!=='function')throw Error('missing unsubscribe');}
   catch{unsubscribe();throw Error('native sync lifecycle unavailable');}
   onState(account.getSnapshot());
-  return Object.freeze({
+  let removeGuard:(()=>void)|undefined;
+  const lifecycle=Object.freeze({
     status:():LifecycleStatus=>Object.freeze({phase,owner}),
     settled:()=>tail,
     // A future account UI must await this before changing the native session;
     // merely subscribing here cannot delay NativeAccountController.mutate().
     async prepareAccountChange():Promise<void>{
       if(disposed||poisoned)throw Error('lifecycle unavailable');
+      transition=true;
       const id=generation+1;await invalidate();await bounded(()=>native.hold());await bounded(()=>native.drain());
       if(disposed||generation!==id)throw Error('account transition superseded');
     },
-    dispose(){if(disposed)return;disposed=true;unsubscribe();unsubscribeNative();void invalidate().catch(()=>{});},
+    async completeAccountChange():Promise<void>{
+      if(disposed||poisoned||!transition)throw Error('lifecycle unavailable');
+      const state=account.getSnapshot(),id=generation;
+      await bounded(()=>native.complete());
+      if(disposed||generation!==id||state!==account.getSnapshot())throw Error('account transition superseded');
+      transition=false;onState(state);
+    },
+    dispose(){if(disposed)return;disposed=true;removeGuard?.();unsubscribe();unsubscribeNative();void invalidate().catch(()=>{});},
   });
+  if(account.setSyncTransitionGuard)removeGuard=account.setSyncTransitionGuard({prepare:lifecycle.prepareAccountChange,complete:lifecycle.completeAccountChange});
+  return lifecycle;
 }

@@ -7,6 +7,7 @@ import { HuaweiAccountProvider, HuaweiAuthorization } from './HuaweiAccountProvi
 import { AuthSessionStore } from './AuthSessionStore';
 import { TrustedOwnerLease, VerifiedOwnerLease, TrustedOwnerProvider } from '../media/VerifiedOwnerLease';
 import { SyncAuthGate } from '../sync/NativeSyncHost';
+import { NativeTransitionEvidence } from '../sync/NativeTransitionEvidence';
 import { AUTH_API_ORIGIN } from './AuthConfiguration';
 import { AuthRequest, AuthBody, AuthReply, AuthUser, AuthCookie, AuthRoute, COOKIE_NAME,
   AUTH_TIMEOUT_MS, MAX_RESPONSE_BYTES, trustedFrame, configuredOrigin, parseAuthRequest,
@@ -24,6 +25,8 @@ interface Operation {
   timedOut: boolean;
   replied: boolean;
   sessionMayHaveChanged: boolean;
+  transitionStart: number;
+  transitionProof: number;
   huawei?: boolean;
 }
 
@@ -36,7 +39,7 @@ const PROXY_PERMISSION: string = '{"javascriptProxyPermission":{"urlPermissionLi
   '[{"scheme":"https","host":"lantern.local","port":"","path":""}]}]}}';
 
 /** Auth-only bridge. No private API, arbitrary URL, header, filesystem or cookie API. */
-export class NativeAuthHost implements SyncAuthGate {
+export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
   private controller: webview.WebviewController;
   private active: () => boolean;
   private store: AuthSessionStore = new AuthSessionStore();
@@ -54,6 +57,13 @@ export class NativeAuthHost implements SyncAuthGate {
   private context: (() => common.UIAbilityContext) | undefined;
   private huaweiOperation: Operation | undefined = undefined;
   private foregroundWaiter: (() => void) | undefined = undefined;
+  // Native-only evidence for an account-change barrier; never registered on ArkWeb.
+  private syncTransitionStarted: number = 0;
+  private syncTransitionPending: number = 0;
+  private syncTransitionConfirmed: number = 0;
+  private syncTransitionAction: string = '';
+  private syncTransitionOwner: string | null = null;
+  private syncTransitionLeaseEpoch: number = -1;
 
   constructor(controller: webview.WebviewController, active: () => boolean, context?: () => common.UIAbilityContext) {
     this.controller = controller;
@@ -110,6 +120,15 @@ export class NativeAuthHost implements SyncAuthGate {
 
   // Native consumers only. Only request() is on the registered JS method list.
   trustedOwnerProvider(): TrustedOwnerProvider { return this.ownerLease; }
+
+  syncTransitionVersion(): number { return this.syncTransitionStarted; }
+  syncTransitionConfirmedAfter(start: number): boolean {
+    if (this.syncTransitionConfirmed <= start || this.syncTransitionConfirmed !== this.syncTransitionStarted ||
+      NativeAuthHost.busy || NativeAuthHost.quarantined || !this.live(this.epoch)) return false;
+    const lease: TrustedOwnerLease | undefined = this.ownerLease.snapshot();
+    return this.syncTransitionOwner === null ? lease === undefined && this.ownerLease.version() === this.syncTransitionLeaseEpoch : lease !== undefined && lease.uid === this.syncTransitionOwner &&
+      lease.authEpoch === this.syncTransitionLeaseEpoch;
+  }
 
   // Native-only: not registered as a JavaScript proxy method. Shares the auth
   // operation lock and validates the verified lease before and after work.
@@ -175,7 +194,20 @@ export class NativeAuthHost implements SyncAuthGate {
       return;
     }
     NativeAuthHost.busy = true;
-    const operation: Operation = { id: input.id, action: input.action, version: input.version, epoch: epoch, ownerLeaseEpoch: this.ownerLease.version(), timedOut: false, replied: false, sessionMayHaveChanged: false };
+    let transitionStart: number = 0;
+    let transitionProof: number = 0;
+    if (['register', 'login', 'logout', 'phone-login', 'phone-bind', 'huawei-login', 'huawei-bind'].includes(input.action)) {
+      if (this.syncTransitionStarted >= Number.MAX_SAFE_INTEGER) { NativeAuthHost.busy = false; return; }
+      transitionStart = ++this.syncTransitionStarted;
+      this.syncTransitionPending = 0;
+    }
+    if (input.action === 'session' && this.syncTransitionPending > 0) {
+      if (input.version === 2) transitionProof = this.syncTransitionPending;
+      // Only the first independent proof attempt after mutation can complete it.
+      // Timeout, failure or a later ordinary recheck must leave the hold latched.
+      this.syncTransitionPending = 0;
+    }
+    const operation: Operation = { id: input.id, action: input.action, version: input.version, epoch: epoch, ownerLeaseEpoch: this.ownerLease.version(), timedOut: false, replied: false, sessionMayHaveChanged: false, transitionStart: transitionStart, transitionProof: transitionProof };
     if (input.action === 'huawei-login' || input.action === 'huawei-bind') {
       operation.huawei = true;
       this.huaweiOperation = operation;
@@ -218,6 +250,19 @@ export class NativeAuthHost implements SyncAuthGate {
   private finish(operation: Operation, status: number, body: AuthBody): void {
     if (operation.replied || !this.current(operation)) return;
     operation.replied = true;
+    if (operation.transitionStart > 0 && operation.transitionStart === this.syncTransitionStarted && status === 200) {
+      this.syncTransitionPending = operation.transitionStart;
+      this.syncTransitionAction = operation.action;
+    } else if (operation.action === 'session' && operation.version === 2 &&
+      operation.transitionProof === this.syncTransitionStarted && operation.transitionProof > 0) {
+      const lease: TrustedOwnerLease | undefined = this.ownerLease.snapshot();
+      if ((status === 200 && lease !== undefined && this.syncTransitionAction !== 'logout') ||
+        (status === 401 && body.code === 'unauthenticated' && lease === undefined && this.syncTransitionAction === 'logout')) {
+        this.syncTransitionOwner = lease?.uid ?? null;
+        this.syncTransitionLeaseEpoch = lease?.authEpoch ?? this.ownerLease.version();
+        this.syncTransitionConfirmed = operation.transitionProof;
+      }
+    }
     this.send(operation.id, status, body, operation.epoch, operation.version);
   }
 

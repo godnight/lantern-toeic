@@ -14,7 +14,7 @@ function fixture(dispatch){
  const imports={'@kit.ArkWeb':{},'@ohos.net.http':{__esModule:true,default:http},'@ohos.deviceInfo':{__esModule:true,default:{sdkApiVersion:23}},'../auth/AuthConfiguration':{AUTH_API_ORIGIN:'https://synthetic.invalid'},'../auth/AuthPolicy':{COOKIE_NAME:'__Host-lantern-session',configuredOrigin:()=>true,trustedFrame:url=>url==='https://lantern.local/',utf8Length:s=>Buffer.byteLength(s)},'../media/VerifiedOwnerLease':{},'./NativeSyncHost':{},'./NativeStudySyncHost':{}};
  const Sync=compile(path.join(syncDir,'NativeSyncHost.ets'),imports).NativeSyncHost,Study=compile(path.join(syncDir,'NativeStudySyncHost.ets'),imports).NativeStudySyncHost;
  const Observer=compile(path.join(syncDir,'NativeLifecycleObserver.ets'),imports).NativeLifecycleObserver;
- const sync=new Sync(controller,()=>true,provider,auth.host,true),study=new Study(controller,()=>true,provider,auth.host,true),observer=new Observer(controller,provider,()=>true,sync,study,true);
+ const sync=new Sync(controller,()=>true,provider,auth.host,true),study=new Study(controller,()=>true,provider,auth.host,true),observer=new Observer(controller,provider,()=>true,sync,study,true,auth.host);
  assert.equal(sync.attach(),true);assert.equal(study.attach(),true);assert.equal(observer.attach(),true);
  assert.equal(auth.host.ownerLease.publishVerifiedV2(owner,0,1000,auth.host.ownerLease.version()),true);
  target.__lanternSyncReceive=value=>replies.push(value);target.__lanternStudySyncReceive=value=>replies.push(value);
@@ -88,5 +88,103 @@ test('actual controller, lease port and both native bridges drain before a prepa
   const before=calls.length;let prepared=false;const preparing=adapter.prepareAccountChange().then(()=>{prepared=true;});preparing.catch(()=>{});await tick();assert.equal(prepared,false);assert.equal(calls.length,before);
   f.release();await preparing;assert.equal(prepared,true);assert.equal(await account.mutate('logout'),true);await adapter.settled();assert.equal(adapter.status().phase,'blocked');
   assert.equal(JSON.stringify(f.replies).includes('a'.repeat(64)),false);
+ }finally{adapter.dispose();account.dispose();f.close();}
+});
+test('real controller fences both bridges before switching and releases only after new native session proof',async()=>{
+ const a={id:owner,username:'synthetic_a'},b={id:'usr_bbbbbbbb-2222-4222-8222-222222222222',username:'synthetic_b'},caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false};
+ const tokenB='b'.repeat(64),cookie='__Host-lantern-session='+tokenB+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200';
+ const f=fixture(async(url,options)=>{
+  const path=new URL(url).pathname;
+  if(path.endsWith('/login'))return response(200,{user:b,capabilities:caps},{'set-cookie':cookie});
+  if(path.endsWith('/session'))return response(200,{user:options.header.Cookie?.includes(tokenB)?b:a,capabilities:caps,session:{version:2,remainingMs:1000}});
+  throw Error('unexpected');
+ });
+ const source="export {NativeAccountController} from './lib/native-account-controller.ts'; export {createNativeSyncLifecycle} from './lib/cloud-sync/native-lifecycle.ts';";
+ const built=buildSync({stdin:{contents:source,resolveDir:root,loader:'ts'},bundle:true,write:false,format:'cjs',platform:'node',target:'node24',logLevel:'silent'});
+ const file=path.join(__dirname,'native-transition-real.cjs'),m=new Module(file);m.filename=file;m.paths=Module._nodeModulePaths(__dirname);m._compile(built.outputFiles[0].text,file);
+ const transport={cancelAll(){},dispose(){},request(action,body,_timeout,version){return f.auth.invoke({id:randomUUID(),action,body,version});}};
+ const clock={now:()=>0,set:()=>1,clear:()=>{}},account=new m.exports.NativeAccountController(transport,clock),activations=[];
+ const adapter=m.exports.createNativeSyncLifecycle(account,{async cancel(){},async activate(uid){activations.push(uid);}},f.port,{nativeTimeoutMs:500});
+ try{
+  account.start();for(let i=0;i<30&&account.getSnapshot().status!=='ready';i++)await tick();await adapter.settled();assert.equal(adapter.status().owner,a.id);
+  f.target.LanternSyncHost.request(JSON.stringify({id:randomUUID(),action:'snapshot',owner:a.id,pageSize:1}));await f.entered;
+  const changing=account.mutate('login',{username:'synthetic_b',password:'synthetic-password'});await tick();
+  assert.equal(f.auth.requests.some(r=>r.path.endsWith('/login')),false);
+  f.release();assert.equal(await changing,true);await adapter.settled();
+  assert.equal(adapter.status().owner,b.id);assert.deepEqual(activations,[a.id,b.id]);
+  assert.equal(f.auth.requests.filter(r=>r.path.endsWith('/session')).length,3);
+  for(const [host,action] of [[f.target.LanternSyncHost,'snapshot'],[f.target.LanternStudySyncHost,'pull']]){
+   const id=randomUUID();host.request(JSON.stringify(action==='snapshot'?{id,action,owner:a.id,pageSize:1}:{id,action,owner:a.id,checkpoint:null,continuation:null}));
+   await tick();assert.equal(f.calls.length,1);assert.notEqual(f.replies.at(-1)?.id,id);
+  }
+ }finally{adapter.dispose();account.dispose();f.close();}
+});
+test('mutation already in flight before hold cannot supply release evidence',async()=>{
+ const a={id:owner,username:'synthetic_a'},caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false},token='b'.repeat(64);
+ let release;const blocked=new Promise(resolve=>{release=resolve;});
+ const f=fixture(async(url)=>new URL(url).pathname.endsWith('/login')?blocked:response(200,{user:a,capabilities:caps,session:{version:2,remainingMs:1000}}));
+ try{
+  const pending=f.auth.invoke({id:randomUUID(),action:'login',body:{username:'synthetic_a',password:'synthetic-password'}});
+  for(let i=0;i<30&&!f.auth.requests.some(r=>r.path.endsWith('/login'));i++)await tick();
+  await f.port.hold();await f.port.drain();
+  release(response(200,{user:a,capabilities:caps},{'set-cookie':'__Host-lantern-session='+token+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200'}));
+  assert.equal((await pending).status,200);
+  assert.equal((await f.auth.invoke({id:randomUUID(),action:'session',version:2})).status,200);
+  await assert.rejects(f.port.complete(),/timeout/);await assert.rejects(f.port.resume(),/timeout/);
+ }finally{f.close();}
+});
+test('failed first post-mutation proof cannot be repaired by a later ordinary recheck',async()=>{
+ const user={id:owner,username:'synthetic_a'},caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false},token='b'.repeat(64);let proofs=0;
+ const f=fixture(async(url,options)=>{
+  if(new URL(url).pathname.endsWith('/login'))return response(200,{user,capabilities:caps},{'set-cookie':'__Host-lantern-session='+token+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200'});
+  if(options.header['X-Lantern-Session-Proof']==='2'&&++proofs===1)return response(503,{code:'unavailable'});
+  return response(200,{user,capabilities:caps,session:{version:2,remainingMs:1000}});
+ });
+ try{
+  await f.port.hold();await f.port.drain();
+  assert.equal((await f.auth.invoke({id:randomUUID(),action:'login',body:{username:'synthetic_a',password:'synthetic-password'}})).status,200);
+  assert.equal((await f.auth.invoke({id:randomUUID(),action:'session',version:2})).status,503);
+  assert.equal((await f.auth.invoke({id:randomUUID(),action:'session',version:2})).status,200);
+  await assert.rejects(f.port.complete(),/timeout/);await assert.rejects(f.port.resume(),/timeout/);
+ }finally{f.close();}
+});
+test('real native logout confirms guest without enabling sync, then a fresh login restores it',async()=>{
+ const user={id:owner,username:'synthetic_a'},caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false},token='b'.repeat(64);
+ const f=fixture(async(url,options)=>{
+  const path=new URL(url).pathname;
+  if(path.endsWith('/logout'))return response(200,{ok:true},{'set-cookie':'__Host-lantern-session=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0'});
+  if(path.endsWith('/login'))return response(200,{user,capabilities:caps},{'set-cookie':'__Host-lantern-session='+token+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200'});
+  if(path.endsWith('/session'))return options.header.Cookie?response(200,{user,capabilities:caps,session:{version:2,remainingMs:1000}}):response(401,{code:'unauthenticated'});
+  throw Error('unexpected');
+ });
+ const source="export {NativeAccountController} from './lib/native-account-controller.ts'; export {createNativeSyncLifecycle} from './lib/cloud-sync/native-lifecycle.ts';";
+ const built=buildSync({stdin:{contents:source,resolveDir:root,loader:'ts'},bundle:true,write:false,format:'cjs',platform:'node',target:'node24',logLevel:'silent'});
+ const file=path.join(__dirname,'native-transition-logout.cjs'),m=new Module(file);m.filename=file;m.paths=Module._nodeModulePaths(__dirname);m._compile(built.outputFiles[0].text,file);
+ const transport={cancelAll(){},dispose(){},request(action,body,_timeout,version){return f.auth.invoke({id:randomUUID(),action,body,version});}};
+ const clock={now:()=>0,set:()=>1,clear:()=>{}},account=new m.exports.NativeAccountController(transport,clock),adapter=m.exports.createNativeSyncLifecycle(account,{async cancel(){},async activate(){}},f.port,{nativeTimeoutMs:500});
+ try{
+  account.start();for(let i=0;i<30&&account.getSnapshot().status!=='ready';i++)await tick();await adapter.settled();assert.equal(adapter.status().owner,owner);
+  assert.equal(await account.mutate('logout'),true);await adapter.settled();assert.equal(adapter.status().phase,'blocked');assert.equal(account.getSnapshot().user,null);
+  assert.equal(await account.mutate('login',{username:'synthetic_a',password:'synthetic-password'}),true);await adapter.settled();assert.equal(adapter.status().owner,owner);
+ }finally{adapter.dispose();account.dispose();f.close();}
+});
+test('failed mutation and a later ordinary recheck never release either bridge',async()=>{
+ const user={id:owner,username:'synthetic_a'},caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false};
+ const f=fixture(async(url)=>new URL(url).pathname.endsWith('/login')?response(503,{code:'auth-state-unknown'}):response(200,{user,capabilities:caps,session:{version:2,remainingMs:1000}}));
+ const source="export {NativeAccountController} from './lib/native-account-controller.ts'; export {createNativeSyncLifecycle} from './lib/cloud-sync/native-lifecycle.ts';";
+ const built=buildSync({stdin:{contents:source,resolveDir:root,loader:'ts'},bundle:true,write:false,format:'cjs',platform:'node',target:'node24',logLevel:'silent'});
+ const file=path.join(__dirname,'native-transition-failure.cjs'),m=new Module(file);m.filename=file;m.paths=Module._nodeModulePaths(__dirname);m._compile(built.outputFiles[0].text,file);
+ const transport={cancelAll(){},dispose(){},request(action,body,_timeout,version){return f.auth.invoke({id:randomUUID(),action,body,version});}};
+ const clock={now:()=>0,set:()=>1,clear:()=>{}},account=new m.exports.NativeAccountController(transport,clock),adapter=m.exports.createNativeSyncLifecycle(account,{async cancel(){},async activate(){}},f.port,{nativeTimeoutMs:500});
+ try{
+  account.start();for(let i=0;i<30&&account.getSnapshot().status!=='ready';i++)await tick();await adapter.settled();
+  assert.equal(await account.mutate('login',{username:'synthetic_a',password:'synthetic-password'}),false);
+  account.recheck();for(let i=0;i<30&&account.getSnapshot().status==='checking';i++)await tick();await adapter.settled();
+  await assert.rejects(f.port.complete(),/timeout/);await assert.rejects(f.port.resume(),/timeout/);
+  assert.equal(adapter.status().phase,'blocked');
+  for(const [host,action] of [[f.target.LanternSyncHost,'snapshot'],[f.target.LanternStudySyncHost,'pull']]){
+   const id=randomUUID();host.request(JSON.stringify(action==='snapshot'?{id,action,owner,pageSize:1}:{id,action,owner,checkpoint:null,continuation:null}));await tick();
+   assert.equal(f.calls.length,0);
+  }
  }finally{adapter.dispose();account.dispose();f.close();}
 });

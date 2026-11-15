@@ -1015,7 +1015,7 @@ struct Index {
               const nativeLifecycle: NativeLifecycleObserver = new NativeLifecycleObserver(this.controller,
                 this.authHost.trustedOwnerProvider(),
                 () => this.alive && this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
-                nativeSync, nativeStudySync, true);
+                nativeSync, nativeStudySync, true, this.authHost);
               if (nativeSync.attach() && nativeStudySync.attach() && nativeLifecycle.attach()) {
                 this.syncHost = nativeSync;
                 this.studySyncHost = nativeStudySync;

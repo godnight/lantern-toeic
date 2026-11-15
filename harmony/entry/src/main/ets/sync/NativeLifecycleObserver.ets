@@ -3,6 +3,7 @@ import { trustedFrame } from '../auth/AuthPolicy';
 import { TrustedOwnerLease, TrustedOwnerProvider } from '../media/VerifiedOwnerLease';
 import { NativeSyncHost } from './NativeSyncHost';
 import { NativeStudySyncHost } from './NativeStudySyncHost';
+import { NativeTransitionEvidence } from './NativeTransitionEvidence';
 
 interface LifecycleMessage { kind: string; seq: number; id?: string; owner?: string | null; }
 const PERMISSION: string = '{"javascriptProxyPermission":{"urlPermissionList":' +
@@ -10,6 +11,8 @@ const PERMISSION: string = '{"javascriptProxyPermission":{"urlPermissionList":' 
   '"methodList":[{"methodName":"snapshot","urlPermissionList":' +
   '[{"scheme":"https","host":"lantern.local","port":"","path":""}]},' +
   '{"methodName":"hold","urlPermissionList":' +
+  '[{"scheme":"https","host":"lantern.local","port":"","path":""}]},' +
+  '{"methodName":"complete","urlPermissionList":' +
   '[{"scheme":"https","host":"lantern.local","port":"","path":""}]},' +
   '{"methodName":"resume","urlPermissionList":' +
   '[{"scheme":"https","host":"lantern.local","port":"","path":""}]}]}}';
@@ -24,19 +27,21 @@ export class NativeLifecycleObserver {
   private sync: NativeSyncHost;
   private study: NativeStudySyncHost;
   private accountChangePending: boolean = false;
+  private transitionStart: number = -1;
+  private evidence: NativeTransitionEvidence | undefined;
   private unsubscribe: () => void;
   private attached: boolean = false;
   private disposed: boolean = false;
   private seq: number = 0;
   constructor(controller: webview.WebviewController, provider: TrustedOwnerProvider, active: () => boolean,
-    sync: NativeSyncHost, study: NativeStudySyncHost, enabled: boolean = false) {
+    sync: NativeSyncHost, study: NativeStudySyncHost, enabled: boolean = false, evidence?: NativeTransitionEvidence) {
     this.controller=controller;this.provider=provider;this.active=active;this.enabled=enabled;
-    this.sync=sync;this.study=study;
+    this.sync=sync;this.study=study;this.evidence=evidence;
     this.unsubscribe=provider.subscribe(() => this.revoked());
   }
   attach(): boolean {
     if (this.disposed || !this.enabled) return false;
-    try { this.controller.registerJavaScriptProxy(this,'LanternLifecycleHost',['snapshot','hold','resume'],[],PERMISSION);this.attached=true;return true; }
+    try { this.controller.registerJavaScriptProxy(this,'LanternLifecycleHost',['snapshot','hold','complete','resume'],[],PERMISSION);this.attached=true;return true; }
     catch { return false; }
   }
   private live(): boolean {
@@ -64,12 +69,18 @@ export class NativeLifecycleObserver {
     const lease: TrustedOwnerLease | undefined=this.provider.snapshot();
     this.send({kind:'snapshot',seq:this.seq,id:id,owner:lease?.uid ?? null});
   }
-  // Freeze both queues synchronously. Until an explicit verified account-change
-  // completion protocol is wired, the hold remains latched for this observer.
+  // Freeze both queues synchronously before recording the native operation fence.
   hold(id: string): void {
     if(!this.caller(id))return;
     this.sync.freeze();this.study.freeze();this.accountChangePending=true;
+    this.transitionStart=this.evidence?.syncTransitionVersion() ?? -1;
     this.send({kind:'held',seq:this.seq,id:id});
+  }
+  complete(id: string): void {
+    if(!this.caller(id)||!this.accountChangePending||this.transitionStart<0||
+      this.evidence===undefined||!this.evidence.syncTransitionConfirmedAfter(this.transitionStart))return;
+    this.accountChangePending=false;this.transitionStart=-1;
+    this.send({kind:'completed',seq:this.seq,id:id});
   }
   resume(id: string): void {
     if(!this.caller(id)||this.accountChangePending)return;

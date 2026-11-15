@@ -2,10 +2,10 @@ import type {NativeLeaseSnapshot,NativeSyncLeasePort} from './native-lifecycle';
 
 type NativeBridge={drain:(id:string)=>void};
 type Target={location:{origin:string};top?:unknown;self?:unknown;crypto:{randomUUID:()=>string};
-  LanternLifecycleHost?:{snapshot:(id:string)=>void;hold:(id:string)=>void;resume:(id:string)=>void};
+  LanternLifecycleHost?:{snapshot:(id:string)=>void;hold:(id:string)=>void;complete:(id:string)=>void;resume:(id:string)=>void};
   LanternSyncHost?:NativeBridge;LanternStudySyncHost?:NativeBridge;
   __lanternLifecycleReceive?:(message:unknown)=>void;__lanternSyncDrainReceive?:(message:unknown)=>void};
-type Kind='snapshot'|'hold'|'resume'|'drain';
+type Kind='snapshot'|'hold'|'complete'|'resume'|'drain';
 type Pending={kind:Kind;source?:'vocabulary'|'study';resolve:(value:unknown)=>void;reject:(error:Error)=>void;timer:ReturnType<typeof setTimeout>};
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const OWNER=/^usr_[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -25,7 +25,7 @@ export function createNativeSyncLeasePort(target:Target=window as unknown as Tar
   const seq=value.seq as number;
   if(value.kind==='revoked'&&exact(value,'kind,seq')){if(seq>lastSeq){lastSeq=seq;notify();}return;}
   if(typeof value.id!=='string')return;const item=pending.get(value.id);if(!item)return;
-  const expected=item.kind==='snapshot'?'snapshot':item.kind==='hold'?'held':item.kind==='resume'?'resumed':'';
+  const expected=item.kind==='snapshot'?'snapshot':item.kind==='hold'?'held':item.kind==='complete'?'completed':item.kind==='resume'?'resumed':'';
   if(value.kind!==expected||!exact(value,item.kind==='snapshot'?'id,kind,owner,seq':'id,kind,seq')||seq<lastSeq){finish(value.id,undefined,Error('native lease unavailable'));return;}
   if(seq>lastSeq&&lastSeq>=0){lastSeq=seq;notify();finish(value.id,undefined,Error('native lease changed'));return;}
   lastSeq=seq;
@@ -56,7 +56,7 @@ export function createNativeSyncLeasePort(target:Target=window as unknown as Tar
  }
  return Object.freeze({
   snapshot:()=>invoke('snapshot') as Promise<NativeLeaseSnapshot|null>,
-  hold:async()=>{await invoke('hold');},resume:async()=>{await invoke('resume');},
+  hold:async()=>{await invoke('hold');},complete:async()=>{await invoke('complete');},resume:async()=>{await invoke('resume');},
   async drain(){if(!target.LanternSyncHost||!target.LanternStudySyncHost)throw Error('native drain unavailable');await Promise.all([invoke('drain','vocabulary'),invoke('drain','study')]);},
   subscribeRevocation(listener:()=>void){if(disposed||typeof listener!=='function')throw Error('native lease unavailable');listeners.add(listener);return()=>{listeners.delete(listener);};},
   dispose(){if(disposed)return;disposed=true;for(const id of [...pending.keys()])finish(id,undefined,Error('native lease unavailable'));listeners.clear();

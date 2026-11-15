@@ -9,6 +9,7 @@ export type NativeAccountState=Readonly<
 export const INITIAL_NATIVE_ACCOUNT_STATE:NativeAccountState=Object.freeze({status:'checking',message:'正在核对账号会话。'});
 const guestCapabilities:ProductCapabilities=Object.freeze({passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false});
 type Listener=(state:NativeAccountState,synchronous:boolean)=>void;
+export type SyncTransitionGuard={prepare:()=>Promise<void>;complete:()=>Promise<void>};
 
 function verifiedSession(reply:NativeAuthReply,elapsed:number):{user:ProductIdentity|null;capabilities:ProductCapabilities;unavailable:boolean;validForMs?:number}|null {
   if(reply.status===200){const proof=reply.version===2?readSessionProof(reply.body,'native',elapsed):null;
@@ -35,11 +36,24 @@ export class NativeAccountController {
   private huaweiBackground=false;
   private foregroundWait:(()=>void)|null=null;
   private initialProbe:Promise<void>|null=null;
+  private syncTransitionGuard:SyncTransitionGuard|null=null;
   private listeners=new Set<Listener>();
   private state:NativeAccountState=INITIAL_NATIVE_ACCOUNT_STATE;
   constructor(private transport:NativeAuthTransport,private clock:SessionClock=sessionClock){}
   getSnapshot=()=>this.state;
   subscribe=(listener:Listener)=>{this.listeners.add(listener);return()=>{this.listeners.delete(listener);};};
+  setSyncTransitionGuard(guard:SyncTransitionGuard):()=>void{
+    if(this.syncTransitionGuard)throw Error('sync transition guard already installed');
+    this.syncTransitionGuard=guard;return()=>{if(this.syncTransitionGuard===guard)this.syncTransitionGuard=null;};
+  }
+  private async prepareSyncTransition(generation:number):Promise<boolean>{
+    if(this.syncTransitionGuard)await this.syncTransitionGuard.prepare();
+    return this.current(generation);
+  }
+  private async completeSyncTransition(generation:number):Promise<void>{
+    if(!this.current(generation))return;
+    try{await this.syncTransitionGuard?.complete();}catch{/* Sync remains frozen; account outcome is independent. */}
+  }
   private update(state:NativeAccountState,synchronous=false){
     if(!this.alive)return;this.state=Object.freeze(state);for(const listener of this.listeners)listener(this.state,synchronous);
   }
@@ -108,6 +122,7 @@ export class NativeAccountController {
     this.mutationAttempted=true;
     const generation=this.begin('账号操作进行中，旧学习分区已暂停。',true);this.mutationPending=true;
     try{
+      if(this.syncTransitionGuard&&!await this.prepareSyncTransition(generation))return false;
       const pending=this.transport.request(action,credentials);credentials=undefined;
       const reply=await pending;
       if(!this.current(generation))return false;
@@ -123,7 +138,9 @@ export class NativeAccountController {
       // Navigation receives an outcome only after the independent session proof.
       // A rejected mutation with a still-valid old session is not a successful login.
       if(reply.status!==200||!this.current(generation)||confirmed.status!=='ready'||confirmed.unavailable)return false;
-      return action==='logout'?confirmed.user===null:!!confirmed.user&&confirmed.access.owner===confirmed.user.id&&confirmed.access.assertAccess();
+      const ok=action==='logout'?confirmed.user===null:!!confirmed.user&&confirmed.access.owner===confirmed.user.id&&confirmed.access.assertAccess();
+      if(ok&&this.syncTransitionGuard)await this.completeSyncTransition(generation);
+      return ok&&this.current(generation);
     }catch{
       if(this.current(generation)){this.held=true;this.update({status:'blocked',message:'账号操作结果未知，本机分区已锁定；不代表凭据已清理或服务器已撤销。请显式重新核对账号。'});}
       return false;
@@ -138,6 +155,7 @@ export class NativeAccountController {
     const generation=this.begin('华为账号授权进行中，旧学习分区已暂停。',true);
     this.huaweiGeneration=generation;this.mutationPending=true;
     try{
+      if(this.syncTransitionGuard&&!await this.prepareSyncTransition(generation))return false;
       const reply=await this.transport.request(purpose==='login'?'huawei-login':'huawei-bind');
       if(!this.current(generation))return false;
       if(reply.status>=500){this.held=true;this.update({status:'blocked',message:'华为账号操作结果尚未确认，学习分区已锁定。请显式重新核对账号；不会自动重发。'},true);return false;}
@@ -156,7 +174,9 @@ export class NativeAccountController {
         this.deadline?.close();this.deadline=null;
         this.update({status:'blocked',message:'华为账号绑定后的身份发生变化，学习分区保持暂停。请重新核对账号。'},true);return false;
       }
-      return reply.status===200&&!!confirmed.user&&confirmed.access.owner===confirmed.user.id&&confirmed.access.assertAccess();
+      const ok=reply.status===200&&!!confirmed.user&&confirmed.access.owner===confirmed.user.id&&confirmed.access.assertAccess();
+      if(ok&&this.syncTransitionGuard)await this.completeSyncTransition(generation);
+      return ok&&this.current(generation);
     }catch{
       if(this.current(generation)){this.held=true;this.update({status:'blocked',message:'华为账号操作结果尚未确认，学习分区已锁定。请显式重新核对账号；不会自动重发。'},true);}
       return false;
@@ -169,6 +189,7 @@ export class NativeAccountController {
     this.mutationAttempted=true;
     const generation=this.begin('手机号操作进行中，旧学习分区已暂停。',true);this.mutationPending=true;
     try{
+      if(this.syncTransitionGuard&&!await this.prepareSyncTransition(generation))return;
       const pending=this.transport.request(purpose==='bind'?'phone-bind':'phone-login',body);body=undefined as unknown as PhoneVerification;
       const reply=await pending;if(!this.current(generation))return;
       const outcome=parsePhoneOutcome(reply);
@@ -184,7 +205,8 @@ export class NativeAccountController {
         this.deadline?.close();this.deadline=null;
         this.update({status:'blocked',message:'手机号操作后的账号身份未获预期确认，学习分区保持暂停。请重新核对账号。'});return;
       }
-      return outcome;
+      if(outcome.status===200&&this.syncTransitionGuard)await this.completeSyncTransition(generation);
+      return this.current(generation)?outcome:undefined;
     }catch{
       if(this.current(generation))this.update({status:'blocked',message:'手机号操作结果未知，不能假定已发送、绑定或登录。请重新核对账号。'});
     }finally{if(this.current(generation))this.mutationPending=false;}
