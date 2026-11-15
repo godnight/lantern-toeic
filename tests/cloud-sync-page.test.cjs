@@ -4,7 +4,7 @@ const {createRequire,Module}=require('node:module'),{randomUUID}=require('node:c
 const root=path.resolve(__dirname,'..');
 const req=createRequire(path.join(root,'package.json')),{IDBFactory}=req('fake-indexeddb'),{buildSync}=req('esbuild');
 const {SyntheticTransport}=require('./helpers/synthetic-sync-transport.cjs');
-const entry=`export * from './lib/cloud-sync/candidate-page.js'; export * from './lib/cloud-sync/offline-queue.js'; export {FENCE,COMMITS} from './lib/cloud-sync/idb-fence.js'; export * from './lib/cloud-sync/client.js'; export * from './lib/cloud-sync/study-runner.js'; export * from './lib/cloud-sync/vocabulary-projection.ts'; export * from './lib/cloud-sync/capture-vocabulary.js'; export * from './lib/cloud-sync/vocabulary-capture.ts'; export {readVocabulary,writeVocabulary,vocabularyKey} from './lib/vocabulary-model.ts';`;
+const entry=`export * from './lib/cloud-sync/candidate-page.js'; export * from './lib/cloud-sync/offline-queue.js'; export {FENCE,COMMITS} from './lib/cloud-sync/idb-fence.js'; export * from './lib/cloud-sync/client.js'; export * from './lib/cloud-sync/study-runner.js'; export * from './lib/cloud-sync/vocabulary-projection.ts'; export * from './lib/cloud-sync/capture-vocabulary.js'; export * from './lib/cloud-sync/capture-study-journal.js'; export * from './lib/cloud-sync/vocabulary-capture.ts'; export {readVocabulary,writeVocabulary,vocabularyKey} from './lib/vocabulary-model.ts';`;
 const built=buildSync({stdin:{contents:entry,resolveDir:root,loader:'js'},bundle:true,write:false,format:'cjs',platform:'node',target:'node24',logLevel:'silent'});
 const file=path.join(__dirname,'cloud-sync-test-bundle.cjs'),moduleForTest=new Module(file);moduleForTest.filename=file;moduleForTest.paths=Module._nodeModulePaths(__dirname);moduleForTest._compile(built.outputFiles[0].text,file);
 const page=moduleForTest.exports,q=page,study=page,{FENCE,COMMITS,createSyntheticClient,projectNativeVocabularyEvents:project}=page;
@@ -32,6 +32,40 @@ function server(){
 function client(db,s){return page.createCandidatePageClient({db,vocabTransport:s.vt,studyTransport:s.st});}
 function memoryStorage(){const raw=new Map();let fail=false;return {raw,setFail(value){fail=value;},storage:{get length(){return raw.size;},key(i){return [...raw.keys()][i]??null;},getItem(key){return raw.get(key)??null;},setItem(key,value){if(fail)throw Error('QuotaExceededError');raw.set(key,String(value));}}};}
 const vocabMark=(id,wordId='word1')=>({id,wordId,createdAt:stamp,type:'mark',starred:true,revision:1});
+
+test('study journal capture preserves operation ids and resumes without duplicates after restart',async()=>{
+ const source=memoryStorage(),s=server(),factory=new IDBFactory(),a=attempt(),b=checkin(),ids=[randomUUID(),randomUUID()];
+ for(const [index,data] of [a,b].entries())source.storage.setItem('lantern-v1-'+A+':op:'+ids[index],JSON.stringify({id:ids[index],owner:A,type:index?'checkin':'attempt',data}));
+ let db=await open(factory,'journal-restart'),c=client(db,s);try{
+  await c.activate(A);assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),2);
+  s.setOffline(true);await assert.rejects(c.run(),/offline/);await c.cancel();db.close();
+  db=await open(factory,'journal-restart');c=client(db,s);await c.activate(A);
+  assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),2);s.setOffline(false);await c.run();
+  assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),2);
+  const state=await c.readStudy();assert.deepEqual(state.pendingOperations.map(x=>x.id),ids);assert.equal(state.uploadAcks.length,2);assert.equal(s.rows.size,2);
+  assert.equal(source.raw.size,2);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('study journal capture rejects account switch while an enqueue is pending',async()=>{
+ const source=memoryStorage(),s=server(),db=await open(new IDBFactory(),'journal-switch'),c=client(db,s),opId=randomUUID(),entered=deferred(),release=deferred();
+ source.storage.setItem('lantern-v1-'+A+':op:'+opId,JSON.stringify({id:opId,owner:A,type:'attempt',data:attempt()}));
+ try{
+  await c.activate(A);const original=c.answer;c.answer=async(...args)=>{entered.resolve();await release.promise;return original(...args);};
+  const pending=page.scanSyntheticStudyJournal(source.storage,A,c),rejected=assert.rejects(pending,/revoked/);await entered.promise;await c.activate(B);release.resolve();await rejected;
+  assert.equal((await c.readStudy()).pendingOperations.length,0);
+ }finally{release.resolve();await c.cancel();db.close();s.close();}
+});
+test('study journal capture fails closed when journal owner or compaction epoch changes',async()=>{
+ const source=memoryStorage(),s=server(),db=await open(new IDBFactory(),'journal-invalid'),c=client(db,s),opId=randomUUID(),name='lantern-v1-'+A+':op:'+opId;
+ try{
+  await c.activate(A);source.storage.setItem(name,JSON.stringify({id:opId,owner:B,type:'checkin',data:checkin()}));
+  await assert.rejects(page.scanSyntheticStudyJournal(source.storage,A,c),/invalid journal/);
+  source.storage.setItem(name,JSON.stringify({id:opId,owner:A,type:'checkin',data:checkin()}));
+  const original=c.answer;c.answer=async(...args)=>{source.storage.setItem('lantern-v1-'+A+':checkpoint-epoch','changed');return original(...args);};
+  await assert.rejects(page.scanSyntheticStudyJournal(source.storage,A,c),/journal changed/);
+  assert.equal(source.raw.has(name),true);assert.equal((await c.readStudy()).pendingOperations.length,1);
+ }finally{await c.cancel();db.close();s.close();}
+});
 
 test('capture is disabled by default and ordinary vocabulary chunk bytes remain compatible',()=>{
  assert.equal(page.VOCABULARY_MARK_CAPTURE_ENABLED,false);
