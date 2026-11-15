@@ -9,6 +9,13 @@ python tools/cloud-migration/synthetic_backup.py --run-synthetic
 python -m unittest discover -s tools/cloud-migration -p 'test_*.py' -v
 ```
 
+也提供独立 Node 实现，无 npm 依赖，已在 Node 24.13.1 本地验证；目标 ECS 可使用现有隔离 Node 运行时执行。该版本的 `node:sqlite` 会提示实验性，不能据此推断正式生产存储已就绪。
+
+```sh
+node tools/cloud-migration/synthetic_backup_node.mjs --run-synthetic
+node --test tools/cloud-migration/synthetic_backup_node.test.mjs
+```
+
 主库演练先保留一笔已提交、尚存在 WAL 中的记录，再在分页在线备份期间提交另一笔事务；分别备份主库和 metadata，使用 SQLite 在线备份恢复，检查每份数据库的完整性、同一库内的事务一致性及恢复后记录摘要。源数据库会保留。metadata 测试数据只是合成的，不模拟 Miniflare 的实际元数据行为。
 
 主库和 metadata 各自备份，**不保证两库属于同一时点**。本地合成测试通过不代表生产数据可安全迁移或恢复；正式切换仍需识别所有写入者、停写并排空、设计跨库一致性检查，完成针对实际运行时的备份恢复验证。
