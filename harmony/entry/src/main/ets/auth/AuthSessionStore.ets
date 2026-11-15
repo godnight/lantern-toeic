@@ -1,9 +1,17 @@
 import asset from '@ohos.security.asset';
 import { BusinessError } from '@kit.BasicServicesKit';
+import { AUTH_MIGRATION_ENABLED, AUTH_MIGRATION_OLD_ORIGIN, AUTH_MIGRATION_NEW_ORIGIN } from './AuthMigrationConfiguration';
 
 interface StoredSession {
   version: number;
   origin: string;
+  token: string;
+  expiresAt: number;
+}
+
+// Native-only candidate input. An Asset record does not contain a trusted
+// owner; a token alone is not proof that the migrated account is the same.
+export interface LegacyMigrationSession {
   token: string;
   expiresAt: number;
 }
@@ -36,6 +44,40 @@ export class AuthSessionStore {
     const query: asset.AssetMap = new Map<asset.Tag, asset.Value>();
     query.set(asset.Tag.ALIAS, this.alias);
     return query;
+  }
+
+  /**
+   * Disabled, non-destructive migration candidate. Not called by the host or
+   * exposed to ArkWeb. A future integration must first prove the deployed
+   * token-to-owner mapping, independently verify a v2 session at the fixed
+   * target without redirects, and atomically fence logout/account changes.
+   * Existing load()/clear() behavior is intentionally unchanged; this method
+   * alone does not prevent the host from clearing a mismatched-origin record.
+   */
+  async peekMigrationLegacy(targetOrigin: string): Promise<LegacyMigrationSession | undefined> {
+    if (!AUTH_MIGRATION_ENABLED || targetOrigin !== AUTH_MIGRATION_NEW_ORIGIN) return undefined;
+    const query: asset.AssetMap = this.queryMap();
+    query.set(asset.Tag.RETURN_TYPE, asset.ReturnType.ALL);
+    let rows: asset.AssetMap[];
+    try {
+      rows = await asset.query(query);
+    } catch (error) {
+      if ((error as BusinessError).code === 24000002) return undefined;
+      throw new Error('Store unavailable');
+    }
+    if (rows.length !== 1) throw new Error('Store unavailable');
+    const secret: asset.Value | undefined = rows[0].get(asset.Tag.SECRET);
+    if (!(secret instanceof Uint8Array)) throw new Error('Store unavailable');
+    let record: StoredSession;
+    try { record = JSON.parse(text(secret)) as StoredSession; } catch { throw new Error('Store unavailable'); }
+    if (record === null || typeof record !== 'object' || record.version !== 1 ||
+      typeof record.origin !== 'string' || typeof record.token !== 'string' ||
+      !/^[a-f0-9]{64}$/.test(record.token) || typeof record.expiresAt !== 'number' ||
+      !Number.isSafeInteger(record.expiresAt)) throw new Error('Store unavailable');
+    const now: number = Date.now();
+    if (record.origin !== AUTH_MIGRATION_OLD_ORIGIN || !Number.isSafeInteger(now) ||
+      record.expiresAt <= now || record.expiresAt - now > 43200000) return undefined;
+    return { token: record.token, expiresAt: record.expiresAt };
   }
 
   async load(origin: string): Promise<string | undefined> {
