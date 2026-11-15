@@ -14,7 +14,7 @@
 
 目前没有已部署的生产账号服务、经过真实运营验证的 PNVS 服务、审定的学习模型发布制品、生产数据库迁移/备份恢复、证书签发续期或经过实测的正式服务器配置。2026-11-15 用户截图显示，旧隔离测试包在阿里云 ECS 上补充 systemd 命令路径后，通过合成账号、手机号关闭、D1 重启、锁和 SIGUSR2 检查；它不覆盖当前候选的真实证书、HTTPS 网关或真实数据。启用手机号前必须在同一数据库锁下完成预检、关闭旧 Miniflare 并重新打开同一持久库，不能只换 Worker 而放弃锁。启动 Miniflare 可能初始化未知目录的 SQLite 文件，schema 检查不能证明真实数据库身份或代替启动前备份。账号预检可识别审定的基础版和手机号版结构，但不会执行迁移。profile、题目标记、资料任务、录音和已有设备数据迁移均未覆盖。候选同步仅通过本地合成检查，不能用于判断任何真实账号已迁移或手机已能直连。接入前必须单独审查以上缺口，并在隔离环境与真机验证。
 
-持久化路径尚未定案。Cloudflare 将 [Miniflare](https://developers.cloudflare.com/workers/testing/miniflare/) 与其 [D1 本地支持](https://developers.cloudflare.com/d1/best-practices/local-development/)描述为开发/测试模拟；上述隔离成功不证明它适合作为本项目正式数据库。当前实验所用 [Node.js 24.13.1 的 `node:sqlite`](https://nodejs.org/download/release/v24.13.1/docs/api/sqlite.html) 文档标为 Active development，API 同步执行，现有试验也不能证明它已经适合作为正式服务主线程存储。需先确定受支持的生产运行时和持久数据库、实现并验证并发与隔离、备份/恢复和迁移，再决定正式集成。
+持久化路径尚未定案。Cloudflare 将 [Miniflare](https://developers.cloudflare.com/workers/testing/miniflare/) 与其 [D1 本地支持](https://developers.cloudflare.com/d1/best-practices/local-development/)描述为开发/测试模拟；上述隔离成功不证明它适合作为本项目正式数据库。[D1 的 `batch`](https://developers.cloudflare.com/d1/worker-api/d1-database/#batch) 要求失败时回滚整个批次，这是本实验的必要兼容语义之一。当前实验所用 [Node.js 24.13.1 的 `node:sqlite`](https://nodejs.org/download/release/v24.13.1/docs/api/sqlite.html) 文档标为 Active development，API 同步执行，现有试验也不能证明它已经适合作为正式服务主线程存储。需先确定受支持的生产运行时和持久数据库、实现并验证并发与隔离、备份/恢复和迁移，再决定正式集成。
 
 当前模拟测试中的私有构建器仅为测试临时暴露；正式模块不导出无预检的 Worker 构建入口。测试会暂时解除合成号码的本地重发窗口以验证重登，不更改每日总预算；没有调用真实供应商。遇到发送结果不明会隔离该号码、不会自动重发，仍缺可信的人工对账恢复流程；凭据预取失败也可能保守进入未知状态。真实 ECS 元数据、IAM、短信模板、预算、证书和国内直连都未验证。
 
