@@ -79,6 +79,19 @@ test('native SQLite phone flow registers isolated owners, rejects replay and qua
     fresh=await request(worker,'/api/auth/phone/bind',{phone:freshPhone,challengeId:freshChallenge.challengeId,code:mock.challenges.get(freshChallenge.challengeId).code},passwordCookie);
     assert.equal(fresh.status,200,await fresh.clone().text());
     assert.equal(sqlite.prepare('SELECT user_id FROM auth_phone_bindings WHERE phone=?').get(freshPhone).user_id,passwordOwner);
+    const other=await request(worker,'/api/auth/register',{username:'synthetic_other_owner',password:'synthetic-password-456'});
+    assert.equal(other.status,200,await other.clone().text());const otherCookie=other.headers.get('set-cookie').split(';')[0];
+    // Synthetic clock advance for this number's cooldown; budgets and account
+    // state remain unchanged. This assertion concerns binding conflict only.
+    const prefix=createHash('sha256').update(origin+'/phone').digest('hex');
+    const phoneHash=createHash('sha256').update(origin+'/phone'+'\0'+freshPhone).digest('hex');
+    sqlite.prepare('UPDATE auth_phone_flow_cooldowns SET resend_at=0 WHERE scope=?').run(prefix+':'+phoneHash);
+    let conflict=await request(worker,'/api/auth/phone/challenge',{phone:freshPhone,purpose:'bind'},otherCookie);
+    assert.equal(conflict.status,202,await conflict.clone().text());const conflictChallenge=await conflict.json();
+    conflict=await request(worker,'/api/auth/phone/bind',{phone:freshPhone,challengeId:conflictChallenge.challengeId,code:mock.challenges.get(conflictChallenge.challengeId).code},otherCookie);
+    assert.equal(conflict.status,409,await conflict.clone().text());assert.equal((await conflict.json()).code,'phone-binding-conflict');
+    assert.equal(sqlite.prepare('SELECT user_id FROM auth_phone_bindings WHERE phone=?').get(freshPhone).user_id,passwordOwner);
+
     const bindPhone='+8613800000104';
     let bind=await request(worker,'/api/auth/phone/challenge',{phone:bindPhone,purpose:'bind'},a.cookie);
     assert.equal(bind.status,202,await bind.clone().text());const bindChallenge=await bind.json();
@@ -92,5 +105,32 @@ test('native SQLite phone flow registers isolated owners, rejects replay and qua
     const failed=await request(worker,'/api/auth/phone/challenge',{phone:'+8613800000103',purpose:'login'});
     assert.equal(failed.status,503);assert.equal((await failed.json()).code,'phone-state-unknown');
     assert.equal(sqlite.prepare("SELECT state FROM auth_phone_challenges WHERE phone=?").get('+8613800000103').state,'unknown');
+  } finally {sqlite.close()}
+});
+
+
+test('Huawei and phone share a verified owner with explicit constrained Huawei outbound only', {timeout:60000}, async()=>{
+  const {sqlite,db}=await syntheticDatabase(), mock=provider();let calls=0,audience='123456';
+  const options={enabled:true,db,policy,accountOrigin:origin,referenceKey:randomBytes(32),pnvsCall:mock.call};
+  try {
+    const disabled=await prepareNativePhoneCandidate(options);
+    assert.deepEqual(await (await request(disabled,'/api/auth/providers')).json(),{huaweiLogin:false,huaweiBinding:false});
+    await assert.rejects(prepareNativePhoneCandidate({...options,huawei:{clientId:'123456',clientSecret:'synthetic-secret'}}),/invalid Huawei/);
+    await assert.rejects(prepareNativePhoneCandidate({...options,huawei:{clientId:'123456',clientSecret:'synthetic-secret',fetchImpl:async()=>{},extra:'forbidden'}}),/invalid Huawei/);
+    const huawei={clientId:'123456',clientSecret:'synthetic-secret',fetchImpl:async(url,init)=>{
+      calls++;assert.ok(['https://oauth-login.cloud.huawei.com/oauth2/v3/token','https://oauth-api.cloud.huawei.com/rest.php?nsp_fmt=JSON&nsp_svc=huawei.oauth2.user.getTokenInfo'].includes(url));
+      assert.equal(init.redirect,'manual');return Response.json(url.includes('/token')?{token_type:'Bearer',access_token:'synthetic-access-token',expires_in:3600}:{client_id:audience,type:0,expire_in:3600,open_id:'SyntheticSubjectA'});
+    }};
+    const worker=await prepareNativePhoneCandidate({...options,huawei});
+    assert.deepEqual(await (await request(worker,'/api/auth/providers')).json(),{huaweiLogin:true,huaweiBinding:true});
+    assert.equal((await (await request(worker,'/api/auth/phone/status')).json()).capabilities.phoneLogin,true);
+    const phone='+8613800000110';let r=await request(worker,'/api/auth/phone/challenge',{phone,purpose:'login'});assert.equal(r.status,202,await r.clone().text());
+    const challenge=await r.json();r=await request(worker,'/api/auth/phone/login',{phone,challengeId:challenge.challengeId,code:mock.challenges.get(challenge.challengeId).code});
+    assert.equal(r.status,200,await r.clone().text());const owner=(await r.json()).user.id,cookie=r.headers.get('set-cookie').split(';')[0];
+    r=await request(worker,'/api/auth/huawei/bind',{code:'synthetic-bind'},cookie);assert.equal(r.status,200,await r.clone().text());assert.equal((await r.json()).user.id,owner);
+    r=await request(worker,'/api/auth/huawei/login',{code:'synthetic-login'});assert.equal(r.status,200,await r.clone().text());
+    const response=await r.text();assert.equal(JSON.parse(response).user.id,owner);assert.doesNotMatch(response,/synthetic-secret|synthetic-access-token|SyntheticSubjectA/);
+    audience='wrong';r=await request(worker,'/api/auth/huawei/login',{code:'synthetic-wrong-audience'});assert.equal(r.status,401);
+    assert.equal(calls,6);
   } finally {sqlite.close()}
 });
