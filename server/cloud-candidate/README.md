@@ -6,10 +6,11 @@
 - `auth-worker.ts`、`build-inputs.mjs`：从本仓库固定源码构建最小账号 Worker 和学习模型，只生成内存制品；不读取私人工作区，也不写出配置或凭据。构建需根目录依赖（当前使用锁文件内的 esbuild），尚未形成独立服务器发布包。
 - `assembly.candidate.mjs`：账号与同步共用同一个受信 Miniflare/D1 的进程内分发，默认不接同步；不创建监听或服务。手机号仍使用产品中的未配置供应商，无法发送验证码。
 - `service.candidate.mjs`、`https-handler.candidate.mjs`、`local-channel.candidate.mjs`：默认关闭的进程内组合、固定路由和临时 HMAC 信封。HMAC 不提供进程隔离；用户仍通过真实账号会话验证。关闭服务会等待已接收的请求结束；调用方应在服务关闭后再释放 Miniflare 和数据库锁。
+- `d1-lock.candidate.mjs`、`locked-service.candidate.mjs`：锁定私有数据目录后才打开其下固定 D1 路径，并经只读 schema/迁移账本预检后接入服务；停机顺序为网关排空、运行时关闭、释放锁。进程异常残留锁不会自动清除。锁约束使用同一入口的进程，不防止其他程序直接操作 SQLite。
 - `production-phone-preflight.candidate.mjs`、`production-pnvs-outbound.candidate.mjs`、`ecs-metadata-transport.candidate.mjs`：手机号配置、迁移账本及限制检查，以及范围受限的阿里云短信请求和 ECS 元数据传输。手机号 Worker、可信令牌验证与生产装配尚未接入，不构成可用的短信登录。
 - `unified-d1-sync.candidate.mjs`、`production-sync-*.candidate.mjs` 和 schema 清单：同库会话校验及词汇、答题、打卡同步候选。服务端从账号会话确定用户，写入 SQL 同时复核会话；客户端提供的 owner 不能代替验证。启动预检校验 schema、迁移账本、独立密钥和模型摘要；遇到尚不支持的旧记录时关闭。
 
-目前没有已部署的生产账号服务、PNVS 生产 Worker 装配、审定的学习模型发布制品、持久 D1 单实例锁及服务生命周期管理、生产数据库迁移/备份恢复、证书签发续期或经过实测的服务器配置。当前密码登录会撤销同账号其他会话，不支持承诺多设备同时在线。profile、题目标记、资料任务、录音和已有设备数据迁移均未覆盖。候选同步仅通过本地合成检查，不能用于判断任何真实账号已迁移或手机已能直连。接入前必须单独审查以上缺口，并在隔离环境与真机验证。
+目前没有已部署的生产账号服务、PNVS 生产 Worker 装配、审定的学习模型发布制品、生产数据库迁移/备份恢复、证书签发续期或经过实测的服务器配置；D1 锁与生命周期也未在目标 Linux 上实测。profile、题目标记、资料任务、录音和已有设备数据迁移均未覆盖。候选同步仅通过本地合成检查，不能用于判断任何真实账号已迁移或手机已能直连。接入前必须单独审查以上缺口，并在隔离环境与真机验证。
 
 仓库内定向检查：
 
