@@ -9,6 +9,7 @@ import {createNativeAuthTransport,nativePhoneClient} from '@/lib/native-auth-tra
 import type {PhoneClientTransport,PhoneVerification} from '@/lib/phone-auth-client';
 import {INITIAL_NATIVE_ACCOUNT_STATE,NativeAccountController,type NativeAccountState} from '@/lib/native-account-controller';
 import {applyDocumentTheme} from '@/lib/ui-theme';
+import {attachNativeAccountSync} from '@/lib/cloud-sync/native-account-root';
 
 export default function NativeAccountRoot(){
  const [state,setState]=useState<NativeAccountState>(INITIAL_NATIVE_ACCOUNT_STATE),[accountOpen,setAccountOpen]=useState(false),[legacy,setLegacy]=useState(false),[returnOwner,setReturnOwner]=useState<string|null>(null),[providers,setProviders]=useState({huaweiLogin:false,huaweiBinding:false});
@@ -16,6 +17,7 @@ export default function NativeAccountRoot(){
  const controller=useRef<NativeAccountController|null>(null);
  useEffect(()=>{
   const transport=createNativeAuthTransport();const value=new NativeAccountController(transport);controller.current=value;setPhoneTransport(nativePhoneClient(transport));
+  const detachSync=attachNativeAccountSync(value);
   const off=value.subscribe((next,sync)=>{if(sync)flushSync(()=>setState(next));else setState(next);});
   let foreground=true,initialized=false,alive=true;
   const hide=()=>value.suspend(true,true),leave=()=>value.suspend(true,false),show=()=>{if(foreground&&document.visibilityState!=='hidden'){if(value.getSnapshot().status!=='ready')value.resume();}else hide();};
@@ -25,7 +27,7 @@ export default function NativeAccountRoot(){
   initialized=true;if(foreground&&document.visibilityState!=='hidden')value.start();else value.suspend(false);
   void value.getProviders().then(next=>{if(alive)setProviders(next);},()=>{if(alive)setProviders({huaweiLogin:false,huaweiBinding:false});});
   if(!document.documentElement.dataset.uiTheme)applyDocumentTheme('paper');
-  return()=>{alive=false;off();native();value.dispose();controller.current=null;window.removeEventListener('pagehide',leave);window.removeEventListener('pageshow',show);window.removeEventListener('focus',show);document.removeEventListener('visibilitychange',visibility);};
+  return()=>{alive=false;off();native();detachSync();value.dispose();controller.current=null;window.removeEventListener('pagehide',leave);window.removeEventListener('pageshow',show);window.removeEventListener('focus',show);document.removeEventListener('visibilitychange',visibility);};
  },[]);
  const canReturn=accountOpen&&state.status==='ready'&&!!state.user&&state.user.id===returnOwner&&state.access.owner===returnOwner&&state.access.canAccess();
  const enter=()=>{if(state.status!=='ready'||!state.user||controller.current?.getSnapshot()!==state||state.access.owner!==state.user.id||!state.access.assertAccess())return false;setAccountOpen(false);return true;};
