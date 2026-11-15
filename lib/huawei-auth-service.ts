@@ -98,9 +98,10 @@ export function createHuaweiAuthService(options:Readonly<{fetch?:typeof fetch;ti
     statements.push(config.db.prepare(`INSERT INTO auth_users(id,username,created_at) SELECT ?,?,${SQL_NOW} WHERE EXISTS(${active}) AND NOT EXISTS(${mapping})`).bind(userId,username,ticket,config.clientId,subject));
     statements.push(config.db.prepare(`INSERT INTO auth_provider_bindings(provider,audience,subject,user_id,created_at)
      SELECT 'huawei',?,?,id,${SQL_NOW} FROM auth_users WHERE id=? AND EXISTS(${active}) AND NOT EXISTS(${mapping})`).bind(config.clientId,subject,userId,ticket,config.clientId,subject));
-    statements.push(config.db.prepare(`DELETE FROM auth_sessions WHERE (user_id=(${mapping}) OR token_hash=?) AND EXISTS(${active})`).bind(config.clientId,subject,session.oldTokenHash,ticket));
+    statements.push(config.db.prepare(`DELETE FROM auth_sessions WHERE token_hash=? AND EXISTS(${active})`).bind(session.oldTokenHash,ticket));
     statements.push(config.db.prepare(`INSERT INTO auth_sessions(token_hash,user_id,created_at,expires_at)
      SELECT ?,user_id,${SQL_NOW},${SQL_NOW}+? FROM auth_provider_bindings WHERE provider='huawei' AND audience=? AND subject=? AND EXISTS(${active})`).bind(session.tokenHash,PRODUCT_SESSION_SECONDS*1000,config.clientId,subject,ticket));
+    statements.push(config.db.prepare(`DELETE FROM auth_sessions WHERE expires_at<=${SQL_NOW} AND EXISTS(${active})`).bind(ticket));
    }else{
     // Same binding is idempotent; another owner is a NOT NULL violation and
     // rolls back the entire batch. The per-user unique key also prevents swaps.

@@ -83,6 +83,30 @@ test('successful login rotates the session, old cookies fail, and logout revokes
   assert.equal((await e.call('session', 'GET', {cookie})).status, 401);assert.equal(e.rows('auth_sessions').length, 0);
 });
 
+test('independent devices keep sessions while this device rotates or logs out',async t=>{
+  const e=environment();t.after(()=>e.close());const alice=await e.register();
+  const deviceB=await e.call('login','POST',{body:{username:'alice',password:PASSWORD}});assert.equal(deviceB.status,200);
+  const b=deviceB.headers.get('set-cookie').split(';')[0];assert.notEqual(b,alice.cookie);
+  assert.equal((await e.call('session','GET',{cookie:alice.cookie})).status,200);
+  assert.equal((await e.call('session','GET',{cookie:b})).status,200);
+  const rotated=await e.call('login','POST',{cookie:alice.cookie,body:{username:'alice',password:PASSWORD}});assert.equal(rotated.status,200);
+  const a2=rotated.headers.get('set-cookie').split(';')[0];assert.equal((await e.call('session','GET',{cookie:alice.cookie})).status,401);
+  assert.equal((await e.call('session','GET',{cookie:a2})).status,200);assert.equal((await e.call('session','GET',{cookie:b})).status,200);
+  assert.equal((await e.call('logout','POST',{cookie:a2})).status,200);
+  assert.equal((await e.call('session','GET',{cookie:a2})).status,401);assert.equal((await e.call('session','GET',{cookie:b})).status,200);
+  const proof=await e.call('session','GET',{cookie:b,headers:{'X-Lantern-Session-Proof':'2'}});assert.equal((await proof.json()).user.id,alice.id);
+});
+
+test('switching a device to another account revokes only its previous token',async t=>{
+  const e=environment();t.after(()=>e.close());const alice=await e.register('alice'),bob=await e.register('bob');
+  const second=await e.call('login','POST',{body:{username:'alice',password:PASSWORD}});assert.equal(second.status,200);const a2=second.headers.get('set-cookie').split(';')[0];
+  const switched=await e.call('login','POST',{cookie:alice.cookie,body:{username:'bob',password:PASSWORD}});assert.equal(switched.status,200);const switchedCookie=switched.headers.get('set-cookie').split(';')[0];
+  assert.equal((await e.call('session','GET',{cookie:alice.cookie})).status,401);
+  assert.equal((await (await e.call('session','GET',{cookie:a2})).json()).user.id,alice.id);
+  assert.equal((await (await e.call('session','GET',{cookie:switchedCookie})).json()).user.id,bob.id);
+  assert.equal((await (await e.call('session','GET',{cookie:bob.cookie})).json()).user.id,bob.id);
+});
+
 test('expired, tampered, malformed and duplicate session cookies fail closed', async t => {
   const e = environment();t.after(() => e.close());const alice = await e.register();
   const token = alice.cookie.split('=')[1];

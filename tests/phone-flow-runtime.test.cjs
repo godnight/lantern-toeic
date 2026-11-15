@@ -50,9 +50,9 @@ test('actual local workerd D1 SMS challenge/send/verify and stable account trans
   assert.equal((await query('auth_phone_challenges')).find(c=>c.challenge_id===row.challengeId).state,'consumed');assert.equal((await query('auth_phone_proofs')).length,before.proofs.length+1);assert.deepEqual((await identityState()).sessions,before.sessions);
   const after=await identityState();assert.equal((await verify(row,await otp(row),a.cookie)).status,409);assert.deepEqual(await identityState(),after);
  });
- await t.test('phone login rotates existing sessions but preserves same usr and A Study, never claims guest',async()=>{
+ await t.test('phone login rotates the presented device session, preserves other devices and A Study, never claims guest',async()=>{
   await resetLimits();const row=await challenge('login',aPhone);const r=await verify(row,await otp(row),b.cookie);assert.equal(r.status,200,await r.clone().text());aCookie=cookie(r);assert.equal((await r.json()).user.id,a.id);
-  assert.equal((await send('/session',undefined,a.cookie)).status,401);assert.equal((await send('/session',undefined,b.cookie)).status,401);
+  assert.equal((await send('/session',undefined,a.cookie)).status,200);assert.equal((await send('/session',undefined,b.cookie)).status,401);
   const own=await(await send('/study',undefined,aCookie)).json();assert.equal(own.owner,a.id);assert.equal(own.profile.name,'Synthetic phone flow A');assert.deepEqual(own.checkins.map(c=>c.id),[checkin]);
   const rB=await send('/password-login',{username:'flow_bob',password:'Synthetic phone flow existing account phrase 2026!'});b.cookie=cookie(rB);const other=await(await send('/study',undefined,b.cookie,{'x-oai-user-id':a.id})).json();assert.equal(other.owner,b.id);assert.equal(other.hasProfile,false);assert.deepEqual(other.checkins,[]);assert.equal((await query('auth_users')).length,2);assert.equal(JSON.parse((await db.prepare("SELECT body FROM profiles WHERE user_id='guest'").first()).body).name,'Guest stays');
  });

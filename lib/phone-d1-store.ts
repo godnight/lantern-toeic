@@ -39,8 +39,8 @@ export function createPhoneD1Store(context:PhoneD1Context):PhoneTransactionStore
     statements.push(db.prepare(`INSERT INTO auth_phone_proofs(provider_id,proof_hash,consumption_ticket,purpose,audience,phone,user_id,issued_at,expires_at,consumed_at)
      SELECT ?,?,?,?,?,b.phone,b.user_id,?,?,${SQL_NOW} FROM auth_phone_bindings b JOIN auth_users u ON u.id=b.user_id
      WHERE b.phone=? AND ${fresh} AND ${challengePresent} ON CONFLICT(provider_id,proof_hash) DO NOTHING`).bind(context.providerId,hash,ticket,'login',context.audience,command.issuedAt,command.expiresAt,context.phone,...times,...challengeArgs));
-    statements.push(db.prepare(`DELETE FROM auth_sessions WHERE (user_id=(SELECT user_id FROM auth_phone_proofs WHERE consumption_ticket=?) OR token_hash=?)
-     AND EXISTS(SELECT 1 FROM auth_phone_proofs WHERE consumption_ticket=?)`).bind(ticket,context.session.oldTokenHash,ticket));
+    statements.push(db.prepare(`DELETE FROM auth_sessions WHERE token_hash=?
+     AND EXISTS(SELECT 1 FROM auth_phone_proofs WHERE consumption_ticket=?)`).bind(context.session.oldTokenHash,ticket));
     statements.push(db.prepare(`INSERT INTO auth_sessions(token_hash,user_id,created_at,expires_at)
      SELECT ?,user_id,${SQL_NOW},${SQL_NOW}+? FROM auth_phone_proofs WHERE consumption_ticket=?`).bind(context.session.tokenHash,PRODUCT_SESSION_SECONDS*1000,ticket));
     statements.push(db.prepare(`DELETE FROM auth_sessions WHERE expires_at<=${SQL_NOW}

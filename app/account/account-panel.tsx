@@ -75,6 +75,6 @@ export function AccountPanel({state,initialMode='register',onSubmit,onRecheck,on
    <div className="button-row"><button style={{fontSize:'1rem'}} className="button primary" type="submit">{mode==='register'?'注册':'登录'}</button><button style={{fontSize:'1rem'}} className="button secondary" type="button" onClick={()=>{clear();setMode(mode==='register'?'login':'register');}}>{mode==='register'?'已有账号，去登录':'注册新账号'}</button>{switching&&<button type="button" style={{fontSize:'1rem'}} className="text-button" onClick={()=>{clear();setSwitching(false);}}>取消切换</button>}</div>
   </form>}
   {onLegacy&&<button type="button" style={{fontSize:'1rem'}} className="text-button" onClick={()=>{clear();onLegacy();}}>查看旧本机数据与备份</button>}
-  <details><summary>账号说明</summary><div style={{display:'grid',gap:10,paddingTop:12}}><p>用户名为3–32位英文字母、数字或下划线，不区分大小写，首尾空白会去除。</p><p>密码为8–128个有效字符，不含空字符；首尾空白属于密码。</p><p>登录有效期为12小时；另一设备登录会使旧会话失效。账号核对需要联网，本机学习记录不会自动随账号迁移。</p><p>暂不支持找回密码或自助注销，可通过问题反馈咨询；发邮件不会自动重置账号。</p></div></details><PublicInfoLinks compact/>
+  <details><summary>账号说明</summary><div style={{display:'grid',gap:10,paddingTop:12}}><p>用户名为3–32位英文字母、数字或下划线，不区分大小写，首尾空白会去除。</p><p>密码为8–128个有效字符，不含空字符；首尾空白属于密码。</p><p>登录有效期为12小时；可在多个设备登录。账号核对需要联网，本机学习记录不会自动随账号迁移。</p><p>暂不支持找回密码或自助注销，可通过问题反馈咨询；发邮件不会自动重置账号。</p></div></details><PublicInfoLinks compact/>
  </section></main>;
 }

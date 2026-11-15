@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, mkdtemp, rm, realpath } from 'node:fs/promises';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import path from 'node:path';
 import os from 'node:os';
 import { Miniflare, Log, LogLevel } from 'miniflare';
@@ -47,24 +47,44 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     const registration = await app.fetch(request('/api/auth/register', { body: { username: 'synthetic_user', password: 'synthetic-password-123' } }));
     assert.equal(registration.status, 200, await registration.clone().text());
     const owner = (await registration.json()).user.id, cookie = registration.headers.get('set-cookie').split(';')[0];
+    // Seed the exact schema and hashed-token shape of a session created before this change.
+    const legacyToken = randomBytes(32).toString('hex'), now = Date.now();
+    const legacyCookie = '__Host-lantern-session=' + legacyToken;
+    await db.prepare('INSERT INTO auth_sessions(token_hash,user_id,created_at,expires_at) VALUES(?,?,?,?)')
+      .bind(createHash('sha256').update(legacyToken).digest('hex'), owner, now, now + 3600000).run();
+    const deviceB = await app.fetch(request('/api/auth/login', { body: { username: 'synthetic_user', password: 'synthetic-password-123' } }));
+    assert.equal(deviceB.status, 200, await deviceB.clone().text());
+    assert.equal((await deviceB.json()).user.id, owner);
+    const cookieB = deviceB.headers.get('set-cookie').split(';')[0];
+    for (const device of [cookie, cookieB, legacyCookie]) assert.equal((await app.fetch(request('/api/auth/session', { cookie: device }))).status, 200);
     const event = { id: 'synthetic-review-1', wordId: 'archive', createdAt: new Date().toISOString(), type: 'review', grade: 'again' };
     const append = (who = owner) => app.fetch(request('/candidate/sync/append', { cookie, body: { owner: who, event } }));
     assert.equal((await append()).status, 200);
     assert.equal((await append()).status, 200);
+    const snapshotResponse = await app.fetch(request('/candidate/sync/snapshot', { cookie: cookieB, body: { owner, pageSize: 20 } }));
+    assert.equal(snapshotResponse.status, 200);
+    const snapshot = await snapshotResponse.json();
+    const pageBody = { owner, snapshot: snapshot.id, cursor: snapshot.cursor };
+    const readPage = device => app.fetch(request('/candidate/sync/page', { cookie: device, body: pageBody }));
+    assert.deepEqual((await (await readPage(cookieB)).json()).events, [event]);
     assert.equal((await append('different-owner')).status, 409);
     const registration2 = await app.fetch(request('/api/auth/register', { body: { username: 'synthetic_other', password: 'synthetic-password-123' } }));
     assert.equal(registration2.status, 200);
     const otherCookie = registration2.headers.get('set-cookie').split(';')[0];
     assert.equal((await app.fetch(request('/candidate/sync/append', { cookie: otherCookie, body: { owner, event } }))).status, 409);
+    assert.equal((await readPage(otherCookie)).status, 409);
     assert.equal((await app.fetch(request('/candidate/sync/append', { cookie, body: { owner, event: { ...event, grade: 'remembered' } } }))).status, 409);
     assert.equal((await (await prepareAccountSyncAssembly({ mf, origin })).fetch(request('/candidate/sync/append', { body: {} }))).status, 404);
     await mf.dispose(); mf = start(); db = await mf.getD1Database('DB');
     app = await prepareAccountSyncAssembly({ settings, mf, origin, privateRoot, key, proxy, phoneKey, modelInfo });
-    assert.equal((await app.fetch(request('/api/auth/session', { cookie }))).status, 200);
+    for (const device of [cookie, cookieB, legacyCookie]) assert.equal((await app.fetch(request('/api/auth/session', { cookie: device }))).status, 200);
     const row = await db.prepare('SELECT COUNT(*) AS n FROM lantern_vocab_events WHERE owner=?').bind(owner).first();
     assert.equal(row.n, 1);
     assert.equal((await app.fetch(request('/api/auth/logout', { cookie, body: {} }))).status, 200);
     assert.equal((await append()).status, 401);
+    assert.equal((await app.fetch(request('/api/auth/session', { cookie: cookieB }))).status, 200);
+    assert.equal((await app.fetch(request('/api/auth/session', { cookie: legacyCookie }))).status, 200);
+    assert.deepEqual((await (await readPage(cookieB)).json()).events, [event]);
   } finally {
     if (mf) await mf.dispose();
     const resolved = await realpath(directory), tmp = await realpath(os.tmpdir());

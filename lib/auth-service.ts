@@ -123,7 +123,7 @@ export async function credentialAction(request:Request,action:'login'|'register'
    const result=await config.db.batch([
     config.db.prepare('INSERT INTO auth_users(id,username,created_at) VALUES(?,?,?) ON CONFLICT(username) DO NOTHING').bind(user.id,username,now),
     config.db.prepare('INSERT INTO auth_password_credentials(user_id,password_hash) SELECT id,? FROM auth_users WHERE id=?').bind(passwordHash,user.id),
-    config.db.prepare('DELETE FROM auth_sessions WHERE (user_id=? OR token_hash=?) AND EXISTS(SELECT 1 FROM auth_users WHERE id=?)').bind(user.id,oldHash,user.id),
+    config.db.prepare('DELETE FROM auth_sessions WHERE token_hash=? AND EXISTS(SELECT 1 FROM auth_users WHERE id=?)').bind(oldHash,user.id),
     config.db.prepare('INSERT INTO auth_sessions(token_hash,user_id,created_at,expires_at) SELECT ?,id,?,? FROM auth_users WHERE id=?').bind(tokenHash,now,now+SESSION_SECONDS*1000,user.id),
     config.db.prepare('DELETE FROM auth_sessions WHERE expires_at<=?').bind(now)
    ]);
@@ -136,7 +136,7 @@ export async function credentialAction(request:Request,action:'login'|'register'
   const valid=stored?await verifyPassword(password,stored.password_hash):(await hashPassword(password),false);
   if(!stored||!valid)return loginFailed();
   await config.db.batch([
-   config.db.prepare('DELETE FROM auth_sessions WHERE user_id=? OR token_hash=?').bind(stored.id,oldHash),
+   config.db.prepare('DELETE FROM auth_sessions WHERE token_hash=?').bind(oldHash),
    config.db.prepare('INSERT INTO auth_sessions(token_hash,user_id,created_at,expires_at) VALUES(?,?,?,?)').bind(tokenHash,stored.id,now,now+SESSION_SECONDS*1000),
    config.db.prepare('DELETE FROM auth_sessions WHERE expires_at<=?').bind(now)
   ]);
@@ -168,7 +168,7 @@ export async function sessionAction(request:Request,action:'read'|'logout',env:A
   }
   const token=sessionToken(request.headers);
   // No fallback identity; database failure never reports a successful revocation.
-  if(token)await config.db.prepare('DELETE FROM auth_sessions WHERE user_id=(SELECT user_id FROM auth_sessions WHERE token_hash=?)').bind(digest(token)).run();
+  if(token)await config.db.prepare('DELETE FROM auth_sessions WHERE token_hash=?').bind(digest(token)).run();
   const response=authJson({ok:true});response.headers.set('Set-Cookie',cookie('',0));return response;
  }catch{return unavailable();}
 }

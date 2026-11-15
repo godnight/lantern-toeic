@@ -1,5 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
+const {createHash}=require('node:crypto');
 const {environment,ORIGIN,plain}=require('./helpers/product-auth-harness.cjs');
 const clientId='6917620597803523113';
 const configured={LANTERN_HUAWEI_CLIENT_ID:clientId,LANTERN_HUAWEI_CLIENT_SECRET:'synthetic-provider-secret-only'};
@@ -52,7 +53,7 @@ test('real service exchanges once with fixed encoded endpoints then issues a sta
  assert.equal(h.calls[1].url,'https://oauth-api.cloud.huawei.com/rest.php?nsp_fmt=JSON&nsp_svc=huawei.oauth2.user.getTokenInfo');assert.deepEqual(h.calls[1].body,{access_token:'synthetic_access_token',open_id:'OPENID'});assert(h.calls.every(call=>call.redirect==='manual'));
  const proof=await h.e.call('session','GET',{cookie:cookie(first),headers:{'X-Lantern-Session-Proof':'2'}});assert.equal(proof.status,200);assert.deepEqual((await proof.json()).user,body.user);
  const next=await h.run('login','different_code'),nextBody=await next.json();assert.deepEqual(nextBody.user,body.user);assert.equal(h.e.rows('auth_users').length,1);assert.equal(h.e.rows('auth_provider_bindings').length,1);assert.equal(h.e.rows('auth_password_credentials').length,0);
- assert.equal((await h.e.call('session','GET',{cookie:cookie(first)})).status,401);assert.equal((await h.e.call('session','GET',{cookie:cookie(next)})).status,200);
+ assert.equal((await h.e.call('session','GET',{cookie:cookie(first)})).status,200);assert.equal((await h.e.call('session','GET',{cookie:cookie(next)})).status,200);
  assert(!JSON.stringify(body).includes('synthetic_access_token'));assert(!JSON.stringify(h.e.rows('auth_huawei_codes')).includes('synthetic+code'));
 });
 
@@ -63,7 +64,32 @@ test('code replay and simultaneous duplicate code never repeat provider exchange
 
 test('different fresh codes for the same subject converge atomically without orphan users',async t=>{
  const h=fixture(t),responses=await Promise.all([h.run('login','parallel_a'),h.run('login','parallel_b')]);
- assert(responses.every(response=>response.status===200));const bodies=await Promise.all(responses.map(response=>response.json()));assert.deepEqual(bodies[0].user,bodies[1].user);assert.equal(h.e.rows('auth_users').length,1);assert.equal(h.e.rows('auth_provider_bindings').length,1);assert.equal(h.e.rows('auth_sessions').length,1);
+ assert(responses.every(response=>response.status===200));const bodies=await Promise.all(responses.map(response=>response.json()));assert.deepEqual(bodies[0].user,bodies[1].user);assert.equal(h.e.rows('auth_users').length,1);assert.equal(h.e.rows('auth_provider_bindings').length,1);assert.equal(h.e.rows('auth_sessions').length,2);
+});
+
+test('Huawei sessions coexist across devices and rotate or revoke only the presented token',async t=>{
+ const h=fixture(t),first=await h.run('login','synthetic_device_a'),second=await h.run('login','synthetic_device_b');
+ assert.equal(first.status,200);assert.equal(second.status,200);
+ const a=cookie(first),b=cookie(second);assert.notEqual(a,b);
+ const one=(await first.json()).user,two=(await second.json()).user;assert.equal(one.id,two.id);
+ const check=token=>h.e.call('session','GET',{cookie:token});
+ assert.equal((await check(a)).status,200);assert.equal((await check(b)).status,200);
+ const replaced=await h.run('login','synthetic_same_device',a);assert.equal(replaced.status,200);const next=cookie(replaced);
+ assert.equal((await check(a)).status,401);assert.equal((await check(next)).status,200);assert.equal((await check(b)).status,200);
+ assert.equal((await h.e.call('logout','POST',{cookie:next})).status,200);
+ assert.equal((await check(next)).status,401);assert.equal((await check(b)).status,200);
+});
+
+test('only a verified login cleans expired sessions and an anonymous request cannot evict live sessions',async t=>{
+ const h=fixture(t),first=await h.run('login','expiry_a'),second=await h.run('login','expiry_b');
+ const expired=cookie(first),live=cookie(second),hash=createHash('sha256').update(expired.split('=')[1]).digest('hex');
+ h.e.sqlite.prepare('UPDATE auth_sessions SET expires_at=? WHERE token_hash=?').run(Date.now()-10000,hash);
+ const before=plain(h.e.rows('auth_sessions'));
+ assert.equal((await h.run('login','unused',undefined,{body:{code:''}})).status,400);
+ assert.deepEqual(plain(h.e.rows('auth_sessions')),before);
+ assert.equal((await h.run('login','expiry_c')).status,200);
+ assert.equal(h.e.rows('auth_sessions').some(row=>row.token_hash===hash),false);
+ assert.equal((await h.e.call('session','GET',{cookie:live})).status,200);
 });
 
 for(const [name,override] of [
@@ -137,7 +163,7 @@ test('binding rechecks its original live session after the provider dialog and i
 
 test('a transaction failure rolls back new owner, mapping and session while preserving the old owner',async t=>{
  const h=fixture(t),owner=await h.e.register(),before=plain(h.e.rows('auth_sessions')),batch=h.e.d1.batch;
- h.e.d1.batch=async statements=>{if(statements.length===5)statements.splice(3,0,h.e.d1.prepare('INSERT INTO auth_users(id,username,created_at) VALUES(NULL,NULL,NULL)'));return batch(statements);};
+ h.e.d1.batch=async statements=>{if(statements.length===6)statements.splice(3,0,h.e.d1.prepare('INSERT INTO auth_users(id,username,created_at) VALUES(NULL,NULL,NULL)'));return batch(statements);};
  assert.equal((await h.run('login','rollback_code',owner.cookie)).status,503);assert.equal(h.e.rows('auth_users').length,1);assert.equal(h.e.rows('auth_provider_bindings').length,0);assert.deepEqual(h.e.rows('auth_sessions'),before);assert.equal(h.e.rows('auth_huawei_codes')[0].completed_at,null);
 });
 
