@@ -2,6 +2,8 @@
 
 本目录只验证 SQLite 的单库在线备份机制，**不能用于迁移真实账号**。工具不接受源或目标路径；必须显式传入 `--run-synthetic`，之后才会在系统临时目录中新建 `lantern-synthetic-backup-*` 文件夹、自行生成两份虚构数据库，并保留该目录以供检查。它不会读取或修改旧账号服务的数据。
 
+需要 Python 3.7 或更新版本，且其 `sqlite3.Connection.backup` 可用；当前 ECS 系统 Python 3.6 不能直接用于这项演练。
+
 ```sh
 python tools/cloud-migration/synthetic_backup.py --run-synthetic
 python -m unittest discover -s tools/cloud-migration -p 'test_*.py' -v
