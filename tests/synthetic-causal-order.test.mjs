@@ -1,6 +1,9 @@
-'use strict';
-const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
-const {Module,createRequire}=require('node:module');
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import {Module,createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
+const __dirname=path.dirname(fileURLToPath(import.meta.url));
 const root=path.resolve(__dirname,'..'),req=createRequire(path.join(root,'package.json'));
 const built=req('esbuild').buildSync({entryPoints:[path.join(root,'lib/cloud-sync/synthetic-causal-order.js')],bundle:true,write:false,format:'cjs',platform:'node',target:'node24',logLevel:'silent'});
 const file=path.join(__dirname,'synthetic-causal-order-test-bundle.cjs'),mod=new Module(file);mod.filename=file;mod.paths=Module._nodeModulePaths(__dirname);mod._compile(built.outputFiles[0].text,file);
