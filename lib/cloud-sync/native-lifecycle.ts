@@ -8,6 +8,10 @@ export type NativeSyncLeasePort={
   subscribeRevocation:(listener:()=>void)=>()=>void;
   // Resolves only after both native bridges have actually left withSession.
   drain:()=>Promise<void>;
+  // hold freezes both bridges and remains latched across ordinary revocations;
+  // resume cannot bypass a hold, even for a current verified lease.
+  hold:()=>Promise<void>;
+  resume:()=>Promise<void>;
 };
 export type LocalSyncClient={activate:(owner:string)=>Promise<unknown>;cancel:()=>Promise<unknown>};
 export type LifecycleStatus=Readonly<{phase:'blocked'|'checking'|'ready'|'disposed';owner:string|null}>;
@@ -32,10 +36,18 @@ function snapshot(value:unknown):NativeLeaseSnapshot|null {
  * Native notifications and IDB commits are asynchronous, not one transaction.
  */
 export function createNativeSyncLifecycle(account:Pick<NativeAccountController,'getSnapshot'|'subscribe'>,
- client:LocalSyncClient,native:NativeSyncLeasePort){
+ client:LocalSyncClient,native:NativeSyncLeasePort,options?:{nativeTimeoutMs?:number}){
   if(!account||typeof account.getSnapshot!=='function'||typeof account.subscribe!=='function'||
     !client||typeof client.activate!=='function'||typeof client.cancel!=='function'||
-    !native||typeof native.snapshot!=='function'||typeof native.drain!=='function'||typeof native.subscribeRevocation!=='function')throw Error('native sync lifecycle unavailable');
+    !native||typeof native.snapshot!=='function'||typeof native.drain!=='function'||typeof native.hold!=='function'||typeof native.resume!=='function'||typeof native.subscribeRevocation!=='function')throw Error('native sync lifecycle unavailable');
+  const nativeTimeoutMs=options?.nativeTimeoutMs??10000;
+  if(!Number.isSafeInteger(nativeTimeoutMs)||nativeTimeoutMs<1||nativeTimeoutMs>30000)throw Error('invalid native timeout');
+  function bounded<T>(work:()=>Promise<T>):Promise<T>{
+    return new Promise((resolve,reject)=>{
+      let settled=false;const timer=setTimeout(()=>{if(!settled){settled=true;reject(Error('native sync timeout'));}},nativeTimeoutMs);
+      Promise.resolve().then(work).then(value=>{if(!settled){settled=true;clearTimeout(timer);resolve(value);}},error=>{if(!settled){settled=true;clearTimeout(timer);reject(error);}});
+    });
+  }
   let generation=0,disposed=false,poisoned=false,phase:LifecycleStatus['phase']='blocked',owner:string|null=null;
   let observed:AccountAccess|null=null,removeAbort:(()=>void)|null=null,tail:Promise<void>=Promise.resolve();
   const same=(id:number,state:NativeAccountState,access:AccountAccess)=>!disposed&&!poisoned&&generation===id&&
@@ -64,18 +76,21 @@ export function createNativeSyncLifecycle(account:Pick<NativeAccountController,'
     let activationStarted=false;
     tail=cancelled.then(async()=>{
       if(!same(id,state,next.access))throw Error('session revoked');
-      await native.drain();if(!same(id,state,next.access))throw Error('session revoked');
-      const before=snapshot(await native.snapshot());
+      await bounded(()=>native.drain());if(!same(id,state,next.access))throw Error('session revoked');
+      const before=snapshot(await bounded(()=>native.snapshot()));
       if(!before||before.owner!==next.owner||!same(id,state,next.access))throw Error('native lease unavailable');
       activationStarted=true;await client.activate(next.owner);
       if(!same(id,state,next.access))throw Error('session revoked');
-      const after=snapshot(await native.snapshot());
+      const after=snapshot(await bounded(()=>native.snapshot()));
       if(!after||after.owner!==before.owner||after.seq!==before.seq||!same(id,state,next.access))throw Error('native lease changed');
+      await bounded(()=>native.resume());
+      const resumed=snapshot(await bounded(()=>native.snapshot()));
+      if(!resumed||resumed.owner!==after.owner||resumed.seq!==after.seq||!same(id,state,next.access))throw Error('native lease changed');
       owner=next.owner;phase='ready';
     }).catch(async()=>{
       // A late activation is drained before a newer state can pass the serial
       // barrier, even if its underlying implementation ignored cancellation.
-      if(activationStarted)await cancelNow().catch(()=>{poisoned=true;});
+      if(activationStarted){await bounded(()=>native.hold()).catch(()=>{poisoned=true;});await cancelNow().catch(()=>{poisoned=true;});}
       if(id!==generation||disposed)return;
       owner=null;phase='blocked';
     });
@@ -92,7 +107,7 @@ export function createNativeSyncLifecycle(account:Pick<NativeAccountController,'
     // merely subscribing here cannot delay NativeAccountController.mutate().
     async prepareAccountChange():Promise<void>{
       if(disposed||poisoned)throw Error('lifecycle unavailable');
-      const id=generation+1;await invalidate();await native.drain();
+      const id=generation+1;await invalidate();await bounded(()=>native.hold());await bounded(()=>native.drain());
       if(disposed||generation!==id)throw Error('account transition superseded');
     },
     dispose(){if(disposed)return;disposed=true;unsubscribe();unsubscribeNative();void invalidate().catch(()=>{});},

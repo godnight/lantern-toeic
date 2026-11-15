@@ -8,6 +8,7 @@ import { NativeAuthHost } from '../auth/NativeAuthHost';
 import { SpeakingMediaHost } from '../media/SpeakingMediaHost';
 import { NativeSyncHost } from '../sync/NativeSyncHost';
 import { NativeStudySyncHost } from '../sync/NativeStudySyncHost';
+import { NativeLifecycleObserver } from '../sync/NativeLifecycleObserver';
 import { NATIVE_CLOUD_SYNC_ENABLED } from '../sync/SyncConfiguration';
 
 // This is an intercepted local origin. No server or certificate is required.
@@ -522,6 +523,7 @@ struct Index {
   private speakingMedia: SpeakingMediaHost | undefined = undefined;
   private syncHost: NativeSyncHost | undefined = undefined;
   private studySyncHost: NativeStudySyncHost | undefined = undefined;
+  private syncLifecycleObserver: NativeLifecycleObserver | undefined = undefined;
   private attached: boolean = false;
   private alive: boolean = false;
   private documentGeneration: number = 0;
@@ -545,6 +547,8 @@ struct Index {
     this.syncHost = undefined;
     this.studySyncHost?.dispose();
     this.studySyncHost = undefined;
+    this.syncLifecycleObserver?.dispose();
+    this.syncLifecycleObserver = undefined;
     this.speakingMedia?.dispose();
     this.speakingMedia = undefined;
     this.authHost?.dispose();
@@ -992,6 +996,8 @@ struct Index {
           this.syncHost = undefined;
           this.studySyncHost?.dispose();
           this.studySyncHost = undefined;
+          this.syncLifecycleObserver?.dispose();
+          this.syncLifecycleObserver = undefined;
           this.speakingMedia?.dispose();
           this.speakingMedia = undefined;
           this.authHost?.dispose();
@@ -1006,12 +1012,18 @@ struct Index {
               const nativeStudySync: NativeStudySyncHost = new NativeStudySyncHost(this.controller,
                 () => this.alive && this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
                 this.authHost.trustedOwnerProvider(), this.authHost, true);
-              if (nativeSync.attach() && nativeStudySync.attach()) {
+              const nativeLifecycle: NativeLifecycleObserver = new NativeLifecycleObserver(this.controller,
+                this.authHost.trustedOwnerProvider(),
+                () => this.alive && this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
+                nativeSync, nativeStudySync, true);
+              if (nativeSync.attach() && nativeStudySync.attach() && nativeLifecycle.attach()) {
                 this.syncHost = nativeSync;
                 this.studySyncHost = nativeStudySync;
+                this.syncLifecycleObserver = nativeLifecycle;
               } else {
                 nativeSync.dispose();
                 nativeStudySync.dispose();
+                nativeLifecycle.dispose();
               }
             }
             this.speakingMedia = new SpeakingMediaHost(this.controller, () => this.context(),

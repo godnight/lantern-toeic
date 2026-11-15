@@ -30,6 +30,8 @@ const PERMISSION: string = '{"javascriptProxyPermission":{"urlPermissionList":' 
   '"methodList":[{"methodName":"request","urlPermissionList":' +
   '[{"scheme":"https","host":"lantern.local","port":"","path":""}]},' +
   '{"methodName":"cancel","urlPermissionList":' +
+  '[{"scheme":"https","host":"lantern.local","port":"","path":""}]},' +
+  '{"methodName":"drain","urlPermissionList":' +
   '[{"scheme":"https","host":"lantern.local","port":"","path":""}]}]}}';
 function exact(value: Object, names: string[]): boolean {
   return value !== null && typeof value === 'object' && !Array.isArray(value) &&
@@ -101,6 +103,8 @@ export class NativeSyncHost {
   private network: http.HttpRequest | undefined = undefined;
   private unsubscribe: () => void;
   private seen: Set<string> = new Set<string>();
+  private drainWaiters: string[] = [];
+  private draining: boolean = true;
   constructor(controller: webview.WebviewController, active: () => boolean,
     provider: TrustedOwnerProvider, gate: SyncAuthGate, enabled: boolean = false) {
     this.controller = controller; this.active = active; this.provider = provider; this.gate = gate; this.enabled = enabled;
@@ -109,7 +113,7 @@ export class NativeSyncHost {
   attach(): boolean {
     if (this.disposed || !this.enabled || !configuredOrigin(AUTH_API_ORIGIN) || deviceInfo.sdkApiVersion < 23 ||
       !canIUse('SystemCapability.Communication.NetStack')) return false;
-    try { this.controller.registerJavaScriptProxy(this,'LanternSyncHost',['request','cancel'],[],PERMISSION); this.attached = true; return true; }
+    try { this.controller.registerJavaScriptProxy(this,'LanternSyncHost',['request','cancel','drain'],[],PERMISSION); this.attached = true; return true; }
     catch { return false; }
   }
   private live(generation: number): boolean {
@@ -133,7 +137,7 @@ export class NativeSyncHost {
     if (!input || !lease || input.owner !== lease.uid || this.seen.has(input.id)) return;
     if (this.seen.size >= 4096) { this.send(input.id,503,{code:'request_limit'},this.generation); return; }
     this.seen.add(input.id);
-    if (this.operation !== undefined) { this.send(input.id,503,{code:'busy'},this.generation); return; }
+    if (this.draining || this.operation !== undefined) { this.send(input.id,503,{code:'busy'},this.generation); return; }
     const op: Operation = { input: input, lease: lease, generation: this.generation, cancelled: false };
     this.operation = op;
     this.perform(op).catch(() => {});
@@ -142,7 +146,38 @@ export class NativeSyncHost {
     if (!this.caller() || typeof raw !== 'string' || !uuid(raw)) return;
     if (this.operation?.input.id === raw) { this.operation.cancelled = true; try { this.network?.destroy(); } catch {} }
   }
+  // Confirmation is sent only after the in-flight native operation has left
+  // the shared auth gate. Cancellation itself is not server-side rollback.
+  drain(raw: string): void {
+    if (!this.caller() || !uuid(raw) || this.drainWaiters.length >= 16 || this.drainWaiters.includes(raw)) return;
+    this.draining = true;
+    if (this.operation === undefined) { this.replyDrain(raw); return; }
+    this.drainWaiters.push(raw);
+  }
+  // Native-only: never included in the JavaScript proxy method list. The
+  // lifecycle observer resumes both bridges together after checking one lease.
+  canResume(ownerId: string): boolean {
+    const lease: TrustedOwnerLease | undefined = this.provider.snapshot();
+    return this.live(this.generation) && this.operation === undefined && lease !== undefined && lease.uid === ownerId;
+  }
+  resumeForOwner(ownerId: string): boolean {
+    if (!this.canResume(ownerId)) return false;
+    this.draining = false;
+    return true;
+  }
+  freeze(): void { this.draining = true; }
+  private replyDrain(idValue: string): void {
+    if (!this.live(this.generation)) return;
+    const message: string = JSON.stringify({id:idValue,source:'vocabulary'}).replace(/</g,'\\u003c');
+    try { this.controller.runJavaScript('(function(){if(typeof window.__lanternSyncDrainReceive==="function")window.__lanternSyncDrainReceive('+message+');})()').catch(() => {}); } catch {}
+  }
+  private flushDrains(): void {
+    const waiting: string[] = this.drainWaiters; this.drainWaiters = [];
+    waiting.forEach((idValue: string) => this.replyDrain(idValue));
+  }
   invalidate(): void {
+    this.drainWaiters = [];
+    this.draining = true;
     this.generation++;
     if (this.operation) this.operation.cancelled = true;
     try { this.network?.destroy(); } catch {}
@@ -193,6 +228,6 @@ export class NativeSyncHost {
         } finally { try { request.destroy(); } catch {} if (this.network === request) this.network = undefined; }
       });
     } catch { if (this.current(op)) this.send(op.input.id,503,{code:'unavailable'},op.generation); }
-    finally { if (this.operation === op) this.operation = undefined; }
+    finally { if (this.operation === op) { this.operation = undefined; this.flushDrains(); } }
   }
 }

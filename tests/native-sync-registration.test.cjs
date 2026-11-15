@@ -10,8 +10,8 @@ test('production configuration cannot register the unready sync bridge',()=>{
  const attach=section('.onControllerAttached(() => {','.onPageBegin(');
  const guard=attach.indexOf('if (NATIVE_CLOUD_SYNC_ENABLED) {');
  assert.ok(guard>=0&&attach.indexOf('new NativeSyncHost',guard)>guard&&attach.indexOf('new NativeStudySyncHost',guard)>guard);
- assert.match(attach,/if \(nativeSync\.attach\(\) && nativeStudySync\.attach\(\)\)/);
- assert.match(attach,/nativeSync\.dispose\(\);\s*nativeStudySync\.dispose\(\);/);
+ assert.match(attach,/if \(nativeSync\.attach\(\) && nativeStudySync\.attach\(\) && nativeLifecycle\.attach\(\)\)/);
+ assert.match(attach,/nativeSync\.dispose\(\);\s*nativeStudySync\.dispose\(\);\s*nativeLifecycle\.dispose\(\);/);
 });
 test('document, foreground and disposal paths invalidate or dispose both bridges',()=>{
  const invalidate=section('private invalidateBridge(): void {','private onForegroundChanged(): void {');
@@ -22,4 +22,5 @@ test('document, foreground and disposal paths invalidate or dispose both bridges
  const dispose=section('aboutToDisappear(): void {','private context():');
  assert.ok(dispose.indexOf('this.syncHost?.dispose()')<dispose.indexOf('this.authHost?.dispose()'));
  assert.ok(dispose.indexOf('this.studySyncHost?.dispose()')<dispose.indexOf('this.authHost?.dispose()'));
+ assert.ok(dispose.indexOf('this.syncLifecycleObserver?.dispose()')<dispose.indexOf('this.authHost?.dispose()'));
 });

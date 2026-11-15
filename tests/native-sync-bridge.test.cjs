@@ -17,7 +17,7 @@ function setup(kind){
  const target={location:{origin:'https://lantern.local'},crypto:{randomUUID}};
  const controller={registerJavaScriptProxy(){},deleteJavaScriptRegister(){},getLastJavascriptProxyCallingFrameUrl:()=> 'https://lantern.local/',getUrl:()=> 'https://lantern.local/',async runJavaScript(script){vm.runInNewContext(script,{window:{[callback]:value=>target[callback]?.(value)}});}};
  const provider={snapshot:()=>lease,subscribe:()=>()=>{}},gate={async withSession(l,fn){assert.equal(l,lease);await fn('a'.repeat(64));}};
- const host=new (vocab?NativeSyncHost:NativeStudySyncHost)(controller,()=>true,provider,gate,true);assert.equal(host.attach(),true);
+ const host=new (vocab?NativeSyncHost:NativeStudySyncHost)(controller,()=>true,provider,gate,true);assert.equal(host.attach(),true);assert.equal(host.resumeForOwner(owner),true);
  target[hostName]={request:raw=>host.request(raw),cancel:id=>host.cancel(id)};
  const transport=vocab?compile(path.join(root,'lib/native-sync-transport.ts'),{}).createNativeSyncTransport(target):compile(path.join(root,'lib/native-study-transport.ts'),{}).createNativeStudyTransport(target);
  function request(signal){return vocab?transport.append({owner,event},signal):transport.pull({owner,checkpoint:null,continuation:null,signal});}
