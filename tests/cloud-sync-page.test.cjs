@@ -16,14 +16,14 @@ const checkin=()=>({id:randomUUID(),date:'2026-01-01',minutes:4,load:'轻',note:
 function deferred(){let resolve;const promise=new Promise(r=>{resolve=r;});return {promise,resolve};}
 function open(factory,name){return page.openSyntheticSyncDatabase(factory,'lantern-synthetic-sync-'+name);}
 function read(db,store,key){return new Promise((resolve,reject)=>{const r=db.transaction(store).objectStore(store).get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
-function server(){
+function server({grade=choice=>choice===0}={}){
  const vocab=new SyntheticTransport(),tokens=new Map([[A,vocab.issueTestSession(A)],[B,vocab.issueTestSession(B)]]),rows=new Map();let offline=false,delayAppend=null,delayPull=null,loseAppend=false,loseStudy=false;
  function gate(){if(offline)throw Error('synthetic offline');}
  const vt={append:async p=>{gate();const result=await vocab.append(tokens.get(p.owner),p.owner,[p.event]);if(delayAppend)await delayAppend();if(loseAppend){loseAppend=false;throw Error('synthetic lost acknowledgement');}return result;},
   begin:async p=>{gate();return vocab.begin(tokens.get(p.owner),p.pageSize);},page:async p=>{gate();return vocab.page(tokens.get(p.owner),p.snapshot,p.cursor);}};
  const st={upload:async p=>{gate();const w=p.wire;assert.equal(w.owner,p.owner);const key=p.owner+':'+w.type+':'+w.data.id;
   if(w.type==='attempt'){assert.equal('correct' in w.data,false);assert.equal('mode' in w.data,false);}
-  const data=w.type==='attempt'?{...w.data,correct:false,mode:'first'}:w.data;
+  const data=w.type==='attempt'?{...w.data,correct:grade(w.data.choice),mode:'first'}:w.data;
   const value={kind:w.type,id:data.id,data};if(rows.has(key))assert.deepEqual(rows.get(key),value);else rows.set(key,value);
   if(loseStudy){loseStudy=false;throw Error('synthetic lost acknowledgement');}return {status:200,body:{ok:true}};},
   pull:async p=>{gate();if(delayPull)await delayPull();return {syncProtocol:'native-m2a-v1',schemaVersion:2,owner:p.owner,hasProfile:false,profilePolicy:'preserve-local-when-absent',changes:[...rows.entries()].filter(([key])=>key.startsWith(p.owner+':')).map(([,x])=>x),nextCursor:null,checkpoint};}};
@@ -44,6 +44,16 @@ test('study journal capture preserves operation ids and resumes without duplicat
   assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),2);
   const state=await c.readStudy();assert.deepEqual(state.pendingOperations.map(x=>x.id),ids);assert.equal(state.uploadAcks.length,2);assert.equal(s.rows.size,2);
   assert.equal(source.raw.size,2);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('a server score disagreement stops download without losing the local attempt or advancing the checkpoint',async()=>{
+ const s=server({grade:()=>false}),db=await open(new IDBFactory(),'score-conflict'),c=client(db,s),local=attempt();
+ try{
+  await c.activate(A);await c.answer('attempt',local);
+  await assert.rejects(c.run(),error=>error.status===422);
+  const state=await c.readStudy();
+  assert.deepEqual(state.data.attempts,[local]);assert.equal(state.download.checkpoint,null);
+  assert.equal(state.pendingOperations.length,1);assert.equal(state.pendingOperations[0].data.correct,true);
  }finally{await c.cancel();db.close();s.close();}
 });
 test('study journal capture rejects account switch while an enqueue is pending',async()=>{
@@ -145,7 +155,7 @@ test('offline records survive re-open, retry, then restore on a second synthetic
   s.setOffline(true);await assert.rejects(c.run(),/offline/);assert.equal((await read(a,q.STORE,A)).queue[0].acked,false);
   await c.cancel();a.close();a=await open(f,'device-a');c=client(a,s);await c.activate(A);s.setOffline(false);await c.run();
   await d.activate(A);await d.run();const restored=await d.readStudy(),voc=await read(b,q.STORE,A);
-  assert.equal(voc.events.length,1);assert.equal(voc.events[0].id,'one');assert.equal(restored.data.attempts.length,1);assert.equal(restored.data.attempts[0].correct,false);
+  assert.equal(voc.events.length,1);assert.equal(voc.events[0].id,'one');assert.equal(restored.data.attempts.length,1);assert.equal(restored.data.attempts[0].correct,true);
   assert.equal(restored.data.checkins.length,1);assert.equal(s.rows.size,2);assert.equal((await read(a,q.STORE,A)).queue[0].acked,true);
  }finally{await c.cancel();await d.cancel();a.close();b.close();s.close();}
 });
