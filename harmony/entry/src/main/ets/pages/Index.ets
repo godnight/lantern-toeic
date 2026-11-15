@@ -6,6 +6,9 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { NativeDownloads } from '../NativeDownloads';
 import { NativeAuthHost } from '../auth/NativeAuthHost';
 import { SpeakingMediaHost } from '../media/SpeakingMediaHost';
+import { NativeSyncHost } from '../sync/NativeSyncHost';
+import { NativeStudySyncHost } from '../sync/NativeStudySyncHost';
+import { NATIVE_CLOUD_SYNC_ENABLED } from '../sync/SyncConfiguration';
 
 // This is an intercepted local origin. No server or certificate is required.
 const APP_ORIGIN: string = 'https://lantern.local';
@@ -517,6 +520,8 @@ struct Index {
   private downloads: NativeDownloads | undefined = undefined;
   private authHost: NativeAuthHost | undefined = undefined;
   private speakingMedia: SpeakingMediaHost | undefined = undefined;
+  private syncHost: NativeSyncHost | undefined = undefined;
+  private studySyncHost: NativeStudySyncHost | undefined = undefined;
   private attached: boolean = false;
   private alive: boolean = false;
   private documentGeneration: number = 0;
@@ -536,6 +541,10 @@ struct Index {
   }
 
   aboutToDisappear(): void {
+    this.syncHost?.dispose();
+    this.syncHost = undefined;
+    this.studySyncHost?.dispose();
+    this.studySyncHost = undefined;
     this.speakingMedia?.dispose();
     this.speakingMedia = undefined;
     this.authHost?.dispose();
@@ -588,6 +597,8 @@ struct Index {
   }
 
   private invalidateBridge(): void {
+    this.syncHost?.invalidate();
+    this.studySyncHost?.invalidate();
     this.speakingMedia?.invalidate();
     this.bridgeReady = false;
     this.bridgeSequence++;
@@ -977,6 +988,10 @@ struct Index {
         .mediaPlayGestureAccess(true)
         .onControllerAttached(() => {
           this.attached = true;
+          this.syncHost?.dispose();
+          this.syncHost = undefined;
+          this.studySyncHost?.dispose();
+          this.studySyncHost = undefined;
           this.speakingMedia?.dispose();
           this.speakingMedia = undefined;
           this.authHost?.dispose();
@@ -984,6 +999,21 @@ struct Index {
             () => this.alive && this.foreground && this.pageReady && this.isTrustedDocument(), () => this.context());
           if (!this.authHost.attach()) this.authHost = undefined;
           if (this.authHost !== undefined) {
+            if (NATIVE_CLOUD_SYNC_ENABLED) {
+              const nativeSync: NativeSyncHost = new NativeSyncHost(this.controller,
+                () => this.alive && this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
+                this.authHost.trustedOwnerProvider(), this.authHost, true);
+              const nativeStudySync: NativeStudySyncHost = new NativeStudySyncHost(this.controller,
+                () => this.alive && this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
+                this.authHost.trustedOwnerProvider(), this.authHost, true);
+              if (nativeSync.attach() && nativeStudySync.attach()) {
+                this.syncHost = nativeSync;
+                this.studySyncHost = nativeStudySync;
+              } else {
+                nativeSync.dispose();
+                nativeStudySync.dispose();
+              }
+            }
             this.speakingMedia = new SpeakingMediaHost(this.controller, () => this.context(),
               () => this.alive && this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
               this.authHost.trustedOwnerProvider());

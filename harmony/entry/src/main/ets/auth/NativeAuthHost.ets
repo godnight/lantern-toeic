@@ -5,7 +5,8 @@ import { systemDateTime } from '@kit.BasicServicesKit';
 import { common } from '@kit.AbilityKit';
 import { HuaweiAccountProvider, HuaweiAuthorization } from './HuaweiAccountProvider';
 import { AuthSessionStore } from './AuthSessionStore';
-import { VerifiedOwnerLease, TrustedOwnerProvider } from '../media/VerifiedOwnerLease';
+import { TrustedOwnerLease, VerifiedOwnerLease, TrustedOwnerProvider } from '../media/VerifiedOwnerLease';
+import { SyncAuthGate } from '../sync/NativeSyncHost';
 import { AUTH_API_ORIGIN } from './AuthConfiguration';
 import { AuthRequest, AuthBody, AuthReply, AuthUser, AuthCookie, AuthRoute, COOKIE_NAME,
   AUTH_TIMEOUT_MS, MAX_RESPONSE_BYTES, trustedFrame, configuredOrigin, parseAuthRequest,
@@ -35,7 +36,7 @@ const PROXY_PERMISSION: string = '{"javascriptProxyPermission":{"urlPermissionLi
   '[{"scheme":"https","host":"lantern.local","port":"","path":""}]}]}}';
 
 /** Auth-only bridge. No private API, arbitrary URL, header, filesystem or cookie API. */
-export class NativeAuthHost {
+export class NativeAuthHost implements SyncAuthGate {
   private controller: webview.WebviewController;
   private active: () => boolean;
   private store: AuthSessionStore = new AuthSessionStore();
@@ -109,6 +110,29 @@ export class NativeAuthHost {
 
   // Native consumers only. Only request() is on the registered JS method list.
   trustedOwnerProvider(): TrustedOwnerProvider { return this.ownerLease; }
+
+  // Native-only: not registered as a JavaScript proxy method. Shares the auth
+  // operation lock and validates the verified lease before and after work.
+  async withSession(lease: TrustedOwnerLease, work: (token: string) => Promise<void>): Promise<void> {
+    const epoch: number = this.epoch;
+    const same: () => boolean = () => {
+      if (!this.live(epoch) || !this.available() || NativeAuthHost.quarantined) return false;
+      const current: TrustedOwnerLease | undefined = this.ownerLease.snapshot();
+      return current !== undefined && current.uid === lease.uid && current.authEpoch === lease.authEpoch &&
+        current.expiresAtUptimeMs === lease.expiresAtUptimeMs;
+    };
+    if (!same() || NativeAuthHost.busy) throw new Error('Unconfirmed');
+    NativeAuthHost.busy = true;
+    try {
+      if (!same()) throw new Error('Unconfirmed');
+      const token: string | undefined = await this.store.load(AUTH_API_ORIGIN);
+      if (!same() || token === undefined || !/^[a-f0-9]{64}$/.test(token)) throw new Error('Unconfirmed');
+      await work(token);
+      if (!same()) throw new Error('Unconfirmed');
+    } finally {
+      NativeAuthHost.busy = false;
+    }
+  }
 
   dispose(): void {
     this.invalidate();
