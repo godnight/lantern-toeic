@@ -171,7 +171,7 @@ test('real vocabulary SQL batches are idempotent, account scoped and reject conf
   } finally { h.sqlite.close(); }
 });
 
-function hookFixture({ owner: initialOwner = 'alice', storage = storageFixture(), handle } = {}) {
+function hookFixture({ owner: initialOwner = 'alice', storage = storageFixture(), handle, capture = false, remoteEnabled = true, captureEvents = false } = {}) {
   let owner = initialOwner, cursor = 0, dirty = true, mounted = true, latest;
   const slots = [], effects = [], requests = [], timers = new Map(), listeners = new Map(), notices = [];
   let timerId = 0;
@@ -193,17 +193,51 @@ function hookFixture({ owner: initialOwner = 'alice', storage = storageFixture()
       return init.method === 'POST' ? Response.json({ ok: true }) : Response.json({ owner, ...backup([]) });
     },
   };
-  const hook = load('lib/use-vocabulary.ts', { react, sonner: { toast: { error: text => notices.push(text) } }, './vocabulary-model': model }, browser);
-  function render(nextOwner = owner) { assert.ok(mounted); owner = nextOwner; cursor = 0; dirty = false; latest = hook.useVocabulary(owner); while (effects.length) effects.shift()(); return latest; }
+  if(captureEvents){browser.window.dispatchEvent=event=>{for(const fn of listeners.get(event.type)||[])fn(event);return true;};browser.CustomEvent=class{constructor(type,init){this.type=type;this.detail=init?.detail;}};}
+  const hook = load('lib/use-vocabulary.ts', { react, sonner: { toast: { error: text => notices.push(text) } }, './vocabulary-model': model, './cloud-sync/vocabulary-capture':{VOCABULARY_MARK_CAPTURE_ENABLED:capture} }, browser);
+  function render(nextOwner = owner) { assert.ok(mounted); owner = nextOwner; cursor = 0; dirty = false; latest = hook.useVocabulary(owner,remoteEnabled); while (effects.length) effects.shift()(); return latest; }
   async function settle() { for (let i = 0; i < 30; i++) { if (dirty) render(); await tick(); if (!dirty) return latest; } throw Error('Hook state did not settle'); }
   function fire(ms) { for (const [id, timer] of [...timers]) if (timer.ms === ms) { if (!timer.repeat) timers.delete(id); timer.fn(); } }
   function unmount() { mounted = false; for (const slot of slots) slot?.cleanup?.(); }
-  return { render, settle, fire, unmount, requests, timers, storage, notices, get current() { return latest; } };
+  return { render, settle, fire, unmount, requests, timers, storage, notices, target:browser.window, get current() { return latest; } };
 }
 
 function untilAborted(signal) {
   return new Promise((_, reject) => { const stop = () => { const error = Error('aborted'); error.name = 'AbortError'; reject(error); }; if (signal.aborted) stop(); else signal.addEventListener('abort', stop, { once: true }); });
 }
+
+test('actual vocabulary hook marks only new account marks when the test-only capture flag is enabled',async()=>{
+ const owner='usr_00000000-0000-4000-8000-000000000001',h=hookFixture({owner,capture:true,remoteEnabled:false});
+ try{
+  h.render();await h.settle();assert.equal(h.current.mark('schedule',true),true);await h.settle();
+  const prefix=model.vocabularyKey(owner),keys=[...h.storage.raw.keys()];assert.equal(keys.length,1);assert.match(keys[0].slice(prefix.length),/^cloud-new-mark-v1-/);
+  const marked=JSON.parse(h.storage.raw.get(keys[0]));assert.equal(marked.kind,'lantern-vocabulary');assert.equal(marked.events[0].type,'mark');
+  assert.equal(h.current.restore(backup([review({id:'historical-restored'})])),true);await h.settle();
+  assert.equal([...h.storage.raw.keys()].filter(k=>k.startsWith(prefix+'cloud-new-mark-v1-')).length,1);
+  assert.equal(h.current.events.some(e=>e.id==='historical-restored'),true);
+ }finally{h.unmount();}
+});
+
+test('actual mark writer feeds the fenced synthetic queue after reconnect without changing local save',async()=>{
+ const {buildSync}=require(root+'/node_modules/esbuild'),{IDBFactory}=require(root+'/node_modules/fake-indexeddb'),{Module}=require('node:module');
+ const source="export * from './lib/cloud-sync/candidate-page.js'; export * from './lib/cloud-sync/capture-vocabulary.js';";
+ const built=buildSync({stdin:{contents:source,resolveDir:root,loader:'js'},bundle:true,write:false,format:'cjs',platform:'node',target:'node24',logLevel:'silent'});
+ const file=path.join(__dirname,'capture-test-bundle.cjs'),m=new Module(file);m.filename=file;m.paths=Module._nodeModulePaths(__dirname);m._compile(built.outputFiles[0].text,file);
+ const page=m.exports,owner='usr_00000000-0000-4000-8000-000000000001',factory=new IDBFactory(),db=await page.openSyntheticSyncDatabase(factory,'lantern-synthetic-sync-real-hook');
+ const rows=new Map(),snapshots=new Map(),checkpoint='n1.'+'A'.repeat(2086);let offline=false;
+ const check=()=>{if(offline)throw Error('synthetic offline');};
+ const vocabTransport={append:async p=>{check();rows.set(p.event.id,p.event);return {ok:true,owner:p.owner,id:p.event.id};},
+  begin:async p=>{check();const id=crypto.randomUUID();snapshots.set(id,[...rows.values()]);return {id,owner:p.owner,upper:rows.size,cursor:'start'};},
+  page:async p=>{check();return {id:p.snapshot,owner:p.owner,upper:snapshots.get(p.snapshot).length,cursor:p.cursor,events:snapshots.get(p.snapshot),next:null};}};
+ const studyTransport={upload:async()=>{throw Error('unexpected study upload');},pull:async p=>{check();return {syncProtocol:'native-m2a-v1',schemaVersion:2,owner:p.owner,hasProfile:false,profilePolicy:'preserve-local-when-absent',changes:[],nextCursor:null,checkpoint};}};
+ const c=page.createCandidatePageClient({db,vocabTransport,studyTransport}),h=hookFixture({owner,capture:true,remoteEnabled:false,captureEvents:true});let pump;
+ try{
+  h.render();await h.settle();await c.activate(owner);pump=page.createCapturedVocabularyMarkPump({storage:h.storage.storage,owner,client:c,target:h.target});await pump.wake();
+  offline=true;assert.equal(h.current.mark('schedule',true),true);await h.settle();await assert.rejects(pump.wake(),/offline/);assert.equal(h.current.events.length,1);assert.equal(rows.size,0);
+  offline=false;h.target.dispatchEvent({type:'online'});await pump.wake();assert.equal(rows.size,1);assert.equal([...rows.values()][0].wordId,'schedule');
+  await pump.wake();assert.equal(rows.size,1);
+ }finally{pump?.stop();await c.cancel();db.close();h.unmount();}
+});
 
 test('native vocabulary writes stay local and a failed disk write cannot produce a completed review', async () => {
   const h = hookFixture({ owner: null }); h.render(); await h.settle();
