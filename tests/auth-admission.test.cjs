@@ -60,6 +60,21 @@ test('AUTH-01 fixed: a full global budget rejects 1000 new usernames without all
   t.diagnostic(JSON.stringify({result: 'BOUNDED_REJECTION', requests: 1001, rowsBefore: before.length, rowsAfter: e.rows('auth_rate_limits').length, globalCount: count(e, 'global:credentials'), sqlOperations: e.queries.length}));
 });
 
+test('KDF-busy credential requests do not spend admission budgets or block another account afterward', async t => {
+  const e = environment();t.after(() => e.close());
+  await e.register('protected_user', PASSWORD);
+  const windowStart = windowNow(), before = count(e, 'global:credentials', windowStart);
+  const responses = await Promise.all(Array.from({length: 120}, (_, i) => send(e, 'burst_user_' + i)));
+  const results = await Promise.all(responses.map(async response => ({status: response.status, code: (await response.json()).code})));
+  assert.equal(results.filter(result => result.status === 401 && result.code === 'invalid-credentials').length, 1);
+  assert.equal(results.filter(result => result.status === 429 && result.code === 'auth-busy').length, 119);
+  assert.equal(count(e, 'global:credentials', windowStart), before + 1, 'Busy rejections must not spend the global budget');
+  assert.equal(e.rows('auth_rate_limits').filter(row => row.scope.startsWith('login:username:')).length, 1);
+  const legitimate = await e.call('login', 'POST', {body: {username: 'protected_user', password: PASSWORD}});
+  assert.equal(legitimate.status, 200);
+  assert.equal(count(e, 'global:credentials', windowStart), before + 2);
+});
+
 test('AUTH-01 fixed: independent KDF modules can work concurrently but atomically share the final global slot', async t => {
   const all = modules(t), a = all[0], windowStart = windowNow();
   // All four genuinely execute their own real KDF. An isolate-local busy guard

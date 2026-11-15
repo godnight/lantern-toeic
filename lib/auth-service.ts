@@ -1,5 +1,5 @@
 import {createHash, randomBytes, randomUUID} from 'node:crypto';
-import {hashPassword, verifyPassword, normalizeUsername, validatePassword, PasswordHashBusyError} from './password-credential';
+import {withPasswordHashSlot, normalizeUsername, validatePassword, PasswordHashBusyError} from './password-credential';
 
 export type AuthEnvironment = {DB?:D1Database; LANTERN_AUTH_ENABLED?:string; LANTERN_AUTH_ORIGIN?:string;
  LANTERN_HUAWEI_CLIENT_ID?:string; LANTERN_HUAWEI_CLIENT_SECRET?:string};
@@ -113,12 +113,14 @@ export async function credentialAction(request:Request,action:'login'|'register'
   const input=await readCredentials(request);
   const normalized=normalizeUsername(input?.username);
   if(!input||!normalized.ok||!validatePassword(input.password).ok)return action==='login'?loginFailed():registrationFailed();
-  // Malformed input never spends the shared expensive-hash budget or creates buckets.
+  // A request rejected by the no-queue KDF guard must not consume a shared
+  // admission budget. Hold the same slot through admission and its KDF.
+  return await withPasswordHashSlot(async hasher=>{
   const limited=await throttle(config.db,action,normalized.username);if(limited)return limited;
   const password=input.password as string,username=normalized.username,now=Date.now();
   const {token,tokenHash,oldTokenHash:oldHash}=createProductSessionMaterial(request.headers);
   if(action==='register'){
-   const user={id:'usr_'+randomUUID(),username},passwordHash=await hashPassword(password);
+   const user={id:'usr_'+randomUUID(),username},passwordHash=await hasher.hashPassword(password);
    // A duplicate normalized username creates no credential, session or old-session deletion.
    const result=await config.db.batch([
     config.db.prepare('INSERT INTO auth_users(id,username,created_at) VALUES(?,?,?) ON CONFLICT(username) DO NOTHING').bind(user.id,username,now),
@@ -133,7 +135,7 @@ export async function credentialAction(request:Request,action:'login'|'register'
   const stored=await config.db.prepare(`SELECT u.id,u.username,c.password_hash FROM auth_users u
    JOIN auth_password_credentials c ON c.user_id=u.id WHERE u.username=?`).bind(username).first<ProductIdentity&{password_hash:string}>();
   // An unknown username still pays the same scrypt work; no fixed usable password.
-  const valid=stored?await verifyPassword(password,stored.password_hash):(await hashPassword(password),false);
+  const valid=stored?await hasher.verifyPassword(password,stored.password_hash):(await hasher.hashPassword(password),false);
   if(!stored||!valid)return loginFailed();
   await config.db.batch([
    config.db.prepare('DELETE FROM auth_sessions WHERE token_hash=?').bind(oldHash),
@@ -141,6 +143,7 @@ export async function credentialAction(request:Request,action:'login'|'register'
    config.db.prepare('DELETE FROM auth_sessions WHERE expires_at<=?').bind(now)
   ]);
   return productSessionResponse({id:stored.id,username:stored.username},token);
+  });
  }catch(error){
   if(error instanceof PasswordHashBusyError){
    const response=authJson({code:'auth-busy',error:'账号验证繁忙，请稍后重试'},429);
