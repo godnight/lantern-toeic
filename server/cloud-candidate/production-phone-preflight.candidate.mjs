@@ -8,7 +8,7 @@ const expected=Object.freeze({
  // Both pinned 0007 byte variants have been independently checked to differ
  // only by CRLF/LF. The ledger still has to match an explicitly pinned hash.
  '0007_phone_auth.sql':Object.freeze(['4c9cbfa1a1b7554556b464f128ccb6dae9fed183b008b614ef7dba2d779112f4','1c9e0334bf1f532bd9f201b9b36c886bc008d255d88270706b20e44ebeee1144']),
- '0008_phone_challenges.sql':Object.freeze(['e529b5f26ffb853116c2d82c3cccbecb453b67e19b53a587a4a06f9b8e373cd5']),
+ '0008_phone_challenges.sql':Object.freeze(['e529b5f26ffb853116c2d82c3cccbecb453b67e19b53a587a4a06f9b8e373cd5','d1eb16b49e5a36decfc87506fb06f6fbaa5815d88375a08fc907cc15f3900bd5']),
 });
 const exact=(o,keys)=>!!o&&typeof o==='object'&&!Array.isArray(o)&&Object.keys(o).sort().join(',')===[...keys].sort().join(',');
 const integer=n=>Number.isSafeInteger(n)&&n>0;
@@ -26,7 +26,8 @@ export function parseProductionPhonePolicy(input){
   (input.templates.login!==undefined&&input.templates.login!=='100001')||(input.templates.bind!==undefined&&input.templates.bind!=='100004')||!Object.keys(input.templates).length)throw Error('invalid templates');
  if(typeof input.referenceKeyFile!=='string'||!path.posix.isAbsolute(input.referenceKeyFile)||input.referenceKeyFile.includes('\0'))throw Error('invalid key file');
  if(!exact(input.limits,['maxSendsPerUtcDay','maxSendsPerMinute','maxSendsPerPhoneHour','maxVerificationsPerPhoneTenMinutes'])||Object.values(input.limits).some(x=>!integer(x))||
-  input.limits.maxSendsPerMinute>input.limits.maxSendsPerUtcDay||input.limits.maxSendsPerPhoneHour>input.limits.maxSendsPerUtcDay)throw Error('invalid explicit budget or limits');
+  input.limits.maxSendsPerMinute>input.limits.maxSendsPerUtcDay||input.limits.maxSendsPerPhoneHour>input.limits.maxSendsPerUtcDay||
+  input.limits.maxSendsPerUtcDay>100||input.limits.maxSendsPerMinute>30||input.limits.maxSendsPerPhoneHour>3||input.limits.maxVerificationsPerPhoneTenMinutes>10)throw Error('invalid explicit budget or limits');
  return Object.freeze({enabled:true,origin:input.origin,signature:input.signature,schemeName:input.schemeName,templates:Object.freeze({...input.templates}),referenceKeyFile:input.referenceKeyFile,limits:Object.freeze({...input.limits})});
 }
 export function validatePhoneMigrationLedger(rows){

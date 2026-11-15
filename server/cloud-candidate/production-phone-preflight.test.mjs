@@ -11,7 +11,7 @@ test('production policy defaults closed and requires every explicit trusted para
  assert.deepEqual(parseProductionPhonePolicy(),{enabled:false});assert.deepEqual(parseProductionPhonePolicy({enabled:false}),{enabled:false});
  assert.throws(()=>parseProductionPhonePolicy({enabled:false,signature:'unexpected'}));
  const valid=policy(),out=parseProductionPhonePolicy(valid);assert.equal(out.enabled,true);valid.limits.maxSendsPerUtcDay=1;assert.equal(out.limits.maxSendsPerUtcDay,100);
- for(const mutate of [x=>delete x.limits,x=>delete x.referenceKeyFile,x=>x.origin='http://synthetic.invalid',x=>x.origin='https://u:p@synthetic.invalid',x=>x.templates={},x=>x.templates.bind='100001',x=>x.referenceKeyFile='relative',x=>x.limits.maxSendsPerUtcDay=0,x=>x.limits.maxSendsPerMinute=101,x=>x.unexpected='value']){
+ for(const mutate of [x=>delete x.limits,x=>delete x.referenceKeyFile,x=>x.origin='http://synthetic.invalid',x=>x.origin='https://u:p@synthetic.invalid',x=>x.templates={},x=>x.templates.bind='100001',x=>x.referenceKeyFile='relative',x=>x.limits.maxSendsPerUtcDay=0,x=>x.limits.maxSendsPerUtcDay=101,x=>x.limits.maxSendsPerMinute=31,x=>x.limits.maxSendsPerPhoneHour=4,x=>x.limits.maxVerificationsPerPhoneTenMinutes=11,x=>x.unexpected='value']){
   const p=policy();mutate(p);assert.throws(()=>parseProductionPhonePolicy(p));
  }
  const runtime={sendGlobalDaily:{span:86400000,max:100},sendGlobal:{span:60000,max:10},sendPhone:{span:3600000,max:3},verifyPhone:{span:600000,max:10}};
@@ -41,6 +41,10 @@ test('production preflight accepts reviewed LF and CRLF migration variants witho
   const sql=[];const rows=[];
   for(const name of names){const data=await readFile(new URL(root+name,import.meta.url));sql.push(data.toString('utf8'));rows.push({name,sha:createHash('sha256').update(data).digest('hex')});}
   assert.equal(validatePhoneMigrationLedger(rows),true);
+  for(const style of ['lf','crlf']){
+   const converted=sql.map(text=>style==='lf'?text.replace(/\r\n/g,'\n'):text.replace(/\r\n/g,'\n').replace(/\n/g,'\r\n'));
+   assert.equal(validatePhoneMigrationLedger(names.map((name,i)=>({name,sha:createHash('sha256').update(converted[i]).digest('hex')}))),true);
+  }
   for(const format of ['source','lf','crlf','mixed']){
    const db=new DatabaseSync(':memory:');try{
     db.exec('CREATE TABLE auth_users(id TEXT PRIMARY KEY)');
