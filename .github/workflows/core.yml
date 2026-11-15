@@ -97,7 +97,7 @@ jobs:
         run: npm run test:auth
       - name: Verify native sync bridge and account gate
         if: steps.scope.outputs.full == 'true'
-        run: node --test tests/native-sync-auth-gate.test.cjs tests/native-sync-bridge.test.cjs tests/native-sync-registration.test.cjs tests/cloud-sync-page.test.cjs
+        run: node --test tests/native-sync-auth-gate.test.cjs tests/native-sync-bridge.test.cjs tests/native-sync-registration.test.cjs tests/cloud-sync-page.test.cjs tests/cloud-sync-native-lifecycle.test.cjs
       - name: Verify bounded build cleanup
         if: steps.scope.outputs.full == 'true'
         run: node --test tests/build-timeout.test.cjs
