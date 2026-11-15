@@ -1,13 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, mkdtemp, rm, realpath } from 'node:fs/promises';
-import { createHash, randomBytes } from 'node:crypto';
+import { readFile, writeFile, mkdtemp, rm, realpath } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import path from 'node:path';
 import os from 'node:os';
+import https from 'node:https';
 import { Miniflare, Log, LogLevel } from 'miniflare';
 import { buildAccountWorker, buildSyncModel } from './build-inputs.mjs';
 import { prepareAccountSyncAssembly } from './assembly.candidate.mjs';
 import { validateSyncDatabase } from './production-sync-preflight.candidate.mjs';
+import { prepareCloudService } from './service.candidate.mjs';
 
 const origin = 'https://synthetic.invalid';
 const root = new URL('../../', import.meta.url);
@@ -20,6 +24,24 @@ const schema = [
 async function migrate(db, name) {
   const sql = await readFile(new URL('drizzle/' + name, root), 'utf8');
   await db.batch(sql.split('--> statement-breakpoint').map(s => s.trim()).filter(Boolean).map(s => db.prepare(s)));
+}
+async function makeCertificate(directory) {
+  const config = path.join(directory, 'openssl.cnf'), certFile = path.join(directory, 'cert.pem'), keyFile = path.join(directory, 'key.pem');
+  await writeFile(config, '[req]\ndistinguished_name=dn\n[dn]\n');
+  const openssl = process.platform === 'win32' && existsSync('C:/Program Files/Git/usr/bin/openssl.exe') ? 'C:/Program Files/Git/usr/bin/openssl.exe' : 'openssl';
+  execFileSync(openssl, ['req', '-config', config, '-x509', '-newkey', 'rsa:2048', '-nodes', '-sha256', '-keyout', keyFile,
+    '-out', certFile, '-days', '1', '-subj', '/CN=synthetic.invalid', '-addext', 'subjectAltName=DNS:synthetic.invalid'], { stdio: 'ignore', timeout: 15000 });
+  return { key: await readFile(keyFile), cert: await readFile(certFile) };
+}
+function httpsStudy(port, cert, cookie, owner) {
+  return new Promise((resolve, reject) => {
+    const req = https.request({ host: '127.0.0.1', port, servername: 'synthetic.invalid', ca: cert,
+      path: '/api/study?sync=native-m2a-v1', headers: { host: 'synthetic.invalid', cookie, 'x-lantern-owner': owner } }, res => {
+      const chunks = []; res.on('data', chunk => chunks.push(chunk));
+      res.on('end', () => resolve({ status: res.statusCode, body: Buffer.concat(chunks).toString() }));
+    });
+    req.on('error', reject); req.end();
+  });
 }
 test('repository Worker and model share one D1; phone stays closed; session, isolation and restart work', { timeout: 60000 }, async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'lantern-repo-assembly-'));
@@ -87,6 +109,37 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     assert.equal((await app.fetch(request('/candidate/sync/append', { cookie: otherCookie, body: { owner, event } }))).status, 409);
     assert.equal((await readPage(otherCookie)).status, 409);
     assert.equal((await app.fetch(request('/candidate/sync/append', { cookie, body: { owner, event: { ...event, grade: 'remembered' } } }))).status, 409);
+    // Exercise the repository's actual question catalog and native journal
+    // through the same Worker and D1 as the account service.
+    const question = (await modelInfo.importModel()).QUESTIONS[0];
+    const attempt = { id: randomUUID(), qid: question.id, choice: 0, correct: question.correctIndex !== 0,
+      mode: 'first', createdAt: new Date().toISOString(), seconds: 3 };
+    const checkin = { id: randomUUID(), date: '2026-01-01', minutes: 5, load: '轻', note: '', createdAt: new Date().toISOString() };
+    const saveStudy = (device, who, type, data) => app.fetch(request('/api/study', { cookie: device, owner: who, body: { type, data } }));
+    for (const [type, data] of [['attempt', attempt], ['checkin', checkin]]) {
+      assert.equal((await saveStudy(cookie, owner, type, data)).status, 200);
+      assert.equal((await saveStudy(cookie, owner, type, data)).status, 200);
+    }
+    assert.equal((await saveStudy(cookie, owner, 'checkin', { ...checkin, minutes: 6 })).status, 409);
+    assert.equal((await saveStudy(otherCookie, owner, 'attempt', attempt)).status, 409);
+    const readStudy = device => app.fetch(request('/api/study?sync=native-m2a-v1', { cookie: device, owner }));
+    let journal = await (await readStudy(cookieB)).json();
+    assert.deepEqual(journal.changes.map(change => change.kind), ['attempt', 'checkin']);
+    assert.equal(journal.changes[0].data.correct, question.correctIndex === 0);
+    assert.equal(journal.changes[0].data.mode, 'first');
+    assert.equal((await readStudy(otherCookie)).status, 409);
+    // Verify the real HTTPS handler, local channel, session check and D1 as a
+    // single path, using only a self-signed synthetic certificate/account.
+    const certificate = await makeCertificate(directory);
+    const service = await prepareCloudService({ enabled: true, mf, origin, settings, privateRoot, key, proxy, phoneKey, modelInfo });
+    const server = https.createServer(certificate, service.handler);
+    try {
+      await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
+      const httpResult = await httpsStudy(server.address().port, certificate.cert, cookieB, owner);
+      assert.equal(httpResult.status, 200);
+      assert.deepEqual(JSON.parse(httpResult.body).changes.map(change => change.kind), ['attempt', 'checkin']);
+      assert.equal((await httpsStudy(server.address().port, certificate.cert, otherCookie, owner)).status, 409);
+    } finally { await new Promise(resolve => server.close(resolve)); await service.close(); }
     assert.equal((await (await prepareAccountSyncAssembly({ mf, origin })).fetch(request('/candidate/sync/append', { body: {} }))).status, 404);
     await mf.dispose(); mf = start(); db = await mf.getD1Database('DB');
     app = await prepareAccountSyncAssembly({ settings, mf, origin, privateRoot, key, proxy, phoneKey, modelInfo });
@@ -98,6 +151,9 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     assert.equal((await app.fetch(request('/api/auth/session', { cookie: cookieB }))).status, 200);
     assert.equal((await app.fetch(request('/api/auth/session', { cookie: legacyCookie }))).status, 200);
     assert.deepEqual((await (await readPage(cookieB)).json()).events, [event]);
+    journal = await (await readStudy(cookieB)).json();
+    assert.deepEqual(journal.changes.map(change => change.kind), ['attempt', 'checkin']);
+    assert.equal((await readStudy(cookie)).status, 401);
   } finally {
     if (mf) await mf.dispose();
     const resolved = await realpath(directory), tmp = await realpath(os.tmpdir());
