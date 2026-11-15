@@ -122,15 +122,27 @@ def integrity(db):
         raise RuntimeError('integrity check failed')
 
 
+def connect_memory_temp(database, **kwargs):
+    db = sqlite3.connect(database, **kwargs)
+    try:
+        db.execute('PRAGMA temp_store=MEMORY')
+        if db.execute('PRAGMA temp_store').fetchone() != (2,):
+            raise RuntimeError('in-memory temporary storage unavailable')
+        return db
+    except Exception:
+        db.close()
+        raise
+
+
 def run(directory):
     rules = load_reviewed_rules()
     expected = rules._expected_schemas()
     before = {name: identity(directory / name) for name in ('manifest.json', 'main.sqlite', 'metadata.sqlite')}
     manifest = verified_manifest(directory)
-    source = sqlite3.connect((directory / 'main.sqlite').as_uri() + '?mode=ro&immutable=1', uri=True)
-    metadata = sqlite3.connect((directory / 'metadata.sqlite').as_uri() + '?mode=ro&immutable=1', uri=True)
-    memory = sqlite3.connect(':memory:')
-    metadata_memory = sqlite3.connect(':memory:')
+    source = connect_memory_temp((directory / 'main.sqlite').as_uri() + '?mode=ro&immutable=1', uri=True)
+    metadata = connect_memory_temp((directory / 'metadata.sqlite').as_uri() + '?mode=ro&immutable=1', uri=True)
+    memory = connect_memory_temp(':memory:')
+    metadata_memory = connect_memory_temp(':memory:')
     try:
         for db, role in ((source, 'main'), (metadata, 'metadata')):
             db.execute('PRAGMA query_only=ON')

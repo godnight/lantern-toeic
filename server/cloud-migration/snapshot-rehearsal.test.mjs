@@ -85,6 +85,34 @@ test('rehearses a private legacy snapshot in RAM without changing source bytes',
   }
 });
 
+test('all four data connections use verified memory-only temporary storage', { skip: !windows, timeout: 60000 }, () => {
+  const f = snapshot();
+  const probe = `
+import importlib.util, pathlib, sqlite3, sys
+spec = importlib.util.spec_from_file_location('rehearsal', sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+rules = module.load_reviewed_rules()
+expected = rules._expected_schemas()
+rules._expected_schemas = lambda: expected
+module.load_reviewed_rules = lambda: rules
+closed = []
+class RecordingConnection(sqlite3.Connection):
+    def close(self):
+        closed.append(self.execute('PRAGMA temp_store').fetchone()[0])
+        super().close()
+original = sqlite3.connect
+def tracked(*args, **kwargs):
+    kwargs['factory'] = RecordingConnection
+    return original(*args, **kwargs)
+sqlite3.connect = tracked
+module.run(pathlib.Path(sys.argv[2]))
+assert closed == [2, 2, 2, 2], 'every data connection must use MEMORY'
+`;
+  const result = spawnSync(f.python, ['-I', '-c', probe, worker, f.directory], { encoding: 'utf8', timeout: 45000 });
+  assert.equal(result.status, 0, result.stderr);
+});
+
 test('rejects altered manifest and unexpected SQLite sidecars', { skip: !windows, timeout: 60000 }, () => {
   const f = snapshot();
   const manifest = join(f.directory, 'manifest.json');

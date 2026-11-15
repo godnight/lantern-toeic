@@ -32,7 +32,9 @@ integrity, and foreign keys. It copies both databases to memory and checks both
 copies; it changes only the reviewed account ledger entries there, checks the
 target ledger, unchanged schema and typed row digests, and repeats source and
 manifest checks. It emits only a generic success or failure, never database
-contents or digests.
+contents or digests. All four data connections set and verify SQLite's
+in-memory temporary storage before use, and each source file is limited to
+256 MiB.
 
 The source databases must be self-contained backups, not live database files.
 A success does not establish correctness of a later copy, an active service,
