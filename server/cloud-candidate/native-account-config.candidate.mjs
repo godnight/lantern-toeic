@@ -6,14 +6,16 @@ import { constants } from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { validateRunnerConfig } from './runner-config.candidate.mjs';
+import { validateDirectCredentialPolicy } from './direct-credential-limit.candidate.mjs';
 
 const absolute = p => typeof p === 'string' && path.isAbsolute(p) && path.resolve(p) === p;
 const inside = (a, b) => { const relative = path.relative(a, b); return relative === '' || (!relative.startsWith('..' + path.sep) && relative !== '..' && !path.isAbsolute(relative)); };
 export function validateNativeAccountConfig(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw Error('invalid native account configuration');
-  const keys = Object.keys(value).sort().join(',');
-  if (keys !== 'bindAddress,certRoot,enabled,lockDir,origin,slot,workerRoot,workerSha256' && keys !== 'bindAddress,certRoot,enabled,huawei,lockDir,origin,slot,workerRoot,workerSha256') throw Error('invalid native account configuration');
-  const { workerRoot, workerSha256, huawei, ...base } = value;
+  const required = ['bindAddress', 'certRoot', 'enabled', 'lockDir', 'origin', 'slot', 'workerRoot', 'workerSha256'];
+  const allowed = new Set([...required, 'huawei', 'directCredentialPolicy']);
+  if (required.some(key => !Object.hasOwn(value, key)) || Object.keys(value).some(key => !allowed.has(key))) throw Error('invalid native account configuration');
+  const { workerRoot, workerSha256, huawei, directCredentialPolicy, ...base } = value;
   const account = validateRunnerConfig(base);
   if (!absolute(workerRoot) || typeof workerSha256 !== 'string' || !/^[a-f0-9]{64}$/.test(workerSha256)) throw Error('invalid native account configuration');
   const roots = [account.lockDir, account.certRoot, workerRoot];
@@ -27,7 +29,8 @@ export function validateNativeAccountConfig(value) {
     if (roots.some(root => inside(root, secretRoot) || inside(secretRoot, root))) throw Error('overlapping protected paths');
     provider = Object.freeze({ clientId: huawei.clientId, secretFile: huawei.secretFile });
   }
-  return Object.freeze({ ...account, workerRoot, workerSha256, ...(provider ? { huawei: provider } : {}) });
+  const sourcePolicy = Object.hasOwn(value, 'directCredentialPolicy') ? validateDirectCredentialPolicy(directCredentialPolicy) : undefined;
+  return Object.freeze({ ...account, workerRoot, workerSha256, ...(provider ? { huawei: provider } : {}), ...(sourcePolicy ? { directCredentialPolicy: sourcePolicy } : {}) });
 }
 
 export function isRootControlledStat(st, gid, directory) {

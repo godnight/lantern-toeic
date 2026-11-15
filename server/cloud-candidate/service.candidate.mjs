@@ -4,12 +4,12 @@ import { prepareAccountSyncAssembly } from './assembly.candidate.mjs';
 import { createLocalChannel } from './local-channel.candidate.mjs';
 import { createHttpsHandler } from './https-handler.candidate.mjs';
 
-export async function prepareCloudService({ enabled = false, mf, origin, phoneEnabled = false, settings = { enabled: false }, privateRoot, key, proxy, phoneKey, modelInfo } = {}) {
+export async function prepareCloudService({ enabled = false, mf, origin, phoneEnabled = false, settings = { enabled: false }, privateRoot, key, proxy, phoneKey, modelInfo, directCredentialPolicy } = {}) {
   if (enabled !== true) throw Error('cloud service disabled');
   const assembly = await prepareAccountSyncAssembly({ mf, origin, settings, privateRoot, key, proxy, phoneKey, modelInfo });
   const channel = createLocalChannel({ enabled: true, origin, assembly });
   try {
-    const handler = createHttpsHandler({ origin, channel, phoneEnabled, syncEnabled: settings.enabled === true });
+    const handler = createHttpsHandler({ origin, channel, phoneEnabled, syncEnabled: settings.enabled === true, directCredentialPolicy });
     return Object.freeze({ handler, close: () => channel.close() });
   } catch (error) { await channel.close(); throw error; }
 }

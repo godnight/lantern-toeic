@@ -105,7 +105,7 @@ export async function startNativeAccountGateway({ enabled = false, file } = {}) 
       const env = { DB: db, LANTERN_AUTH_ENABLED: 'true', LANTERN_AUTH_ORIGIN: config.origin,
         ...(huawei ? { ...huawei, LANTERN_HUAWEI_OUTBOUND: createNativeHuaweiOutbound({ enabled: true, clientId: huawei.LANTERN_HUAWEI_CLIENT_ID }) } : {}) };
       const mf = { dispatchFetch(url, init) { return worker.fetch(new Request(url, init), env); } };
-      return prepareCloudService({ enabled: true, mf, origin: config.origin });
+      return prepareCloudService({ enabled: true, mf, origin: config.origin, directCredentialPolicy: config.directCredentialPolicy });
     },
   });
   let gateway;

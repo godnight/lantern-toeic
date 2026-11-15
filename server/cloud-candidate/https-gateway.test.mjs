@@ -47,7 +47,8 @@ test('HTTPS fixed routes reach actual account Worker and D1; provider stays clos
       const sql = await readFile(new URL('../../drizzle/' + name, import.meta.url), 'utf8');
       await db.batch(sql.split('--> statement-breakpoint').map(s => s.trim()).filter(Boolean).map(s => db.prepare(s)));
     }
-    service = await prepareCloudService({ enabled: true, origin, mf });
+    service = await prepareCloudService({ enabled: true, origin, mf,
+      directCredentialPolicy: { mode: 'direct', credentialsPerWindow: 2, registrationsPerWindow: 1, maxSources: 16 } });
     server = https.createServer(material, service.handler); server.on('tlsClientError', () => {});
     await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
     const port = server.address().port;
@@ -65,11 +66,33 @@ test('HTTPS fixed routes reach actual account Worker and D1; provider stays clos
     assert.equal((await call(port, material.cert, '/api/auth/session', { cookie })).status, 200);
     assert.equal((await call(port, material.cert, '/api/auth/logout', { cookie, body: {} })).status, 200);
     assert.equal((await call(port, material.cert, '/api/auth/session', { cookie })).status, 401);
+    assert.equal((await call(port, material.cert, '/api/auth/login', { body: { username: 'synthetic_https', password: 'wrong-password-123' } })).status, 401);
+    const stopped = await call(port, material.cert, '/api/auth/login', { body: { username: 'synthetic_other', password: 'wrong-password-123' }, extra: { 'cf-connecting-ip': '198.51.100.10' } });
+    assert.equal(stopped.status, 429); assert.equal(JSON.parse(stopped.body).code, 'too-many-attempts');
+    assert.equal((await db.prepare("SELECT count FROM auth_rate_limits WHERE scope='global:credentials'").first()).count, 2,
+      'Source rejection must not spend another shared database admission slot');
     await assert.rejects(call(port, Buffer.from('untrusted'), '/health'));
   } finally {
     if (server) await new Promise(resolve => server.close(resolve));
     if (service) await service.close(); if (mf) await mf.dispose(); await cleanup(dir);
   }
+});
+test('direct source policy uses the real TLS socket peer and ignores forged IP headers', async () => {
+  const dir = await temporary(); let server;
+  try {
+    const material = await certs(dir); let calls = 0;
+    const handler = createHttpsHandler({ origin, directCredentialPolicy: { mode: 'direct', credentialsPerWindow: 2, registrationsPerWindow: 1, maxSources: 16 },
+      channel: { async dispatch() { calls++; return Response.json({ code: 'invalid-credentials' }, { status: 401 }); } } });
+    server = https.createServer(material, handler); server.on('tlsClientError', () => {});
+    await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
+    const port = server.address().port;
+    for (let i = 0; i < 2; i++) assert.equal((await call(port, material.cert, '/api/auth/login', { body: { username: 'synthetic', password: 'synthetic-password' }, extra: { 'cf-connecting-ip': '198.51.100.' + i } })).status, 401);
+    const limited = await call(port, material.cert, '/api/auth/login', { body: { username: 'synthetic', password: 'synthetic-password' }, extra: { 'cf-connecting-ip': '198.51.100.99' } });
+    assert.equal(limited.status, 429); assert.deepEqual(JSON.parse(limited.body), { code: 'too-many-attempts', error: '尝试次数过多，请稍后再试' });
+    assert.ok(Number(limited.headers['retry-after']) > 0); assert.equal(calls, 2);
+    assert.equal((await call(port, material.cert, '/api/auth/login', { body: {}, extra: { 'x-forwarded-for': '203.0.113.1' } })).status, 400);
+    assert.equal((await call(port, material.cert, '/health')).status, 401, 'Other routes do not spend or consult credential source budgets');
+  } finally { if (server) await new Promise(resolve => server.close(resolve)); await cleanup(dir); }
 });
 test('defaults are closed; envelope covers identity, route, body and response', async () => {
   await assert.rejects(prepareCloudService(), /disabled/);
