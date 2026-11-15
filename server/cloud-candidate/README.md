@@ -2,6 +2,8 @@
 
 本目录为隔离的审核候选，不含已部署服务、部署脚本或真实配置。导入模块不会启动网络服务；受控启动器必须显式启用，手机号缺省关闭且需完整独立配置与预检，同步仍然关闭。不要把这些组件直接部署到服务器，也不要接入真实账户或数据。
 
+`pnvs-ecs-policy.example.json` 是供审阅的 ECS 实例 RAM 角色权限策略示例，只包含阿里云号码认证服务的[短信发送](https://help.aliyun.com/zh/pnvs/developer-reference/api-dypnsapi-2017-05-25-sendsmsverifycode)和[验证码核验](https://help.aliyun.com/zh/pnvs/developer-reference/api-dypnsapi-2017-05-25-checksmsverifycode)两个操作。阿里云文档将两者的授权资源列为全部资源，因此示例的 `Resource` 为 `*`；这不表示授予其他操作权限。示例不含密钥，不会创建或绑定角色，也不会发送短信。实际使用前仍需配置实例身份、可用签名与模板、发送和验证限额，并完成真实服务验证；短信发送可能产生费用。
+
 原生账号候选可在受保护配置中**显式**提供 `directCredentialPolicy`，例如 `{"mode":"direct","credentialsPerWindow":20,"registrationsPerWindow":4,"maxSources":4096}`；省略时该来源限流关闭。范围分别为凭据数 1–99、注册数 1–19 且不超过凭据数、来源表 1–16384；窗口与账号共享额度一致为 15 分钟。只可用于确认客户端直接连接本 HTTPS 服务的部署；**不能用于 HTTP/TCP 代理或负载均衡后方**，也不信任任何转发头。仅密码登录/注册使用真实 socket 对端地址，IPv4 映射地址合并、IPv6 按 /64 聚合；同一 NAT/网段用户共享额度。限额可能使用户比现有逻辑更早看到相同的“尝试次数过多”提示，**正式启用前须向用户展示并确认具体阈值及共享网络影响**。KDF 忙且确认没有服务端计数时退还额度；网络中断或结果未知不退。来源表满时新来源失败关闭、不驱逐未过期条目；状态仅在单进程内存中，重启清空，不覆盖分布式流量或多实例攻击，不能视为完整抗拒绝服务或公开上线保障。
 
 - `domain-policy.candidate.mjs`、`https-gateway.candidate.mjs`：域名证书检查和受控 systemd socket 网关候选，仅显式启用后读取 root 管理的证书，检查 SAN、有效期、密钥、文件权限和系统信任链。实际 Linux socket/权限、真实证书签发及续期仍未验证。
