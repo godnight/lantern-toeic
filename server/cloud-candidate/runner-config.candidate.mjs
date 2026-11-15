@@ -3,6 +3,7 @@ import { open, lstat, realpath } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import path from 'node:path';
 import { validDomainOrigin } from './domain-policy.candidate.mjs';
+import { parseProductionPhonePolicy } from './production-phone-preflight.candidate.mjs';
 
 function privateAddress(value) {
   if (typeof value !== 'string' || !/^\d{1,3}(?:\.\d{1,3}){3}$/.test(value)) return false;
@@ -10,10 +11,20 @@ function privateAddress(value) {
   const [a, b] = parts.map(Number); return a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
 }
 export function validateRunnerConfig(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).sort().join(',') !== 'bindAddress,certRoot,enabled,lockDir,origin,slot' || value.enabled !== true ||
+  if (!value || typeof value !== 'object' || Array.isArray(value) || !['bindAddress,certRoot,enabled,lockDir,origin,slot','bindAddress,certRoot,enabled,lockDir,origin,phone,slot'].includes(Object.keys(value).sort().join(',')) || value.enabled !== true ||
       !validDomainOrigin(value.origin) || !privateAddress(value.bindAddress) || typeof value.slot !== 'string' || !/^[a-z0-9][a-z0-9-]{0,39}$/.test(value.slot) ||
       ![value.certRoot, value.lockDir].every(p => typeof p === 'string' && path.isAbsolute(p) && path.resolve(p) === p) || value.certRoot === value.lockDir) throw Error('invalid runner configuration');
-  return Object.freeze({ enabled: true, origin: value.origin, bindAddress: value.bindAddress, certRoot: value.certRoot, lockDir: value.lockDir, slot: value.slot });
+  const result = { enabled: true, origin: value.origin, bindAddress: value.bindAddress, certRoot: value.certRoot, lockDir: value.lockDir, slot: value.slot };
+  if (value.phone !== undefined) {
+    const phone=value.phone;
+    if (!phone || typeof phone !== 'object' || Array.isArray(phone) || Object.keys(phone).sort().join(',')!=='policy,privateRoot,roleName' ||
+        typeof phone.roleName!=='string' || !/^[A-Za-z0-9._-]{1,64}$/.test(phone.roleName) || ['.','..'].includes(phone.roleName) ||
+        typeof phone.privateRoot!=='string' || !path.posix.isAbsolute(phone.privateRoot) || path.posix.resolve(phone.privateRoot)!==phone.privateRoot) throw Error('invalid phone configuration');
+    const policy=parseProductionPhonePolicy(phone.policy);
+    if (!policy.enabled || policy.origin!==value.origin || path.posix.dirname(policy.referenceKeyFile)!==phone.privateRoot) throw Error('invalid phone configuration');
+    result.phone=Object.freeze({policy,privateRoot:phone.privateRoot,roleName:phone.roleName});
+  }
+  return Object.freeze(result);
 }
 export async function readRunnerConfig({ enabled = false, file } = {}) {
   if (enabled !== true) throw Error('runner disabled');

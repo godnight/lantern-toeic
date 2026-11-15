@@ -109,11 +109,8 @@ async function preparePhoneRuntime({policy,referenceKey,pnvsCall}={}){
  * the ledger/schema from that same database after reviewed migrations. An
  * absent/disabled policy does not read any key or
  * construct a provider. This function does not start or deploy anything. */
-export async function prepareProductionPhoneAssembly({policy,accountOrigin,privateRoot,getCredentials,pnvsFetch,mf}={}){
- const config=parseProductionPhonePolicy(policy);
- if(!config.enabled)return Object.freeze({enabled:false});
- if(config.origin!==accountOrigin)throw Error('phone/account origin mismatch');
- if(typeof getCredentials!=='function'||typeof pnvsFetch!=='function')throw Error('phone credentials or transport unavailable');
+export async function verifyPhoneDatabase({mf,policy}={}){
+ const config=parseProductionPhonePolicy(policy);if(!config.enabled)throw Error('phone runtime disabled');
  if(!mf||typeof mf.getD1Database!=='function')throw Error('phone database unavailable');
  const db=await mf.getD1Database('DB');
  const ledgerRows=(await db.prepare("SELECT name,sha FROM _lantern_local_migrations WHERE name IN ('0007_phone_auth.sql','0008_phone_challenges.sql') ORDER BY name").all()).results;
@@ -122,6 +119,13 @@ export async function prepareProductionPhoneAssembly({policy,accountOrigin,priva
  const saved=await db.prepare('SELECT policy FROM _lantern_phone_policy WHERE singleton=1').first();
  const limits=config.limits,expectedPolicy=JSON.stringify([limits.maxSendsPerUtcDay,limits.maxSendsPerMinute,limits.maxSendsPerPhoneHour,limits.maxVerificationsPerPhoneTenMinutes]);
  if(saved?.policy!==expectedPolicy)throw Error('phone budget policy mismatch');
+}
+export async function prepareProductionPhoneAssembly({policy,accountOrigin,privateRoot,getCredentials,pnvsFetch,mf}={}){
+ const config=parseProductionPhonePolicy(policy);
+ if(!config.enabled)return Object.freeze({enabled:false});
+ if(config.origin!==accountOrigin)throw Error('phone/account origin mismatch');
+ if(typeof getCredentials!=='function'||typeof pnvsFetch!=='function')throw Error('phone credentials or transport unavailable');
+ await verifyPhoneDatabase({mf,policy:config});
  const key=await readProductionReferenceKey(config.referenceKeyFile,privateRoot);
  try{
   const pnvsCall=await createServerPnvsCaller({enabled:true,getCredentials,pnvsFetch});

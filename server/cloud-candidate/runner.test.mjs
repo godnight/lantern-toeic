@@ -21,6 +21,11 @@ test('runner is closed by default and accepts only exact protected configuration
   const result = spawnSync(process.execPath, [fileURLToPath(new URL('./run-controlled.candidate.mjs', import.meta.url))], { encoding: 'utf8' });
   assert.equal(result.status, 1); assert.match(result.stderr, /explicit enable/);
 });
+test('phone runner configuration is explicit, fixed-origin and bounded',()=>{
+ const phone={policy:{enabled:true,origin:config().origin,signature:'synthetic-sign',schemeName:'synthetic',templates:{login:'100001'},referenceKeyFile:'/synthetic/private/key',limits:{maxSendsPerUtcDay:4,maxSendsPerMinute:4,maxSendsPerPhoneHour:1,maxVerificationsPerPhoneTenMinutes:5}},privateRoot:'/synthetic/private',roleName:'synthetic-role'};
+ assert.equal(validateRunnerConfig({...config(),phone}).phone.policy.enabled,true);
+ for(const change of [{roleName:'../bad'},{privateRoot:'/different'},{untrusted:true},{policy:{...phone.policy,origin:'https://other.synthetic.test'}},{policy:{...phone.policy,enabled:false}},{policy:{...phone.policy,limits:{...phone.policy.limits,maxSendsPerUtcDay:101}}}])assert.throws(()=>validateRunnerConfig({...config(),phone:{...phone,...change}}));
+});
 test('stop during startup waits for real synthetic D1 then disposes and releases lock once', { timeout: 60000 }, async () => {
   const dir = await realpath(await mkdtemp(path.join(os.tmpdir(), 'lantern-runner-test-'))), events = new EventEmitter();
   let allow, entered, closed = 0; const gate = new Promise(resolve => { allow = resolve; }), started = new Promise(resolve => { entered = resolve; });
