@@ -4,7 +4,7 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const {buildSync}=require('esbuild'),{chromium}=require('playwright');
 const {hostRuntime,response}=require('../helpers/native-auth-host-runtime.cjs');
-const ROOT=path.resolve(__dirname,'../..'),DIST=path.join(ROOT,'mobile/dist');
+const ROOT=path.resolve(__dirname,'../..'),DIST=path.resolve(process.env.LANTERN_ACCOUNT_UI_DIST||path.join(ROOT,'mobile/dist'));
 const OUT=path.resolve(process.env.LANTERN_ACCOUNT_UI_OUT||path.join(ROOT,'.preview/account-ui'));
 const shared=process.argv.includes('--shared'),WEB='https://study.test',NATIVE='https://lantern.local';
 const A={id:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'},B={id:'usr_bbbbbbbb-2222-4222-8222-222222222222',username:'synthetic_b'};
@@ -41,6 +41,15 @@ async function nativePage(component,styles,user=null,width=390){
 async function openProfile(p){const primary=p.getByRole('button',{name:'打开个人信息与设置',exact:true});if(await primary.count())await primary.click();else await p.getByRole('button',{name:'返回我的',exact:true}).click();await p.getByRole('heading',{name:'我的',exact:true}).waitFor();}
 async function account(p){await openProfile(p);await p.getByRole('button',{name:/账号与安全/}).click();await p.getByRole('button',{name:'切换账号',exact:true}).waitFor();}
 async function backups(p){await openProfile(p);await p.getByRole('button',{name:'数据管理',exact:true}).click();await p.getByRole('heading',{name:'数据管理',exact:true}).waitFor();await p.waitForFunction(()=>!document.querySelector('input[aria-label="选择词库记录备份"]').disabled);}
+async function nativePasswordEntry(p,mode='register'){
+ await p.getByRole('heading',{name:'登录微光',exact:true}).waitFor();
+ await p.getByRole('button',{name:'手机号登录',exact:true}).click();
+ await p.getByRole('heading',{name:'手机号登录',exact:true}).waitFor();
+ await p.getByRole('button',{name:'账号密码登录',exact:true}).click();
+ await p.getByRole('heading',{name:'登录微光账号',exact:true}).waitFor();
+ if(mode==='register'){await p.getByRole('button',{name:'注册新账号',exact:true}).click();await p.getByRole('heading',{name:'注册微光账号',exact:true}).waitFor();}
+ await p.locator('input[type=checkbox]').check();
+}
 const storage=p=>p.evaluate(()=>Object.fromEntries(Object.keys(localStorage).filter(k=>!k.includes('session-notice')).map(k=>[k,localStorage.getItem(k)])));
 async function login(p,name){await p.getByRole('button',{name:'切换账号',exact:true}).click();await p.getByLabel('用户名',{exact:true}).fill(name);await p.getByLabel('密码',{exact:true}).fill(password);await p.getByRole('button',{name:'登录',exact:true}).click();await p.getByRole('heading',{name:'今日学习',exact:true}).waitFor();}
 async function errorGeometry(p,name){
@@ -51,7 +60,7 @@ async function errorGeometry(p,name){
  fs.mkdirSync(OUT,{recursive:true});const component=bundle(),styles=fs.readdirSync(path.join(DIST,'assets')).filter(f=>f.endsWith('.css')).map(f=>'/assets/'+f),chrome=['C:/Program Files/Google/Chrome/Application/chrome.exe','C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'].find(fs.existsSync);assert(chrome);browser=await chromium.launch({headless:true,executablePath:chrome});
  if(process.argv.includes('--credentials-only')){
   const anon=await nativePage(component,styles),p=anon.p;
-  await p.getByRole('heading',{name:'注册微光账号',exact:true}).waitFor();
+  await nativePasswordEntry(p);
   await p.getByText('8–128 个字符',{exact:true}).waitFor();assert.equal(await p.locator('details').getAttribute('open'),null);
   const hint=await p.getByLabel('密码',{exact:true}).getAttribute('aria-describedby');assert.equal(await p.locator('[id="'+hint+'"]').innerText(),'8–128 个字符');
   await shot(p,'register-visible-password-guidance-390');
@@ -59,14 +68,14 @@ async function errorGeometry(p,name){
   const count=anon.calls.length;await p.getByRole('button',{name:'注册',exact:true}).click();await errorGeometry(p,'密码');assert.equal(anon.calls.length,count);check('Password rule is visible before input and seven characters are rejected without a server request');
   await p.getByLabel('密码',{exact:true}).fill('a'.repeat(8));await p.getByLabel('再次输入密码',{exact:true}).fill('a'.repeat(8));await p.getByRole('button',{name:'注册',exact:true}).click();
   await p.getByRole('heading',{name:'今日学习',exact:true}).waitFor();assert(anon.calls.includes('register'));check('Eight-character registration enters learning after verified session without an intermediate account page');
-  await account(p);await p.getByRole('button',{name:'退出本机',exact:true}).click();await p.getByRole('heading',{name:'注册微光账号',exact:true}).waitFor();
-  await p.getByRole('button',{name:'已有账号，去登录',exact:true}).click();await p.getByLabel('用户名',{exact:true}).fill('synthetic_a');await p.getByLabel('密码',{exact:true}).fill('a'.repeat(8));await p.getByRole('button',{name:'登录',exact:true}).click();
+  await account(p);await p.getByRole('button',{name:'退出本机',exact:true}).click();await nativePasswordEntry(p,'login');
+  await p.getByLabel('用户名',{exact:true}).fill('synthetic_a');await p.getByLabel('密码',{exact:true}).fill('a'.repeat(8));await p.getByRole('button',{name:'登录',exact:true}).click();
   await p.getByRole('heading',{name:'今日学习',exact:true}).waitFor();assert(anon.calls.includes('logout')&&anon.calls.includes('login'));check('Account management remains reachable and logout followed by eight-character login returns directly to learning');
   assert.equal(report.pageErrors.length,0);assert.equal(report.privateRequests.length,0);report.status='PASS_ACCOUNT_CREDENTIALS_AND_ENTRY';return;
  }
  if(process.argv.includes('--focus-only')){
   const anon=await nativePage(component,styles),p=anon.p;
-  await p.getByRole('heading',{name:'注册微光账号',exact:true}).waitFor();
+  await nativePasswordEntry(p);
   await p.getByLabel('用户名',{exact:true}).fill('synthetic_focus');await p.getByLabel('密码',{exact:true}).fill(password);
   const field=await p.getByLabel('用户名',{exact:true}).elementHandle(),before=anon.calls.length;
   await p.evaluate(()=>{document.querySelector('input[name="username"]').focus();dispatchEvent(new Event('focus'));window.__LANTERN_HARMONY__.onAppState(true);window.__LANTERN_HARMONY__.onAppState(true);dispatchEvent(new Event('pageshow'));});
@@ -89,7 +98,7 @@ async function errorGeometry(p,name){
   const range=p.getByRole('region',{name:'学习进度备份与恢复'}).locator('details');await range.locator('summary').click();assert.match(await range.innerText(),/各类资料需分别备份，单个文件不包含全部资料。/);assert.match(await range.innerText(),/不包含完整词库学习事件/);await range.scrollIntoViewIfNeeded();await shot(p,'copy-backup-scope-390');check('Data-management copy is short at top, recording restriction is next to export, and existing backup range retains specific limits');
   await account(p);owner.unknown();await p.getByRole('button',{name:'切换账号',exact:true}).click();await p.getByLabel('用户名',{exact:true}).fill(B.username);await p.getByLabel('密码',{exact:true}).fill(password);await p.getByRole('button',{name:'登录',exact:true}).click();await p.getByRole('heading',{name:'账号需要核对',exact:true}).waitFor();await p.getByText('上次操作的结果还未确认，请重新核对账号后继续。',{exact:true}).waitFor();assert(!(await p.locator('.workspace-account').innerText()).includes('注册失败'));await shot(p,'copy-login-unknown-390');check('Login unknown uses the shared neutral previous-operation wording');assert.equal(report.pageErrors.length,0);assert.equal(report.privateRequests.length,0);report.status='PASS_ACCOUNT_COPY';return;
  }
- const anon=await nativePage(component,styles);await anon.p.getByRole('heading',{name:'注册微光账号',exact:true}).waitFor();assert.equal(await anon.p.getByRole('heading').count(),1);assert.equal(await anon.p.getByRole('button',{name:/返回学习|安全返回/}).count(),0);assert.equal(await anon.p.evaluate(()=>window.__uiDbOpens),0);assert.equal(await anon.p.locator('details').getAttribute('open'),null);check('Shared anonymous entry has one title, no false Back, collapsed rules and no learning database');await shot(anon.p,'shared-register-390');await anon.p.setViewportSize({width:320,height:640});await shot(anon.p,'shared-register-320');if(process.argv.includes('--registration-only')){report.status='PASS_ACCOUNT_UI_REGISTRATION_FRAMES';return;}
+ const anon=await nativePage(component,styles);await anon.p.getByRole('heading',{name:'登录微光',exact:true}).waitFor();assert.equal(await anon.p.getByRole('heading').count(),1);assert.equal(await anon.p.getByRole('button',{name:/返回学习|安全返回/}).count(),0);assert.equal(await anon.p.evaluate(()=>window.__uiDbOpens),0);check('Shared anonymous choice has one title, no false Back and no learning database');await nativePasswordEntry(anon.p);assert.equal(await anon.p.locator('details').getAttribute('open'),null);check('Password registration remains reachable and rules are collapsed');await shot(anon.p,'shared-register-390');await anon.p.setViewportSize({width:320,height:640});await shot(anon.p,'shared-register-320');if(process.argv.includes('--registration-only')){report.status='PASS_ACCOUNT_UI_REGISTRATION_FRAMES';return;}
  for(const cond of [{width:320,height:640,font:16},{width:390,height:844,font:16},{width:320,height:640,font:32}]){
   const p=anon.p;await p.setViewportSize({width:cond.width,height:cond.height});await p.evaluate(font=>document.documentElement.style.fontSize=font+'px',cond.font);await p.getByLabel('用户名',{exact:true}).fill('坏名字');await p.getByLabel('密码',{exact:true}).fill('x'.repeat(15));await p.getByLabel('再次输入密码',{exact:true}).fill('x'.repeat(15));const count=anon.calls.length;await p.getByRole('button',{name:'注册',exact:true}).click();const username=await errorGeometry(p,'用户名');assert.equal(username.font,cond.font);assert.equal(username.errorFont,cond.font);await shot(p,`shared-${cond.width}-font${cond.font}-username-error`);await p.getByLabel('用户名',{exact:true}).fill('synthetic_ui');assert.equal(await p.getByLabel('用户名',{exact:true}).getAttribute('aria-invalid'),null);
   await p.getByLabel('密码',{exact:true}).fill('x'.repeat(7));await p.getByRole('button',{name:'注册',exact:true}).click();const pass=await errorGeometry(p,'密码');await p.getByLabel('密码',{exact:true}).fill('x'.repeat(15));assert.equal(await p.getByLabel('密码',{exact:true}).getAttribute('aria-invalid'),null);await p.getByLabel('再次输入密码',{exact:true}).fill('y'.repeat(15));await p.getByRole('button',{name:'注册',exact:true}).click();const confirmation=await errorGeometry(p,'再次输入密码');await shot(p,`shared-${cond.width}-font${cond.font}-confirmation-error`);await p.getByLabel('再次输入密码',{exact:true}).fill('x'.repeat(15));assert.equal(await p.getByLabel('再次输入密码',{exact:true}).getAttribute('aria-invalid'),null);assert.equal(anon.calls.length,count);check('First-field focus, visible reason, accessible association and edit clearing '+cond.width+'/'+cond.font,{username,pass,confirmation});
