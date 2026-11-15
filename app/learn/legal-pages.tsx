@@ -88,6 +88,12 @@ export function PublicInfoLinks({className='',compact=false}:{className?:string;
   </nav>;
 }
 
+/** Individual public links retain the native in-app reader before sign-in. */
+export function PublicInfoLink({kind,children}:{kind:'privacy'|'terms';children:ReactNode}){
+  const open=useContext(PublicInfoContext);
+  return <a href={`/${kind}`} onClick={event=>{if(open&&!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey){event.preventDefault();open(kind);}}}>{children}</a>;
+}
+
 function inline(text:string):ReactNode{
   return text.split(/(\*\*[^*]+\*\*)/g).map((value,index)=>value.startsWith('**')&&value.endsWith('**')?<strong key={index}>{value.slice(2,-2)}</strong>:value);
 }
