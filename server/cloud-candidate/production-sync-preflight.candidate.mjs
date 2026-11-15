@@ -24,7 +24,12 @@ export async function validateSyncDatabase(db){
  const actual=rows.map(x=>({type:x.type,name:x.name,tblName:x.tblName,sha:hash(x.sql.replace(/\r\n/g,'\n'))}));
  if(JSON.stringify(actual)!==JSON.stringify(expected.schema))throw Error('sync schema mismatch');
  const migrationNames=Object.keys(expected.migrations),ledger=(await db.prepare(`SELECT name,sha FROM _lantern_local_migrations WHERE name IN (${placeholders(migrationNames.length)})`).bind(...migrationNames).all()).results;
- if(ledger.length!==migrationNames.length||ledger.some(row=>!expected.migrations[row.name]?.includes(row.sha)))throw Error('sync migration ledger mismatch');
+ const found=new Set();
+ for(const row of ledger){
+  if(!row||!Object.hasOwn(expected.migrations,row.name)||found.has(row.name)||!expected.migrations[row.name].includes(row.sha))throw Error('sync migration ledger mismatch');
+  found.add(row.name);
+ }
+ if(found.size!==migrationNames.length||migrationNames.some(name=>!found.has(name)))throw Error('sync migration ledger mismatch');
  const clock=await db.prepare('SELECT epoch,revision,ready FROM study_sync_clock WHERE id=1').first();
  if(!clock||!/^[a-f0-9]{32}$/.test(clock.epoch)||!Number.isSafeInteger(clock.revision)||clock.revision<0||clock.ready!==1)throw Error('sync clock not ready');
  const maximum=await db.prepare('SELECT COALESCE(MAX(revision),0) AS n FROM study_sync_index').first();if(!maximum||maximum.n>clock.revision)throw Error('sync clock mismatch');

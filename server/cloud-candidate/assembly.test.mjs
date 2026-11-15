@@ -7,6 +7,7 @@ import os from 'node:os';
 import { Miniflare, Log, LogLevel } from 'miniflare';
 import { buildAccountWorker, buildSyncModel } from './build-inputs.mjs';
 import { prepareAccountSyncAssembly } from './assembly.candidate.mjs';
+import { validateSyncDatabase } from './production-sync-preflight.candidate.mjs';
 
 const origin = 'https://synthetic.invalid';
 const root = new URL('../../', import.meta.url);
@@ -39,6 +40,18 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     await db.prepare('CREATE TABLE _lantern_local_migrations(name TEXT PRIMARY KEY,sha TEXT NOT NULL)').run();
     const manifest = JSON.parse(await readFile(new URL('./unified-sync-schema-manifest.candidate.json', import.meta.url), 'utf8'));
     await db.batch(Object.entries(manifest.migrations).map(([name, hashes]) => db.prepare('INSERT INTO _lantern_local_migrations(name,sha) VALUES(?,?)').bind(name, hashes[0])));
+    // A damaged ledger without a UNIQUE constraint could duplicate one valid
+    // migration while omitting another; row count and valid hashes alone do
+    // not establish that every required migration exists.
+    const ledger = Object.entries(manifest.migrations).map(([name, hashes]) => ({ name, sha: hashes[0] }));
+    const withLedger = rows => ({ prepare(sql) {
+      if (sql.startsWith('SELECT name,sha FROM _lantern_local_migrations')) return { bind: () => ({ all: async () => ({ results: rows }) }) };
+      return db.prepare(sql);
+    } });
+    await validateSyncDatabase(withLedger(ledger));
+    await assert.rejects(validateSyncDatabase(withLedger([...ledger.slice(0, -1), ledger[0]])), /ledger mismatch/);
+    await assert.rejects(validateSyncDatabase(withLedger(ledger.slice(1))), /ledger mismatch/);
+    await assert.rejects(validateSyncDatabase(withLedger([...ledger.slice(0, -1), { ...ledger.at(-1), sha: '0'.repeat(64) }])), /ledger mismatch/);
     const privateRoot = path.resolve('synthetic-private'), settings = { enabled: true, origin, cursorKeyFile: path.join(privateRoot, 'cursor.key'), modelSha256: modelInfo.sha };
     let app = await prepareAccountSyncAssembly({ settings, mf, origin, privateRoot, key, proxy, phoneKey, modelInfo });
     const status = await app.fetch(request('/api/auth/phone/status'));
