@@ -96,7 +96,7 @@ jobs:
         if: steps.scope.outputs.full == 'true'
         run: |
           npm run test:auth
-          node --test tests/phone-client.test.cjs
+          node --test tests/phone-client.test.cjs tests/phone-d1-runtime.test.cjs tests/phone-flow-runtime.test.cjs
       - name: Verify native sync bridge and account gate
         if: steps.scope.outputs.full == 'true'
         run: node --test tests/native-sync-auth-gate.test.cjs tests/native-sync-bridge.test.cjs tests/native-sync-registration.test.cjs tests/native-sync-lifecycle-port.test.cjs tests/cloud-sync-page.test.cjs tests/cloud-sync-native-lifecycle.test.cjs
