@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, randomBytes, randomInt } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { readFile, mkdtemp, realpath, rm } from 'node:fs/promises';
+import { fork } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+import os from 'node:os';
 import { DatabaseSync } from 'node:sqlite';
 import { createSqliteD1Core } from './sqlite-d1-core.candidate.mjs';
 import { prepareNativePhoneCandidate } from './native-phone-composition.candidate.mjs';
@@ -9,8 +13,9 @@ import { prepareNativePhoneCandidate } from './native-phone-composition.candidat
 const origin = 'https://synthetic.invalid';
 const policy = { enabled: true, origin, signature: 'synthetic-sign', schemeName: 'synthetic', templates: { login: '100001', bind: '100004' },
   referenceKeyFile: '/synthetic/private/key', limits: { maxSendsPerUtcDay: 10, maxSendsPerMinute: 10, maxSendsPerPhoneHour: 2, maxVerificationsPerPhoneTenMinutes: 5 } };
-async function syntheticDatabase() {
-  const sqlite = new DatabaseSync(':memory:');
+async function syntheticDatabase(file=':memory:') {
+  const sqlite = new DatabaseSync(file);
+  if (file !== ':memory:') sqlite.exec('PRAGMA journal_mode=WAL');
   sqlite.exec('PRAGMA foreign_keys=ON; CREATE TABLE _lantern_local_migrations(name TEXT PRIMARY KEY,sha TEXT NOT NULL)');
   for (const name of ['0005_product_auth.sql','0006_auth_admission_ticket.sql','0007_phone_auth.sql','0008_phone_challenges.sql','0009_huawei_auth.sql']) {
     const sql = await readFile(new URL('../../drizzle/' + name, import.meta.url));
@@ -133,4 +138,61 @@ test('Huawei and phone share a verified owner with explicit constrained Huawei o
     audience='wrong';r=await request(worker,'/api/auth/huawei/login',{code:'synthetic-wrong-audience'});assert.equal(r.status,401);
     assert.equal(calls,6);
   } finally {sqlite.close()}
+});
+
+
+function launchSyntheticPhoneChild(file, syntheticKey) {
+  const child=fork(fileURLToPath(new URL('./native-phone-child.fixture.mjs',import.meta.url)),[file,syntheticKey],{stdio:['ignore','ignore','pipe','ipc']});
+  let seq=0,stderr='',readyResolve,readyReject,exitResolve,exitReject;const pending=new Map();
+  const ready=new Promise((resolve,reject)=>{readyResolve=resolve;readyReject=reject});
+  const exited=new Promise((resolve,reject)=>{exitResolve=resolve;exitReject=reject});
+  ready.catch(()=>{});exited.catch(()=>{});
+  child.stderr.on('data',chunk=>{stderr+=chunk.toString()});
+  child.on('message',message=>{
+    if(typeof message?.ready==='boolean'){readyResolve(message.ready);return;}
+    const promise=pending.get(message?.id);if(promise){pending.delete(message.id);message.error?promise.reject(Error(message.error)):promise.resolve(message)}
+  });
+  child.on('error',error=>{readyReject(error);exitReject(error);for(const p of pending.values())p.reject(error);pending.clear()});
+  child.on('exit',(code,signal)=>{const error=Error('synthetic child exited: '+code+'/'+signal+' '+stderr);for(const p of pending.values())p.reject(error);pending.clear();if(code===0)exitResolve();else{readyReject(error);exitReject(error)}});
+  return {child,ready,exited,send(message){return new Promise((resolve,reject)=>{const id=++seq;pending.set(id,{resolve,reject});child.send({...message,id},error=>{if(error&&pending.has(id)){pending.delete(id);reject(error)}})})}};
+}
+
+test('synthetic on-disk WAL survives an independent Node process restart, preserving sessions and phone ownership', {timeout:60000}, async()=>{
+  const dir=await realpath(await mkdtemp(path.join(os.tmpdir(),'lantern-native-phone-restart-'))),file=path.join(dir,'synthetic-phone.sqlite'),children=[];
+  let sqlite;const syntheticKey=randomBytes(32).toString('hex');
+  try {
+    ({sqlite}=await syntheticDatabase(file));sqlite.close();sqlite=undefined;
+    let running=launchSyntheticPhoneChild(file,syntheticKey);children.push(running.child);assert.equal(await running.ready,true);
+    async function signup(phone) {
+      let reply=await running.send({action:'request',route:'/api/auth/phone/challenge',body:{phone,purpose:'login'}});
+      assert.equal(reply.status,202,reply.body);const challenge=JSON.parse(reply.body);
+      const code=(await running.send({action:'code',challengeId:challenge.challengeId})).code;
+      reply=await running.send({action:'request',route:'/api/auth/phone/login',body:{phone,challengeId:challenge.challengeId,code}});
+      assert.equal(reply.status,200,reply.body);return {owner:JSON.parse(reply.body).user.id,cookie:reply.cookie};
+    }
+    const phoneA='+8613800000201',phoneB='+8613800000202',a=await signup(phoneA),b=await signup(phoneB);
+    assert.notEqual(a.owner,b.owner);
+    await running.send({action:'stop'});await running.exited;
+    // Advance only this synthetic phone's cooldown between processes; the
+    // production hour/day budgets and the saved user/session data are intact.
+    sqlite=new DatabaseSync(file);const prefix=createHash('sha256').update(origin+'/phone').digest('hex');
+    const phoneHash=createHash('sha256').update(origin+'/phone'+'\0'+phoneA).digest('hex');
+    assert.equal(sqlite.prepare('UPDATE auth_phone_flow_cooldowns SET resend_at=0 WHERE scope=?').run(prefix+':'+phoneHash).changes,1);
+    assert.equal(sqlite.prepare('SELECT user_id FROM auth_phone_bindings WHERE phone=?').get(phoneA).user_id,a.owner);
+    assert.equal(sqlite.prepare('SELECT user_id FROM auth_phone_bindings WHERE phone=?').get(phoneB).user_id,b.owner);
+    sqlite.close();sqlite=undefined;
+    running=launchSyntheticPhoneChild(file,syntheticKey);children.push(running.child);assert.equal(await running.ready,true);
+    for(const account of [a,b]){
+      const session=await running.send({action:'request',route:'/api/auth/session',cookie:account.cookie});
+      assert.equal(session.status,200,session.body);assert.equal(JSON.parse(session.body).user.id,account.owner);
+    }
+    const loginAgain=await signup(phoneA);assert.equal(loginAgain.owner,a.owner);
+    await running.send({action:'stop'});await running.exited;
+  } finally {
+    sqlite?.close();
+    await Promise.all(children.map(child=>child.exitCode===null&&child.signalCode===null?new Promise(resolve=>{child.once('exit',resolve);child.kill()}):undefined));
+    const actual=await realpath(dir),tmp=await realpath(os.tmpdir());
+    if(path.dirname(actual).toLowerCase()!==tmp.toLowerCase()||!path.basename(actual).startsWith('lantern-native-phone-restart-'))throw Error('unsafe synthetic directory');
+    await rm(actual,{recursive:true,force:true});
+  }
 });
