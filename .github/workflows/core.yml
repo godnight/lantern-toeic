@@ -153,12 +153,15 @@ jobs:
         if: steps.scope.outputs.full == 'true'
         env:
           LANTERN_AUTH_QA_DIR: ${{ runner.temp }}/lantern-auth-browser-qa
+          LANTERN_ACCOUNT_UI_OUT: ${{ runner.temp }}/lantern-account-ui-qa
           LANTERN_BROWSER_QA_DIR: ${{ runner.temp }}/lantern-browser-qa
           LANTERN_DICTIONARY_QA_DIR: ${{ runner.temp }}/lantern-dictionary-browser-qa
           LANTERN_THEME_QA_DIR: ${{ runner.temp }}/lantern-theme-browser-qa
           LANTERN_PAGE_PACK_QA_DIR: ${{ runner.temp }}/lantern-page-pack-qa
         run: |
           node tests/browser/auth-choice.cjs
+          node tests/browser/account-ui.cjs
+          node tests/browser/account-ui.cjs --shared
           npm run test:browser
           npm run test:dictionary:browser
           npm run test:themes:browser
@@ -170,6 +173,8 @@ jobs:
           name: browser-qa-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/lantern-auth-browser-qa/*.png
+            ${{ runner.temp }}/lantern-account-ui-qa/report.json
+            ${{ runner.temp }}/lantern-account-ui-qa/*.png
             ${{ runner.temp }}/lantern-browser-qa/result.json
             ${{ runner.temp }}/lantern-browser-qa/*.png
             ${{ runner.temp }}/lantern-dictionary-browser-qa/result.json
