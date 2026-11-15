@@ -28,15 +28,44 @@ function setupFixture(extraSetup = []) {
   return { root, source, target, python };
 }
 
-function createDb(path, rows) {
+const migrations = [
+  ['0000_product_auth.sql', '343816721b4a8bd71b107de663dd672def7d54f86663234f606d2c749aab7628', '0005_product_auth.sql'],
+  ['0001_auth_admission_ticket.sql', '58d6fd8a377930234719104a61ea41487f5db322b92ffbc79aa0399bc6af87d1', '0006_auth_admission_ticket.sql'],
+  ['0002_huawei_auth.sql', 'd41bb1b0f4e3a66bb1582443ad1357336e14e4f7c07e94f24989fd66a8e5fd8b', '0009_huawei_auth.sql'],
+];
+
+function createMain(path, rows) {
   const db = new DatabaseSync(path);
-  db.exec('PRAGMA journal_mode=WAL; PRAGMA wal_autocheckpoint=0; CREATE TABLE fixture(id INTEGER PRIMARY KEY, value TEXT); BEGIN IMMEDIATE');
-  const insert = db.prepare('INSERT INTO fixture VALUES(?, ?)');
-  for (let index = 1; index <= rows; index++) insert.run(index, 'synthetic-' + 'x'.repeat(65536));
+  db.exec('PRAGMA journal_mode=WAL; PRAGMA wal_autocheckpoint=0');
+  db.exec('CREATE TABLE _cf_METADATA (\n        key INTEGER PRIMARY KEY,\n        value BLOB\n      )');
+  db.exec('CREATE TABLE IF NOT EXISTS _lantern_local_migrations (name TEXT PRIMARY KEY, sha TEXT NOT NULL)');
+  for (const [name, hash, file] of migrations) {
+    const sql = readFileSync(new URL('../../drizzle/' + file, import.meta.url), 'utf8').replaceAll('\r\n', '\n');
+    for (const statement of sql.split('--> statement-breakpoint')) if (statement.trim()) db.exec(statement.trim());
+    db.prepare('INSERT INTO _lantern_local_migrations VALUES (?, ?)').run(name, hash);
+  }
+  db.exec('BEGIN IMMEDIATE');
+  const insert = db.prepare('INSERT INTO auth_users(id,username,created_at) VALUES(?, ?, ?)');
+  for (let index = 1; index <= rows; index++) insert.run('synthetic-id-' + index, 'synthetic-' + index + 'x'.repeat(65536), index);
   db.exec('COMMIT');
   assert.ok(existsSync(path + '-wal'));
   assert.ok(existsSync(path + '-shm'));
   return db;
+}
+
+function createMetadata(path, rows) {
+  const db = new DatabaseSync(path);
+  db.exec('PRAGMA journal_mode=WAL; PRAGMA wal_autocheckpoint=0');
+  db.exec('CREATE TABLE _cf_ALARM (\n      actor_id TEXT PRIMARY KEY,\n      scheduled_time INTEGER\n    ) WITHOUT ROWID');
+  const insert = db.prepare('INSERT INTO _cf_ALARM VALUES (?, ?)');
+  for (let index = 1; index <= rows; index++) insert.run('synthetic-actor-' + index, index);
+  assert.ok(existsSync(path + '-wal'));
+  assert.ok(existsSync(path + '-shm'));
+  return db;
+}
+
+function violateSyntheticMainCheck(db) {
+  db.exec("PRAGMA ignore_check_constraints=ON; INSERT INTO auth_huawei_codes(code_hash,ticket,purpose,reserved_at,expires_at,committed_user_id,completed_at) VALUES('x','synthetic-ticket','login',0,1,NULL,NULL); PRAGMA ignore_check_constraints=OFF");
 }
 
 function args(fixture, extra = []) {
@@ -45,9 +74,9 @@ function args(fixture, extra = []) {
     '-TargetParent', fixture.target, '-PythonExecutable', fixture.python, ...extra];
 }
 
-function readCount(path) {
+function readCount(path, role = 'main') {
   const db = new DatabaseSync(path, { readOnly: true });
-  try { return db.prepare('SELECT COUNT(*) AS count FROM fixture').get().count; }
+  try { return db.prepare('SELECT COUNT(*) AS count FROM ' + (role === 'main' ? 'auth_users' : '_cf_ALARM')).get().count; }
   finally { db.close(); }
 }
 
@@ -74,16 +103,19 @@ test('copies separate live WAL databases to a new private target and validates h
   const f = setupFixture();
   const mainPath = join(f.source, 'main.sqlite');
   const metaPath = join(f.source, 'metadata.sqlite');
-  const main = createDb(mainPath, 128);
-  const metadata = createDb(metaPath, 1);
+  const main = createMain(mainPath, 128);
+  const metadata = createMetadata(metaPath, 1);
   const existing = join(f.target, 'previous-file.txt');
   writeFileSync(existing, 'synthetic-keep');
+  const poison = join(f.root, 'poison'); mkdirSync(poison);
+  const sentinel = join(f.root, 'sitecustomize-executed');
+  writeFileSync(join(poison, 'sitecustomize.py'), `from pathlib import Path\nPath(${JSON.stringify(sentinel)}).write_text('executed')\n`);
   let timer;
   let writes = 0;
   const writeTimes = [];
   try {
     const result = await new Promise((resolve, reject) => {
-      const child = spawn('pwsh', ['-NoProfile', '-NonInteractive', ...args(f)], { stdio: ['ignore', 'pipe', 'pipe'] });
+      const child = spawn('pwsh', ['-NoProfile', '-NonInteractive', ...args(f)], { stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, PYTHONPATH: poison } });
       let stdout = '', stderr = '', started = false;
       child.stdout.setEncoding('utf8'); child.stderr.setEncoding('utf8');
       child.stdout.on('data', (chunk) => {
@@ -94,7 +126,7 @@ test('copies separate live WAL databases to a new private target and validates h
             if (writes >= 500) { clearInterval(timer); return; }
             const id = 129 + writes;
             try {
-              main.prepare('INSERT INTO fixture VALUES (?, ?)').run(id, 'synthetic-concurrent');
+              main.prepare('INSERT INTO auth_users(id,username,created_at) VALUES (?, ?, ?)').run('synthetic-id-' + id, 'synthetic-concurrent-' + id, id);
               writeTimes.push(Date.now());
               writes++;
             } catch (error) { clearInterval(timer); reject(error); }
@@ -106,6 +138,7 @@ test('copies separate live WAL databases to a new private target and validates h
       child.on('close', (code) => { clearInterval(timer); resolve({ code, stdout, stderr }); });
     });
     assert.equal(result.code, 0, result.stderr + '\n' + result.stdout);
+    assert.equal(existsSync(sentinel), false);
     const match = result.stdout.match(/ONLINE_BACKUP_REVIEW_OK ([^\r\n]+)/);
     assert.ok(match, result.stdout);
     const output = match[1].trim();
@@ -130,8 +163,8 @@ test('copies separate live WAL databases to a new private target and validates h
       }
     }
     assert.equal(readFileSync(existing, 'utf8'), 'synthetic-keep');
-    assert.equal(readCount(metaPath), 1);
-    assert.equal(readCount(join(output, 'metadata.sqlite')), 1);
+    assert.equal(readCount(metaPath, 'metadata'), 1);
+    assert.equal(readCount(join(output, 'metadata.sqlite'), 'metadata'), 1);
     assert.equal(readCount(mainPath), 128 + writes);
     assert.ok(readCount(join(output, 'main.sqlite')) >= 128);
     assert.ok(writeTimes.some((value) => value >= Date.parse(manifest.main.startUtc) && value <= Date.parse(manifest.main.endUtc)),
@@ -147,8 +180,8 @@ test('copies separate live WAL databases to a new private target and validates h
 test('rejects unprotected parent, links and missing WAL coordination files', { skip: !windows, timeout: 60000 }, () => {
   const f = setupFixture();
   const mainPath = join(f.source, 'main.sqlite');
-  const main = createDb(mainPath, 1);
-  const metadata = createDb(join(f.source, 'metadata.sqlite'), 1);
+  const main = createMain(mainPath, 1);
+  const metadata = createMetadata(join(f.source, 'metadata.sqlite'), 1);
   try {
     const unprotected = join(f.root, 'unprotected'); mkdirSync(unprotected);
     const badParent = { ...f, target: unprotected };
@@ -188,11 +221,47 @@ test('rejects unprotected parent, links and missing WAL coordination files', { s
 
 test('rejects a protected parent that grants an additional principal', { skip: !windows, timeout: 30000 }, () => {
   const f = setupFixture(['-IncludeEveryone']);
-  const main = createDb(join(f.source, 'main.sqlite'), 1);
-  const metadata = createDb(join(f.source, 'metadata.sqlite'), 1);
+  const main = createMain(join(f.source, 'main.sqlite'), 1);
+  const metadata = createMetadata(join(f.source, 'metadata.sqlite'), 1);
   try {
     assert.notEqual(ps(args(f)).status, 0);
     assert.deepEqual(readdirSync(f.target), []);
+  } finally { metadata.close(); main.close(); }
+});
+
+test('rejects swapped databases, unexpected schemas, versions and migration ledgers before copying', { skip: !windows, timeout: 60000 }, () => {
+  const f = setupFixture();
+  const main = createMain(join(f.source, 'main.sqlite'), 1);
+  const metadata = createMetadata(join(f.source, 'metadata.sqlite'), 1);
+  function refuses(swapped = false) {
+    const command = args(f);
+    if (swapped) {
+      command[command.indexOf('-MainRelative') + 1] = 'metadata.sqlite';
+      command[command.indexOf('-MetadataRelative') + 1] = 'main.sqlite';
+    }
+    const result = ps(command);
+    assert.notEqual(result.status, 0, result.stdout);
+    assert.match(result.stdout, /ONLINE_BACKUP_STARTED/);
+    assert.doesNotMatch(result.stdout + result.stderr, /synthetic-id-/);
+    for (const dir of readdirSync(f.target)) assert.deepEqual(readdirSync(join(f.target, dir)), []);
+  }
+  try {
+    refuses(true);
+    metadata.exec('CREATE TABLE sqlitex_unexpected(id INTEGER)');
+    refuses();
+    metadata.exec('DROP TABLE sqlitex_unexpected');
+    main.exec('PRAGMA user_version=1');
+    refuses();
+    main.exec('PRAGMA user_version=0; PRAGMA application_id=1');
+    refuses();
+    main.exec('PRAGMA application_id=0');
+    main.prepare('UPDATE _lantern_local_migrations SET sha = ? WHERE name = ?').run('wrong', migrations[0][0]);
+    refuses();
+    main.prepare('UPDATE _lantern_local_migrations SET sha = ? WHERE name = ?').run(migrations[0][1], migrations[0][0]);
+    main.prepare('INSERT INTO _lantern_local_migrations VALUES (?, ?)').run('unknown', 'unknown');
+    refuses();
+    assert.equal(readCount(join(f.source, 'main.sqlite')), 1);
+    assert.equal(readCount(join(f.source, 'metadata.sqlite'), 'metadata'), 1);
   } finally { metadata.close(); main.close(); }
 });
 
@@ -253,30 +322,28 @@ $h=[LanternMigrationPathGuard]::Hold($env:LANTERN_SYNTHETIC_FILE, ($env:LANTERN_
 test('failure removes only known partial files and preserves synthetic sources', { skip: !windows, timeout: 60000 }, () => {
   const f = setupFixture();
   const mainPath = join(f.source, 'main.sqlite');
-  const main = createDb(mainPath, 1);
+  const main = createMain(mainPath, 1);
   const meta = join(f.source, 'metadata.sqlite');
-  writeFileSync(meta, 'synthetic-not-a-sqlite-database');
-  writeFileSync(meta + '-wal', 'synthetic');
-  writeFileSync(meta + '-shm', 'synthetic');
+  const metadata = createMetadata(meta, 1);
+  violateSyntheticMainCheck(main);
   try {
     const result = ps(args(f));
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, /known-partial-files-removed/);
-    assert.equal(readFileSync(meta, 'utf8'), 'synthetic-not-a-sqlite-database');
+    assert.equal(readCount(meta, 'metadata'), 1);
     assert.equal(readCount(mainPath), 1);
     const created = readdirSync(f.target);
     assert.equal(created.length, 1);
     assert.deepEqual(readdirSync(join(f.target, created[0])), []);
-  } finally { main.close(); }
+  } finally { metadata.close(); main.close(); }
 });
 
 test('failure retains the private directory if an unexpected object appears', { skip: !windows, timeout: 60000 }, async () => {
   const f = setupFixture();
-  const main = createDb(join(f.source, 'main.sqlite'), 64);
+  const main = createMain(join(f.source, 'main.sqlite'), 64);
   const meta = join(f.source, 'metadata.sqlite');
-  writeFileSync(meta, 'synthetic-invalid');
-  writeFileSync(meta + '-wal', 'synthetic');
-  writeFileSync(meta + '-shm', 'synthetic');
+  const metadata = createMetadata(meta, 1);
+  violateSyntheticMainCheck(main);
   let sentinel;
   try {
     const result = await new Promise((resolve, reject) => {
@@ -301,18 +368,17 @@ test('failure retains the private directory if an unexpected object appears', { 
     assert.match(result.stderr, /private-incomplete-retained/);
     assert.ok(sentinel);
     assert.equal(readFileSync(sentinel, 'utf8'), 'keep');
-    assert.equal(readFileSync(meta, 'utf8'), 'synthetic-invalid');
-  } finally { main.close(); }
+    assert.equal(readCount(meta, 'metadata'), 1);
+  } finally { metadata.close(); main.close(); }
 });
 
 test('failure never cleans a hard-linked source through a known target name', { skip: !windows, timeout: 60000 }, async () => {
   const f = setupFixture();
   const source = join(f.source, 'main.sqlite');
-  const main = createDb(source, 64);
+  const main = createMain(source, 64);
   const meta = join(f.source, 'metadata.sqlite');
-  writeFileSync(meta, 'synthetic-invalid');
-  writeFileSync(meta + '-wal', 'synthetic');
-  writeFileSync(meta + '-shm', 'synthetic');
+  const metadata = createMetadata(meta, 1);
+  violateSyntheticMainCheck(main);
   let linked;
   try {
     const result = await new Promise((resolve, reject) => {
@@ -338,5 +404,5 @@ test('failure never cleans a hard-linked source through a known target name', { 
     assert.ok(linked && existsSync(linked));
     assert.equal(readCount(source), 64);
     assert.equal(statSync(source).nlink, 2);
-  } finally { main.close(); }
+  } finally { metadata.close(); main.close(); }
 });

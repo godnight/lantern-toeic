@@ -144,7 +144,7 @@ try {
     # Use UTF-8 on both sides of the pipe so Chinese and spaced source paths
     # are not decoded using the machine's legacy Windows code page.
     $OutputEncoding = [Text.UTF8Encoding]::new($false)
-    $workerResult = @($request | & $python -X utf8 $worker 2>&1)
+    $workerResult = @($request | & $python -I -X utf8 $worker 2>&1)
     if ($LASTEXITCODE -ne 0 -or $workerResult.Count -ne 1 -or $workerResult[0] -ne 'ONLINE_BACKUP_OK') {
         throw 'Online backup worker failed.'
     }
@@ -160,7 +160,8 @@ try {
     foreach ($entry in @(@('main', 'main.sqlite'), @('metadata', 'metadata.sqlite'))) {
         $item = $manifest.($entry[0])
         $hash = (Get-FileHash -LiteralPath (Join-Path $target $entry[1]) -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($item.integrity -ne 'ok' -or $item.sha256 -ne $hash -or -not $item.startUtc -or -not $item.endUtc) {
+        $expectedRole = if ($entry[0] -eq 'main') { 'legacy-auth' } else { 'miniflare-metadata' }
+        if ($item.role -ne $expectedRole -or $item.integrity -ne 'ok' -or $item.sha256 -ne $hash -or -not $item.startUtc -or -not $item.endUtc) {
             throw 'Backup manifest validation failed.'
         }
     }
