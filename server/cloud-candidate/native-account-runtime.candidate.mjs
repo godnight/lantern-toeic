@@ -8,7 +8,8 @@ import { lstat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { createSqliteD1Core } from './sqlite-d1-core.candidate.mjs';
 import { verifyAccountDatabase } from './account-db-preflight.candidate.mjs';
-import { readNativeAccountConfig, loadNativeAccountWorker } from './native-account-config.candidate.mjs';
+import { readNativeAccountConfig, loadNativeAccountWorker, loadNativeHuaweiBindings } from './native-account-config.candidate.mjs';
+import { createNativeHuaweiOutbound } from './native-huawei-outbound.candidate.mjs';
 import { openLockedD1 } from './d1-lock.candidate.mjs';
 import { prepareCloudService } from './service.candidate.mjs';
 import { startProductionGateway } from './https-gateway.candidate.mjs';
@@ -99,8 +100,10 @@ export async function startNativeAccountGateway({ enabled = false, file } = {}) 
       };
     },
     prepareService: async runtime => {
+      const huawei = await loadNativeHuaweiBindings(config);
       const db = await runtime.open(), worker = await loadNativeAccountWorker(config);
-      const env = { DB: db, LANTERN_AUTH_ENABLED: 'true', LANTERN_AUTH_ORIGIN: config.origin };
+      const env = { DB: db, LANTERN_AUTH_ENABLED: 'true', LANTERN_AUTH_ORIGIN: config.origin,
+        ...(huawei ? { ...huawei, LANTERN_HUAWEI_OUTBOUND: createNativeHuaweiOutbound({ enabled: true, clientId: huawei.LANTERN_HUAWEI_CLIENT_ID }) } : {}) };
       const mf = { dispatchFetch(url, init) { return worker.fetch(new Request(url, init), env); } };
       return prepareCloudService({ enabled: true, mf, origin: config.origin });
     },

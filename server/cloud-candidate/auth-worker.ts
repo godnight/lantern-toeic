@@ -1,7 +1,7 @@
 // A deliberately narrow Worker built from the repository's existing services.
 // Phone routes remain hard-disabled by phoneFlowAction's null provider.
 import { authJson, credentialAction, sessionAction, type AuthEnvironment } from '../../lib/auth-service';
-import { huaweiAuthAction, huaweiProvidersAction } from '../../lib/huawei-auth-service';
+import { createHuaweiAuthService, huaweiAuthAction, huaweiProvidersAction } from '../../lib/huawei-auth-service';
 import { phoneFlowAction } from '../../lib/phone-flow-service';
 
 const routes = new Map([
@@ -13,7 +13,7 @@ const routes = new Map([
 ]);
 
 export default {
-  async fetch(request: Request, env: AuthEnvironment): Promise<Response> {
+  async fetch(request: Request, env: AuthEnvironment & { LANTERN_HUAWEI_OUTBOUND?: typeof fetch }): Promise<Response> {
     const url = new URL(request.url);
     const method = routes.get(url.pathname);
     if (!method || url.search) return authJson({ code: 'not-found' }, 404);
@@ -29,8 +29,8 @@ export default {
       case '/api/auth/session': return sessionAction(request, 'read', env);
       case '/api/auth/logout': return sessionAction(request, 'logout', env);
       case '/api/auth/providers': return huaweiProvidersAction(request, env);
-      case '/api/auth/huawei/login': return huaweiAuthAction(request, 'login', env);
-      case '/api/auth/huawei/bind': return huaweiAuthAction(request, 'bind', env);
+      case '/api/auth/huawei/login': return (env.LANTERN_HUAWEI_OUTBOUND ? createHuaweiAuthService({ fetch: env.LANTERN_HUAWEI_OUTBOUND }) : huaweiAuthAction)(request, 'login', env);
+      case '/api/auth/huawei/bind': return (env.LANTERN_HUAWEI_OUTBOUND ? createHuaweiAuthService({ fetch: env.LANTERN_HUAWEI_OUTBOUND }) : huaweiAuthAction)(request, 'bind', env);
       case '/api/auth/phone/status': return phoneFlowAction(request, 'status', env);
       case '/api/auth/phone/challenge': return phoneFlowAction(request, 'challenge', env);
       case '/api/auth/phone/login': return phoneFlowAction(request, 'login', env);
