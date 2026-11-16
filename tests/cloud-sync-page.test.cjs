@@ -205,6 +205,27 @@ test('journal capture safely drains bounded batches and resumes the same source 
   assert.equal(state.uploadAcks.length,5);assert.equal(s.rows.size,5);
  }finally{await c.cancel();db.close();s.close();}
 });
+test('journal capture discovers the root before its earlier-enumerated review at capacity one',async()=>{
+ const source=memoryStorage(),s=server(),db=await open(new IDBFactory(),'study-root-before-review'),first=attempt(),review={...attempt(),mode:'review'},ids=[randomUUID(),randomUUID()],arrivals=[];
+ const c=createSyntheticClient({db,project,vocabTransport:s.vt,studyTransport:s.st,createStudyRunner:args=>page.createStudyRunner({...args,maxPending:1})});
+ for(const op of [{id:ids[1],owner:A,type:'attempt',data:review,firstAttemptId:first.id},{id:ids[0],owner:A,type:'attempt',data:first,firstAttemptId:first.id}])source.storage.setItem('lantern-v1-'+A+':op:'+op.id,JSON.stringify(op));
+ s.st.upload=async p=>{const data=p.wire.data,key=p.owner+':attempt:'+data.firstAttemptId;if(data.firstAttemptId!==data.id&&!s.rows.has(key)){const error=Error('missing root');error.code='NATIVE_EVENT_CONFLICT';throw error;}
+  arrivals.push(data.id);const {firstAttemptId,...body}=data;s.rows.set(p.owner+':attempt:'+data.id,{kind:'attempt',id:data.id,data:{...body,correct:body.choice===0,mode:data.id===firstAttemptId?'first':'review'}});return {status:200,body:{ok:true}};};
+ try{await c.activate(A);assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),2);await c.run();assert.deepEqual(arrivals,[first.id,review.id]);assert.equal(s.rows.size,2);assert.equal(source.raw.size,2);}
+ finally{await c.cancel();db.close();s.close();}
+});
+test('an old unanchored conflict in a full queue is preserved separately so a new proven root can upload',async()=>{
+ const source=memoryStorage(),s=server(),db=await open(new IDBFactory(),'study-legacy-quarantine'),old={...attempt(),mode:'review'},first=attempt(),oldId=randomUUID(),firstId=randomUUID(),original=s.st.upload;
+ const c=createSyntheticClient({db,project,vocabTransport:s.vt,studyTransport:s.st,createStudyRunner:args=>page.createStudyRunner({...args,maxPending:1})});
+ const legacy={id:oldId,owner:A,type:'attempt',data:old},root={id:firstId,owner:A,type:'attempt',data:first,firstAttemptId:first.id};
+ source.storage.setItem('lantern-v1-'+A+':op:'+oldId,JSON.stringify(legacy));source.storage.setItem('lantern-v1-'+A+':op:'+firstId,JSON.stringify(root));
+ s.st.upload=async p=>{if(p.wire.data.id===old.id){const error=Error('unproven');error.code='NATIVE_EVENT_CONFLICT';throw error;}return original(p);};
+ try{
+  await c.activate(A);await c.answer('attempt',old,undefined,oldId);assert.equal((await c.readStudy()).pendingOperations.length,1);
+  assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),2);await assert.rejects(c.run(),error=>error.code==='NATIVE_EVENT_CONFLICT');
+  const state=await c.readStudy();assert.deepEqual(state.blockedOperations,[legacy]);assert.equal(state.pendingOperations.length,0);assert.equal(state.uploadAcks[0].id,firstId);assert.equal(state.download.checkpoint,null);assert.equal(s.rows.size,1);assert.equal(source.raw.size,2);
+ }finally{await c.cancel();db.close();s.close();}
+});
 test('a conflict during batch drain preserves the record but does not starve later independent events',async()=>{
  const source=memoryStorage(),s=server(),db=await open(new IDBFactory(),'study-batch-conflict'),bad=attempt(),good=[checkin(),checkin()],ids=[randomUUID(),randomUUID(),randomUUID()],original=s.st.upload;
  const c=createSyntheticClient({db,project,vocabTransport:s.vt,studyTransport:s.st,createStudyRunner:args=>page.createStudyRunner({...args,maxPending:2})});
@@ -245,6 +266,37 @@ test('confirmed study uploads compact only the pending entry and keep the event 
   let state=await c.readStudy();assert.equal(state.pendingOperations.length,0);assert.equal(state.uploadAcks.length,1);assert.equal(state.data.checkins[0].id,item.id);
   await c.answer('checkin',item,undefined,id);state=await c.readStudy();assert.equal(state.pendingOperations.length,0);assert.equal(s.rows.size,1);
   await assert.rejects(c.answer('checkin',{...item,note:'conflicting'},undefined,id),/conflict/);assert.equal((await c.readStudy()).data.checkins[0].note,item.note);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('upgraded old acknowledged pending rows are verified and cleared without another upload',async()=>{
+ const s=server(),db=await open(new IDBFactory(),'study-legacy-ack'),c=client(db,s),item=checkin(),id=randomUUID();
+ try{
+  await c.activate(A);await c.answer('checkin',item,undefined,id);await c.run();let state=await c.readStudy();
+  state.pendingOperations=[{id,owner:A,type:'checkin',data:item}];
+  await new Promise((resolve,reject)=>{const tx=db.transaction(study.STATE,'readwrite');tx.objectStore(study.STATE).put(state);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});
+  s.st.upload=async()=>{throw Error('must not upload again');};await c.run();state=await c.readStudy();
+  assert.equal(state.pendingOperations.length,0);assert.equal(state.uploadAcks.length,1);assert.deepEqual(state.data.checkins,[item]);assert.equal(s.rows.size,1);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('a full old acknowledged queue frees its slot for a new durable root during capture',async()=>{
+ const source=memoryStorage(),s=server(),db=await open(new IDBFactory(),'study-legacy-full-ack'),item=checkin(),id=randomUUID(),root=attempt(),rootId=randomUUID();
+ const c=createSyntheticClient({db,project,vocabTransport:s.vt,studyTransport:s.st,createStudyRunner:args=>page.createStudyRunner({...args,maxPending:1})});
+ source.storage.setItem('lantern-v1-'+A+':op:'+rootId,JSON.stringify({id:rootId,owner:A,type:'attempt',data:root,firstAttemptId:root.id}));
+ try{
+  await c.activate(A);await c.answer('checkin',item,undefined,id);await c.run();let state=await c.readStudy();
+  state.pendingOperations=[{id,owner:A,type:'checkin',data:item}];
+  await new Promise((resolve,reject)=>{const tx=db.transaction(study.STATE,'readwrite');tx.objectStore(study.STATE).put(state);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});
+  assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),1);await c.run();state=await c.readStudy();
+  assert.equal(state.pendingOperations.length,0);assert.equal(state.uploadAcks.length,2);assert.equal(s.rows.size,2);assert.equal(source.raw.size,1);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('old acknowledged rows with a mismatched local fact remain untouched',async()=>{
+ const s=server(),db=await open(new IDBFactory(),'study-legacy-ack-invalid'),c=client(db,s),item=checkin(),id=randomUUID();
+ try{
+  await c.activate(A);await c.answer('checkin',item,undefined,id);await c.run();let state=await c.readStudy();
+  state.pendingOperations=[{id,owner:A,type:'checkin',data:item}];state.data.checkins[0].note='conflicting';
+  await new Promise((resolve,reject)=>{const tx=db.transaction(study.STATE,'readwrite');tx.objectStore(study.STATE).put(state);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});
+  const before=await c.readStudy();await assert.rejects(c.run());assert.deepEqual(await c.readStudy(),before);
  }finally{await c.cancel();db.close();s.close();}
 });
 test('a single study record conflict keeps its queue and checkpoint while independent checkins upload',async()=>{
