@@ -47,14 +47,16 @@ async function buildVocabularyCandidateClient() {
     bundle:true,write:false,format:'esm',platform:'node',target:'node24'});
   return import('data:text/javascript;base64,'+Buffer.from(result.outputFiles[0].contents).toString('base64'));
 }
-function httpsStudy(port, cert, cookie, owner) {
+function httpsStudy(port, cert, cookie, owner, body) {
   return new Promise((resolve, reject) => {
     const req = https.request({ host: '127.0.0.1', port, servername: 'synthetic.invalid', ca: cert,
-      path: '/api/study?sync=native-m2a-v1', headers: { host: 'synthetic.invalid', cookie, 'x-lantern-owner': owner } }, res => {
+      method: body ? 'POST' : 'GET', path: body ? '/api/study' : '/api/study?sync=native-m2a-v1',
+      headers: { host: 'synthetic.invalid', cookie, 'x-lantern-owner': owner,
+        ...(body ? { origin, 'content-type': 'application/json' } : {}) } }, res => {
       const chunks = []; res.on('data', chunk => chunks.push(chunk));
       res.on('end', () => resolve({ status: res.statusCode, body: Buffer.concat(chunks).toString() }));
     });
-    req.on('error', reject); req.end();
+    req.on('error', reject); req.end(body ? JSON.stringify(body) : undefined);
   });
 }
 test('repository Worker and model share one D1; phone stays closed; session, isolation and restart work', { timeout: 60000 }, async () => {
@@ -233,15 +235,30 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     // Verify the real HTTPS handler, local channel, session check and D1 as a
     // single path, using only a self-signed synthetic certificate/account.
     const certificate = await makeCertificate(directory);
+    await assert.rejects(prepareCloudService({ enabled: true, mf, origin, orderedAttemptsEnabled: 'true' }), /invalid attempt sync configuration/);
     const service = await prepareCloudService({ enabled: true, mf, origin, settings, privateRoot, key, proxy, phoneKey, modelInfo });
     const server = https.createServer(certificate, service.handler);
+    const httpsQuestion = questions.find(row => row.id !== question.id && !distinctQuestions.some(seen => seen.id === row.id) && row.id !== sharedQuestion.id);
+    assert.ok(httpsQuestion);
+    const httpsAttempt = { ...attempt, id: randomUUID(), qid: httpsQuestion.id };
+    const httpsBody = { type: 'attempt', data: wireAttempt(httpsAttempt, httpsAttempt.id) };
     try {
       await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
       const httpResult = await httpsStudy(server.address().port, certificate.cert, cookieB, owner);
       assert.equal(httpResult.status, 200);
       assert.deepEqual(JSON.parse(httpResult.body).changes.map(change => change.kind), ['attempt', 'checkin']);
       assert.equal((await httpsStudy(server.address().port, certificate.cert, otherCookie, owner)).status, 409);
+      assert.equal((await httpsStudy(server.address().port, certificate.cert, thirdCookie, thirdOwner, httpsBody)).status, 503);
     } finally { await new Promise(resolve => server.close(resolve)); await service.close(); }
+    const optedInService = await prepareCloudService({ enabled: true, mf, origin, settings, privateRoot, key, proxy, phoneKey, modelInfo, orderedAttemptsEnabled: true });
+    const optedInServer = https.createServer(certificate, optedInService.handler);
+    try {
+      await new Promise((resolve, reject) => { optedInServer.once('error', reject); optedInServer.listen(0, '127.0.0.1', resolve); });
+      assert.equal((await httpsStudy(optedInServer.address().port, certificate.cert, cookieB, thirdOwner, httpsBody)).status, 409);
+      assert.equal((await httpsStudy(optedInServer.address().port, certificate.cert, thirdCookie, thirdOwner, httpsBody)).status, 200);
+      assert.equal((await httpsStudy(optedInServer.address().port, certificate.cert, thirdCookie, thirdOwner, httpsBody)).status, 200);
+      assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM attempts WHERE user_id=? AND id=?').bind(thirdOwner, httpsAttempt.id).first()).n, 1);
+    } finally { await new Promise(resolve => optedInServer.close(resolve)); await optedInService.close(); }
     assert.equal((await (await prepareAccountSyncAssembly({ mf, origin })).fetch(request('/candidate/sync/append', { body: {} }))).status, 404);
     await mf.dispose(); mf = start(); db = await mf.getD1Database('DB');
     app = await prepareAccountSyncAssembly({ settings, mf, origin, privateRoot, key, proxy, phoneKey, modelInfo, orderedAttemptsEnabled: true });
