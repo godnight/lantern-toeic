@@ -99,7 +99,7 @@ jobs:
           node --test tests/phone-client.test.cjs tests/phone-d1-runtime.test.cjs tests/phone-flow-runtime.test.cjs
       - name: Verify native sync bridge and account gate
         if: steps.scope.outputs.full == 'true'
-        run: node --test tests/native-sync-auth-gate.test.cjs tests/native-sync-bridge.test.cjs tests/native-sync-registration.test.cjs tests/native-sync-lifecycle-port.test.cjs tests/cloud-sync-page.test.cjs tests/cloud-sync-native-lifecycle.test.cjs tests/native-vocabulary-source.test.cjs tests/synthetic-vocabulary-preflight.test.mjs
+        run: node --test tests/native-sync-auth-gate.test.cjs tests/native-sync-bridge.test.cjs tests/native-sync-registration.test.cjs tests/native-sync-lifecycle-port.test.cjs tests/cloud-sync-page.test.cjs tests/cloud-sync-native-lifecycle.test.cjs tests/native-vocabulary-source.test.cjs tests/native-vocabulary-source-import.test.cjs tests/native-vocabulary-queue-index.test.cjs tests/native-vocabulary-conflict.test.cjs tests/synthetic-vocabulary-preflight.test.mjs
       - name: Verify cloud service safety candidates
         if: steps.scope.outputs.full == 'true'
         run: node --test server/cloud-candidate/*.test.mjs
