@@ -105,6 +105,7 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     assert.equal((await append('different-owner')).status, 409);
     const registration2 = await app.fetch(request('/api/auth/register', { body: { username: 'synthetic_other', password: 'synthetic-password-123' } }));
     assert.equal(registration2.status, 200);
+    const otherOwner = (await registration2.json()).user.id;
     const otherCookie = registration2.headers.get('set-cookie').split(';')[0];
     assert.equal((await app.fetch(request('/candidate/sync/append', { cookie: otherCookie, body: { owner, event } }))).status, 409);
     assert.equal((await readPage(otherCookie)).status, 409);
@@ -122,9 +123,27 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     assert.equal(pendingAttempt.status, 409);
     assert.equal((await pendingAttempt.json()).code, 'attempt-order-unproven');
     assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM attempts WHERE user_id=?').bind(owner).first()).n, 0);
-    // A previously committed event remains safe to acknowledge idempotently.
-    await db.prepare('INSERT INTO attempts(id,user_id,qid,choice,correct,created_at,seconds,mode) VALUES(?,?,?,?,?,?,?,?)')
-      .bind(attempt.id, owner, attempt.qid, attempt.choice, Number(question.correctIndex === attempt.choice), attempt.createdAt, attempt.seconds, 'first').run();
+    const wireAttempt = (record, firstAttemptId) => ({ id: record.id, qid: record.qid, choice: record.choice,
+      createdAt: record.createdAt, seconds: record.seconds, firstAttemptId });
+    const review = { ...attempt, id: randomUUID(), choice: question.options.length > 1 ? 1 : 0, mode: 'review' };
+    // Review may arrive early after an offline retry: reject it until its
+    // same-owner, same-question first attempt is actually in the database.
+    assert.equal((await saveStudy(cookie, owner, 'attempt', wireAttempt(review, attempt.id))).status, 409);
+    assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM attempts WHERE user_id=?').bind(owner).first()).n, 0);
+    assert.equal((await saveStudy(cookie, owner, 'attempt', wireAttempt(attempt, attempt.id))).status, 200);
+    assert.equal((await saveStudy(cookie, owner, 'attempt', wireAttempt(attempt, attempt.id))).status, 200);
+    const competingFirst = { ...attempt, id: randomUUID() };
+    assert.equal((await saveStudy(cookie, owner, 'attempt', wireAttempt(competingFirst, competingFirst.id))).status, 409);
+    assert.equal((await saveStudy(otherCookie, owner, 'attempt', wireAttempt(review, attempt.id))).status, 409);
+    // One atomic admission may claim first even if requests race; an anchor
+    // from another owner cannot be used to create a review.
+    assert.equal((await saveStudy(otherCookie, otherOwner, 'attempt', wireAttempt(review, attempt.id))).status, 409);
+    const otherFirstA = { ...attempt, id: randomUUID() }, otherFirstB = { ...attempt, id: randomUUID() };
+    const competing = await Promise.all([otherFirstA, otherFirstB].map(row => saveStudy(otherCookie, otherOwner, 'attempt', wireAttempt(row, row.id))));
+    assert.deepEqual(competing.map(result => result.status).sort(), [200, 409]);
+    assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM attempts WHERE user_id=? AND qid=? AND mode=?').bind(otherOwner, question.id, 'first').first()).n, 1);
+    // A previously committed event remains safe to acknowledge using the
+    // old unanchored format, including a response lost before offline retry.
     for (const [type, data] of [['attempt', attempt], ['checkin', checkin]]) {
       assert.equal((await saveStudy(cookie, owner, type, data)).status, 200);
       assert.equal((await saveStudy(cookie, owner, type, data)).status, 200);
@@ -164,6 +183,12 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     journal = await (await readStudy(cookieB)).json();
     assert.deepEqual(journal.changes.map(change => change.kind), ['attempt', 'checkin']);
     assert.equal((await readStudy(cookie)).status, 401);
+    assert.equal((await saveStudy(cookieB, owner, 'attempt', wireAttempt(review, randomUUID()))).status, 409);
+    assert.equal((await saveStudy(cookieB, owner, 'attempt', wireAttempt(review, attempt.id))).status, 200);
+    assert.equal((await saveStudy(cookieB, owner, 'attempt', wireAttempt(review, attempt.id))).status, 200);
+    const reviewRow = await db.prepare('SELECT mode,correct FROM attempts WHERE id=? AND user_id=?').bind(review.id, owner).first();
+    assert.equal(reviewRow.mode, 'review');
+    assert.equal(reviewRow.correct, Number(review.choice === question.correctIndex));
   } finally {
     if (mf) await mf.dispose();
     const resolved = await realpath(directory), tmp = await realpath(os.tmpdir());
