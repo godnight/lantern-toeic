@@ -3,10 +3,10 @@ import { BusinessError } from '@kit.BasicServicesKit';
 
 // This is a safety prerequisite, not an offline-login implementation. Do not
 // enable until every account entrance uses the same persisted v2 state, sync
-// 401 revocation is linked without treating 403 as logout, and actual Asset
-// durability/serialization have been established on devices. The candidate
-// also remains pending after a failed session check; airplane-mode recovery
-// and a revocable local-only access lease are not implemented.
+// 401 invalidates only the remote session, explicit identity changes reliably
+// revoke local access, and real Asset durability/serialization are verified.
+// No remote revocation can be detected while offline; local-only access is
+// bound to the last verified device identity and is not server authorization.
 export const OFFLINE_OWNER_ENABLED: boolean = false;
 
 export interface LocalOfflineOwner {

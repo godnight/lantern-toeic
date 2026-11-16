@@ -31,6 +31,7 @@ export interface AuthBody {
   code?: string;
   error?: string;
   user?: AuthUser;
+  local?: AuthLocalProof;
   capabilities?: AuthCapabilities;
   ok?: boolean;
   phone?: string;
@@ -40,6 +41,10 @@ export interface AuthBody {
   resendAt?: string;
   retryAt?: string;
   attemptsRemaining?: number;
+}
+export interface AuthLocalProof {
+  scope: string;
+  generation: number;
 }
 export interface AuthReply {
   version?: number;
@@ -122,7 +127,7 @@ export function isoTime(value: string | undefined): number | undefined {
   return time;
 }
 
-export function parseAuthRequest(raw: string): AuthRequest | undefined {
+export function parseAuthRequest(raw: string, allowLocal: boolean = false): AuthRequest | undefined {
   if (typeof raw !== 'string' || raw.length > 4096 || utf8Length(raw) > 4096) return undefined;
   try {
     const value: AuthRequest = JSON.parse(raw) as AuthRequest;
@@ -132,6 +137,7 @@ export function parseAuthRequest(raw: string): AuthRequest | undefined {
     const keys: string = Object.keys(value).sort().join(',');
     if (value.version !== undefined) return value.version === 2 && keys === 'action,id,version' && value.action === 'session' ? value : undefined;
     if (keys !== 'action,id' && keys !== 'action,body,id') return undefined;
+    if (value.action === 'local-session') return allowLocal && keys === 'action,id' ? value : undefined;
     if (['providers', 'huawei-login', 'huawei-bind'].includes(value.action)) return keys === 'action,id' ? value : undefined;
     if (value.action === 'session' || value.action === 'logout' || value.action === 'phone-status') {
       if (value.body !== undefined && (value.body === null || typeof value.body !== 'object' ||

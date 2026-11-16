@@ -47,17 +47,18 @@ test('native host persists only a verified v2 session and local restore never cr
  const user={id:uid,username:'synthetic_a'},caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false};
  const h=hostRuntime({initialToken:'a'.repeat(64),offlineFence:f.fence,dispatch:async()=>revoked?response(401,{code:'unauthenticated'}):response(200,{user,capabilities:caps,session:{version:2,remainingMs:3600000}})});
  try{
-  assert.deepEqual(h.exposed,['request'],'offline owner cannot be called from ArkWeb');
+  assert.deepEqual(h.exposed,['request','isLocalActive']);assert.equal(h.exposed.includes('readLocalOfflineOwnerCandidate'),false);
   assert.equal((await h.invoke({version:2,id:'proof',action:'session'})).status,200);await h.settle();
   assert.deepEqual(JSON.parse(JSON.stringify(await h.host.readLocalOfflineOwnerCandidate())),{uid,username:user.username});
   h.lifecycle(false);h.lifecycle(true);assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined);
   assert.deepEqual(JSON.parse(JSON.stringify(await h.host.readLocalOfflineOwnerCandidate())),{uid,username:user.username});
   assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined,'local data identity is not a remote lease');
   revoked=true;assert.equal((await h.invoke({version:2,id:'revoked',action:'session'})).status,401);await h.settle();
-  assert.equal(await h.host.readLocalOfflineOwnerCandidate(),undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(await h.host.readLocalOfflineOwnerCandidate())),{uid,username:user.username});
+  assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined,'401 closes only the remote lease');
  }finally{h.dispose();}
 });
-test('a failed preflight fence cannot observe 401, and a fenced 401 remains blocked after host restart',async()=>{
+test('remote 401 does not clear the same device local identity, even across host restart',async()=>{
  const uid='usr_aaaaaaaa-1111-4111-8111-111111111111',user={id:uid,username:'synthetic_a'},caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false};
  const f=fixture();let revoked=false;
  const dispatch=async()=>revoked?response(401,{code:'unauthenticated'}):response(200,{user,capabilities:caps,session:{version:2,remainingMs:3600000}});
@@ -66,19 +67,14 @@ test('a failed preflight fence cannot observe 401, and a fenced 401 remains bloc
   assert.equal((await h.invoke({version:2,id:'initial',action:'session'})).status,200);await h.settle();
   assert.ok(await h.host.readLocalOfflineOwnerCandidate());
   f.setUpdateFailure({code:123});revoked=true;
-  assert.equal((await h.invoke({version:2,id:'fence-failed',action:'session'})).status,503);await h.settle();
-  assert.equal(h.requests.length,1,'no second HTTP request or 401 is observed when pending write fails');
-  assert.equal(await h.host.readLocalOfflineOwnerCandidate(),undefined);
+  assert.equal((await h.invoke({version:2,id:'remote-401',action:'session'})).status,401);await h.settle();
+  assert.equal(h.requests.length,2);assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(await h.host.readLocalOfflineOwnerCandidate())),{uid,username:user.username});
  }finally{h.dispose();}
  f.setUpdateFailure(undefined);
- const h2=hostRuntime({initialToken:'a'.repeat(64),offlineFence:f.reopen(),dispatch});
- try{
-  assert.equal((await h2.invoke({version:2,id:'fenced-401',action:'session'})).status,401);await h2.settle();
-  assert.equal(await h2.host.readLocalOfflineOwnerCandidate(),undefined);
- }finally{h2.dispose();}
- const h3=hostRuntime({offlineFence:f.reopen()});try{assert.equal(await h3.host.readLocalOfflineOwnerCandidate(),undefined);}finally{h3.dispose();}
+ const h2=hostRuntime({offlineFence:f.reopen()});try{assert.deepEqual(JSON.parse(JSON.stringify(await h2.host.readLocalOfflineOwnerCandidate())),{uid,username:user.username});}finally{h2.dispose();}
 });
-test('malformed 401, redirect, and transport rejection never restore a fenced stable identity',async()=>{
+test('malformed 401, redirect, and transport rejection never grant remote access or replace local owner',async()=>{
  const uid='usr_aaaaaaaa-1111-4111-8111-111111111111',user={id:uid,username:'synthetic_a'},caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false};
  for(const bad of [()=>({responseCode:401,result:{code:'unauthenticated'},header:{'content-type':'application/json'}}),()=>({responseCode:401,result:'x'.repeat(17000),header:{'content-type':'application/json'}}),()=>response(302,{}),()=>{throw Error('ambiguous transport');}]){
   const f=fixture();let mode=false;
@@ -86,13 +82,62 @@ test('malformed 401, redirect, and transport rejection never restore a fenced st
   try{
    assert.equal((await h.invoke({version:2,id:'initial',action:'session'})).status,200);await h.settle();mode=true;
    assert.equal((await h.invoke({version:2,id:'ambiguous',action:'session'})).status,503);await h.settle();
-   assert.equal(await h.host.readLocalOfflineOwnerCandidate(),undefined);
+   assert.deepEqual(JSON.parse(JSON.stringify(await h.host.readLocalOfflineOwnerCandidate())),{uid,username:user.username});
+   assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined);
   }finally{h.dispose();}
-  const h2=hostRuntime({offlineFence:f.reopen()});try{assert.equal(await h2.host.readLocalOfflineOwnerCandidate(),undefined);}finally{h2.dispose();}
+  const h2=hostRuntime({offlineFence:f.reopen()});try{assert.deepEqual(JSON.parse(JSON.stringify(await h2.host.readLocalOfflineOwnerCandidate())),{uid,username:user.username});}finally{h2.dispose();}
  }
 });
 test('the disabled host never exposes a local cached owner',async()=>{
  const h=hostRuntime();try{assert.equal(await h.host.readLocalOfflineOwnerCandidate(),undefined);assert.deepEqual(h.exposed,['request']);}finally{h.dispose();}
+});
+test('local session is scoped to the cached owner and revoked on lifecycle or explicit identity change',async()=>{
+ const uid='usr_aaaaaaaa-1111-4111-8111-111111111111',username='synthetic_a',f=fixture();
+ await f.fence.saveVerified('https://auth.test',{uid,username},false);
+ const h=hostRuntime({initialToken:'a'.repeat(64),offlineFence:f.fence,dispatch:async()=>response(401,{code:'unauthenticated'})});
+ try{
+  assert.deepEqual(h.exposed,['request','isLocalActive']);
+  const local=await h.invoke({id:'local-first',action:'local-session'});assert.equal(local.status,200);
+  assert.equal(local.body.user.id,uid);assert.equal(local.body.local.scope,'local-study-only');
+  const check=JSON.stringify({uid,generation:local.body.local.generation});
+  assert.equal(h.host.isLocalActive(check),true);assert.equal(h.host.isLocalActive(JSON.stringify({uid:'usr_bbbbbbbb-2222-4222-8222-222222222222',generation:local.body.local.generation})),false);
+  assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined,'local proof never creates remote lease');
+  assert.equal((await h.invoke({version:2,id:'offline-network',action:'session'})).status,401);await h.settle();
+  assert.equal(h.host.isLocalActive(check),true,'remote 401 does not clear local data authority');
+  h.lifecycle(false);assert.equal(h.host.isLocalActive(check),false);h.lifecycle(true);
+  const fresh=await h.invoke({id:'local-again',action:'local-session'});assert.equal(fresh.status,200);
+  const current=JSON.stringify({uid,generation:fresh.body.local.generation});assert.equal(h.host.isLocalActive(current),true);
+  const result=h.invoke({id:'explicit-switch',action:'login',body:{username:'synthetic_b',password:'synthetic password'}});
+  assert.equal(h.host.isLocalActive(current),false,'explicit account change revokes local lease synchronously');
+  assert.equal((await result).status,401);await h.settle();assert.equal((await h.invoke({id:'local-blocked',action:'local-session'})).status,401);
+ }finally{h.dispose();}
+});
+test('a local Asset read cannot issue a stale lease after an identity mutation starts',async()=>{
+ let release,started;const pending=new Promise(resolve=>{release=resolve;}),entered=new Promise(resolve=>{started=resolve;});
+ const h=hostRuntime({offlineFence:{async readLocal(){started();await pending;return {uid:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'};},async markPending(){}}});
+ try{
+  h.send({id:'late-local',action:'local-session'});await entered;
+  h.send({id:'concurrent-switch',action:'login',body:{username:'synthetic_b',password:'synthetic password'}});
+  release();await h.settle();assert.equal(h.replies.some(reply=>reply.id==='late-local'&&reply.status===200),false);
+ }finally{h.dispose();}
+});
+test('actual native host, bridge and controller keep the same local-only owner on offline startup',async()=>{
+ const uid='usr_aaaaaaaa-1111-4111-8111-111111111111',username='synthetic_a',f=fixture();await f.fence.saveVerified('https://auth.test',{uid,username},false);
+ const loader=require('./helpers/actual-source-loader.cjs').createSourceLoader({root:path.resolve(__dirname,'..')});
+ const {createNativeAuthTransport}=loader.load('lib/native-auth-transport.ts'),{NativeAccountController}=loader.load('lib/native-account-controller.ts');
+ const target={location:{origin:'https://lantern.local'},crypto:{randomUUID:()=>require('node:crypto').randomUUID()}};target.self=target;target.top=target;
+ const h=hostRuntime({initialToken:'a'.repeat(64),offlineFence:f.fence,dispatch:async()=>{throw Error('synthetic offline');},onReply:reply=>target.__lanternAuthReceive?.(reply)});
+ target.LanternAuthHost={request:raw=>h.host.request(raw),isLocalActive:raw=>h.host.isLocalActive(raw)};
+ const clock={now:()=>0,set:(fn,ms)=>setTimeout(fn,ms),clear:timer=>clearTimeout(timer)},transport=createNativeAuthTransport(target,clock);
+ const account=new NativeAccountController(transport,clock,{localOffline:true,networkEvents:{addEventListener(){},removeEventListener(){}}});
+ try{
+  account.start();await h.settle();const state=account.getSnapshot();
+  assert.equal(state.status,'ready');assert.equal(state.user.id,uid);assert.equal(state.access.scope,'local-study-only');assert.equal(state.access.canAccess(),true);
+  assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined);assert.equal(h.requests.length,1,'only the background online session check used HTTP');
+  h.lifecycle(false);account.suspend();assert.equal(state.access.canAccess(),false);assert.equal(state.access.sessionSignal.aborted,true);
+  h.lifecycle(true);account.resume();await h.settle();const resumed=account.getSnapshot();
+  assert.equal(resumed.status,'ready');assert.equal(resumed.user.id,uid);assert.equal(resumed.access.scope,'local-study-only');assert(resumed.access.canAccess());
+ }finally{account.dispose();h.dispose();}
 });
 test('failed identity change remains pending until a successful login and its independent v2 proof',async()=>{
  const f=fixture(),uid='usr_aaaaaaaa-1111-4111-8111-111111111111';let accept=false;
@@ -107,7 +152,7 @@ test('failed identity change remains pending until a successful login and its in
   assert.ok(await h.host.readLocalOfflineOwnerCandidate());
   const body={username:user.username,password:'synthetic password'};
   assert.equal((await h.invoke({id:'wrong',action:'login',body})).status,401);await h.settle();
-  assert.equal((await h.invoke({version:2,id:'ordinary',action:'session'})).status,200);await h.settle();
+  assert.equal((await h.invoke({version:2,id:'ordinary',action:'session'})).status,503);await h.settle();
   assert.equal(await h.host.readLocalOfflineOwnerCandidate(),undefined);
   accept=true;assert.equal((await h.invoke({id:'login',action:'login',body})).status,200);await h.settle();
   assert.equal(await h.host.readLocalOfflineOwnerCandidate(),undefined);
@@ -126,7 +171,8 @@ test('a fresh proof of a different owner cannot resolve a successful login pendi
  try{
   assert.equal((await h.invoke({version:2,id:'initial',action:'session'})).status,200);await h.settle();
   assert.equal((await h.invoke({id:'switch',action:'login',body:{username:b.username,password:'synthetic password'}})).status,200);await h.settle();
-  assert.equal((await h.invoke({version:2,id:'mismatch',action:'session'})).status,200);await h.settle();
+  assert.equal((await h.invoke({version:2,id:'mismatch',action:'session'})).status,503);await h.settle();
+  assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined);
   assert.equal(await h.host.readLocalOfflineOwnerCandidate(),undefined);
  }finally{h.dispose();}
 });
