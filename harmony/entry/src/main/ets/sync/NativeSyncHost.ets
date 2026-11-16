@@ -214,7 +214,21 @@ export class NativeSyncHost {
           responseReceived = true;
           if (!this.current(op)) throw new Error('unavailable');
           if (response.responseCode === 401 || response.responseCode === 403) { this.send(input.id,401,{code:'unauthenticated'},op.generation); return; }
-          if (response.responseCode === 409) { this.send(input.id,409,{code:'conflict'},op.generation); return; }
+          if (response.responseCode === 409) {
+            let code: string = 'conflict';
+            const conflictHeaders: Record<string,string | string[]> = response.header as Record<string,string | string[]>;
+            if (input.action === 'append' && conflictHeaders && Object.keys(conflictHeaders).length <= 64 && typeof response.result === 'string' && utf8Length(response.result) <= LIMIT) {
+              let json: boolean = false, cookie: boolean = false;
+              for (const name of Object.keys(conflictHeaders)) {
+                if (name.toLowerCase() === 'set-cookie') cookie = true;
+                if (name.toLowerCase() === 'content-type') { const v: string | string[] = conflictHeaders[name]; json = typeof v === 'string' && v.split(';')[0].trim().toLowerCase() === 'application/json'; }
+              }
+              if (json && !cookie) try { const body: SyncFailure = JSON.parse(response.result) as SyncFailure;
+                if (body && exact(body,['code']) && body.code === 'event-payload-conflict') code = 'event_conflict';
+              } catch {}
+            }
+            this.send(input.id,409,{code:code},op.generation); return;
+          }
           if ([408,429,500,502,503,504].includes(response.responseCode)) { this.send(input.id,503,{code:'unavailable'},op.generation); return; }
           if (response.responseCode !== 200 || typeof response.result !== 'string' || utf8Length(response.result) > LIMIT) throw new Error('unavailable');
           const headers: Record<string,string | string[]> = response.header as Record<string,string | string[]>;
