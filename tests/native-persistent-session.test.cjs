@@ -28,7 +28,7 @@ test('Asset preserves v1 compatibility and gates versioned long sessions without
  await assert.rejects(h.store.save(ORIGIN,TOKEN,LONG));
  await h.store.save(ORIGIN,TOKEN,LONG,true);const saved=JSON.parse(Buffer.from(h.bytes).toString());
  assert.equal(saved.version,2);assert.equal(saved.expiresAt-saved.issuedAt,LONG*1000);
- await assert.rejects(h.store.load(ORIGIN));assert.equal(h.removes,0);
+ assert.equal(await h.store.load(ORIGIN),undefined);await h.store.clear();assert.equal(h.removes,0);
  h.advance(13*3600000);assert.equal(await h.store.load(ORIGIN,true),TOKEN);
  h.advance(LONG*1000);assert.equal(await h.store.load(ORIGIN,true),undefined);assert.equal(h.removes,1);
 });
@@ -88,6 +88,54 @@ test('real native store and host recheck the same server session after thirteen 
   assert.equal((await h.invoke({id:'logout',action:'logout'})).status,200);assert.equal(asset.bytes,undefined);
   assert.equal(e.rows('auth_sessions').length,0);
  }finally{h?.dispose();e.close();}
+});
+
+test('rollback hides but preserves a long credential until explicit login rotation or logout',async()=>{
+ for(const action of ['login','logout']){
+  const e=environment({env:{LANTERN_PERSISTENT_SESSION_ENABLED:'true'}}),asset=assetHarness();let oldHost,newHost;
+  const dispatch=async(url,options)=>{
+   const route=new URL(url).pathname.split('/').at(-1),headers={};
+   for(const key of ['X-Lantern-Session-Policy','X-Lantern-Session-Proof'])if(options.header[key])headers[key]=options.header[key];
+   const r=await e.call(route,options.method,{cookie:options.header.Cookie,headers,...options.extraData?{body:JSON.parse(options.extraData)}:{}});
+   const body=await r.json(),setCookie=r.headers.get('set-cookie');return response(r.status,body,setCookie?{'Set-Cookie':setCookie}:{});
+  };
+  try{
+   const credentials={username:'rollback_'+action,password:'Synthetic rollback password 42!'};
+   oldHost=hostRuntime({origin:ORIGIN,persistent:true,sessionStore:asset.store,dispatch});
+   assert.equal((await oldHost.invoke({id:'register',action:'register',body:credentials})).status,200);
+   const original=JSON.parse(Buffer.from(asset.bytes).toString()),hash=e.rows('auth_sessions')[0].token_hash;assert.equal(original.version,2);
+   oldHost.dispose();oldHost=undefined;
+   newHost=hostRuntime({origin:ORIGIN,persistent:false,sessionStore:asset.store,dispatch});
+   const dormant=await newHost.invoke({version:2,id:'session',action:'session'});assert.equal(dormant.status,401);
+   assert.equal(Buffer.from(asset.bytes).toString(),JSON.stringify(original),'automatic 401 must not delete dormant credentials');
+   assert.equal(newHost.requests[0].hasCookie,false,'dormant credentials do not prove account access');
+   const outcome=await newHost.invoke(action==='login'?{id:'recover',action,body:credentials}:{id:'logout',action});assert.equal(outcome.status,200);
+   assert.equal(newHost.requests.find(r=>r.path.endsWith('/'+action)).hasCookie,true,'explicit action presents old token only to revoke or rotate');
+   assert(!e.rows('auth_sessions').some(row=>row.token_hash===hash),'server revokes old token');
+   if(action==='login'){assert.equal(JSON.parse(Buffer.from(asset.bytes).toString()).version,1);assert.equal(e.rows('auth_sessions').length,1);}
+   else {assert.equal(asset.bytes,undefined);assert.equal(e.rows('auth_sessions').length,0);}
+  }finally{oldHost?.dispose();newHost?.dispose();e.close();}
+ }
+});
+
+test('a failed rollback login preserves the dormant credential and later logout revokes it',async()=>{
+ const e=environment({env:{LANTERN_PERSISTENT_SESSION_ENABLED:'true'}}),asset=assetHarness();let oldHost,newHost,failLogin=false;
+ const dispatch=async(url,options)=>{
+  const route=new URL(url).pathname.split('/').at(-1),headers={};
+  if(failLogin&&route==='login')return response(503,{code:'synthetic-unavailable'});
+  for(const key of ['X-Lantern-Session-Policy','X-Lantern-Session-Proof'])if(options.header[key])headers[key]=options.header[key];
+  const r=await e.call(route,options.method,{cookie:options.header.Cookie,headers,...options.extraData?{body:JSON.parse(options.extraData)}:{}});
+  const body=await r.json(),setCookie=r.headers.get('set-cookie');return response(r.status,body,setCookie?{'Set-Cookie':setCookie}:{});
+ };
+ try{
+  const credentials={username:'rollback_failure',password:'Synthetic rollback password 42!'};
+  oldHost=hostRuntime({origin:ORIGIN,persistent:true,sessionStore:asset.store,dispatch});assert.equal((await oldHost.invoke({id:'register',action:'register',body:credentials})).status,200);
+  const original=Buffer.from(asset.bytes).toString(),hash=e.rows('auth_sessions')[0].token_hash;oldHost.dispose();oldHost=undefined;
+  newHost=hostRuntime({origin:ORIGIN,persistent:false,sessionStore:asset.store,dispatch});assert.equal((await newHost.invoke({version:2,id:'session',action:'session'})).status,401);
+  failLogin=true;assert.equal((await newHost.invoke({id:'failed',action:'login',body:credentials})).status,503);await newHost.settle();assert.equal(Buffer.from(asset.bytes).toString(),original);
+  failLogin=false;assert.equal((await newHost.invoke({id:'logout',action:'logout'})).status,200);assert(newHost.requests.at(-1).hasCookie);
+  assert(!e.rows('auth_sessions').some(row=>row.token_hash===hash));assert.equal(asset.bytes,undefined);
+ }finally{oldHost?.dispose();newHost?.dispose();e.close();}
 });
 
 test('long cookies reject excessive or malformed TTL and untrusted action headers',async()=>{

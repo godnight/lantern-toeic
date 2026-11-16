@@ -458,7 +458,9 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       }
       let token: string | undefined = undefined;
       if (NativeAuthHost.quarantined) await this.store.clear();
-      else token = await this.store.load(AUTH_API_ORIGIN, PERSISTENT_SESSION_ENABLED);
+      else token = await this.store.load(AUTH_API_ORIGIN,
+        PERSISTENT_SESSION_ENABLED || input.action === 'huawei-login',
+        !PERSISTENT_SESSION_ENABLED && input.action === 'huawei-login');
       if (!this.current(operation)) return;
       const providerReply: http.HttpResponse = await this.fetch('providers', '', token, operation);
       if (this.cookieHeaders(providerReply).length !== 0 || providerReply.responseCode !== 200) throw new Error('Unconfirmed');
@@ -542,8 +544,20 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
         if (!this.current(operation)) return;
       }
       let token: string | undefined = undefined;
-      if (NativeAuthHost.quarantined) await this.store.clear();
-      else token = await this.store.load(AUTH_API_ORIGIN, PERSISTENT_SESSION_ENABLED);
+      if (NativeAuthHost.quarantined) {
+        // Explicit logout may still revoke a preserved dormant token even
+        // after a prior unknown mutation; never use it for account access.
+        if (!PERSISTENT_SESSION_ENABLED && input.action === 'logout' && this.store.hasDormantPersistent()) {
+          token = await this.store.load(AUTH_API_ORIGIN, true, true);
+        } else await this.store.clear();
+      } else {
+        // A rolled-back build must not use a dormant long session as an
+        // account proof, but an explicit login/logout may present it solely
+        // so the server can revoke the old session when rotating credentials.
+        const explicitIdentity: boolean = ['register', 'login', 'logout', 'phone-login'].includes(input.action);
+        token = await this.store.load(AUTH_API_ORIGIN, PERSISTENT_SESSION_ENABLED || explicitIdentity,
+          !PERSISTENT_SESSION_ENABLED && explicitIdentity);
+      }
       if (!this.current(operation)) return;
       let bindingUser: AuthUser | undefined = undefined;
       if (input.action === 'phone-bind') {
@@ -629,7 +643,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       if (input.action === 'logout') {
         const cookie: AuthCookie | undefined = sessionCookie(lines, PERSISTENT_SESSION_ENABLED);
         if (!cookie || cookie.token !== '' || cookie.maxAge !== 0 || payload.ok !== true) throw new Error('Unconfirmed');
-        await this.store.clear();
+        await this.store.clear(true);
         if (!this.current(operation)) return;
         operation.sessionMayHaveChanged = false;
         NativeAuthHost.quarantined = false;

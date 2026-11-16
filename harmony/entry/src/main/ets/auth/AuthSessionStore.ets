@@ -40,6 +40,11 @@ function text(value: Uint8Array): string {
 /** Token, expiry and endpoint binding remain in OS Asset Store, never in Web storage. */
 export class AuthSessionStore {
   private alias: Uint8Array = ascii('lantern-product-auth-session-v1');
+  // A long-format credential hidden by a rollback must survive automatic
+  // unauthenticated probes. Explicit logout may still revoke and clear it.
+  private preserveDormant: boolean = false;
+
+  hasDormantPersistent(): boolean { return this.preserveDormant; }
 
   private queryMap(): asset.AssetMap {
     const query: asset.AssetMap = new Map<asset.Tag, asset.Value>();
@@ -81,7 +86,7 @@ export class AuthSessionStore {
     return { token: record.token, expiresAt: record.expiresAt };
   }
 
-  async load(origin: string, allowPersistent: boolean = false): Promise<string | undefined> {
+  async load(origin: string, allowPersistent: boolean = false, preserveOnFailure: boolean = false): Promise<string | undefined> {
     const query: asset.AssetMap = this.queryMap();
     query.set(asset.Tag.RETURN_TYPE, asset.ReturnType.ALL);
     let rows: asset.AssetMap[];
@@ -102,7 +107,8 @@ export class AuthSessionStore {
     // Version 2 cannot be mistaken for an old-format session by a downgraded
     // app. Do not delete a valid record if the experiment is switched off.
     if (record.version === 2) {
-      if (!allowPersistent) throw new Error('Store unavailable');
+      if (!allowPersistent) { this.preserveDormant = true; return undefined; }
+      this.preserveDormant = preserveOnFailure;
       const now: number = Date.now();
       const issuedAt: number = record.issuedAt === undefined ? -1 : record.issuedAt;
       if (!Number.isSafeInteger(issuedAt) || issuedAt < 0 || !Number.isSafeInteger(record.expiresAt) ||
@@ -139,13 +145,16 @@ export class AuthSessionStore {
       changed.set(asset.Tag.SECRET, secret);
       await asset.update(this.queryMap(), changed);
     }
+    this.preserveDormant = false;
   }
 
-  async clear(): Promise<void> {
+  async clear(explicitLogout: boolean = false): Promise<void> {
+    if (this.preserveDormant && !explicitLogout) return;
     try {
       await asset.remove(this.queryMap());
     } catch (error) {
       if ((error as BusinessError).code !== 24000002) throw new Error('Store unavailable');
     }
+    this.preserveDormant = false;
   }
 }
