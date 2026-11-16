@@ -9,12 +9,6 @@ import { BusinessError } from '@kit.BasicServicesKit';
 // and a revocable local-only access lease are not implemented.
 export const OFFLINE_OWNER_ENABLED: boolean = false;
 
-interface PendingOfflineRecord {
-  version: number;
-  origin: string;
-  state: string;
-}
-
 export interface LocalOfflineOwner {
   uid: string;
   username: string;
@@ -109,7 +103,7 @@ export class OfflineOwnerFence {
 
   async markPending(origin: string): Promise<void> {
     if (!validOrigin(origin)) throw new Error('Store unavailable');
-    const record: PendingOfflineRecord = { version: 2, origin: origin, state: 'pending' };
+    const record: OfflineRecord = { version: 2, origin: origin, state: 'pending' };
     await this.write(record);
   }
 
