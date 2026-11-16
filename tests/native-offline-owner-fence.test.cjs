@@ -139,6 +139,31 @@ test('actual native host, bridge and controller keep the same local-only owner o
   assert.equal(resumed.status,'ready');assert.equal(resumed.user.id,uid);assert.equal(resumed.access.scope,'local-study-only');assert(resumed.access.canAccess());
  }finally{account.dispose();h.dispose();}
 });
+test('actual host operation slot held past the fast retry window eventually restores same-owner local access',async()=>{
+ const uid='usr_aaaaaaaa-1111-4111-8111-111111111111',user={id:uid,username:'synthetic_a'},f=fixture();
+ const caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false};let release,entered,requests=0;
+ const pending=new Promise(resolve=>{release=resolve;}),started=new Promise(resolve=>{entered=resolve;});
+ const loader=require('./helpers/actual-source-loader.cjs').createSourceLoader({root:path.resolve(__dirname,'..')});
+ const {createNativeAuthTransport}=loader.load('lib/native-auth-transport.ts'),{NativeAccountController}=loader.load('lib/native-account-controller.ts');
+ const target={location:{origin:'https://lantern.local'},crypto:{randomUUID:()=>require('node:crypto').randomUUID()}};target.self=target;target.top=target;
+ const h=hostRuntime({initialToken:'a'.repeat(64),offlineFence:f.fence,onReply:reply=>target.__lanternAuthReceive?.(reply),dispatch:async()=>{
+  if(++requests===1)return response(200,{user,capabilities:caps,session:{version:2,remainingMs:3600000}});
+  if(requests===2){entered();await pending;}throw Error('synthetic offline');
+ }});
+ target.LanternAuthHost={request:raw=>h.host.request(raw),isLocalActive:raw=>h.host.isLocalActive(raw)};
+ let now=0,next=0;const timers=new Map();const clock={now:()=>now,set(fn,ms){const id=++next;timers.set(id,{fn,at:now+ms});return id;},clear(id){timers.delete(id);},advance(ms){now+=ms;for(const [id,item]of [...timers])if(item.at<=now){timers.delete(id);item.fn();}}};
+ const account=new NativeAccountController(createNativeAuthTransport(target,clock),clock,{localOffline:true,networkEvents:{addEventListener(){},removeEventListener(){}}});
+ try{
+  account.start();await h.settle();assert.equal(account.getSnapshot().access.scope,'remote');
+  h.send({version:2,id:'synthetic-occupied-slot',action:'session'});await started;
+  const online=account.getSnapshot().access;clock.advance(3600000);await h.settle();assert.equal(online.sessionSignal.aborted,true);
+  for(const delay of [250,500,1000,2000,4000,8000]){clock.advance(delay);await h.settle();}
+  assert.equal(account.getSnapshot().status,'blocked');assert(h.replies.filter(reply=>reply.body?.code==='local-unavailable').length>=7);
+  release();await h.settle();clock.advance(59999);await h.settle();assert.equal(account.getSnapshot().status,'blocked');
+  clock.advance(1);await h.settle();const state=account.getSnapshot();assert.equal(state.status,'ready');assert.equal(state.user.id,uid);
+  assert.equal(state.access.scope,'local-study-only');assert(state.access.canAccess());assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined);
+ }finally{release();account.dispose();h.dispose();}
+});
 test('failed identity change remains pending until a successful login and its independent v2 proof',async()=>{
  const f=fixture(),uid='usr_aaaaaaaa-1111-4111-8111-111111111111';let accept=false;
  const user={id:uid,username:'synthetic_a'},caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false};

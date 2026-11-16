@@ -152,12 +152,26 @@ test('expiry retries native timeout, then reacquires the same owner',async()=>{
   assert.equal(h.value.getSnapshot().access.scope,'local-study-only');h.reply(4,closed);await tick();
  }finally{h.value.dispose();}
 });
-test('expiry retry exhaustion stays blocked and does not spin',async()=>{
- const h=controller({localOffline:true,localActive:()=>true});try{
+test('expiry retry exhaustion stays blocked until a network event starts another bounded round',async()=>{
+ const listeners=new Set(),networkEvents={addEventListener:(_type,fn)=>listeners.add(fn),removeEventListener:(_type,fn)=>listeners.delete(fn)};
+ const h=controller({localOffline:true,localActive:()=>true,networkEvents});try{
   await expiredOnline(h);let index=2;
-  for(const delay of [250,500,1000,2000,4000,8000]){h.reply(index++,localBusy);await tick();h.timer.advance(delay);await tick();assert.equal(h.calls[index].action,'local-session');}
+  for(const delay of [250,500,1000,2000,4000,8000,60000,60000,60000,60000]){h.reply(index++,localBusy);await tick();h.timer.advance(delay);await tick();assert.equal(h.calls[index].action,'local-session');}
   h.reply(index,localBusy);await tick();assert.equal(h.value.getSnapshot().status,'blocked');h.timer.advance(60000);await tick();assert.equal(h.calls.length,index+1);
+  for(const listener of listeners){listener();listener();}await tick();assert.equal(h.calls.length,index+2);h.reply(index+1,localA);await tick();
+  assert.equal(h.value.getSnapshot().access.scope,'local-study-only');h.reply(index+2,closed);await tick();
  }finally{h.value.dispose();}
+});
+test('parked expiry recovery never resumes after explicit account change or background',async()=>{
+ for(const action of ['suspend','logout','login']){
+  const listeners=new Set(),networkEvents={addEventListener:(_type,fn)=>listeners.add(fn),removeEventListener:(_type,fn)=>listeners.delete(fn)};
+  const h=controller({localOffline:true,localActive:()=>true,networkEvents});try{
+   await expiredOnline(h);let index=2;
+   for(const delay of [250,500,1000,2000,4000,8000,60000,60000,60000,60000]){h.reply(index++,localBusy);await tick();h.timer.advance(delay);await tick();}
+   h.reply(index,localBusy);await tick();if(action==='suspend')h.value.suspend();else assert.equal(await h.value.mutate(action,credentials),false);
+   for(const listener of listeners)listener();h.timer.advance(60000);await tick();assert.equal(h.calls.length,index+1,action);assert.equal(h.value.getSnapshot().status,'blocked');
+  }finally{h.value.dispose();}
+ }
 });
 test('expiry retry never accepts another owner or retries non-transient failures',async()=>{
  for(const response of [{status:200,body:{user:B,local:{scope:'local-study-only',generation:7}}},guest,{status:503,body:{code:'native-auth-unavailable'}}]){

@@ -8,7 +8,9 @@ export type NativeAccountState=Readonly<
   {status:'ready';user:ProductIdentity|null;capabilities:ProductCapabilities;unavailable:boolean;message:string;access:AccountAccess}>;
 export const INITIAL_NATIVE_ACCOUNT_STATE:NativeAccountState=Object.freeze({status:'checking',message:'正在核对账号会话。'});
 const guestCapabilities:ProductCapabilities=Object.freeze({passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false});
-const LOCAL_RETRY_DELAYS=[250,500,1000,2000,4000,8000] as const;
+// A slow tail gives the single native operation slot time to recover without a hot loop.
+// Once exhausted, a later network-online event may start a new bounded round.
+const LOCAL_RETRY_DELAYS=[250,500,1000,2000,4000,8000,60000,60000,60000,60000] as const;
 type Listener=(state:NativeAccountState,synchronous:boolean)=>void;
 export type SyncTransitionGuard={prepare:()=>Promise<void>;complete:()=>Promise<void>};
 type NetworkEvents={addEventListener:(type:'online',listener:()=>void)=>void;removeEventListener:(type:'online',listener:()=>void)=>void};
@@ -38,6 +40,8 @@ export class NativeAccountController {
   private localProbePending=false;
   private localProbeAgain=false;
   private localFallbackGeneration:number|null=null;
+  private localFallbackOwner:string|null=null;
+  private localFallbackParked=false;
   private localRetryTimer:unknown=undefined;
   private localRetryWake:((ready:boolean)=>void)|null=null;
   private networkEvents:NetworkEvents|null=null;
@@ -74,7 +78,7 @@ export class NativeAccountController {
   }
   private begin(message:string,synchronous:boolean){
     const generation=++this.generation;
-    this.cancelLocalRetry();this.localFallbackGeneration=null;
+    this.cancelLocalRetry();this.localFallbackGeneration=null;this.localFallbackOwner=null;this.localFallbackParked=false;
     this.huaweiGeneration=null;this.huaweiBackground=false;this.foregroundWait?.();this.foregroundWait=null;
     this.deadline?.close();this.deadline=null;
     this.localAbort?.abort();this.localAbort=null;this.localAccess=null;
@@ -100,6 +104,10 @@ export class NativeAccountController {
     this.update({status:'blocked',message:'账号操作尚未确认，请重新核对账号。'},true);return true;
   }
   private onOnline=()=>{
+    if(this.alive&&this.localFallbackParked&&this.localFallbackGeneration===this.generation&&this.localFallbackOwner){
+      const generation=this.generation,owner=this.localFallbackOwner;this.localFallbackParked=false;
+      this.initialProbe=this.startWithLocal(generation,owner);return;
+    }
     if(!this.alive||this.state.status!=='ready'||!this.state.user||this.state.access.scope!=='local-study-only')return;
     if(this.localProbePending){this.localProbeAgain=true;return;}
     this.initialProbe=this.verifyLocal(this.generation,this.state.user.id);
@@ -159,7 +167,8 @@ export class NativeAccountController {
         // the native host and permit only the same previously verified owner.
         if(this.options.localOffline===true){
           this.localFallbackGeneration=next;
-          this.initialProbe=this.startWithLocal(next,owner).finally(()=>{if(this.localFallbackGeneration===next)this.localFallbackGeneration=null;});
+          this.localFallbackOwner=owner;this.localFallbackParked=false;
+          this.initialProbe=this.startWithLocal(next,owner);
         }
       },this.clock):null;
       this.deadline=deadline;
@@ -190,17 +199,20 @@ export class NativeAccountController {
             const assertAccess=()=>{const ok=canAccess();if(!ok)abort.abort();return ok;};
             if(canAccess()){
               this.localAbort=abort;localOwner=user.id;
-              if(this.localFallbackGeneration===generation)this.localFallbackGeneration=null;
+              if(this.localFallbackGeneration===generation){this.localFallbackGeneration=null;this.localFallbackOwner=null;this.localFallbackParked=false;}
               this.localAccess={user,owner:user.id,epoch:generation,scope:'local-study-only',canAccess,assertAccess,sessionSignal:abort.signal};
               this.update({status:'ready',user,capabilities:guestCapabilities,unavailable:false,message:'',access:this.localAccess});
             }
           }
         }
        }catch(error){retry=error instanceof NativeAuthFailure&&error.code==='timeout';}
-       if(!retry||attempt>=delays.length||!await this.waitLocalRetry(generation,delays[attempt]))break;
+       if(!retry)break;
+       if(attempt>=delays.length){if(this.current(generation)&&this.localFallbackGeneration===generation)this.localFallbackParked=true;break;}
+       if(!await this.waitLocalRetry(generation,delays[attempt]))break;
       }
     }
     if(this.current(generation)){
+      if(expectedLocalOwner&&!localOwner&&!this.localFallbackParked&&this.localFallbackGeneration===generation){this.localFallbackGeneration=null;this.localFallbackOwner=null;}
       // At expiry, an absent or different cached owner must never cause an
       // automatic account switch or fall through to another remote identity.
       if(expectedLocalOwner&&!localOwner)return;
@@ -322,5 +334,5 @@ export class NativeAccountController {
       if(this.current(generation)){this.held=true;this.update({status:'blocked',message:'手机号操作结果未知，不能假定已发送、绑定或登录。请重新核对账号。'});}
     }finally{if(this.current(generation))this.mutationPending=false;}
   }
-  dispose(){if(!this.alive)return;this.alive=false;++this.generation;this.cancelLocalRetry();this.localFallbackGeneration=null;this.huaweiGeneration=null;this.foregroundWait?.();this.foregroundWait=null;this.deadline?.close();this.deadline=null;this.localAbort?.abort();this.localAbort=null;this.localAccess=null;this.networkEvents?.removeEventListener('online',this.onOnline);this.networkEvents=null;this.transport.dispose();this.listeners.clear();}
+  dispose(){if(!this.alive)return;this.alive=false;++this.generation;this.cancelLocalRetry();this.localFallbackGeneration=null;this.localFallbackOwner=null;this.localFallbackParked=false;this.huaweiGeneration=null;this.foregroundWait?.();this.foregroundWait=null;this.deadline?.close();this.deadline=null;this.localAbort?.abort();this.localAbort=null;this.localAccess=null;this.networkEvents?.removeEventListener('online',this.onOnline);this.networkEvents=null;this.transport.dispose();this.listeners.clear();}
 }
