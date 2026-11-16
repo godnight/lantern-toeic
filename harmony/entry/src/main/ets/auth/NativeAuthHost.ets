@@ -101,7 +101,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
   // navigation/dispose still uses invalidate(), including during an SDK dialog.
   onForegroundChanged(foreground: boolean): void {
     this.ownerLease.revoke();
-    if (this.huaweiOperation !== undefined && this.huaweiOperation.huaweiSdkStarted === true && this.current(this.huaweiOperation)) {
+    if (this.huaweiOperation !== undefined && (!OFFLINE_OWNER_ENABLED || this.huaweiOperation.huaweiSdkStarted === true) && this.current(this.huaweiOperation)) {
       if (foreground) this.wakeForeground();
       return;
     }
@@ -232,7 +232,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
 
   private current(operation: Operation): boolean {
     if (operation.timedOut) return false;
-    if (operation.huawei === true && operation.huaweiSdkStarted === true && this.huaweiOperation === operation) {
+    if (operation.huawei === true && (!OFFLINE_OWNER_ENABLED || operation.huaweiSdkStarted === true) && this.huaweiOperation === operation) {
       if (this.disposed || !this.attached || operation.epoch !== this.epoch) return false;
       try { return trustedFrame(this.controller.getUrl()); } catch { return false; }
     }

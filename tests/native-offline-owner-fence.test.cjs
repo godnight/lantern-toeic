@@ -63,3 +63,29 @@ test('background and foreground during a Huawei pending write cannot start SDK o
   }finally{h.dispose();}
  }
 });
+test('with offline fence disabled, existing Huawei pre-SDK background and foreground behavior is unchanged',async()=>{
+ let release;const pending=new Promise(resolve=>{release=resolve;});
+ const h=hostRuntime({huawei:true,dispatch:async(url)=>new URL(url).pathname.endsWith('/providers')?pending:response(503,{})});
+ try{
+  const result=h.invoke({id:'legacy-provider',action:'huawei-login'});await h.settle();assert.equal(h.requests.length,1);assert.equal(h.sdkCalls.length,0);
+  h.lifecycle(false);h.lifecycle(true);release(response(200,{huaweiLogin:true,huaweiBinding:true}));
+  assert.equal((await result).status,503);assert.equal(h.sdkCalls.length,1);
+ }finally{h.dispose();}
+});
+test('with offline fence enabled, an already-started Huawei SDK can resume after background',async()=>{
+ let release,request;const pending=new Promise(resolve=>{release=resolve;});
+ const user={id:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'},caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false};
+ const cookie='__Host-lantern-session='+'a'.repeat(64)+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200';
+ const h=hostRuntime({huawei:true,offlineFence:async()=>{},authorize:value=>{request=value;return pending;},dispatch:async(url)=>{
+  const path=new URL(url).pathname;
+  if(path.endsWith('/providers'))return response(200,{huaweiLogin:true,huaweiBinding:true});
+  if(path.endsWith('/huawei/login'))return response(200,{user,capabilities:caps},{'set-cookie':cookie});
+  if(path.endsWith('/session'))return response(200,{user,capabilities:caps,session:{version:2,remainingMs:3600000}});
+  return response(503,{});
+ }});
+ try{
+  const result=h.invoke({id:'new-sdk',action:'huawei-login'});await h.settle();assert.equal(h.sdkCalls.length,1);
+  h.lifecycle(false);release({state:request.state,data:{authorizationCode:'synthetic-native-authorization-code'}});await h.settle();assert.equal(h.requests.length,1);
+  h.lifecycle(true);assert.equal((await result).status,200);
+ }finally{h.dispose();}
+});
