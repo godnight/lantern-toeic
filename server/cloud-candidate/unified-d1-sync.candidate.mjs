@@ -89,10 +89,15 @@ export async function createUnifiedD1Sync({enabled=false,mf,origin,cursorKey,mod
    if(exact(v,['id','qid','choice','correct','createdAt','seconds','mode'])){if(typeof v.correct!=='boolean'||!['first','review'].includes(v.mode))return reply(400,{error:'invalid attempt'});v={id:v.id,qid:v.qid,choice:v.choice,createdAt:v.createdAt,seconds:v.seconds};}
    const q=questions.get(v?.qid);if(!exact(v,['id','qid','choice','createdAt','seconds'])||!uuid.test(v.id)||!q||!Number.isInteger(v.choice)||v.choice<0||v.choice>=q.options.length||!stamp(v.createdAt)||!Number.isInteger(v.seconds)||v.seconds<0||v.seconds>7200)return reply(400,{error:'invalid attempt'});
    const correct=Number(v.choice===q.correctIndex);
-   await db.prepare(`INSERT INTO attempts(id,user_id,qid,choice,correct,created_at,seconds,mode) SELECT ?,?,?,?,?,?,?,CASE WHEN EXISTS(SELECT 1 FROM attempts WHERE user_id=? AND qid=?) THEN 'review' ELSE 'first' END WHERE ${validSessionSql} ON CONFLICT(id) DO NOTHING`).bind(v.id,owner,v.qid,v.choice,correct,v.createdAt,v.seconds,owner,v.qid,hash,owner).run();
-   if(!await live(hash,owner))return reply(401,{error:'unauthenticated'});
+   // Legacy uploads carry neither a complete baseline nor a verified causal
+   // predecessor. Storage enumeration and request arrival order are not
+   // evidence of which answer was first, even for one offline device. Never
+   // create or reclassify an attempt on this path until an ordered protocol is
+   // available. A previously committed identical event may still be retried.
    const old=await db.prepare('SELECT qid,choice,correct,created_at AS createdAt,seconds FROM attempts WHERE id=? AND user_id=?').bind(v.id,owner).first();
-   return old&&old.qid===v.qid&&old.choice===v.choice&&old.correct===correct&&old.createdAt===v.createdAt&&old.seconds===v.seconds?reply(200,{ok:true}):reply(409,{code:'event-payload-conflict'});
+   if(!await live(hash,owner))return reply(401,{error:'unauthenticated'});
+   if(!old)return reply(409,{code:'attempt-order-unproven'});
+   return old.qid===v.qid&&old.choice===v.choice&&old.correct===correct&&old.createdAt===v.createdAt&&old.seconds===v.seconds?reply(200,{ok:true}):reply(409,{code:'event-payload-conflict'});
   }
   if(body.type==='checkin'){
    const d=v?.date,date=typeof d==='string'&&/^\d{4}-\d\d-\d\d$/.test(d)?new Date(d+'T12:00:00Z'):null;

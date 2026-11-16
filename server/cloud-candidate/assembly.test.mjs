@@ -116,10 +116,20 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
       mode: 'first', createdAt: new Date().toISOString(), seconds: 3 };
     const checkin = { id: randomUUID(), date: '2026-01-01', minutes: 5, load: '轻', note: '', createdAt: new Date().toISOString() };
     const saveStudy = (device, who, type, data) => app.fetch(request('/api/study', { cookie: device, owner: who, body: { type, data } }));
+    // Even a single device can enumerate persisted offline events out of
+    // order. Unproven attempts stay local; the server must not invent mode.
+    const pendingAttempt = await saveStudy(cookie, owner, 'attempt', attempt);
+    assert.equal(pendingAttempt.status, 409);
+    assert.equal((await pendingAttempt.json()).code, 'attempt-order-unproven');
+    assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM attempts WHERE user_id=?').bind(owner).first()).n, 0);
+    // A previously committed event remains safe to acknowledge idempotently.
+    await db.prepare('INSERT INTO attempts(id,user_id,qid,choice,correct,created_at,seconds,mode) VALUES(?,?,?,?,?,?,?,?)')
+      .bind(attempt.id, owner, attempt.qid, attempt.choice, Number(question.correctIndex === attempt.choice), attempt.createdAt, attempt.seconds, 'first').run();
     for (const [type, data] of [['attempt', attempt], ['checkin', checkin]]) {
       assert.equal((await saveStudy(cookie, owner, type, data)).status, 200);
       assert.equal((await saveStudy(cookie, owner, type, data)).status, 200);
     }
+    assert.equal((await saveStudy(cookie, owner, 'attempt', { ...attempt, seconds: attempt.seconds + 1 })).status, 409);
     assert.equal((await saveStudy(cookie, owner, 'checkin', { ...checkin, minutes: 6 })).status, 409);
     assert.equal((await saveStudy(otherCookie, owner, 'attempt', attempt)).status, 409);
     const readStudy = device => app.fetch(request('/api/study?sync=native-m2a-v1', { cookie: device, owner }));
