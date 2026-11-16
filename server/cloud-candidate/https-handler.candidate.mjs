@@ -8,8 +8,8 @@ const fixed = new Map([
 ]);
 const phone = new Map([['/api/auth/phone/status', 'GET'], ['/api/auth/phone/challenge', 'POST'], ['/api/auth/phone/login', 'POST'], ['/api/auth/phone/bind', 'POST']]);
 const sync = new Map([['/candidate/sync/append', 'POST'], ['/candidate/sync/snapshot', 'POST'], ['/candidate/sync/page', 'POST']]);
-const singletons = new Set(['host', 'origin', 'cookie', 'content-type', 'content-length', 'transfer-encoding', 'sec-fetch-site', 'x-lantern-session-proof', 'x-lantern-owner']);
-const pass = ['origin', 'cookie', 'content-type', 'sec-fetch-site', 'x-lantern-session-proof', 'x-lantern-owner'];
+const singletons = new Set(['host', 'origin', 'cookie', 'content-type', 'content-length', 'transfer-encoding', 'sec-fetch-site', 'x-lantern-session-proof', 'x-lantern-session-policy', 'x-lantern-owner']);
+const pass = ['origin', 'cookie', 'content-type', 'sec-fetch-site', 'x-lantern-session-proof', 'x-lantern-session-policy', 'x-lantern-owner'];
 const fail = (res, status) => { if (res.headersSent) return res.destroy(); res.writeHead(status, { 'cache-control': 'no-store', 'connection': 'close' }); res.end(); };
 const limited = (res, retryAfter) => {
   if (res.headersSent) return res.destroy();

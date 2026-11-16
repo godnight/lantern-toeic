@@ -1,15 +1,17 @@
 import {createHash,randomUUID} from 'node:crypto';
-import {PRODUCT_SESSION_SECONDS,type ProductIdentity} from '../../lib/auth-service';
+import {PRODUCT_SESSION_SECONDS,PERSISTENT_SESSION_SECONDS,type ProductIdentity} from '../../lib/auth-service';
 import {PHONE_PROOF_MAX_LIFETIME_MS,PHONE_PROOF_FUTURE_SKEW_MS,type PhoneTransactionStore,type VerifiedPhoneCommand,type PhoneCommitResult} from '../../lib/phone-verification';
 
 // SQLite server time, with milliseconds. The value is stable within a statement;
 // no client clock controls proof expiry or the live binding-session check.
 const SQL_NOW=`(CAST(strftime('%s','now') AS INTEGER)*1000+CAST(substr(strftime('%f','now'),4,3) AS INTEGER))`;
 type FinalRow={status:string;id:string|null;username:string|null};
-type SessionMaterial={tokenHash:string;oldTokenHash:string};
+type SessionMaterial={tokenHash:string;oldTokenHash:string;seconds?:number};
 export type PhoneD1Context={db:D1Database;purpose:'bind'|'login';audience:string;providerId:string;phone:string;bindingUser:ProductIdentity|null;bindingTokenHash:string|null;session:SessionMaterial;challenge?:Readonly<{id:string;verificationTicket:string}>;createAccountIfMissing?:boolean};
 
 export function createPhoneD1Store(context:PhoneD1Context):PhoneTransactionStore&{committedIdentity:()=>ProductIdentity|null}{
+ const seconds=context.session.seconds??PRODUCT_SESSION_SECONDS;
+ if(seconds!==PRODUCT_SESSION_SECONDS&&seconds!==PERSISTENT_SESSION_SECONDS)throw Error('Invalid session policy');
  let committed:ProductIdentity|null=null;
  const db=context.db;
  return {
@@ -59,7 +61,7 @@ export function createPhoneD1Store(context:PhoneD1Context):PhoneTransactionStore
     statements.push(db.prepare(`DELETE FROM auth_sessions WHERE token_hash=?
      AND EXISTS(SELECT 1 FROM auth_phone_proofs WHERE consumption_ticket=?)`).bind(context.session.oldTokenHash,ticket));
     statements.push(db.prepare(`INSERT INTO auth_sessions(token_hash,user_id,created_at,expires_at)
-     SELECT ?,user_id,${SQL_NOW},${SQL_NOW}+? FROM auth_phone_proofs WHERE consumption_ticket=?`).bind(context.session.tokenHash,PRODUCT_SESSION_SECONDS*1000,ticket));
+     SELECT ?,user_id,${SQL_NOW},${SQL_NOW}+? FROM auth_phone_proofs WHERE consumption_ticket=?`).bind(context.session.tokenHash,seconds*1000,ticket));
     statements.push(db.prepare(`DELETE FROM auth_sessions WHERE expires_at<=${SQL_NOW}
      AND EXISTS(SELECT 1 FROM auth_phone_proofs WHERE consumption_ticket=?)`).bind(ticket));
    }

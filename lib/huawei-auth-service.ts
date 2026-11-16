@@ -1,5 +1,5 @@
 import {createHash,randomBytes,randomUUID} from 'node:crypto';
-import {authConfiguration,authJson,readProductIdentity,sameOriginMutation,createProductSessionMaterial,productSessionResponse,productSessionTokenHash,PRODUCT_SESSION_SECONDS,type AuthEnvironment,type ProductIdentity} from './auth-service';
+import {authConfiguration,authJson,readProductIdentity,sameOriginMutation,createProductSessionMaterial,productSessionResponse,productSessionTokenHash,type AuthEnvironment,type ProductIdentity} from './auth-service';
 import {readBoundedRequestBody} from './request-body';
 
 const TOKEN_URL='https://oauth-login.cloud.huawei.com/oauth2/v3/token';
@@ -89,7 +89,7 @@ export function createHuaweiAuthService(options:Readonly<{fetch?:typeof fetch;ti
    }catch(error){return failure(error instanceof InvalidHuaweiCredential?'invalid-credential':'unavailable',error instanceof InvalidHuaweiCredential?401:503);}
    finally{clearTimeout(timer);request.signal.removeEventListener('abort',cancel);}
    if(request.signal.aborted)return failure('unavailable');
-   const session=createProductSessionMaterial(request.headers),userId='usr_'+randomUUID(),username='hw_'+randomBytes(12).toString('hex');
+   const session=createProductSessionMaterial(request.headers,env),userId='usr_'+randomUUID(),username='hw_'+randomBytes(12).toString('hex');
    const active=`SELECT 1 FROM auth_huawei_codes WHERE ticket=? AND completed_at IS NULL AND expires_at>${SQL_NOW}`;
    const live=`SELECT 1 FROM auth_sessions WHERE token_hash=? AND user_id=? AND expires_at>${SQL_NOW}`;
    const mapping=`SELECT user_id FROM auth_provider_bindings WHERE provider='huawei' AND audience=? AND subject=?`;
@@ -100,7 +100,7 @@ export function createHuaweiAuthService(options:Readonly<{fetch?:typeof fetch;ti
      SELECT 'huawei',?,?,id,${SQL_NOW} FROM auth_users WHERE id=? AND EXISTS(${active}) AND NOT EXISTS(${mapping})`).bind(config.clientId,subject,userId,ticket,config.clientId,subject));
     statements.push(config.db.prepare(`DELETE FROM auth_sessions WHERE token_hash=? AND EXISTS(${active})`).bind(session.oldTokenHash,ticket));
     statements.push(config.db.prepare(`INSERT INTO auth_sessions(token_hash,user_id,created_at,expires_at)
-     SELECT ?,user_id,${SQL_NOW},${SQL_NOW}+? FROM auth_provider_bindings WHERE provider='huawei' AND audience=? AND subject=? AND EXISTS(${active})`).bind(session.tokenHash,PRODUCT_SESSION_SECONDS*1000,config.clientId,subject,ticket));
+     SELECT ?,user_id,${SQL_NOW},${SQL_NOW}+? FROM auth_provider_bindings WHERE provider='huawei' AND audience=? AND subject=? AND EXISTS(${active})`).bind(session.tokenHash,session.seconds*1000,config.clientId,subject,ticket));
     statements.push(config.db.prepare(`DELETE FROM auth_sessions WHERE expires_at<=${SQL_NOW} AND EXISTS(${active})`).bind(ticket));
    }else{
     // Same binding is idempotent; another owner is a NOT NULL violation and
@@ -135,7 +135,7 @@ export function createHuaweiAuthService(options:Readonly<{fetch?:typeof fetch;ti
     WHERE c.ticket=? AND c.completed_at IS NOT NULL AND c.purpose=? AND EXISTS(SELECT 1 FROM auth_provider_bindings b WHERE b.provider='huawei' AND b.audience=? AND b.subject=? AND b.user_id=u.id)`)
     .bind(ticket,purpose,config.clientId,subject).first<ProductIdentity>();
    if(!user||purpose==='bind'&&user.id!==bindingUser!.id)return failure('unavailable');
-   return purpose==='login'?productSessionResponse(user,session.token):authJson({ok:true,user});
+   return purpose==='login'?productSessionResponse(user,session.token,session.seconds):authJson({ok:true,user});
   }catch{return failure('unavailable');}
  };
 }

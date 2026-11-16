@@ -1,7 +1,7 @@
 // This channel is in-process only. It does not open a socket or load keys.
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 
-const selected = ['origin', 'cookie', 'content-type', 'sec-fetch-site', 'x-lantern-session-proof', 'x-lantern-owner'];
+const selected = ['origin', 'cookie', 'content-type', 'sec-fetch-site', 'x-lantern-session-proof', 'x-lantern-session-policy', 'x-lantern-owner'];
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const mac = (key, payload) => createHmac('sha256', key).update(JSON.stringify(payload)).digest();
 export function signEnvelope(key, type, value) {
