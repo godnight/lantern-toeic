@@ -6,13 +6,22 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const path = require('node:path');
 const fs = require('node:fs');
-const {environment, PASSWORD, sha} = require('./helpers/product-auth-harness.cjs');
+const {environment: createEnvironment, PASSWORD, sha} = require('./helpers/product-auth-harness.cjs');
 const root = process.env.LANTERN_REVIEW_ROOT || path.resolve(__dirname, '..');
 const FROZEN = '101209685a200ba49a8762818f86dd8be8a91f29';
 // Exact bytes extracted once with git show from the reviewed frozen commit.
 // Runtime verification needs neither the Git history nor a network fetch.
 const FROZEN_SERVICE_SHA256 = 'f8bb8bc6d3943c3a23ec1f18d4a4f459a47c51bbbaad7b707cce5382bc313afc';
-const windowNow = () => Math.floor(Date.now() / 900000) * 900000;
+// Keep the test in one real admission window even when CI starts a KDF a few
+// milliseconds before a wall-clock boundary. The KDF and SQL remain real; only
+// the clock exposed to the isolated auth modules is fixed.
+const FIXED_NOW = 1800000899999; // Last millisecond of a 15-minute window.
+class AdmissionTestDate extends Date {
+  constructor(...args) {super(...(args.length ? args : [FIXED_NOW]));}
+  static now() {return FIXED_NOW;}
+}
+const environment = options => createEnvironment({...options, Date: AdmissionTestDate});
+const windowNow = () => Math.floor(FIXED_NOW / 900000) * 900000;
 const rateScope = (action, username) => action + ':username:' + sha(username);
 const send = (e, username, action = 'login') => e.call(action, 'POST', {body: {username, password: PASSWORD}});
 const seed = (e, scope, count, windowStart = windowNow()) => e.sqlite.prepare('INSERT INTO auth_rate_limits(scope,window_start,count) VALUES(?,?,?)').run(scope, windowStart, count);

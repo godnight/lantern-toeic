@@ -88,7 +88,7 @@ function environment(options = {}) {
     const code = ts.transpileModule(source, {
       compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true, resolveJsonModule: true},
     }).outputText;
-    vm.runInNewContext(code, {exports, require: resolve, Date, Intl, Map, Set, Error, SyntaxError, JSON,
+    vm.runInNewContext(code, {exports, require: resolve, Date: options.Date || Date, Intl, Map, Set, Error, SyntaxError, JSON,
       Promise, Buffer, structuredClone, TextEncoder, TextDecoder, Uint8Array, Uint32Array, ArrayBuffer,
       Blob, File, FormData, URL, Request, Response, Headers, ReadableStream, AbortController, atob, btoa,
       crypto: crypto.webcrypto, fetch, URLSearchParams, setTimeout, clearTimeout}, {filename: file});
