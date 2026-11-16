@@ -339,6 +339,93 @@ test('confirmed study uploads compact only the pending entry and keep the event 
   await assert.rejects(c.answer('checkin',{...item,note:'conflicting'},undefined,id),/conflict/);assert.equal((await c.readStudy()).data.checkins[0].note,item.note);
  }finally{await c.cancel();db.close();s.close();}
 });
+test('one event with distinct source operation IDs reuses its durable original before and after restart',async()=>{
+ const s=server(),factory=new IDBFactory(),item=checkin(),firstId=randomUUID(),otherId=randomUUID();let db=await open(factory,'study-event-link'),c=client(db,s);
+ try{
+  await c.activate(A);await c.answer('checkin',item,undefined,firstId);await c.answer('checkin',item,undefined,otherId);
+  let state=await c.readStudy();assert.equal(state.pendingOperations.length,1);assert.equal(state.pendingOperations[0].id,firstId);assert.equal(state.eventLinks[0].operationId,firstId);
+  await c.run();await c.cancel();db.close();db=await open(factory,'study-event-link');c=client(db,s);await c.activate(A);
+  await c.answer('checkin',item,undefined,otherId);state=await c.readStudy();assert.equal(state.pendingOperations.length,0);assert.equal(state.uploadAcks[0].id,firstId);assert.equal(s.rows.size,1);
+  const before=JSON.stringify(state);await assert.rejects(c.answer('checkin',{...item,note:'different'},undefined,randomUUID()),/conflict/);assert.equal(JSON.stringify(await c.readStudy()),before);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('journal rescans deduplicate the same historical event across different operation IDs',async()=>{
+ const source=memoryStorage(),s=server(),factory=new IDBFactory(),item=checkin(),ids=[randomUUID(),randomUUID()];let db=await open(factory,'study-duplicate-journal'),c=client(db,s);
+ for(const id of ids)source.storage.setItem('lantern-v1-'+A+':op:'+id,JSON.stringify({id,owner:A,type:'checkin',data:item}));
+ try{
+  await c.activate(A);assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),2);let state=await c.readStudy();assert.equal(state.pendingOperations.length,1);assert.equal(state.pendingOperations[0].id,ids[0]);
+  await c.run();await c.cancel();db.close();db=await open(factory,'study-duplicate-journal');c=client(db,s);await c.activate(A);
+  assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),2);await c.run();state=await c.readStudy();
+  assert.equal(state.uploadAcks.length,1);assert.equal(state.uploadAcks[0].id,ids[0]);assert.equal(state.eventLinks.length,1);assert.equal(s.rows.size,1);assert.equal(source.raw.size,2);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('concurrent duplicate capture never creates two operations and can safely rescan',async()=>{
+ const s=server(),db=await open(new IDBFactory(),'study-link-concurrent'),c=client(db,s),item=checkin(),ids=[randomUUID(),randomUUID()];
+ try{
+  await c.activate(A);const outcomes=await Promise.allSettled(ids.map(id=>c.answer('checkin',item,undefined,id)));assert.ok(outcomes.some(x=>x.status==='fulfilled'));
+  for(const id of ids)await c.answer('checkin',item,undefined,id);
+  const state=await c.readStudy();assert.equal(state.pendingOperations.length,1);assert.equal(state.eventLinks.length,1);assert.equal(state.data.checkins.length,1);
+  await c.run();assert.equal(s.rows.size,1);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('a concurrent independent local write triggers automatic retry without losing either event',async()=>{
+ const source=memoryStorage(),s=server(),db=await open(new IDBFactory(),'study-link-retry'),c=client(db,s),target=new EventTarget(),first=checkin(),other=checkin(),firstId=randomUUID(),otherId=randomUUID(),entered=deferred(),release=deferred();let timer=null,pump,calls=0;
+ source.storage.setItem('lantern-v1-'+A+':op:'+firstId,JSON.stringify({id:firstId,owner:A,type:'checkin',data:first}));
+ const subtle=crypto.subtle,original=subtle.digest.bind(subtle),prior=Object.getOwnPropertyDescriptor(subtle,'digest');
+ Object.defineProperty(subtle,'digest',{configurable:true,value:async(...args)=>{if(++calls===1){entered.resolve();await release.promise;}return original(...args);}});
+ try{
+  await c.activate(A);pump=page.createCapturedVocabularyMarkPump({storage:source.storage,owner:A,client:c,target,captureStudy:()=>page.scanSyntheticStudyJournal(source.storage,A,c),setTimer:fn=>{timer=fn;return fn;},clearTimer:()=>{timer=null;}});
+  const firstRun=pump.wake(),rejected=assert.rejects(firstRun,e=>e.code==='NATIVE_TRANSIENT');await entered.promise;
+  await c.answer('checkin',other,undefined,otherId);release.resolve();await rejected;assert.equal(typeof timer,'function');
+  const retry=timer;timer=null;retry();await pump.wake();const state=await c.readStudy();
+  assert.equal(state.data.checkins.length,2);assert.equal(state.uploadAcks.length,2);assert.equal(s.rows.size,2);assert.equal(source.raw.size,1);
+ }finally{release.resolve();if(prior)Object.defineProperty(subtle,'digest',prior);else delete subtle.digest;pump?.stop();await c.cancel();db.close();s.close();}
+});
+test('legacy pending/ACK backfills a mapping only after matching original fingerprint and fact',async()=>{
+ const s=server(),db=await open(new IDBFactory(),'study-link-legacy'),c=client(db,s),item=checkin(),id=randomUUID(),other=randomUUID();
+ try{
+  await c.activate(A);await c.answer('checkin',item,undefined,id);await c.run();let state=await c.readStudy();
+  state.eventLinks=[];state.pendingOperations=[{id,owner:A,type:'checkin',data:item}];
+  await new Promise((resolve,reject)=>{const tx=db.transaction(study.STATE,'readwrite');tx.objectStore(study.STATE).put(state);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});
+  await c.answer('checkin',item,undefined,other);state=await c.readStudy();assert.equal(state.eventLinks[0].operationId,id);assert.equal(state.pendingOperations.length,1);
+  await c.run();state=await c.readStudy();assert.equal(state.pendingOperations.length,0);assert.equal(state.uploadAcks.length,1);assert.equal(s.rows.size,1);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('legacy ACK without operation mapping rejects changed IDs and preserves every byte',async()=>{
+ const s=server(),db=await open(new IDBFactory(),'study-link-unknown-ack'),c=client(db,s),item=checkin(),id=randomUUID();
+ try{
+  await c.activate(A);await c.answer('checkin',item,undefined,id);await c.run();let state=await c.readStudy();state.eventLinks=[];
+  await new Promise((resolve,reject)=>{const tx=db.transaction(study.STATE,'readwrite');tx.objectStore(study.STATE).put(state);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});
+  const before=JSON.stringify(await c.readStudy());await assert.rejects(c.answer('checkin',item,undefined,randomUUID()),/mapping unavailable/);assert.equal(JSON.stringify(await c.readStudy()),before);
+  await c.answer('checkin',item,undefined,id);state=await c.readStudy();assert.equal(state.eventLinks[0].operationId,id);assert.equal(state.pendingOperations.length,0);assert.equal(s.rows.size,1);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('attempt duplicate IDs preserve the first anchor and account partition',async()=>{
+ const s=server(),db=await open(new IDBFactory(),'study-attempt-link'),c=client(db,s),item=attempt(),id=randomUUID();
+ try{
+  await c.activate(A);await c.answer('attempt',item,undefined,id,item.id);await c.answer('attempt',item,undefined,randomUUID(),item.id);
+  let state=await c.readStudy();assert.equal(state.pendingOperations.length,1);assert.equal(state.eventLinks[0].operationId,id);
+  const before=JSON.stringify(state);await assert.rejects(c.answer('attempt',{...item,mode:'review'},undefined,randomUUID(),randomUUID()),/conflict/);assert.equal(JSON.stringify(await c.readStudy()),before);
+  await c.activate(B);await c.answer('attempt',item,undefined,randomUUID(),item.id);state=await c.readStudy();assert.equal(state.owner,B);assert.equal(state.pendingOperations.length,1);assert.equal((await read(db,study.STATE,A)).pendingOperations.length,1);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('legacy unanchored records remain unchanged without a complete-history fence',async()=>{
+ for(const acknowledge of [false,true]){
+  const s=server(),db=await open(new IDBFactory(),'study-anchor-unverified-'+acknowledge),c=client(db,s),first=attempt(),id=randomUUID();
+  try{
+   await c.activate(A);await c.answer('attempt',first,undefined,id);if(acknowledge)await c.run();
+   const before=JSON.stringify(await c.readStudy());await assert.rejects(c.answer('attempt',first,undefined,randomUUID(),first.id),/conflict/);assert.equal(JSON.stringify(await c.readStudy()),before);
+  }finally{await c.cancel();db.close();s.close();}
+ }
+});
+test('duplicate local event facts are rejected without mutating the queue',async()=>{
+ const s=server(),db=await open(new IDBFactory(),'study-link-duplicate-fact'),c=client(db,s),item=checkin(),id=randomUUID();
+ try{
+  await c.activate(A);await c.answer('checkin',item,undefined,id);const state=await c.readStudy();state.data.checkins.push({...item});
+  await new Promise((resolve,reject)=>{const tx=db.transaction(study.STATE,'readwrite');tx.objectStore(study.STATE).put(state);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});
+  const before=JSON.stringify(await c.readStudy());await assert.rejects(c.answer('checkin',item,undefined,randomUUID()),/conflict/);assert.equal(JSON.stringify(await c.readStudy()),before);
+ }finally{await c.cancel();db.close();s.close();}
+});
 test('upgraded old acknowledged pending rows are verified and cleared without another upload',async()=>{
  const s=server(),db=await open(new IDBFactory(),'study-legacy-ack'),c=client(db,s),item=checkin(),id=randomUUID();
  try{
