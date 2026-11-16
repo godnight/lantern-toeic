@@ -8,7 +8,9 @@ const source=`export {NativeAccountController} from './lib/native-account-contro
 export {attachNativeAccountSync} from './lib/cloud-sync/native-account-root.ts';
 export {createNativeSyncLifecycle} from './lib/cloud-sync/native-lifecycle.ts';
 export * from './lib/cloud-sync/candidate-page.js';
-export {STORE} from './lib/cloud-sync/offline-queue.js';
+export {STORE,initial,createSession,revokeSession,beginSnapshot,applySnapshotPage} from './lib/cloud-sync/offline-queue.js';
+export {createFence} from './lib/cloud-sync/idb-fence.js';
+export {projectNativeVocabularyEvents} from './lib/cloud-sync/vocabulary-projection.ts';
 export {writeVocabulary,vocabularyKey,vocabularyBackup,vocabularyReviewHash} from './lib/vocabulary-model.ts';`;
 const bundle=buildSync({stdin:{contents:source,resolveDir:root,loader:'js'},bundle:true,write:false,format:'cjs',platform:'node',target:'node24',logLevel:'silent'});
 const filename=path.join(__dirname,'native-account-sync-pump-bundle.cjs'),mod=new Module(filename);mod.filename=filename;mod.paths=Module._nodeModulePaths(__dirname);mod._compile(bundle.outputFiles[0].text,filename);
@@ -107,6 +109,37 @@ test('source changes during an in-flight append retain the operation and retry i
   while((sent.filter(id=>id===first.id).length<2||!sent.includes(second.id))&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,20));
   assert.equal(sent.filter(id=>id===first.id).length,2);assert.ok(sent.includes(second.id));assert.equal(local.rows.size,2);
  }finally{await client.cancel();db.close();}
+});
+for(const phase of ['begin','page'])test(`source change after ${phase} response cannot advance the IDB checkpoint`,async()=>{
+ const db=await app.openSyntheticSyncDatabase(new IDBFactory(),'lantern-synthetic-sync-checkpoint-'+phase);
+ let changed=false,scheduled=false,checkedAfterResponseBeforeChange=false;
+ const sourceGuard=()=>{if(scheduled&&!changed)checkedAfterResponseBeforeChange=true;return !changed;};
+ const metadata={owner:A.id,id:'synthetic-snapshot',cursor:'synthetic-cursor',upper:1};
+ const downloaded={id:'remote-review',wordId:'archive',createdAt:'2026-01-01T10:00:00.000Z',type:'review',grade:'remembered'};
+ const invalidate=()=>{scheduled=true;setImmediate(()=>{changed=true;});};
+ const vt={append:async()=>{throw Error('unexpected');},begin:async()=>{if(phase==='begin')invalidate();return metadata;},
+  page:async()=>{if(phase==='page')invalidate();return {owner:A.id,id:metadata.id,cursor:metadata.cursor,upper:metadata.upper,events:[downloaded],next:null};}};
+ const st={upload:async()=>{throw Error('unexpected');},pull:async()=>{throw Error('unexpected');}};
+ const client=app.createCandidatePageClient({db,vocabTransport:vt,studyTransport:st});
+ try{await client.activate(A.id);await assert.rejects(client.run(client.session,{sourceGuard}),error=>error.code==='NATIVE_TRANSIENT');
+  assert.equal(checkedAfterResponseBeforeChange,true);const value=await read(db,A.id);
+  assert.equal(value.download.lastUpper,null);assert.deepEqual(value.events,[]);
+  if(phase==='begin'){assert.equal(value.download.snapshot,null);assert.equal(value.stateVersion,0);}
+  else {assert.equal(value.download.snapshot,metadata.id);assert.equal(value.download.cursor,metadata.cursor);}
+ }finally{await client.cancel();db.close();}
+});
+test('source change during page projection rolls back events and checkpoint in the same IDB transaction',async()=>{
+ const db=await app.openSyntheticSyncDatabase(new IDBFactory(),'lantern-synthetic-sync-projection-change'),fence=app.createFence(db);
+ const ticket=await fence.activate(A.id),session=app.createSession(A.id,ticket);let changed=false;
+ const put=()=>new Promise((resolve,reject)=>{const tx=db.transaction(app.STORE,'readwrite');tx.objectStore(app.STORE).put(app.initial(A.id));tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});
+ const metadata={owner:A.id,id:'synthetic-snapshot',cursor:'synthetic-cursor',upper:1};
+ const downloaded={id:'remote-review',wordId:'archive',createdAt:'2026-01-01T10:00:00.000Z',type:'review',grade:'remembered'};
+ const page={owner:A.id,id:metadata.id,cursor:metadata.cursor,upper:metadata.upper,events:[downloaded],next:null};
+ try{await put();await app.beginSnapshot(db,session,metadata,()=>!changed);const before=await read(db,A.id);
+  const projection=(...args)=>{const result=app.projectNativeVocabularyEvents(...args);changed=true;return result;};
+  await assert.rejects(app.applySnapshotPage(db,session,{owner:A.id,snapshot:metadata.id,cursor:metadata.cursor,upper:metadata.upper},page,projection,()=>!changed),error=>error.code==='NATIVE_TRANSIENT');
+  assert.deepEqual(await read(db,A.id),before);
+ }finally{app.revokeSession(session);await fence.revoke(ticket);db.close();}
 });
 for(const kind of ['malformed-source','auth','global-conflict'])test(`${kind} stops all candidate network progress`,async()=>{
  const local=storage(),view=target(),key=app.vocabularyKey(A.id),db=await app.openSyntheticSyncDatabase(new IDBFactory(),'lantern-synthetic-sync-stop-'+kind);
