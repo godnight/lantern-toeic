@@ -118,24 +118,33 @@ test('rollback hides but preserves a long credential until explicit login rotati
  }
 });
 
-test('a failed rollback login preserves the dormant credential and later logout revokes it',async()=>{
- const e=environment({env:{LANTERN_PERSISTENT_SESSION_ENABLED:'true'}}),asset=assetHarness();let oldHost,newHost,failLogin=false;
- const dispatch=async(url,options)=>{
-  const route=new URL(url).pathname.split('/').at(-1),headers={};
-  if(failLogin&&route==='login')return response(503,{code:'synthetic-unavailable'});
-  for(const key of ['X-Lantern-Session-Policy','X-Lantern-Session-Proof'])if(options.header[key])headers[key]=options.header[key];
-  const r=await e.call(route,options.method,{cookie:options.header.Cookie,headers,...options.extraData?{body:JSON.parse(options.extraData)}:{}});
-  const body=await r.json(),setCookie=r.headers.get('set-cookie');return response(r.status,body,setCookie?{'Set-Cookie':setCookie}:{});
- };
- try{
-  const credentials={username:'rollback_failure',password:'Synthetic rollback password 42!'};
-  oldHost=hostRuntime({origin:ORIGIN,persistent:true,sessionStore:asset.store,dispatch});assert.equal((await oldHost.invoke({id:'register',action:'register',body:credentials})).status,200);
-  const original=Buffer.from(asset.bytes).toString(),hash=e.rows('auth_sessions')[0].token_hash;oldHost.dispose();oldHost=undefined;
-  newHost=hostRuntime({origin:ORIGIN,persistent:false,sessionStore:asset.newStore(),dispatch});assert.equal((await newHost.invoke({version:2,id:'session',action:'session'})).status,401);
-  failLogin=true;assert.equal((await newHost.invoke({id:'failed',action:'login',body:credentials})).status,503);await newHost.settle();assert.equal(Buffer.from(asset.bytes).toString(),original);
-  failLogin=false;assert.equal((await newHost.invoke({id:'logout',action:'logout'})).status,200);assert(newHost.requests.at(-1).hasCookie);
-  assert(!e.rows('auth_sessions').some(row=>row.token_hash===hash));assert.equal(asset.bytes,undefined);
- }finally{oldHost?.dispose();newHost?.dispose();e.close();}
+test('quarantined Host recreation preserves and revokes a dormant credential',async()=>{
+ for(const [action,probe] of [['login',false],['login',true],['logout',false],['logout',true]]){
+  const e=environment({env:{LANTERN_PERSISTENT_SESSION_ENABLED:'true'}}),asset=assetHarness();let oldHost,newHost,failLogin=false,failLogout=false;
+  const dispatch=async(url,options)=>{
+   const route=new URL(url).pathname.split('/').at(-1),headers={};
+   if((failLogin&&route==='login')||(failLogout&&route==='logout'))return response(503,{code:'synthetic-unavailable'});
+   for(const key of ['X-Lantern-Session-Policy','X-Lantern-Session-Proof'])if(options.header[key])headers[key]=options.header[key];
+   const r=await e.call(route,options.method,{cookie:options.header.Cookie,headers,...options.extraData?{body:JSON.parse(options.extraData)}:{}});
+   const body=await r.json(),setCookie=r.headers.get('set-cookie');return response(r.status,body,setCookie?{'Set-Cookie':setCookie}:{});
+  };
+  try{
+   const credentials={username:'rollback_failure_'+action+'_'+Number(probe),password:'Synthetic rollback password 42!'};
+   oldHost=hostRuntime({origin:ORIGIN,persistent:true,sessionStore:asset.store,dispatch});assert.equal((await oldHost.invoke({id:'register',action:'register',body:credentials})).status,200);
+   const original=Buffer.from(asset.bytes).toString(),hash=e.rows('auth_sessions')[0].token_hash;oldHost.dispose();oldHost=undefined;
+   newHost=hostRuntime({origin:ORIGIN,persistent:false,sessionStoreFactory:()=>asset.newStore(),dispatch});assert.equal((await newHost.invoke({version:2,id:'session',action:'session'})).status,401);
+   failLogin=true;assert.equal((await newHost.invoke({id:'failed',action:'login',body:credentials})).status,503);await newHost.settle();assert.equal(Buffer.from(asset.bytes).toString(),original);
+   failLogin=false;await newHost.settle();newHost.recreate();
+   if(probe){assert.equal((await newHost.invoke({version:2,id:'session2',action:'session'})).status,401);assert.equal(Buffer.from(asset.bytes).toString(),original);}
+   if(action==='logout'){
+    failLogout=true;assert.equal((await newHost.invoke({id:'failedlogout',action:'logout'})).status,503);assert(newHost.requests.at(-1).hasCookie);assert.equal(Buffer.from(asset.bytes).toString(),original);assert(e.rows('auth_sessions').some(row=>row.token_hash===hash));
+    failLogout=false;await newHost.settle();newHost.recreate();
+   }
+   const result=await newHost.invoke(action==='login'?{id:'recover',action,body:credentials}:{id:'logout',action});assert.equal(result.status,200);assert(newHost.requests.at(-1).hasCookie);
+   assert(!e.rows('auth_sessions').some(row=>row.token_hash===hash));
+   if(action==='login')assert.equal(JSON.parse(Buffer.from(asset.bytes).toString()).version,1);else assert.equal(asset.bytes,undefined);
+  }finally{oldHost?.dispose();newHost?.dispose();e.close();}
+ }
 });
 
 test('long cookies reject excessive or malformed TTL and untrusted action headers',async()=>{

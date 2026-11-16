@@ -457,7 +457,13 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
         return;
       }
       let token: string | undefined = undefined;
-      if (NativeAuthHost.quarantined) await this.store.clear();
+      if (NativeAuthHost.quarantined && !PERSISTENT_SESSION_ENABLED) {
+        await this.store.load(AUTH_API_ORIGIN, false);
+        if (this.store.hasDormantPersistent() && input.action === 'huawei-login') {
+          token = await this.store.load(AUTH_API_ORIGIN, true, true);
+          if (token === undefined) throw new Error('Unconfirmed');
+        } else await this.store.clear();
+      } else if (NativeAuthHost.quarantined) await this.store.clear();
       else token = await this.store.load(AUTH_API_ORIGIN,
         PERSISTENT_SESSION_ENABLED || input.action === 'huawei-login',
         !PERSISTENT_SESSION_ENABLED && input.action === 'huawei-login');
@@ -545,10 +551,16 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       }
       let token: string | undefined = undefined;
       if (NativeAuthHost.quarantined) {
-        // Explicit logout may still revoke a preserved dormant token even
-        // after a prior unknown mutation; never use it for account access.
-        if (!PERSISTENT_SESSION_ENABLED && input.action === 'logout' && this.store.hasDormantPersistent()) {
-          token = await this.store.load(AUTH_API_ORIGIN, true, true);
+        if (!PERSISTENT_SESSION_ENABLED) {
+          // The previous Host may have set process-wide quarantine, then been
+          // recreated with a fresh store object. Re-read Asset rather than
+          // relying on an in-memory dormant flag from the old instance.
+          await this.store.load(AUTH_API_ORIGIN, false);
+          const explicitIdentity: boolean = ['register', 'login', 'logout', 'phone-login'].includes(input.action);
+          if (this.store.hasDormantPersistent() && explicitIdentity) {
+            token = await this.store.load(AUTH_API_ORIGIN, true, true);
+            if (token === undefined) throw new Error('Unconfirmed');
+          } else await this.store.clear();
         } else await this.store.clear();
       } else {
         // A rolled-back build must not use a dormant long session as an
