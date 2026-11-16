@@ -122,6 +122,70 @@ test('expiry cannot restore a different cached owner or a session invalidated du
   }finally{h.value.dispose();}
  }
 });
+async function expiredOnline(h){
+ h.value.start();h.reply(0,{status:401,body:{code:'local-unavailable'}});await tick();h.reply(1,session(A));await tick();
+ const access=h.value.getSnapshot().access;h.timer.advance(3600000);
+ assert.equal(access.sessionSignal.aborted,true);assert.equal(h.calls[2].action,'local-session');
+}
+const localA={status:200,body:{user:A,local:{scope:'local-study-only',generation:7}}};
+const localBusy={status:503,body:{code:'local-unavailable'}};
+test('disabled offline feature preserves the existing expiry gate without a local request',async()=>{
+ const h=controller({localActive:()=>true});try{
+  await initial(h,session(A));h.timer.advance(3600000);await tick();
+  assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(h.calls.length,1);
+  h.timer.advance(60000);await tick();assert.equal(h.calls.length,1);
+ }finally{h.value.dispose();}
+});
+test('expiry retries transient native busy with bounded backoff and restores only local access',async()=>{
+ const h=controller({localOffline:true,localActive:({uid,generation})=>uid===A.id&&generation===7});try{
+  await expiredOnline(h);h.reply(2,localBusy);await tick();h.timer.advance(249);await tick();assert.equal(h.calls.length,3);
+  h.timer.advance(1);await tick();assert.equal(h.calls[3].action,'local-session');h.reply(3,localBusy);await tick();
+  h.timer.advance(500);await tick();assert.equal(h.calls[4].action,'local-session');h.reply(4,localA);await tick();
+  const state=h.value.getSnapshot();assert.equal(state.status,'ready');assert.equal(state.access.scope,'local-study-only');assert(state.access.canAccess());
+  assert.equal(h.calls[5].action,'session');h.reply(5,closed);await tick();assert.equal(h.value.getSnapshot().access.scope,'local-study-only');
+ }finally{h.value.dispose();}
+});
+test('expiry retries native timeout, then reacquires the same owner',async()=>{
+ const h=controller({localOffline:true,localActive:()=>true});try{
+  await expiredOnline(h);h.timer.advance(15000);await tick();assert.equal(h.calls.length,3);
+  h.timer.advance(250);await tick();assert.equal(h.calls[3].action,'local-session');h.reply(3,localA);await tick();
+  assert.equal(h.value.getSnapshot().access.scope,'local-study-only');h.reply(4,closed);await tick();
+ }finally{h.value.dispose();}
+});
+test('expiry retry exhaustion stays blocked and does not spin',async()=>{
+ const h=controller({localOffline:true,localActive:()=>true});try{
+  await expiredOnline(h);let index=2;
+  for(const delay of [250,500,1000,2000,4000,8000]){h.reply(index++,localBusy);await tick();h.timer.advance(delay);await tick();assert.equal(h.calls[index].action,'local-session');}
+  h.reply(index,localBusy);await tick();assert.equal(h.value.getSnapshot().status,'blocked');h.timer.advance(60000);await tick();assert.equal(h.calls.length,index+1);
+ }finally{h.value.dispose();}
+});
+test('expiry retry never accepts another owner or retries non-transient failures',async()=>{
+ for(const response of [{status:200,body:{user:B,local:{scope:'local-study-only',generation:7}}},guest,{status:503,body:{code:'native-auth-unavailable'}}]){
+  const h=controller({localOffline:true,localActive:()=>true});try{
+   await expiredOnline(h);h.reply(2,localBusy);await tick();h.timer.advance(250);await tick();h.reply(3,response);await tick();
+   assert.equal(h.value.getSnapshot().status,'blocked');h.timer.advance(60000);await tick();assert.equal(h.calls.length,4);
+  }finally{h.value.dispose();}
+ }
+});
+test('expiry retry stops on background, disposal, logout or switching accounts',async()=>{
+ for(const action of ['suspend','dispose','logout','login','huawei','phone']){
+  const h=controller({localOffline:true,localActive:()=>true});try{
+   await expiredOnline(h);h.reply(2,localBusy);await tick();
+   if(action==='suspend')h.value.suspend();else if(action==='dispose')h.value.dispose();
+   else if(action==='huawei')assert.equal(await h.value.mutateHuawei('login'),false);
+   else if(action==='phone')assert.equal(await h.value.mutatePhone('login',{}),undefined);
+   else assert.equal(await h.value.mutate(action,credentials),false);
+   h.timer.advance(60000);await tick();assert.equal(h.calls.length,3,action);
+   if(action!=='dispose')assert.equal(h.value.getSnapshot().status,'blocked');
+  }finally{h.value.dispose();}
+ }
+});
+test('account change while native local proof is in flight rejects a late proof',async()=>{
+ const h=controller({localOffline:true,localActive:()=>true});try{
+  await expiredOnline(h);assert.equal(await h.value.mutate('logout'),false);h.reply(2,localA);await tick();
+  assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(h.calls.length,3);
+ }finally{h.value.dispose();}
+});
 test('expiry to local-only immediately cancels cloud synchronization and cannot reactivate it',async()=>{
  const h=controller({localOffline:true,localActive:()=>true}),{createNativeSyncLifecycle}=load('lib/cloud-sync/native-lifecycle.ts');
  let starts=0,cancels=0;
@@ -132,8 +196,9 @@ test('expiry to local-only immediately cancels cloud synchronization and cannot 
   h.value.start();h.reply(0,{status:401,body:{code:'local-unavailable'}});await tick();h.reply(1,session(A));await tick();await lifecycle.settled();
   assert.equal(lifecycle.status().phase,'ready');assert.equal(starts,1);
   h.timer.advance(3600000);assert.notEqual(lifecycle.status().phase,'ready');const priorCancels=cancels;
-  h.reply(2,{status:200,body:{user:A,local:{scope:'local-study-only',generation:7}}});await tick();
-  h.reply(3,{status:503,body:{code:'native-auth-unavailable'}});await tick();await lifecycle.settled();
+  h.reply(2,localBusy);await tick();assert.notEqual(lifecycle.status().phase,'ready');assert.equal(starts,1);
+  h.timer.advance(250);await tick();h.reply(3,localA);await tick();
+  h.reply(4,{status:503,body:{code:'native-auth-unavailable'}});await tick();await lifecycle.settled();
   assert.equal(h.value.getSnapshot().access.scope,'local-study-only');assert.notEqual(lifecycle.status().phase,'ready');assert.equal(starts,1);assert(cancels>=priorCancels);
  }finally{lifecycle.dispose();h.value.dispose();}
 });

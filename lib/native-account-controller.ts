@@ -1,5 +1,5 @@
 import {parseProductCapabilities,parseProductIdentity,productResponseIdentity,type ProductCapabilities,type ProductCredentials,type ProductIdentity} from './product-identity';
-import {CLOSED_NATIVE_PROVIDERS,parseNativeProviders,type NativeAuthProviders,type NativeAuthReply,type NativeAuthTransport} from './native-auth-transport';
+import {CLOSED_NATIVE_PROVIDERS,NativeAuthFailure,parseNativeProviders,type NativeAuthProviders,type NativeAuthReply,type NativeAuthTransport} from './native-auth-transport';
 import {parsePhoneOutcome,type PhoneOutcome,type PhonePurpose,type PhoneVerification} from './phone-auth-client';
 import {readSessionProof,SessionDeadline,sessionClock,publicLocalAccess,type AccountAccess,type SessionClock} from './session-proof';
 
@@ -8,6 +8,7 @@ export type NativeAccountState=Readonly<
   {status:'ready';user:ProductIdentity|null;capabilities:ProductCapabilities;unavailable:boolean;message:string;access:AccountAccess}>;
 export const INITIAL_NATIVE_ACCOUNT_STATE:NativeAccountState=Object.freeze({status:'checking',message:'正在核对账号会话。'});
 const guestCapabilities:ProductCapabilities=Object.freeze({passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false});
+const LOCAL_RETRY_DELAYS=[250,500,1000,2000,4000,8000] as const;
 type Listener=(state:NativeAccountState,synchronous:boolean)=>void;
 export type SyncTransitionGuard={prepare:()=>Promise<void>;complete:()=>Promise<void>};
 type NetworkEvents={addEventListener:(type:'online',listener:()=>void)=>void;removeEventListener:(type:'online',listener:()=>void)=>void};
@@ -36,6 +37,9 @@ export class NativeAccountController {
   private localAccess:AccountAccess|null=null;
   private localProbePending=false;
   private localProbeAgain=false;
+  private localFallbackGeneration:number|null=null;
+  private localRetryTimer:unknown=undefined;
+  private localRetryWake:((ready:boolean)=>void)|null=null;
   private networkEvents:NetworkEvents|null=null;
   private providers:NativeAuthProviders=CLOSED_NATIVE_PROVIDERS;
   private huaweiGeneration:number|null=null;
@@ -70,6 +74,7 @@ export class NativeAccountController {
   }
   private begin(message:string,synchronous:boolean){
     const generation=++this.generation;
+    this.cancelLocalRetry();this.localFallbackGeneration=null;
     this.huaweiGeneration=null;this.huaweiBackground=false;this.foregroundWait?.();this.foregroundWait=null;
     this.deadline?.close();this.deadline=null;
     this.localAbort?.abort();this.localAbort=null;this.localAccess=null;
@@ -78,6 +83,22 @@ export class NativeAccountController {
     this.update({status:'checking',message},synchronous);return generation;
   }
   private current(generation:number){return this.alive&&generation===this.generation;}
+  private cancelLocalRetry(){
+    if(this.localRetryTimer!==undefined)this.clock.clear(this.localRetryTimer);
+    this.localRetryTimer=undefined;const wake=this.localRetryWake;this.localRetryWake=null;wake?.(false);
+  }
+  private waitLocalRetry(generation:number,delay:number):Promise<boolean>{
+    if(!this.current(generation))return Promise.resolve(false);
+    return new Promise(resolve=>{
+      this.localRetryWake=resolve;
+      this.localRetryTimer=this.clock.set(()=>{this.localRetryTimer=undefined;this.localRetryWake=null;resolve(this.current(generation));},delay);
+    });
+  }
+  private cancelLocalFallbackForMutation():boolean{
+    if(this.options.localOffline!==true||this.localFallbackGeneration!==this.generation)return false;
+    this.held=true;this.begin('账号操作尚未确认，学习分区已暂停。',true);
+    this.update({status:'blocked',message:'账号操作尚未确认，请重新核对账号。'},true);return true;
+  }
   private onOnline=()=>{
     if(!this.alive||this.state.status!=='ready'||!this.state.user||this.state.access.scope!=='local-study-only')return;
     if(this.localProbePending){this.localProbeAgain=true;return;}
@@ -136,7 +157,10 @@ export class NativeAccountController {
         this.update({status:'blocked',message:'会话有效期已结束，原数据保留。请联网重新核对账号。'},true);
         // A local lease is not a refresh or server proof. Reacquire it through
         // the native host and permit only the same previously verified owner.
-        if(this.options.localOffline===true)this.initialProbe=this.startWithLocal(next,owner);
+        if(this.options.localOffline===true){
+          this.localFallbackGeneration=next;
+          this.initialProbe=this.startWithLocal(next,owner).finally(()=>{if(this.localFallbackGeneration===next)this.localFallbackGeneration=null;});
+        }
       },this.clock):null;
       this.deadline=deadline;
       const access:AccountAccess=deadline?{user:proof.user!,owner:proof.user!.id,epoch:generation,scope:'remote',canAccess:deadline.canAccess,assertAccess:deadline.assertAccess,sessionSignal:deadline.signal}:publicLocalAccess(null,generation);
@@ -150,9 +174,13 @@ export class NativeAccountController {
   private async startWithLocal(generation:number,expectedLocalOwner?:string):Promise<void>{
     let localOwner:string|undefined;
     if(this.options.localOffline===true&&this.transport.isLocalActive){
-      try{
+      const delays=expectedLocalOwner?LOCAL_RETRY_DELAYS:[];
+      for(let attempt=0;attempt<=delays.length;attempt++){
+       let retry=false;
+       try{
         const reply=await this.transport.request('local-session');
         if(!this.current(generation))return;
+        retry=reply.status===503&&reply.body.code==='local-unavailable';
         const user=reply.status===200?parseProductIdentity(reply.body.user):null,local=reply.body.local;
         if(user&&(!expectedLocalOwner||user.id===expectedLocalOwner)&&local&&typeof local==='object'&&!Array.isArray(local)&&Object.keys(local).sort().join(',')==='generation,scope'){
           const proof=local as {scope?:unknown;generation?:unknown};
@@ -162,12 +190,15 @@ export class NativeAccountController {
             const assertAccess=()=>{const ok=canAccess();if(!ok)abort.abort();return ok;};
             if(canAccess()){
               this.localAbort=abort;localOwner=user.id;
+              if(this.localFallbackGeneration===generation)this.localFallbackGeneration=null;
               this.localAccess={user,owner:user.id,epoch:generation,scope:'local-study-only',canAccess,assertAccess,sessionSignal:abort.signal};
               this.update({status:'ready',user,capabilities:guestCapabilities,unavailable:false,message:'',access:this.localAccess});
             }
           }
         }
-      }catch{/* No native local identity; retain the existing online gate. */}
+       }catch(error){retry=error instanceof NativeAuthFailure&&error.code==='timeout';}
+       if(!retry||attempt>=delays.length||!await this.waitLocalRetry(generation,delays[attempt]))break;
+      }
     }
     if(this.current(generation)){
       // At expiry, an absent or different cached owner must never cause an
@@ -188,6 +219,7 @@ export class NativeAccountController {
     this.begin('页面已离开，账号身份需要重新核对。',synchronous);
     this.update({status:'blocked',message:this.held?'账号操作结果未确认，分区已锁定。请显式重新核对账号。':'账号身份待重新核对，学习分区已暂停。'});}
   async mutate(action:'register'|'login'|'logout',credentials?:ProductCredentials):Promise<boolean> {
+    if(this.cancelLocalFallbackForMutation())return false;
     if(this.state.status==='ready'&&this.state.user&&!this.state.access.assertAccess())return false;
     if(!this.alive||this.mutationPending||this.state.status!=='ready'||this.state.unavailable||
       !this.state.capabilities.passwordLogin||action==='logout'&&!this.state.user)return false;
@@ -219,6 +251,7 @@ export class NativeAccountController {
     }finally{if(this.current(generation))this.mutationPending=false;}
   }
   async mutateHuawei(purpose:'login'|'bind'):Promise<boolean>{
+    if(this.cancelLocalFallbackForMutation())return false;
     if(!this.alive||!['login','bind'].includes(purpose)||this.mutationPending||this.state.status!=='ready'||this.state.unavailable||
       !(purpose==='login'?this.providers.huaweiLogin:this.providers.huaweiBinding)||purpose==='bind'&&!this.state.user)return false;
     if(this.state.user&&!this.state.access.assertAccess())return false;
@@ -255,6 +288,7 @@ export class NativeAccountController {
     }finally{if(this.current(generation)){this.mutationPending=false;this.huaweiGeneration=null;this.huaweiBackground=false;this.foregroundWait?.();this.foregroundWait=null;}}
   }
   async mutatePhone(purpose:PhonePurpose,body:PhoneVerification):Promise<PhoneOutcome|undefined> {
+    if(this.cancelLocalFallbackForMutation())return;
     if(this.state.status==='ready'&&this.state.user&&!this.state.access.assertAccess())return;
     if(!this.alive||this.mutationPending||!['bind','login'].includes(purpose)||this.state.status!=='ready'||this.state.unavailable||purpose==='bind'&&!this.state.user)return;
     const previousUser=this.state.user?.id??null;
@@ -288,5 +322,5 @@ export class NativeAccountController {
       if(this.current(generation)){this.held=true;this.update({status:'blocked',message:'手机号操作结果未知，不能假定已发送、绑定或登录。请重新核对账号。'});}
     }finally{if(this.current(generation))this.mutationPending=false;}
   }
-  dispose(){if(!this.alive)return;this.alive=false;++this.generation;this.huaweiGeneration=null;this.foregroundWait?.();this.foregroundWait=null;this.deadline?.close();this.deadline=null;this.localAbort?.abort();this.localAbort=null;this.localAccess=null;this.networkEvents?.removeEventListener('online',this.onOnline);this.networkEvents=null;this.transport.dispose();this.listeners.clear();}
+  dispose(){if(!this.alive)return;this.alive=false;++this.generation;this.cancelLocalRetry();this.localFallbackGeneration=null;this.huaweiGeneration=null;this.foregroundWait?.();this.foregroundWait=null;this.deadline?.close();this.deadline=null;this.localAbort?.abort();this.localAbort=null;this.localAccess=null;this.networkEvents?.removeEventListener('online',this.onOnline);this.networkEvents=null;this.transport.dispose();this.listeners.clear();}
 }
