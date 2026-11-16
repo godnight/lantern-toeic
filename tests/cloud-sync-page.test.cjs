@@ -194,6 +194,50 @@ test('a full study queue still accepts an exact rescan and never drops unacknowl
   assert.equal((await c.readStudy()).pendingOperations.length,5000);
  }finally{await c.cancel();db.close();s.close();}
 });
+test('journal capture safely drains bounded batches and resumes the same source operation',async()=>{
+ const source=memoryStorage(),s=server(),db=await open(new IDBFactory(),'study-batches'),ids=Array.from({length:5},()=>randomUUID()),items=ids.map(()=>checkin());
+ const c=createSyntheticClient({db,project,vocabTransport:s.vt,studyTransport:s.st,createStudyRunner:args=>page.createStudyRunner({...args,maxPending:2})});
+ for(let i=0;i<ids.length;i++)source.storage.setItem('lantern-v1-'+A+':op:'+ids[i],JSON.stringify({id:ids[i],owner:A,type:'checkin',data:items[i]}));
+ try{
+  await c.activate(A);assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),5);await c.run();
+  let state=await c.readStudy();assert.equal(state.pendingOperations.length,0);assert.equal(state.uploadAcks.length,5);assert.equal(s.rows.size,5);assert.equal(source.raw.size,5);
+  assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),5);await c.run();state=await c.readStudy();
+  assert.equal(state.uploadAcks.length,5);assert.equal(s.rows.size,5);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('a conflict during batch drain preserves the record but does not starve later independent events',async()=>{
+ const source=memoryStorage(),s=server(),db=await open(new IDBFactory(),'study-batch-conflict'),bad=attempt(),good=[checkin(),checkin()],ids=[randomUUID(),randomUUID(),randomUUID()],original=s.st.upload;
+ const c=createSyntheticClient({db,project,vocabTransport:s.vt,studyTransport:s.st,createStudyRunner:args=>page.createStudyRunner({...args,maxPending:2})});
+ const operations=[{id:ids[0],owner:A,type:'attempt',data:bad,firstAttemptId:bad.id},...good.map((data,i)=>({id:ids[i+1],owner:A,type:'checkin',data}))];
+ for(const op of operations)source.storage.setItem('lantern-v1-'+A+':op:'+op.id,JSON.stringify(op));
+ s.st.upload=async p=>{if(p.wire.data.id===bad.id){const error=Error('conflict');error.code='NATIVE_EVENT_CONFLICT';throw error;}return original(p);};
+ try{
+  await c.activate(A);assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),3);
+  await assert.rejects(c.run(),error=>error.code==='NATIVE_EVENT_CONFLICT');
+  const state=await c.readStudy();assert.deepEqual(state.pendingOperations.map(x=>x.id),[ids[0]]);assert.equal(state.uploadAcks.length,2);assert.equal(state.download.checkpoint,null);assert.equal(s.rows.size,2);assert.equal(source.raw.size,3);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('a queue filled entirely by unresolved conflicts stops without spinning or losing later local events',async()=>{
+ const source=memoryStorage(),s=server(),db=await open(new IDBFactory(),'study-batch-stalled'),bad=attempt(),later=checkin(),ids=[randomUUID(),randomUUID()];let calls=0;
+ const c=createSyntheticClient({db,project,vocabTransport:s.vt,studyTransport:s.st,createStudyRunner:args=>page.createStudyRunner({...args,maxPending:1})});
+ for(const op of [{id:ids[0],owner:A,type:'attempt',data:bad,firstAttemptId:bad.id},{id:ids[1],owner:A,type:'checkin',data:later}])source.storage.setItem('lantern-v1-'+A+':op:'+op.id,JSON.stringify(op));
+ s.st.upload=async()=>{calls++;const error=Error('conflict');error.code='NATIVE_EVENT_CONFLICT';throw error;};
+ try{
+  await c.activate(A);await assert.rejects(page.scanSyntheticStudyJournal(source.storage,A,c),error=>error.code==='NATIVE_EVENT_CONFLICT');
+  assert.equal(calls,1);assert.equal((await c.readStudy()).pendingOperations[0].id,ids[0]);assert.equal(source.raw.size,2);assert.equal(s.rows.size,0);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('a persistent conflict runs once more for a new in-flight study change without a hot loop',async()=>{
+ const source=memoryStorage(),target=new EventTarget(),controller=new AbortController(),session={owner:A,signal:controller.signal},entered=deferred(),release=deferred();let calls=0;
+ const client={session,vocabulary:async()=>{},async run(){calls++;if(calls===1){entered.resolve();await release.promise;}const error=Error('conflict');error.code='NATIVE_EVENT_CONFLICT';throw error;}};
+ const pump=page.createCapturedVocabularyMarkPump({storage:source.storage,owner:A,client,target});
+ try{
+  const first=pump.wake(),failure=assert.rejects(first,error=>error.code==='NATIVE_EVENT_CONFLICT');await entered.promise;
+  const changed=new Event('lantern-study-changed');Object.defineProperty(changed,'detail',{value:'lantern-v1-'+A});target.dispatchEvent(changed);release.resolve();await failure;
+  for(let i=0;i<8&&calls<2;i++)await new Promise(resolve=>setImmediate(resolve));
+  await new Promise(resolve=>setTimeout(resolve,10));assert.equal(calls,2);
+ }finally{release.resolve();pump.stop();controller.abort();}
+});
 test('confirmed study uploads compact only the pending entry and keep the event and fingerprint for rescans',async()=>{
  const s=server(),db=await open(new IDBFactory(),'study-ack-retention'),c=client(db,s),item=checkin(),id=randomUUID();
  try{
