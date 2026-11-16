@@ -31,7 +31,7 @@ function checkedData(raw:unknown):StudyData{
  }
  return data;
 }
-async function operationId(owner:string,type:string,id:string):Promise<string>{
+export async function nativeStudyBackfillOperationId(owner:string,type:string,id:string):Promise<string>{
  const hash=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(`lantern-study-backfill-v1\0${owner}\0${type}\0${id}`)));
  const b=hash.slice(0,16);b[6]=(b[6]&15)|0x80;b[8]=(b[8]&63)|0x80;
  const h=Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
@@ -79,7 +79,7 @@ export async function backfillNativeStudy(options:{enabled?:boolean;storage:Stor
  for(const item of items){
   if(!active(client,session))throw Error('account lease changed');
   if(item.type==='attempt'&&(item.event as Attempt).mode==='review'&&item.first&&unavailableRoots.has(item.first)){deferred.push(item.event.id);continue;}
-  const id=await operationId(owner,item.type,item.event.id);if(!active(client,session))throw Error('account lease changed');
+  const id=await nativeStudyBackfillOperationId(owner,item.type,item.event.id);if(!active(client,session))throw Error('account lease changed');
   try{await client.answer(item.type,item.event,session,id,item.first);staged++;}
   catch(error){if(error instanceof Error&&['event conflict','event mapping unavailable'].includes(error.message)){deferred.push(item.event.id);if(item.type==='attempt'&&(item.event as Attempt).mode==='first')unavailableRoots.add(item.event.id);continue;}throw error;}
  }

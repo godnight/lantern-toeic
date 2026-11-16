@@ -77,3 +77,51 @@ test('a process restart can rescan the same staged local events without duplicat
   assert.equal(after.pendingOperations.length,2);assert.deepEqual(after.pendingOperations,before.pendingOperations);assert.equal(after.eventLinks.length,2);
  }finally{await ctx.client.cancel();ctx.db.close();}
 });
+
+async function guardedBackfill(name,s){
+ const db=await openSyntheticSyncDatabase(new IDBFactory(),'lantern-synthetic-sync-'+name),sent=[],done=Promise.withResolvers();
+ const conflict=async()=>{const e=Error('synthetic vocabulary conflict');e.code='NATIVE_EVENT_CONFLICT';throw e;};
+ const target={addEventListener(){},removeEventListener(){}};
+ const client=createCandidatePageClient({db,vocabTransport:{append:conflict,begin:conflict,page:conflict},studyTransport:{upload:async p=>{sent.push(p.wire);return {status:200,body:{ok:true}};},pull:async p=>({syncProtocol:'native-m2a-v1',schemaVersion:2,owner:p.owner,hasProfile:false,profilePolicy:'preserve-local-when-absent',changes:[],nextCursor:null,checkpoint:'n1.'+'A'.repeat(2086)})},autoCapture:{storage:s,target}});
+ const run=client.run;client.run=(...args)=>{const result=run(...args);result.then(value=>done.resolve({value}),error=>done.resolve({error}));return result;};
+ await client.activate(A);return {db,client,sent,done:done.promise};
+}
+async function settlePump(done){let timer;try{return await Promise.race([done,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('candidate pump timeout')),3000);})]);}finally{clearTimeout(timer);}}
+test('candidate pump permits matching backfill from primary and checkpoint without loose operations',async()=>{
+ const s=storage(),first=event('first'),review=event('review'),day=checkin();putPrimary(s,A,data([first],[]));putCheckpoint(s,A,data([first,review],[day]));
+ const {db,client,sent,done}=await guardedBackfill('backfill-guard-valid',s),before=[...s.raw];try{
+  assert.deepEqual(await backfillNativeStudy({enabled:true,storage:s,client}),{staged:3,deferred:[]});
+  client.start(A);await settlePump(done);const state=await client.readStudy();
+  assert.equal(sent.length,3);assert.equal(state.pendingOperations.length,0);assert.equal(state.uploadAcks.length,3);assert.deepEqual([...s.raw],before);
+  assert.equal(sent.find(x=>x.data.id===review.id).data.firstAttemptId,first.id);
+ }finally{await client.cancel();db.close();}
+});
+test('candidate refuses stale or missing reconstructed source and ambiguous first anchors',async()=>{
+ for(const scenario of ['changed','removed','ambiguous','root-payload-conflict']){
+  const s=storage(),first=event('first');putPrimary(s,A,data([first]));const {db,client,sent,done}=await guardedBackfill('backfill-guard-'+scenario,s);
+  try{
+   await backfillNativeStudy({enabled:true,storage:s,client});
+   if(scenario==='changed')putPrimary(s,A,data([{...first,choice:2}]));
+   if(scenario==='removed')s.removeItem('lantern-v1-'+A);
+   if(scenario==='ambiguous')putCheckpoint(s,A,data([first,event('first')]));
+   if(scenario==='root-payload-conflict')putCheckpoint(s,A,data([{...first,correct:!first.correct}]));
+   client.start(A);await settlePump(done);const state=await client.readStudy();
+   assert.equal(sent.length,0,scenario);assert.equal(state.pendingOperations.length,1,scenario);assert.equal(state.uploadAcks.length,0,scenario);
+  }finally{await client.cancel();db.close();}
+ }
+});
+test('source change during reconstructed-id hashing prevents dispatch',async()=>{
+ const s=storage(),first=event('first');putPrimary(s,A,data([first]));const {db,client,sent,done}=await guardedBackfill('backfill-guard-hash-race',s);
+ const waiting=Promise.withResolvers(),release=Promise.withResolvers(),subtle=globalThis.crypto.subtle,own=Object.getOwnPropertyDescriptor(subtle,'digest'),original=subtle.digest.bind(subtle);let count=0;
+ try{
+  await backfillNativeStudy({enabled:true,storage:s,client});
+  Object.defineProperty(subtle,'digest',{configurable:true,value:async(...args)=>{if(++count===2){waiting.resolve();await release.promise;}return original(...args);}});
+  client.start(A);await waiting.promise;putPrimary(s,A,data([{...first,choice:2}]));release.resolve();await settlePump(done);
+  assert.equal(sent.length,0);assert.equal((await client.readStudy()).pendingOperations.length,1);
+ }finally{release.resolve();if(own)Object.defineProperty(subtle,'digest',own);else delete subtle.digest;await client.cancel();db.close();}
+});
+test('a no-journal operation with a non-backfill id cannot use snapshot evidence',async()=>{
+ const s=storage(),first=event('first');putPrimary(s,A,data([first]));const {db,client,sent,done}=await guardedBackfill('backfill-guard-wrong-id',s);
+ try{await client.answer('attempt',first,client.session,randomUUID(),first.id);client.start(A);await settlePump(done);assert.equal(sent.length,0);assert.equal((await client.readStudy()).pendingOperations.length,1);}
+ finally{await client.cancel();db.close();}
+});
