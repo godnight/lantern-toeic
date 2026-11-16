@@ -75,7 +75,7 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     await assert.rejects(validateSyncDatabase(withLedger(ledger.slice(1))), /ledger mismatch/);
     await assert.rejects(validateSyncDatabase(withLedger([...ledger.slice(0, -1), { ...ledger.at(-1), sha: '0'.repeat(64) }])), /ledger mismatch/);
     const privateRoot = path.resolve('synthetic-private'), settings = { enabled: true, origin, cursorKeyFile: path.join(privateRoot, 'cursor.key'), modelSha256: modelInfo.sha };
-    let app = await prepareAccountSyncAssembly({ settings, mf, origin, privateRoot, key, proxy, phoneKey, modelInfo });
+    let app = await prepareAccountSyncAssembly({ settings, mf, origin, privateRoot, key, proxy, phoneKey, modelInfo, orderedAttemptsEnabled: true });
     const status = await app.fetch(request('/api/auth/phone/status'));
     assert.deepEqual((await status.json()).capabilities, { phoneLogin: false, phoneBinding: false });
     assert.equal((await app.fetch(request('/api/auth/phone/challenge', { body: {} }))).status, 503);
@@ -113,7 +113,7 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     // Exercise the repository's actual question catalog and native journal
     // through the same Worker and D1 as the account service.
     const questions = (await modelInfo.importModel()).QUESTIONS, question = questions[0];
-    const attempt = { id: randomUUID(), qid: question.id, choice: 0, correct: question.correctIndex !== 0,
+    const attempt = { id: randomUUID(), qid: question.id, choice: 0, correct: question.correctIndex === 0,
       mode: 'first', createdAt: new Date().toISOString(), seconds: 3 };
     const checkin = { id: randomUUID(), date: '2026-01-01', minutes: 5, load: '轻', note: '', createdAt: new Date().toISOString() };
     const saveStudy = (device, who, type, data) => app.fetch(request('/api/study', { cookie: device, owner: who, body: { type, data } }));
@@ -125,7 +125,11 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM attempts WHERE user_id=?').bind(owner).first()).n, 0);
     const wireAttempt = (record, firstAttemptId) => ({ id: record.id, qid: record.qid, choice: record.choice,
       createdAt: record.createdAt, seconds: record.seconds, firstAttemptId });
+    const defaultClosed = await prepareAccountSyncAssembly({ settings, mf, origin, privateRoot, key, proxy, phoneKey, modelInfo });
+    assert.equal((await defaultClosed.fetch(request('/api/study', { cookie, owner, body: { type: 'attempt', data: wireAttempt(attempt, attempt.id) } }))).status, 503);
+    assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM attempts WHERE user_id=?').bind(owner).first()).n, 0);
     const review = { ...attempt, id: randomUUID(), choice: question.options.length > 1 ? 1 : 0, mode: 'review' };
+    review.correct = review.choice === question.correctIndex;
     // Review may arrive early after an offline retry: reject it until its
     // same-owner, same-question first attempt is actually in the database.
     assert.equal((await saveStudy(cookie, owner, 'attempt', wireAttempt(review, attempt.id))).status, 409);
@@ -171,6 +175,11 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
       assert.equal((await saveStudy(cookie, owner, type, data)).status, 200);
     }
     assert.equal((await saveStudy(cookie, owner, 'attempt', { ...attempt, seconds: attempt.seconds + 1 })).status, 409);
+    assert.equal((await saveStudy(cookie, owner, 'attempt', { ...attempt, mode: 'review' })).status, 409);
+    assert.equal((await saveStudy(cookie, owner, 'attempt', { ...attempt, correct: !attempt.correct })).status, 409);
+    const unclassifiedRetry = { id: attempt.id, qid: attempt.qid, choice: attempt.choice, createdAt: attempt.createdAt, seconds: attempt.seconds };
+    assert.equal((await saveStudy(cookie, owner, 'attempt', unclassifiedRetry)).status, 409);
+    assert.equal((await db.prepare('SELECT mode,correct FROM attempts WHERE id=? AND user_id=?').bind(attempt.id, owner).first()).mode, 'first');
     assert.equal((await saveStudy(cookie, owner, 'checkin', { ...checkin, minutes: 6 })).status, 409);
     assert.equal((await saveStudy(otherCookie, owner, 'attempt', attempt)).status, 409);
     const readStudy = device => app.fetch(request('/api/study?sync=native-m2a-v1', { cookie: device, owner }));
@@ -193,7 +202,7 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     } finally { await new Promise(resolve => server.close(resolve)); await service.close(); }
     assert.equal((await (await prepareAccountSyncAssembly({ mf, origin })).fetch(request('/candidate/sync/append', { body: {} }))).status, 404);
     await mf.dispose(); mf = start(); db = await mf.getD1Database('DB');
-    app = await prepareAccountSyncAssembly({ settings, mf, origin, privateRoot, key, proxy, phoneKey, modelInfo });
+    app = await prepareAccountSyncAssembly({ settings, mf, origin, privateRoot, key, proxy, phoneKey, modelInfo, orderedAttemptsEnabled: true });
     for (const device of [cookie, cookieB, legacyCookie]) assert.equal((await app.fetch(request('/api/auth/session', { cookie: device }))).status, 200);
     const row = await db.prepare('SELECT COUNT(*) AS n FROM lantern_vocab_events WHERE owner=?').bind(owner).first();
     assert.equal(row.n, 1);
@@ -212,6 +221,8 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     assert.equal(reviewRow.mode, 'review');
     assert.equal(reviewRow.correct, Number(review.choice === question.correctIndex));
     assert.equal((await saveStudy(cookieB, owner, 'attempt', review)).status, 200);
+    assert.equal((await saveStudy(cookieB, owner, 'attempt', { ...review, mode: 'first' })).status, 409);
+    assert.equal((await db.prepare('SELECT mode FROM attempts WHERE id=? AND user_id=?').bind(review.id, owner).first()).mode, 'review');
   } finally {
     if (mf) await mf.dispose();
     const resolved = await realpath(directory), tmp = await realpath(os.tmpdir());

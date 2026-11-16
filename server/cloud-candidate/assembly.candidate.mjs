@@ -2,11 +2,11 @@
 // The sync adapter is created here with the same Miniflare instance as auth.
 import { prepareProductionSyncRuntime } from './production-sync-runtime.candidate.mjs';
 const syncPaths = new Set(['/candidate/sync/append', '/candidate/sync/snapshot', '/candidate/sync/page', '/api/study']);
-export async function prepareAccountSyncAssembly({ mf, origin, settings = { enabled: false }, privateRoot, key, proxy, phoneKey, modelInfo } = {}) {
+export async function prepareAccountSyncAssembly({ mf, origin, settings = { enabled: false }, privateRoot, key, proxy, phoneKey, modelInfo, orderedAttemptsEnabled = false } = {}) {
   if (!mf || typeof mf.dispatchFetch !== 'function' || typeof origin !== 'string' ||
       !origin.startsWith('https://') || new URL(origin).origin !== origin) throw Error('invalid account assembly');
   const sync = settings?.enabled === false && Object.keys(settings).length === 1 ? null :
-    await prepareProductionSyncRuntime({ settings, mf, origin, privateRoot, key, proxy, phoneKey, modelInfo });
+    await prepareProductionSyncRuntime({ settings, mf, origin, privateRoot, key, proxy, phoneKey, modelInfo, orderedAttemptsEnabled });
   return Object.freeze({
     async fetch(request) {
       const url = new URL(request.url);

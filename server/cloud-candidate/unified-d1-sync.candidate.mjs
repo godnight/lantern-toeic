@@ -21,8 +21,9 @@ function validEvent(event,model){
  if(!model.validVocabularyEvent(event))return false;
  return exact(event,event.type==='mark'?['id','wordId','createdAt','type','starred','revision']:event.type==='review'?['id','wordId','createdAt','type','grade']:['id','wordId','createdAt','type','reviewId','reviewHash','grade']);
 }
-export async function createUnifiedD1Sync({enabled=false,mf,origin,cursorKey,model}={}){
+export async function createUnifiedD1Sync({enabled=false,orderedAttemptsEnabled=false,mf,origin,cursorKey,model}={}){
  if(enabled!==true)throw Error('sync disabled');
+ if(typeof orderedAttemptsEnabled!=='boolean')throw Error('invalid attempt sync configuration');
  if(!mf||typeof mf.getD1Database!=='function'||typeof mf.dispatchFetch!=='function'||typeof origin!=='string'||new URL(origin).origin!==origin||!origin.startsWith('https://')||
   !Buffer.isBuffer(cursorKey)||cursorKey.length!==32||typeof model?.validVocabularyEvent!=='function'||typeof model?.mergeVocabularyEvents!=='function'||typeof model?.readNativeStudyPage!=='function'||!Array.isArray(model?.QUESTIONS))throw Error('invalid sync configuration');
  const db=await mf.getD1Database('DB'),key=await webcrypto.subtle.importKey('raw',cursorKey,{name:'AES-GCM'},false,['encrypt','decrypt']);
@@ -86,13 +87,17 @@ export async function createUnifiedD1Sync({enabled=false,mf,origin,cursorKey,mod
   let v=body.data;const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,stamp=s=>typeof s==='string'&&/^\d{4}-\d\d-\d\dT/.test(s)&&Number.isFinite(Date.parse(s))&&Date.parse(s)<=Date.now()+300000;
   if(body.id!==undefined&&(typeof body.id!=='string'||!uuid.test(body.id)))return reply(400,{error:'invalid operation'});
   if(body.type==='attempt'){
-   let firstAttemptId;
+   let firstAttemptId,legacyMode,legacyCorrect;
    if(exact(v,['id','qid','choice','createdAt','seconds','firstAttemptId'])){
     firstAttemptId=v.firstAttemptId;
     if(typeof firstAttemptId!=='string'||!uuid.test(firstAttemptId))return reply(400,{error:'invalid attempt'});
     v={id:v.id,qid:v.qid,choice:v.choice,createdAt:v.createdAt,seconds:v.seconds};
    }
-   if(exact(v,['id','qid','choice','correct','createdAt','seconds','mode'])){if(typeof v.correct!=='boolean'||!['first','review'].includes(v.mode))return reply(400,{error:'invalid attempt'});v={id:v.id,qid:v.qid,choice:v.choice,createdAt:v.createdAt,seconds:v.seconds};}
+   if(exact(v,['id','qid','choice','correct','createdAt','seconds','mode'])){
+    if(typeof v.correct!=='boolean'||!['first','review'].includes(v.mode))return reply(400,{error:'invalid attempt'});
+    legacyMode=v.mode;legacyCorrect=v.correct;
+    v={id:v.id,qid:v.qid,choice:v.choice,createdAt:v.createdAt,seconds:v.seconds};
+   }
    const q=questions.get(v?.qid);if(!exact(v,['id','qid','choice','createdAt','seconds'])||!uuid.test(v.id)||!q||!Number.isInteger(v.choice)||v.choice<0||v.choice>=q.options.length||!stamp(v.createdAt)||!Number.isInteger(v.seconds)||v.seconds<0||v.seconds>7200)return reply(400,{error:'invalid attempt'});
    const correct=Number(v.choice===q.correctIndex);
    // On a complete single-device history the client sends the unique local
@@ -102,9 +107,16 @@ export async function createUnifiedD1Sync({enabled=false,mf,origin,cursorKey,mod
    const lookup=()=>db.prepare('SELECT qid,choice,correct,created_at AS createdAt,seconds,mode FROM attempts WHERE id=? AND user_id=?').bind(v.id,owner).first();
    let old=await lookup();
    if(!await live(hash,owner))return reply(401,{error:'unauthenticated'});
-   if(old&&(old.qid!==v.qid||old.choice!==v.choice||old.correct!==correct||old.createdAt!==v.createdAt||old.seconds!==v.seconds))return reply(409,{code:'event-payload-conflict'});
-   // Legacy uploads may only acknowledge an already committed identical row.
-   if(!firstAttemptId)return old?reply(200,{ok:true}):reply(409,{code:'attempt-order-unproven'});
+   if(old&&(old.qid!==v.qid||old.choice!==v.choice||old.correct!==correct||old.createdAt!==v.createdAt||old.seconds!==v.seconds||
+    legacyMode!==undefined&&old.mode!==legacyMode||legacyCorrect!==undefined&&legacyCorrect!==Boolean(correct)))return reply(409,{code:'event-payload-conflict'});
+   // An old retry without mode cannot prove that its local fact agrees with
+   // the stored classification. Keep it pending even when its ID matches.
+   // Full legacy records may acknowledge only an identical committed row.
+   if(!firstAttemptId)return old&&legacyMode!==undefined?reply(200,{ok:true}):reply(409,{code:'attempt-order-unproven'});
+   // A client-provided self-anchor cannot itself prove that the single-device
+   // baseline is complete. A trusted integration must explicitly enable this
+   // path only after establishing that external prerequisite.
+   if(!orderedAttemptsEnabled)return reply(503,{error:'attempt sync disabled'});
    const isFirst=firstAttemptId===v.id;
    if(old&&old.mode!==(isFirst?'first':'review'))return reply(409,{code:'attempt-order-unproven'});
    if(!old){
