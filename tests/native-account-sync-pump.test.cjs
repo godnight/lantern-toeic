@@ -17,6 +17,7 @@ const filename=path.join(__dirname,'native-account-sync-pump-bundle.cjs'),mod=ne
 const app=mod.exports,A={id:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'},B={id:'usr_bbbbbbbb-2222-4222-8222-222222222222',username:'synthetic_b'};
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function deferred(){let resolve;const promise=new Promise(r=>{resolve=r;});return {promise,resolve};}
+function bounded(promise,label){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+' timed out')),10000);})]).finally(()=>clearTimeout(timer));}
 function storage(){const rows=new Map();let reads=0;return {rows,get reads(){return reads;},get length(){return rows.size;},key(i){reads++;return [...rows.keys()][i]??null;},getItem(k){reads++;return rows.get(k)??null;},setItem(k,v){rows.set(k,String(v));}};}
 const read=(db,owner)=>new Promise((resolve,reject)=>{const r=db.transaction(app.STORE).objectStore(app.STORE).get(owner);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
 function target(){const listeners=new Map();return {addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,new Set());listeners.get(type).add(fn);},removeEventListener(type,fn){listeners.get(type)?.delete(fn);},dispatch(type,details={}){for(const fn of listeners.get(type)??[])fn({type,...details});},count(){return [...listeners.values()].reduce((n,s)=>n+s.size,0);}};}
@@ -56,11 +57,11 @@ test('orphan correction retains its source while independent vocabulary and stud
  app.writeVocabulary(local,key,[independent]);local.setItem(key+'orphan',JSON.stringify(app.vocabularyBackup([orphan])));
  const id=randomUUID(),checkin={id:randomUUID(),date:'2026-01-01',minutes:4,load:'轻',note:'synthetic',createdAt:'2026-01-01T10:00:00.000Z'};
  local.setItem('lantern-v1-'+A.id+':op:'+id,JSON.stringify({id,owner:A.id,type:'checkin',data:checkin}));const before=[...local.rows.entries()];
- const sent=[],study=[],checkpoint='n1.'+'A'.repeat(2086);let vocabDownloads=0;
+ const sent=[],study=[],uploaded=deferred(),checkpoint='n1.'+'A'.repeat(2086);let vocabDownloads=0;
  const vt={append:async p=>{sent.push(p.event.id);return {ok:true,owner:p.owner,id:p.event.id};},begin:async()=>{vocabDownloads++;throw Error('must not advance');},page:async()=>{throw Error('must not page');}};
- const st={upload:async p=>{study.push(p.wire.data.id);return {status:200,body:{ok:true}};},pull:async p=>({syncProtocol:'native-m2a-v1',schemaVersion:2,owner:p.owner,hasProfile:false,profilePolicy:'preserve-local-when-absent',changes:[],nextCursor:null,checkpoint})};
+ const st={upload:async p=>{study.push(p.wire.data.id);uploaded.resolve();return {status:200,body:{ok:true}};},pull:async p=>({syncProtocol:'native-m2a-v1',schemaVersion:2,owner:p.owner,hasProfile:false,profilePolicy:'preserve-local-when-absent',changes:[],nextCursor:null,checkpoint})};
  const client=app.createCandidatePageClient({db,vocabTransport:vt,studyTransport:st,autoCapture:{storage:local,target:view}});
- try{await client.activate(A.id);client.start(A.id);for(let i=0;i<200&&study.length===0;i++)await tick();
+ try{await client.activate(A.id);client.start(A.id);await bounded(uploaded.promise,'independent study upload');
   assert.deepEqual(sent,[independent.id]);assert.deepEqual(study,[checkin.id]);assert.equal(vocabDownloads,0);
   assert.equal((await read(db,A.id)).download.snapshot,null);assert.deepEqual([...local.rows.entries()],before);
  }finally{await client.cancel();db.close();}
@@ -72,12 +73,12 @@ test('a source payload conflict never uploads the older queued payload but does 
  app.writeVocabulary(local,key,[conflict]);app.writeVocabulary(local,key,[independent]);
  const id=randomUUID(),checkin={id:randomUUID(),date:'2026-01-01',minutes:4,load:'轻',note:'synthetic',createdAt:'2026-01-01T10:00:00.000Z'};
  local.setItem('lantern-v1-'+A.id+':op:'+id,JSON.stringify({id,owner:A.id,type:'checkin',data:checkin}));
- const sent=[],study=[],checkpoint='n1.'+'A'.repeat(2086);let downloads=0;
+ const sent=[],study=[],uploaded=deferred(),checkpoint='n1.'+'A'.repeat(2086);let downloads=0;
  const vt={append:async p=>{sent.push(p.event.id);return {ok:true,owner:p.owner,id:p.event.id};},begin:async()=>{downloads++;throw Error('must not advance');},page:async()=>{throw Error('must not page');}};
- const st={upload:async p=>{study.push(p.wire.data.id);return {status:200,body:{ok:true}};},pull:async p=>({syncProtocol:'native-m2a-v1',schemaVersion:2,owner:p.owner,hasProfile:false,profilePolicy:'preserve-local-when-absent',changes:[],nextCursor:null,checkpoint})};
+ const st={upload:async p=>{study.push(p.wire.data.id);uploaded.resolve();return {status:200,body:{ok:true}};},pull:async p=>({syncProtocol:'native-m2a-v1',schemaVersion:2,owner:p.owner,hasProfile:false,profilePolicy:'preserve-local-when-absent',changes:[],nextCursor:null,checkpoint})};
  const client=app.createCandidatePageClient({db,vocabTransport:vt,studyTransport:st,autoCapture:{storage:local,target:view}});
  try{await client.activate(A.id);await client.vocabulary({...conflict,grade:'again'});client.start(A.id);
-  for(let i=0;i<200&&study.length===0;i++)await tick();
+  await bounded(uploaded.promise,'independent study upload');
   assert.deepEqual(sent,[independent.id]);assert.deepEqual(study,[checkin.id]);assert.equal(downloads,0);
   const state=await read(db,A.id);assert.equal(state.queue.find(x=>x.id===conflict.id).acked,false);assert.equal(state.download.snapshot,null);
  }finally{await client.cancel();db.close();}
@@ -151,7 +152,12 @@ for(const kind of ['malformed-source','auth','global-conflict'])test(`${kind} st
  const vt={append:async()=>{vocabCalls++;const error=Error('unavailable');error.code=kind==='auth'?'NATIVE_AUTH':'NATIVE_CONFLICT';throw error;},begin:async()=>{throw Error('unexpected');},page:async()=>{throw Error('unexpected');}};
  const st={upload:async()=>{studyCalls++;throw Error('unexpected');},pull:async()=>{studyCalls++;throw Error('unexpected');}};
  const client=app.createCandidatePageClient({db,vocabTransport:vt,studyTransport:st,autoCapture:{storage:local,target:view}});
- try{await client.activate(A.id);client.start(A.id);for(let i=0;i<30;i++)await tick();
+ const finished=deferred(),sourceRead=deferred(),originalRun=client.run,originalGet=local.getItem;
+ client.run=(...args)=>{const running=originalRun(...args);Promise.resolve(running).then(value=>finished.resolve({value}),error=>finished.resolve({error}));return running;};
+ local.getItem=k=>{const value=originalGet(k);if(k===key+'bad')sourceRead.resolve();return value;};
+ try{await client.activate(A.id);client.start(A.id);
+  if(kind==='malformed-source'){await bounded(sourceRead.promise,'malformed source read');await tick();}
+  else{const outcome=await bounded(finished.promise,'failed sync run');assert.equal(outcome.error?.code,kind==='auth'?'NATIVE_AUTH':'NATIVE_CONFLICT');}
   assert.equal(vocabCalls,kind==='malformed-source'?0:1);assert.equal(studyCalls,0);
   assert.ok(local.getItem('lantern-v1-'+A.id+':op:'+id));
  }finally{await client.cancel();db.close();}
