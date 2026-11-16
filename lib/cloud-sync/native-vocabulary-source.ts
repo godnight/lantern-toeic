@@ -13,6 +13,7 @@ export type NativeVocabularySource=Readonly<{
 }>;
 
 const OWNER=/^usr_[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function changed():Error&{code:string}{const error=Error('vocabulary source changed') as Error&{code:string};error.code='NATIVE_TRANSIENT';return error;}
 const FIELDS={review:['id','wordId','createdAt','type','grade'],mark:['id','wordId','createdAt','type','starred','revision'],'review-correction':['id','wordId','createdAt','type','reviewId','reviewHash','grade']} as const;
 const plain=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
 const exact=(v:Record<string,unknown>,keys:readonly string[])=>Object.keys(v).sort().join('\0')===[...keys].sort().join('\0');
@@ -22,7 +23,7 @@ function active(lease:Lease,owner:string):boolean{
 function names(storage:StorageLike,prefix:string):string[]{
  if(!storage||!Number.isSafeInteger(storage.length)||storage.length<0||storage.length>100000)throw Error('vocabulary source unavailable');
  const result:string[]=[];for(let i=0;i<storage.length;i++){const key=storage.key(i);if(key?.startsWith(prefix))result.push(key);}
- result.sort();if(new Set(result).size!==result.length)throw Error('vocabulary source changed');return result;
+ result.sort();if(new Set(result).size!==result.length)throw changed();return result;
 }
 const same=(a:readonly string[],b:readonly string[])=>a.length===b.length&&a.every((x,i)=>x===b[i]);
 
@@ -33,7 +34,7 @@ export function captureNativeVocabularySource(storage:StorageLike,lease:Lease):N
  const prefix=vocabularyKey(owner),keys=names(storage,prefix),chunks:SourceChunk[]=[],all:VocabularyEvent[]=[];let total=0;
  for(const name of keys){
   if(!active(lease,owner))throw Error('account lease changed');
-  const bytes=storage.getItem(name);if(bytes===null)throw Error('vocabulary source changed');
+  const bytes=storage.getItem(name);if(bytes===null)throw changed();
   total+=new TextEncoder().encode(bytes).length;if(total>32*1024*1024)throw Error('vocabulary source too large');
   let value:unknown;try{value=JSON.parse(bytes);}catch{throw Error('invalid vocabulary source');}
   if(!plain(value)||!exact(value,['kind','schemaVersion','events'])||!Array.isArray(value.events))throw Error('unknown vocabulary source');
@@ -44,7 +45,9 @@ export function captureNativeVocabularySource(storage:StorageLike,lease:Lease):N
   if(all.length+parsed.length>100000)throw Error('too many vocabulary events');
   all.push(...parsed);chunks.push(Object.freeze({name,bytes}));
  }
- if(!active(lease,owner)||!same(keys,names(storage,prefix))||chunks.some(chunk=>storage.getItem(chunk.name)!==chunk.bytes)||!active(lease,owner))throw Error('vocabulary source changed');
+ if(!active(lease,owner))throw Error('account lease changed');
+ if(!same(keys,names(storage,prefix))||chunks.some(chunk=>storage.getItem(chunk.name)!==chunk.bytes))throw changed();
+ if(!active(lease,owner))throw Error('account lease changed');
  let events:VocabularyEvent[];try{events=mergeVocabularyEvents([],all);}catch{throw Error('conflicting vocabulary events');}
  const byId=new Map(events.map(event=>[event.id,event])),deferred:string[]=[];
  for(const event of events){
@@ -60,15 +63,21 @@ export function captureNativeVocabularySource(storage:StorageLike,lease:Lease):N
  return Object.freeze({owner,chunks:Object.freeze(chunks),events:Object.freeze(events.map(event=>Object.freeze({...event}))),deferredCorrectionIds:Object.freeze(deferred.sort())});
 }
 
+function requireCurrent(storage:StorageLike,lease:Lease,source:NativeVocabularySource):true{
+ if(!active(lease,source.owner))throw Error('account lease revoked');
+ if(!same(source.chunks.map(chunk=>chunk.name),names(storage,vocabularyKey(source.owner))))throw changed();
+ for(const chunk of source.chunks)if(storage.getItem(chunk.name)!==chunk.bytes)throw changed();
+ if(!active(lease,source.owner))throw Error('account lease revoked');return true;
+}
 /** A recheck detects changes, but is NOT an atomic localStorage/IDB commit. */
 export function nativeVocabularySourceIsCurrent(storage:StorageLike,lease:Lease,source:NativeVocabularySource):boolean{
- try{return active(lease,source.owner)&&same(source.chunks.map(chunk=>chunk.name),names(storage,vocabularyKey(source.owner)))&&source.chunks.every(chunk=>storage.getItem(chunk.name)===chunk.bytes)&&active(lease,source.owner);}catch{return false;}
+ try{return requireCurrent(storage,lease,source);}catch{return false;}
 }
 
 type ImportSession={readonly owner:string;readonly signal:AbortSignal};
 type ImportClient={readonly session:ImportSession|null;
  importVocabularySource:(event:VocabularyEvent,session:ImportSession,sourceGuard:()=>boolean)=>Promise<unknown>};
-type ImportResult=Readonly<{accepted:number;conflictingEventIds:readonly string[];deferredCorrectionIds:readonly string[]}>;
+type ImportResult=Readonly<{accepted:number;conflictingEventIds:readonly string[];deferredCorrectionIds:readonly string[];isCurrent:()=>boolean}>;
 
 /** Re-scan the actual append-only local source and enqueue each event with its
  * original ID. The queue must check the guard synchronously in its IDB write
@@ -84,17 +93,18 @@ export async function importNativeVocabularySource(storage:StorageLike,client:Im
  if(!session||typeof client.importVocabularySource!=='function'||!session.signal||session.signal.aborted)throw Error('account lease unavailable');
  const lease:Lease={owner:session.owner,signal:session.signal,isCurrent:()=>client.session===session&&!session.signal.aborted};
  const snapshot=captureNativeVocabularySource(storage,lease),conflicts:string[]=[],blocked=new Set<string>(),deferred=[...snapshot.deferredCorrectionIds];let accepted=0;
- const current=()=>nativeVocabularySourceIsCurrent(storage,lease,snapshot);
+ const current=()=>requireCurrent(storage,lease,snapshot);
  for(const event of snapshot.events){
-  if(!current())throw Error('vocabulary source changed');
+  current();
   if(event.type==='review-correction'&&blocked.has(event.reviewId)){deferred.push(event.id);continue;}
   try{await client.importVocabularySource(event,session,current);accepted++;}
   catch(error){
-   if(!current())throw Error('vocabulary source changed');
+   current();
    if(!error||typeof error!=='object'||!('code' in error)||error.code!=='NATIVE_EVENT_CONFLICT')throw error;
    conflicts.push(event.id);blocked.add(event.id);
   }
-  if(!current())throw Error('vocabulary source changed');
+  current();
  }
- return Object.freeze({accepted,conflictingEventIds:Object.freeze(conflicts.sort()),deferredCorrectionIds:Object.freeze(deferred.sort())});
+ current();
+ return Object.freeze({accepted,conflictingEventIds:Object.freeze(conflicts.sort()),deferredCorrectionIds:Object.freeze(deferred.sort()),isCurrent:current});
 }
