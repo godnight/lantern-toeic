@@ -457,18 +457,17 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
         return;
       }
       let token: string | undefined = undefined;
-      if (NativeAuthHost.quarantined && !PERSISTENT_SESSION_ENABLED) {
+      if (NativeAuthHost.quarantined) {
         await this.store.load(AUTH_API_ORIGIN, false);
         if (this.store.hasDormantPersistent() && input.action === 'huawei-login') {
           token = await this.store.load(AUTH_API_ORIGIN, true, true);
           if (token === undefined) throw new Error('Unconfirmed');
         } else await this.store.clear();
-      } else if (NativeAuthHost.quarantined) await this.store.clear();
-      else token = await this.store.load(AUTH_API_ORIGIN,
+      } else token = await this.store.load(AUTH_API_ORIGIN,
         PERSISTENT_SESSION_ENABLED || input.action === 'huawei-login',
-        !PERSISTENT_SESSION_ENABLED && input.action === 'huawei-login');
+        input.action === 'huawei-login');
       if (!this.current(operation)) return;
-      const providerReply: http.HttpResponse = await this.fetch('providers', '', token, operation);
+      const providerReply: http.HttpResponse = await this.fetch('providers', '', input.action === 'huawei-login' ? undefined : token, operation);
       if (this.cookieHeaders(providerReply).length !== 0 || providerReply.responseCode !== 200) throw new Error('Unconfirmed');
       const providers: AuthBody = huaweiProviders(parseResponseBody(providerReply.result as string), true);
       if (input.action === 'huawei-bind' ? providers.huaweiBinding !== true : providers.huaweiLogin !== true) {
@@ -550,25 +549,17 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
         if (!this.current(operation)) return;
       }
       let token: string | undefined = undefined;
+      const explicitIdentity: boolean = ['register', 'login', 'logout', 'phone-login'].includes(input.action);
       if (NativeAuthHost.quarantined) {
-        if (!PERSISTENT_SESSION_ENABLED) {
-          // The previous Host may have set process-wide quarantine, then been
-          // recreated with a fresh store object. Re-read Asset rather than
-          // relying on an in-memory dormant flag from the old instance.
-          await this.store.load(AUTH_API_ORIGIN, false);
-          const explicitIdentity: boolean = ['register', 'login', 'logout', 'phone-login'].includes(input.action);
-          if (this.store.hasDormantPersistent() && explicitIdentity) {
-            token = await this.store.load(AUTH_API_ORIGIN, true, true);
-            if (token === undefined) throw new Error('Unconfirmed');
-          } else await this.store.clear();
+        // Re-read Asset because quarantine outlives individual Host/store objects.
+        // A v2 token is usable only for an explicit rotation or revocation.
+        await this.store.load(AUTH_API_ORIGIN, false);
+        if (this.store.hasDormantPersistent() && explicitIdentity) {
+          token = await this.store.load(AUTH_API_ORIGIN, true, true);
+          if (token === undefined) throw new Error('Unconfirmed');
         } else await this.store.clear();
       } else {
-        // A rolled-back build must not use a dormant long session as an
-        // account proof, but an explicit login/logout may present it solely
-        // so the server can revoke the old session when rotating credentials.
-        const explicitIdentity: boolean = ['register', 'login', 'logout', 'phone-login'].includes(input.action);
-        token = await this.store.load(AUTH_API_ORIGIN, PERSISTENT_SESSION_ENABLED || explicitIdentity,
-          !PERSISTENT_SESSION_ENABLED && explicitIdentity);
+        token = await this.store.load(AUTH_API_ORIGIN, PERSISTENT_SESSION_ENABLED || explicitIdentity, explicitIdentity);
       }
       if (!this.current(operation)) return;
       let bindingUser: AuthUser | undefined = undefined;

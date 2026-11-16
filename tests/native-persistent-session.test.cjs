@@ -148,7 +148,7 @@ test('quarantined Host recreation preserves and revokes a dormant credential',as
 });
 
 test('expired dormant credential is sent only for server-side login rotation or logout',async()=>{
- for(const [action,quarantined,serverExpired] of [['login',false,false],['login',true,false],['logout',false,false],['logout',true,false],['login',true,true],['logout',true,true]]){
+ for(const [action,quarantined,serverExpired,enabled] of [['login',false,false,false],['login',true,false,false],['logout',false,false,false],['logout',true,false,false],['login',true,true,false],['logout',true,true,false],['login',true,'rollback',false],['logout',true,'rollback',false],['login',false,'rollback',true],['logout',false,'rollback',true],['login',true,'rollback',true],['logout',true,'rollback',true]]){
   const e=environment({env:{LANTERN_PERSISTENT_SESSION_ENABLED:'true'}}),asset=assetHarness();let oldHost,newHost,fail=false;
   const dispatch=async(url,options)=>{
    const route=new URL(url).pathname.split('/').at(-1),headers={};
@@ -158,25 +158,48 @@ test('expired dormant credential is sent only for server-side login rotation or 
    const body=await r.json(),setCookie=r.headers.get('set-cookie');return response(r.status,body,setCookie?{'Set-Cookie':setCookie}:{});
   };
   try{
-   const credentials={username:'expired_'+action+'_'+Number(quarantined)+'_'+Number(serverExpired),password:'Synthetic expired password 42!'};
+   const credentials={username:'expired_'+action+'_'+Number(quarantined)+'_'+String(serverExpired)+'_'+Number(enabled),password:'Synthetic expired password 42!'};
    oldHost=hostRuntime({origin:ORIGIN,persistent:true,sessionStore:asset.store,dispatch});assert.equal((await oldHost.invoke({id:'register',action:'register',body:credentials})).status,200);
    const hash=e.rows('auth_sessions')[0].token_hash;oldHost.dispose();oldHost=undefined;
-   newHost=hostRuntime({origin:ORIGIN,persistent:false,sessionStoreFactory:()=>asset.newStore(),dispatch});
+   newHost=hostRuntime({origin:ORIGIN,persistent:enabled,sessionStoreFactory:()=>asset.newStore(),dispatch});
    if(quarantined){fail=true;assert.equal((await newHost.invoke({id:'failed',action:'login',body:credentials})).status,503);await newHost.settle();fail=false;newHost.recreate();}
-   // Deliberately advance only the device clock: server still holds a live
-   // session, so deleting locally without revocation would be unsafe.
-   asset.advance(LONG*1000+1);if(serverExpired)e.sqlite.prepare('UPDATE auth_sessions SET expires_at=? WHERE token_hash=?').run(Date.now()-1,hash);assert(e.rows('auth_sessions').some(row=>row.token_hash===hash));
+   // Move only the device clock, including backwards. The server still
+   // controls validity and the prior token must be sent for revocation.
+   asset.advance(serverExpired==='rollback'?-3600000:LONG*1000+1);if(serverExpired===true)e.sqlite.prepare('UPDATE auth_sessions SET expires_at=? WHERE token_hash=?').run(Date.now()-1,hash);assert(e.rows('auth_sessions').some(row=>row.token_hash===hash));
+   if(enabled&&serverExpired==='rollback'&&!quarantined){assert.equal((await newHost.invoke({version:2,id:'proof',action:'session'})).status,503);assert.equal(newHost.requests.length,0);}
    const result=await newHost.invoke(action==='login'?{id:'recover',action,body:credentials}:{id:'logout',action});
    assert.equal(result.status,200);assert(newHost.requests.find(r=>r.path.endsWith('/'+action)&&r.hasCookie));
    assert(!e.rows('auth_sessions').some(row=>row.token_hash===hash));
-   if(action==='login')assert.equal(JSON.parse(Buffer.from(asset.bytes).toString()).version,1);else assert.equal(asset.bytes,undefined);
+   if(action==='login')assert.equal(JSON.parse(Buffer.from(asset.bytes).toString()).version,enabled?2:1);else assert.equal(asset.bytes,undefined);
   }finally{oldHost?.dispose();newHost?.dispose();e.close();}
  }
 });
 
+test('Huawei recovery keeps a rollback token out of provider discovery',async()=>{
+ for(const enabled of [false,true]){
+  const asset=assetHarness();await asset.store.save(ORIGIN,TOKEN,LONG,true);asset.advance(-3600000);const original=Buffer.from(asset.bytes).toString();
+  const h=hostRuntime({origin:ORIGIN,persistent:enabled,huawei:true,sessionStoreFactory:()=>asset.newStore(),dispatch:async url=>new URL(url).pathname.endsWith('/providers')?response(200,{huaweiLogin:true,huaweiBinding:true}):response(503,{code:'synthetic-unavailable'})});
+  try{
+   assert.equal((await h.invoke({id:'huawei',action:'huawei-login'})).status,503);await h.settle();
+   assert.equal(h.requests.find(r=>r.path.endsWith('/providers')).hasCookie,false);
+   assert.equal(h.requests.find(r=>r.path.endsWith('/huawei/login')).hasCookie,true);
+   assert.equal(Buffer.from(asset.bytes).toString(),original);
+  }finally{h.dispose();}
+ }
+});
+
+test('time rollback never enables a normal session proof or cross-origin token use',async()=>{
+ const h=assetHarness();await h.store.save(ORIGIN,TOKEN,LONG,true);const original=Buffer.from(h.bytes).toString();h.advance(-3600000);
+ await assert.rejects(h.store.load(ORIGIN,true));
+ await assert.rejects(h.store.load('https://other.invalid',true,true));
+ assert.equal(Buffer.from(h.bytes).toString(),original);
+ assert.equal(await h.store.load(ORIGIN,true,true),TOKEN);
+ assert.equal(Buffer.from(h.bytes).toString(),original);
+});
+
 test('foreign or malformed dormant credentials are retained and block explicit identity mutation',async()=>{
  const now=1800000000000;
- for(const changes of [{origin:'https://other.invalid'},{issuedAt:now+1},{expiresAt:now+LONG*1000+1}]){
+ for(const changes of [{origin:'https://other.invalid'},{issuedAt:undefined},{expiresAt:now+LONG*1000+1}]){
   const original=JSON.stringify({version:2,origin:ORIGIN,token:TOKEN,issuedAt:now,expiresAt:now+1000,...changes});
   const asset=assetHarness(new Uint8Array(Buffer.from(original)));let h;
   try{

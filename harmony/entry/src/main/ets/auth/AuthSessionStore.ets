@@ -112,7 +112,7 @@ export class AuthSessionStore {
       const now: number = Date.now();
       const issuedAt: number = record.issuedAt === undefined ? -1 : record.issuedAt;
       if (!Number.isSafeInteger(issuedAt) || issuedAt < 0 || !Number.isSafeInteger(record.expiresAt) ||
-        !Number.isSafeInteger(now) || issuedAt > now || record.expiresAt - issuedAt > 2592000000 ||
+        !Number.isSafeInteger(now) || (!preserveOnFailure && issuedAt > now) || record.expiresAt - issuedAt > 2592000000 ||
         record.expiresAt <= issuedAt) throw new Error('Store unavailable');
       if (preserveOnFailure) {
         // Identity mutations may submit an expired bearer only for server-side
