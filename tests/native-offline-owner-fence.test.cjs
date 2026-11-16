@@ -6,13 +6,15 @@ const {hostRuntime,response}=require('./helpers/native-auth-host-runtime.cjs');
 const file=path.resolve(__dirname,'../harmony/entry/src/main/ets/auth/OfflineOwnerFence.ets');
 const source=fs.readFileSync(file,'utf8');
 const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;
-function fixture({addFailure,updateFailure}={}){
- const Tag={ALIAS:'alias',SECRET:'secret',ACCESSIBILITY:'access',SYNC_TYPE:'sync'},writes=[];
- const asset={Tag,Accessibility:{DEVICE_UNLOCKED:'unlock'},SyncType:{NEVER:'never'},
-  async add(attrs){writes.push({kind:'add',alias:Buffer.from(attrs.get(Tag.ALIAS)).toString(),secret:Buffer.from(attrs.get(Tag.SECRET)).toString(),access:attrs.get(Tag.ACCESSIBILITY),sync:attrs.get(Tag.SYNC_TYPE)});if(addFailure)throw addFailure;},
-  async update(query,attrs){writes.push({kind:'update',alias:Buffer.from(query.get(Tag.ALIAS)).toString(),secret:Buffer.from(attrs.get(Tag.SECRET)).toString()});if(updateFailure)throw updateFailure;}};
+function fixture({addFailure,updateFailure,record,queryFailure}={}){
+ const Tag={ALIAS:'alias',SECRET:'secret',ACCESSIBILITY:'access',SYNC_TYPE:'sync',RETURN_TYPE:'return'},writes=[];
+ let secret=record===undefined?undefined:new Uint8Array(Buffer.from(JSON.stringify(record)));
+ const asset={Tag,ReturnType:{ALL:'all'},Accessibility:{DEVICE_UNLOCKED:'unlock'},SyncType:{NEVER:'never'},
+  async query(){if(queryFailure)throw queryFailure;if(secret===undefined)throw {code:24000002};return [new Map([[Tag.SECRET,secret]])];},
+  async add(attrs){writes.push({kind:'add',alias:Buffer.from(attrs.get(Tag.ALIAS)).toString(),secret:Buffer.from(attrs.get(Tag.SECRET)).toString(),access:attrs.get(Tag.ACCESSIBILITY),sync:attrs.get(Tag.SYNC_TYPE)});if(addFailure)throw addFailure;if(secret!==undefined)throw {code:24000003};secret=attrs.get(Tag.SECRET);},
+  async update(query,attrs){writes.push({kind:'update',alias:Buffer.from(query.get(Tag.ALIAS)).toString(),secret:Buffer.from(attrs.get(Tag.SECRET)).toString()});if(updateFailure)throw updateFailure;secret=attrs.get(Tag.SECRET);}};
  const exports={};vm.runInNewContext(js,{exports,require:id=>id==='@ohos.security.asset'?{__esModule:true,default:asset}:id==='@kit.BasicServicesKit'?{}:(()=>{throw Error('unexpected import');})(),Uint8Array,Map,JSON,Number,String,Error});
- return {fence:new exports.OfflineOwnerFence(),enabled:exports.OFFLINE_OWNER_ENABLED,writes};
+ return {fence:new exports.OfflineOwnerFence(),enabled:exports.OFFLINE_OWNER_ENABLED,writes,reopen:()=>new exports.OfflineOwnerFence(),setUpdateFailure:value=>{updateFailure=value;}};
 }
 test('offline-owner gate is disabled; pending marker uses a private Asset and contains no owner or token',async()=>{
  for(const options of [{},{addFailure:{code:24000003}}]){
@@ -21,6 +23,122 @@ test('offline-owner gate is disabled; pending marker uses a private Asset and co
   assert.equal(f.writes.at(-1).alias,'lantern-product-offline-owner-v2');
   assert.equal(f.writes[0].access,'unlock');assert.equal(f.writes[0].sync,'never');
  }
+});
+test('verified synthetic identity persists locally; pending, unexpected owner and corrupt records fail closed',async()=>{
+ const a={uid:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'},b={uid:'usr_bbbbbbbb-2222-4222-8222-222222222222',username:'synthetic_b'};
+ const f=fixture();assert.equal(await f.fence.readLocal('https://auth.test'),undefined);
+ assert.equal(await f.fence.saveVerified('https://auth.test',a,false),true);
+ assert.deepEqual(JSON.parse(JSON.stringify(await f.reopen().readLocal('https://auth.test'))),a);
+ assert.equal(f.writes.at(-1).secret.includes('token'),false);
+ assert.equal(await f.fence.saveVerified('https://auth.test',b,false),false);
+ assert.equal(await f.fence.readLocal('https://auth.test'),undefined);
+ await f.fence.markPending('https://auth.test');assert.equal(await f.reopen().readLocal('https://auth.test'),undefined);
+ assert.equal(await f.fence.saveVerified('https://auth.test',b,false),false);
+ assert.equal(await f.fence.saveVerified('https://auth.test',b,true),true);
+ assert.deepEqual(JSON.parse(JSON.stringify(await f.reopen().readLocal('https://auth.test'))),b);
+ await assert.rejects(f.fence.readLocal('https://different.test'));
+ for(const record of [{version:2,origin:'https://auth.test',state:'stable',uid:a.uid,username:a.username,token:'synthetic-secret'}, {version:2,origin:'https://auth.test',state:'stable',uid:'bad',username:a.username}]){
+  const invalid=fixture({record});await assert.rejects(invalid.fence.readLocal('https://auth.test'));
+ }
+ const unavailable=fixture({queryFailure:{code:123}});await assert.rejects(unavailable.fence.readLocal('https://auth.test'));
+});
+test('native host persists only a verified v2 session and local restore never creates a network lease',async()=>{
+ const f=fixture(),uid='usr_aaaaaaaa-1111-4111-8111-111111111111';let revoked=false;
+ const user={id:uid,username:'synthetic_a'},caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false};
+ const h=hostRuntime({initialToken:'a'.repeat(64),offlineFence:f.fence,dispatch:async()=>revoked?response(401,{code:'unauthenticated'}):response(200,{user,capabilities:caps,session:{version:2,remainingMs:3600000}})});
+ try{
+  assert.deepEqual(h.exposed,['request'],'offline owner cannot be called from ArkWeb');
+  assert.equal((await h.invoke({version:2,id:'proof',action:'session'})).status,200);await h.settle();
+  assert.deepEqual(JSON.parse(JSON.stringify(await h.host.readLocalOfflineOwnerCandidate())),{uid,username:user.username});
+  h.lifecycle(false);h.lifecycle(true);assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(await h.host.readLocalOfflineOwnerCandidate())),{uid,username:user.username});
+  assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined,'local data identity is not a remote lease');
+  revoked=true;assert.equal((await h.invoke({version:2,id:'revoked',action:'session'})).status,401);await h.settle();
+  assert.equal(await h.host.readLocalOfflineOwnerCandidate(),undefined);
+ }finally{h.dispose();}
+});
+test('a failed preflight fence cannot observe 401, and a fenced 401 remains blocked after host restart',async()=>{
+ const uid='usr_aaaaaaaa-1111-4111-8111-111111111111',user={id:uid,username:'synthetic_a'},caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false};
+ const f=fixture();let revoked=false;
+ const dispatch=async()=>revoked?response(401,{code:'unauthenticated'}):response(200,{user,capabilities:caps,session:{version:2,remainingMs:3600000}});
+ const h=hostRuntime({initialToken:'a'.repeat(64),offlineFence:f.fence,dispatch});
+ try{
+  assert.equal((await h.invoke({version:2,id:'initial',action:'session'})).status,200);await h.settle();
+  assert.ok(await h.host.readLocalOfflineOwnerCandidate());
+  f.setUpdateFailure({code:123});revoked=true;
+  assert.equal((await h.invoke({version:2,id:'fence-failed',action:'session'})).status,503);await h.settle();
+  assert.equal(h.requests.length,1,'no second HTTP request or 401 is observed when pending write fails');
+  assert.equal(await h.host.readLocalOfflineOwnerCandidate(),undefined);
+ }finally{h.dispose();}
+ f.setUpdateFailure(undefined);
+ const h2=hostRuntime({initialToken:'a'.repeat(64),offlineFence:f.reopen(),dispatch});
+ try{
+  assert.equal((await h2.invoke({version:2,id:'fenced-401',action:'session'})).status,401);await h2.settle();
+  assert.equal(await h2.host.readLocalOfflineOwnerCandidate(),undefined);
+ }finally{h2.dispose();}
+ const h3=hostRuntime({offlineFence:f.reopen()});try{assert.equal(await h3.host.readLocalOfflineOwnerCandidate(),undefined);}finally{h3.dispose();}
+});
+test('malformed 401, redirect, and transport rejection never restore a fenced stable identity',async()=>{
+ const uid='usr_aaaaaaaa-1111-4111-8111-111111111111',user={id:uid,username:'synthetic_a'},caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false};
+ for(const bad of [()=>({responseCode:401,result:{code:'unauthenticated'},header:{'content-type':'application/json'}}),()=>({responseCode:401,result:'x'.repeat(17000),header:{'content-type':'application/json'}}),()=>response(302,{}),()=>{throw Error('ambiguous transport');}]){
+  const f=fixture();let mode=false;
+  const h=hostRuntime({initialToken:'a'.repeat(64),offlineFence:f.fence,dispatch:async()=>mode?bad():response(200,{user,capabilities:caps,session:{version:2,remainingMs:3600000}})});
+  try{
+   assert.equal((await h.invoke({version:2,id:'initial',action:'session'})).status,200);await h.settle();mode=true;
+   assert.equal((await h.invoke({version:2,id:'ambiguous',action:'session'})).status,503);await h.settle();
+   assert.equal(await h.host.readLocalOfflineOwnerCandidate(),undefined);
+  }finally{h.dispose();}
+  const h2=hostRuntime({offlineFence:f.reopen()});try{assert.equal(await h2.host.readLocalOfflineOwnerCandidate(),undefined);}finally{h2.dispose();}
+ }
+});
+test('the disabled host never exposes a local cached owner',async()=>{
+ const h=hostRuntime();try{assert.equal(await h.host.readLocalOfflineOwnerCandidate(),undefined);assert.deepEqual(h.exposed,['request']);}finally{h.dispose();}
+});
+test('failed identity change remains pending until a successful login and its independent v2 proof',async()=>{
+ const f=fixture(),uid='usr_aaaaaaaa-1111-4111-8111-111111111111';let accept=false;
+ const user={id:uid,username:'synthetic_a'},caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false};
+ const cookie='__Host-lantern-session='+'a'.repeat(64)+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200';
+ const h=hostRuntime({initialToken:'a'.repeat(64),offlineFence:f.fence,dispatch:async(url)=>{
+  if(new URL(url).pathname.endsWith('/login'))return accept?response(200,{user,capabilities:caps},{'set-cookie':cookie}):response(401,{code:'invalid-credentials'});
+  return response(200,{user,capabilities:caps,session:{version:2,remainingMs:3600000}});
+ }});
+ try{
+  assert.equal((await h.invoke({version:2,id:'initial',action:'session'})).status,200);await h.settle();
+  assert.ok(await h.host.readLocalOfflineOwnerCandidate());
+  const body={username:user.username,password:'synthetic password'};
+  assert.equal((await h.invoke({id:'wrong',action:'login',body})).status,401);await h.settle();
+  assert.equal((await h.invoke({version:2,id:'ordinary',action:'session'})).status,200);await h.settle();
+  assert.equal(await h.host.readLocalOfflineOwnerCandidate(),undefined);
+  accept=true;assert.equal((await h.invoke({id:'login',action:'login',body})).status,200);await h.settle();
+  assert.equal(await h.host.readLocalOfflineOwnerCandidate(),undefined);
+  assert.equal((await h.invoke({version:2,id:'independent',action:'session'})).status,200);await h.settle();
+  assert.deepEqual(JSON.parse(JSON.stringify(await h.host.readLocalOfflineOwnerCandidate())),{uid,username:user.username});
+ }finally{h.dispose();}
+});
+test('a fresh proof of a different owner cannot resolve a successful login pending marker',async()=>{
+ const f=fixture(),a={id:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'},b={id:'usr_bbbbbbbb-2222-4222-8222-222222222222',username:'synthetic_b'};
+ const caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false};let sessionCount=0;
+ const cookie='__Host-lantern-session='+'b'.repeat(64)+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200';
+ const h=hostRuntime({initialToken:'a'.repeat(64),offlineFence:f.fence,dispatch:async(url)=>{
+  if(new URL(url).pathname.endsWith('/login'))return response(200,{user:b,capabilities:caps},{'set-cookie':cookie});
+  const user=++sessionCount===2?b:a;return response(200,{user,capabilities:caps,session:{version:2,remainingMs:3600000}});
+ }});
+ try{
+  assert.equal((await h.invoke({version:2,id:'initial',action:'session'})).status,200);await h.settle();
+  assert.equal((await h.invoke({id:'switch',action:'login',body:{username:b.username,password:'synthetic password'}})).status,200);await h.settle();
+  assert.equal((await h.invoke({version:2,id:'mismatch',action:'session'})).status,200);await h.settle();
+  assert.equal(await h.host.readLocalOfflineOwnerCandidate(),undefined);
+ }finally{h.dispose();}
+});
+test('a stale pending local save is fenced after lifecycle invalidation',async()=>{
+ let release,started;const pending=new Promise(resolve=>{release=resolve;}),entered=new Promise(resolve=>{started=resolve;});let fences=0;
+ const offlineFence={async markPending(){fences++;},async saveVerified(){started();await pending;return true;}};
+ const user={id:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'},caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false};
+ const h=hostRuntime({initialToken:'a'.repeat(64),offlineFence,dispatch:async()=>response(200,{user,capabilities:caps,session:{version:2,remainingMs:3600000}})});
+ try{
+  h.send({version:2,id:'late-proof',action:'session'});await entered;h.lifecycle(false);release();await h.settle();
+  assert.equal(fences,1);assert.equal(h.replies.length,0);assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined);
+ }finally{h.dispose();}
 });
 test('invalid origins and Asset failures reject before a trusted identity is released',async()=>{
  for(const origin of ['http://auth.test','https://lantern.local','https://evil.test/path','https://evil.test?token=x']){const f=fixture();await assert.rejects(f.fence.markPending(origin));assert.equal(f.writes.length,0);}

@@ -5,7 +5,7 @@ import { systemDateTime } from '@kit.BasicServicesKit';
 import { common } from '@kit.AbilityKit';
 import { HuaweiAccountProvider, HuaweiAuthorization } from './HuaweiAccountProvider';
 import { AuthSessionStore } from './AuthSessionStore';
-import { OfflineOwnerFence, OFFLINE_OWNER_ENABLED } from './OfflineOwnerFence';
+import { OfflineOwnerFence, LocalOfflineOwner, OFFLINE_OWNER_ENABLED } from './OfflineOwnerFence';
 import { TrustedOwnerLease, VerifiedOwnerLease, TrustedOwnerProvider } from '../media/VerifiedOwnerLease';
 import { SyncAuthGate } from '../sync/NativeSyncHost';
 import { NativeTransitionEvidence } from '../sync/NativeTransitionEvidence';
@@ -54,6 +54,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
   // settling. Its lock/quarantine belongs to the process, not to that page.
   private static busy: boolean = false;
   private static quarantined: boolean = false;
+  private static offlineOwnerPoisoned: boolean = false;
   private static retryAt: number = 0;
   private seen: string[] = [];
   private network: http.HttpRequest | undefined = undefined;
@@ -65,6 +66,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
   private syncTransitionPending: number = 0;
   private syncTransitionConfirmed: number = 0;
   private syncTransitionAction: string = '';
+  private syncTransitionExpectedOwner: string | null = null;
   private syncTransitionOwner: string | null = null;
   private syncTransitionLeaseEpoch: number = -1;
 
@@ -123,6 +125,18 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
 
   // Native consumers only. Only request() is on the registered JS method list.
   trustedOwnerProvider(): TrustedOwnerProvider { return this.ownerLease; }
+
+  // Native-only candidate. No JS proxy method and no remote/session lease is
+  // issued. A future consumer must separately enforce revocation during use.
+  async readLocalOfflineOwnerCandidate(): Promise<LocalOfflineOwner | undefined> {
+    const epoch: number = this.epoch;
+    if (!OFFLINE_OWNER_ENABLED || NativeAuthHost.busy || NativeAuthHost.quarantined || NativeAuthHost.offlineOwnerPoisoned || !this.live(epoch)) return undefined;
+    NativeAuthHost.busy = true;
+    try {
+      const owner: LocalOfflineOwner | undefined = await this.offlineOwnerFence.readLocal(AUTH_API_ORIGIN);
+      return this.live(epoch) && !NativeAuthHost.quarantined && !NativeAuthHost.offlineOwnerPoisoned ? owner : undefined;
+    } catch { return undefined; } finally { NativeAuthHost.busy = false; }
+  }
 
   syncTransitionVersion(): number { return this.syncTransitionStarted; }
   syncTransitionConfirmedAfter(start: number): boolean {
@@ -256,6 +270,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
     if (operation.transitionStart > 0 && operation.transitionStart === this.syncTransitionStarted && status === 200) {
       this.syncTransitionPending = operation.transitionStart;
       this.syncTransitionAction = operation.action;
+      this.syncTransitionExpectedOwner = body.user?.id ?? null;
     } else if (operation.action === 'session' && operation.version === 2 &&
       operation.transitionProof === this.syncTransitionStarted && operation.transitionProof > 0) {
       const lease: TrustedOwnerLease | undefined = this.ownerLease.snapshot();
@@ -368,7 +383,8 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       // A future offline identity must be invalidated before any operation
       // that can alter it. This gate is not enabled or used for offline entry.
       if (OFFLINE_OWNER_ENABLED && operation.transitionStart > 0) {
-        await this.offlineOwnerFence.markPending(AUTH_API_ORIGIN);
+        try { await this.offlineOwnerFence.markPending(AUTH_API_ORIGIN); }
+        catch { NativeAuthHost.offlineOwnerPoisoned = true; throw new Error('Unconfirmed'); }
         if (!this.current(operation)) return;
       }
       if (!this.huaweiAvailable() || this.context === undefined) {
@@ -454,9 +470,24 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       // real native request/Asset operation settles, even after publishing 503.
       this.send(operation.id, 503, operationUnknownBody(input.action), operation.epoch, operation.version);
     }, AUTH_TIMEOUT_MS);
+    let previousOfflineOwner: LocalOfflineOwner | undefined = undefined;
     try {
       if (OFFLINE_OWNER_ENABLED && operation.transitionStart > 0) {
-        await this.offlineOwnerFence.markPending(AUTH_API_ORIGIN);
+        try { await this.offlineOwnerFence.markPending(AUTH_API_ORIGIN); }
+        catch { NativeAuthHost.offlineOwnerPoisoned = true; throw new Error('Unconfirmed'); }
+        if (!this.current(operation)) return;
+      }
+      // Fence a previously available local identity *before* asking the server.
+      // Thus an observed 401 cannot leave that stable identity on disk merely
+      // because a subsequent Asset write failed. A crash while checking stays
+      // pending. This is not a claim about platform crash durability.
+      if (OFFLINE_OWNER_ENABLED && input.action === 'session') {
+        if (NativeAuthHost.offlineOwnerPoisoned) throw new Error('Unconfirmed');
+        previousOfflineOwner = await this.offlineOwnerFence.readLocal(AUTH_API_ORIGIN);
+        if (previousOfflineOwner !== undefined) {
+          try { await this.offlineOwnerFence.markPending(AUTH_API_ORIGIN); }
+          catch { NativeAuthHost.offlineOwnerPoisoned = true; throw new Error('Unconfirmed'); }
+        }
         if (!this.current(operation)) return;
       }
       let token: string | undefined = undefined;
@@ -566,7 +597,27 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
         NativeAuthHost.quarantined = false;
         // This branch is the existing strict v2 session proof. Preserve its wire
         // reply and project only the remaining monotonic lifetime to native media.
-        if (this.current(operation)) this.ownerLease.publishVerifiedV2(user.id, ended, validForMs, operation.ownerLeaseEpoch);
+        const published: boolean = this.current(operation) && this.ownerLease.publishVerifiedV2(user.id, ended, validForMs, operation.ownerLeaseEpoch);
+        if (OFFLINE_OWNER_ENABLED && published && !NativeAuthHost.offlineOwnerPoisoned) {
+          const proof: TrustedOwnerLease | undefined = this.ownerLease.snapshot();
+          if (proof !== undefined && proof.uid === user.id) {
+            const confirmedLogin: boolean = operation.transitionProof > 0 && operation.transitionProof === this.syncTransitionStarted &&
+              ['register', 'login', 'phone-login', 'huawei-login'].includes(this.syncTransitionAction) &&
+              this.syncTransitionExpectedOwner === proof.uid;
+            try {
+              const sameCachedOwner: boolean = previousOfflineOwner !== undefined && previousOfflineOwner.uid === proof.uid;
+              await this.offlineOwnerFence.saveVerified(AUTH_API_ORIGIN, { uid: proof.uid, username: user.username }, confirmedLogin || sameCachedOwner);
+              const after: TrustedOwnerLease | undefined = this.ownerLease.snapshot();
+              if (!this.current(operation) || after === undefined || after.uid !== proof.uid || after.authEpoch !== proof.authEpoch) {
+                await this.offlineOwnerFence.markPending(AUTH_API_ORIGIN);
+                return;
+              }
+            } catch {
+              NativeAuthHost.offlineOwnerPoisoned = true;
+              try { await this.offlineOwnerFence.markPending(AUTH_API_ORIGIN); } catch {}
+            }
+          }
+        }
         this.finish(operation, 200, { user: user, capabilities: capabilities(true), session: { validForMs: validForMs } });
         return;
       }
@@ -601,6 +652,9 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       NativeAuthHost.quarantined = false;
       this.finish(operation, 200, { user: user, capabilities: input.action === 'phone-login' ? phoneSuccessCapabilities(payload) : capabilities(true) });
     } catch {
+      // A rejected request may have received an invalid, oversized or 401
+      // response before failing. Keep pending; never infer a transport-only
+      // failure from a generic exception and revive a cached identity.
       if (operation.sessionMayHaveChanged) NativeAuthHost.quarantined = true;
       this.finish(operation, 503, operationUnknownBody(input.action));
     } finally {
