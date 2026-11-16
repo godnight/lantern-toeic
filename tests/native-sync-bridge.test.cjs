@@ -21,14 +21,14 @@ function setup(kind){
  target[hostName]={request:raw=>host.request(raw),cancel:id=>host.cancel(id)};
  const transport=vocab?compile(path.join(root,'lib/native-sync-transport.ts'),{}).createNativeSyncTransport(target):compile(path.join(root,'lib/native-study-transport.ts'),{}).createNativeStudyTransport(target);
  function request(signal){return vocab?transport.append({owner,event},signal):transport.pull({owner,checkpoint:null,continuation:null,signal});}
- return {host,target,transport,request,entered,release:()=>release({responseCode:503,header:{'content-type':'application/json'},result:'{}'}),calls:()=>calls,close(){transport.dispose();host.dispose();}};
+ return {host,target,transport,request,entered,release:(status=503)=>release({responseCode:status,header:{'content-type':'application/json'},result:'{}'}),calls:()=>calls,close(){transport.dispose();host.dispose();}};
 }
 for(const kind of ['vocabulary','study']){
  test(kind+' native busy is distinct and has no automatic retry promise',async()=>{
   const f=setup(kind);try{
    const first=f.request(new AbortController().signal);await f.entered;
    await assert.rejects(f.request(new AbortController().signal),err=>err.code==='NATIVE_BUSY'&&err.safeToRetry!==true);
-   assert.equal(f.calls(),1);f.release();await assert.rejects(first,err=>err.code===undefined&&err.safeToRetry!==true);
+   assert.equal(f.calls(),1);f.release();await assert.rejects(first,err=>err.code==='NATIVE_TRANSIENT'&&err.safeToRetry!==true);
   }finally{f.close();}
  });
  test(kind+' request limit rejects promptly without making a network request',async()=>{
@@ -47,4 +47,33 @@ for(const kind of ['vocabulary','study']){
    }
   }finally{f.close();}
  });
+ test(kind+' keeps authorization and conflict distinct from temporary outages',async()=>{
+  for(const [status,code] of [[401,'NATIVE_AUTH'],[403,'NATIVE_AUTH'],[409,'NATIVE_CONFLICT']]){
+   const f=setup(kind);try{const pending=f.request(new AbortController().signal);await f.entered;f.release(status);await assert.rejects(pending,err=>err.code===code&&err.safeToRetry!==true);}
+   finally{f.close();}
+  }
+ });
+ test(kind+' does not mark rejected or malformed server replies as transient',async()=>{
+  for(const status of [200,400,422]){
+   const f=setup(kind);try{const pending=f.request(new AbortController().signal);await f.entered;f.release(status);await assert.rejects(pending,err=>err.code===undefined&&err.safeToRetry!==true);}
+   finally{f.close();}
+  }
+ });
+ test(kind+' classifies temporary throttling and server failures for bounded retries',async()=>{
+  for(const status of [408,429,500,502,503,504]){
+   const f=setup(kind);try{const pending=f.request(new AbortController().signal);await f.entered;f.release(status);await assert.rejects(pending,err=>err.code==='NATIVE_TRANSIENT'&&err.safeToRetry!==true);}
+   finally{f.close();}
+  }
+ });
 }
+
+test('native study bridge accepts the optional first-attempt anchor and rejects malformed anchors',async()=>{
+ for(const valid of [true,false]){
+  const f=setup('study'),id=randomUUID(),wire={id:randomUUID(),owner,type:'attempt',data:{id,qid:'q',choice:0,createdAt:'2026-01-01T10:00:00.000Z',seconds:3,firstAttemptId:valid?id:'bad'}};
+  try{
+   const abort=new AbortController(),result=f.transport.upload({owner,wire,signal:abort.signal});
+   if(valid){await f.entered;assert.equal(f.calls(),1);f.release();await assert.rejects(result,err=>err.code==='NATIVE_TRANSIENT');}
+   else{await tick();assert.equal(f.calls(),0);abort.abort();await assert.rejects(result);}
+  }finally{f.close();}
+ }
+});

@@ -23,7 +23,8 @@ function server({grade=choice=>choice===0}={}){
   begin:async p=>{gate();return vocab.begin(tokens.get(p.owner),p.pageSize);},page:async p=>{gate();return vocab.page(tokens.get(p.owner),p.snapshot,p.cursor);}};
  const st={upload:async p=>{gate();const w=p.wire;assert.equal(w.owner,p.owner);const key=p.owner+':'+w.type+':'+w.data.id;
   if(w.type==='attempt'){assert.equal('correct' in w.data,false);assert.equal('mode' in w.data,false);}
-  const data=w.type==='attempt'?{...w.data,correct:grade(w.data.choice),mode:'first'}:w.data;
+  const {firstAttemptId,...wireData}=w.data;
+  const data=w.type==='attempt'?{...wireData,correct:grade(w.data.choice),mode:'first'}:w.data;
   const value={kind:w.type,id:data.id,data};if(rows.has(key))assert.deepEqual(rows.get(key),value);else rows.set(key,value);
   if(loseStudy){loseStudy=false;throw Error('synthetic lost acknowledgement');}return {status:200,body:{ok:true}};},
   pull:async p=>{gate();if(delayPull)await delayPull();return {syncProtocol:'native-m2a-v1',schemaVersion:2,owner:p.owner,hasProfile:false,profilePolicy:'preserve-local-when-absent',changes:[...rows.entries()].filter(([key])=>key.startsWith(p.owner+':')).map(([,x])=>x),nextCursor:null,checkpoint};}};
@@ -44,6 +45,23 @@ test('study journal capture preserves operation ids and resumes without duplicat
   assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),2);
   const state=await c.readStudy();assert.deepEqual(state.pendingOperations.map(x=>x.id),ids);assert.equal(state.uploadAcks.length,2);assert.equal(s.rows.size,2);
   assert.equal(source.raw.size,2);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('a reordered offline queue uploads a proven first before its review and preserves conflicts',async()=>{
+ const s=server(),db=await open(new IDBFactory(),'anchor-order'),c=client(db,s),first=attempt(),review={...attempt(),mode:'review',createdAt:'2025-01-01T00:00:00.000Z'},arrivals=[];
+ s.st.upload=async p=>{
+  const data=p.wire.data,root=s.rows.get(p.owner+':attempt:'+data.firstAttemptId);
+  if(data.firstAttemptId!==data.id&&!root){const error=Error('anchor missing');error.code='NATIVE_CONFLICT';throw error;}
+  arrivals.push(data.id);const {firstAttemptId,...body}=data;
+  s.rows.set(p.owner+':attempt:'+data.id,{kind:'attempt',id:data.id,data:{...body,correct:body.choice===0,mode:data.id===firstAttemptId?'first':'review'}});
+  return {status:200,body:{ok:true}};
+ };
+ try{
+  await c.activate(A);await c.answer('attempt',review,undefined,randomUUID(),first.id);await c.answer('attempt',first,undefined,randomUUID(),first.id);
+  await c.run();assert.deepEqual(arrivals,[first.id,review.id]);assert.equal((await c.readStudy()).uploadAcks.length,2);
+  const orphan={...attempt(),qid:'unknown-q',mode:'review'};await c.answer('attempt',orphan,undefined,randomUUID(),randomUUID());
+  await assert.rejects(c.run(),error=>error.code==='NATIVE_CONFLICT');
+  assert.equal((await c.readStudy()).pendingOperations.length,3);assert.equal((await c.readStudy()).uploadAcks.length,2);
  }finally{await c.cancel();db.close();s.close();}
 });
 test('a server score disagreement stops download without losing the local attempt or advancing the checkpoint',async()=>{
@@ -128,6 +146,33 @@ test('capture pump finds persisted marks after failure and resumes on network re
   s.setOffline(false);target.dispatchEvent(new Event('online'));await pump.wake();
   assert.equal((await read(db,q.STORE,A)).queue[0].acked,true);assert.equal(s.vocab.server.db.prepare('SELECT COUNT(*) AS n FROM events WHERE owner=?').get(A).n,1);
   await c.activate(B);await assert.rejects(pump.wake(),/revoked/);
+ }finally{pump?.stop();await c.cancel();db.close();s.close();}
+});
+
+test('capture pump retries only classified transient failures, preserving the durable event and owner',async()=>{
+ const source=memoryStorage(),key=page.vocabularyKey(A),db=await open(new IDBFactory(),'capture-retry'),s=server(),c=client(db,s),target=new EventTarget();let pump,timer=null,calls=0;
+ page.writeVocabulary(source.storage,key,[vocabMark('retry-mark')],{captureNewMark:true});
+ const original=s.vt.append;s.vt.append=async(...args)=>{calls++;if(calls===1){const e=Error('temporarily unavailable');e.code='NATIVE_TRANSIENT';throw e;}return original(...args);};
+ try{
+  await c.activate(A);pump=page.createCapturedVocabularyMarkPump({storage:source.storage,owner:A,client:c,target,setTimer:(fn,ms)=>{timer={fn,ms};return timer;},clearTimer:()=>{timer=null;}});
+  await assert.rejects(pump.wake());assert.equal((await read(db,q.STORE,A)).queue[0].acked,false);assert.equal(timer.ms,1000);
+  const retry=timer.fn;timer=null;retry();await pump.wake();
+  assert.equal((await read(db,q.STORE,A)).queue[0].acked,true);assert.equal(s.vocab.server.db.prepare('SELECT COUNT(*) AS n FROM events WHERE owner=?').get(A).n,1);
+  const before=calls;s.vt.append=async()=>{calls++;const e=Error('conflict');e.code='NATIVE_CONFLICT';throw e;};
+  page.writeVocabulary(source.storage,key,[vocabMark('conflict-mark')],{captureNewMark:true});await assert.rejects(pump.wake());
+  assert.equal(timer,null);assert.equal(calls,before+1);assert.equal((await read(db,q.STORE,A)).queue.find(x=>x.id==='conflict-mark').acked,false);
+ }finally{pump?.stop();await c.cancel();db.close();s.close();}
+});
+test('one wake captures offline study and vocabulary, then retries both without new operation ids',async()=>{
+ const source=memoryStorage(),key=page.vocabularyKey(A),db=await open(new IDBFactory(),'combined-capture'),s=server(),c=client(db,s),target=new EventTarget(),first=attempt(),opId=randomUUID();let pump,timer=null,calls=0;
+ page.writeVocabulary(source.storage,key,[vocabMark('combined-mark')],{captureNewMark:true});
+ source.storage.setItem('lantern-v1-'+A+':op:'+opId,JSON.stringify({id:opId,owner:A,type:'attempt',data:first,firstAttemptId:first.id}));
+ const original=s.vt.append;s.vt.append=async(...args)=>{if(++calls===1){const e=Error('offline');e.code='NATIVE_TRANSIENT';throw e;}return original(...args);};
+ try{
+  await c.activate(A);pump=page.createCapturedVocabularyMarkPump({storage:source.storage,owner:A,client:c,target,captureStudy:()=>page.scanSyntheticStudyJournal(source.storage,A,c),setTimer:fn=>{timer=fn;return fn;},clearTimer:()=>{timer=null;}});
+  await assert.rejects(pump.wake());assert.equal((await c.readStudy()).pendingOperations[0].id,opId);assert.equal((await c.readStudy()).uploadAcks.length,0);
+  const retry=timer;timer=null;retry();await pump.wake();
+  assert.equal((await c.readStudy()).uploadAcks[0].id,opId);assert.equal(s.rows.size,1);assert.equal(s.vocab.server.db.prepare('SELECT COUNT(*) AS n FROM events WHERE owner=?').get(A).n,1);
  }finally{pump?.stop();await c.cancel();db.close();s.close();}
 });
 

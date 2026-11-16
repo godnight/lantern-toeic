@@ -194,6 +194,7 @@ export class NativeSyncHost {
     try { this.controller.runJavaScript('(function(){if(typeof window.__lanternSyncReceive==="function")window.__lanternSyncReceive(' + safe + ');})()').catch(() => {}); } catch {}
   }
   private async perform(op: Operation): Promise<void> {
+    let networkStarted: boolean = false, responseReceived: boolean = false;
     try {
       await this.gate.withSession(op.lease, async (token: string): Promise<void> => {
         if (!this.current(op) || !/^[a-f0-9]{64}$/.test(token)) throw new Error('unavailable');
@@ -208,8 +209,14 @@ export class NativeSyncHost {
           extraData:JSON.stringify(body), usingCache:false, expectDataType:http.HttpDataType.STRING,
           connectTimeout:10000, readTimeout:10000, maxLimit:LIMIT, maxRedirects:0 };
         try {
+          networkStarted = true;
           const response: http.HttpResponse = await request.request(AUTH_API_ORIGIN + path(input.action),options);
-          if (!this.current(op) || response.responseCode !== 200 || typeof response.result !== 'string' || utf8Length(response.result) > LIMIT) throw new Error('unavailable');
+          responseReceived = true;
+          if (!this.current(op)) throw new Error('unavailable');
+          if (response.responseCode === 401 || response.responseCode === 403) { this.send(input.id,401,{code:'unauthenticated'},op.generation); return; }
+          if (response.responseCode === 409) { this.send(input.id,409,{code:'conflict'},op.generation); return; }
+          if ([408,429,500,502,503,504].includes(response.responseCode)) { this.send(input.id,503,{code:'unavailable'},op.generation); return; }
+          if (response.responseCode !== 200 || typeof response.result !== 'string' || utf8Length(response.result) > LIMIT) throw new Error('unavailable');
           const headers: Record<string,string | string[]> = response.header as Record<string,string | string[]>;
           let contentType: boolean = false;
           if (!headers || Object.keys(headers).length > 64) throw new Error('unavailable');
@@ -227,7 +234,7 @@ export class NativeSyncHost {
           this.send(input.id,200,output,op.generation);
         } finally { try { request.destroy(); } catch {} if (this.network === request) this.network = undefined; }
       });
-    } catch { if (this.current(op)) this.send(op.input.id,503,{code:'unavailable'},op.generation); }
+    } catch { if (this.current(op)) this.send(op.input.id,503,{code:networkStarted&&!responseReceived?'unavailable':'rejected'},op.generation); }
     finally { if (this.operation === op) { this.operation = undefined; this.flushDrains(); } }
   }
 }

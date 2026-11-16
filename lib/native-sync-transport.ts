@@ -2,7 +2,7 @@
 export type SyncAction = 'append' | 'begin' | 'page';
 type Body = {owner:string;event?:object;pageSize?:number;snapshot?:string;cursor?:string};
 type Reply = {id:string;status:number;body:unknown};
-type NativeSyncError = Error & {code?:'NATIVE_BUSY'|'NATIVE_REQUEST_LIMIT'};
+type NativeSyncError = Error & {code?:'NATIVE_BUSY'|'NATIVE_REQUEST_LIMIT'|'NATIVE_AUTH'|'NATIVE_CONFLICT'|'NATIVE_TRANSIENT'};
 type Pending = {resolve:(body:unknown)=>void;reject:(error:Error)=>void;timer:ReturnType<typeof setTimeout>;abort:()=>void};
 export type SyncWindow = {location:{origin:string};top?:unknown;self?:unknown;
   crypto:{randomUUID:()=>string};LanternSyncHost?:{request:(raw:string)=>void;cancel:(id:string)=>void};
@@ -28,6 +28,14 @@ export function createNativeSyncTransport(target:SyncWindow=window as unknown as
         const error:NativeSyncError=new Error('sync unavailable');
         error.code=code==='busy'?'NATIVE_BUSY':'NATIVE_REQUEST_LIMIT';
         finish(reply.id,undefined,error);return;
+      }
+      if(code==='unavailable') {const error:NativeSyncError=new Error('sync unavailable');error.code='NATIVE_TRANSIENT';finish(reply.id,undefined,error);return;}
+    }
+    if(Object.keys(value).sort().join(',')==='body,id,status' && (reply.status===401||reply.status===409) &&
+      reply.body && typeof reply.body==='object' && !Array.isArray(reply.body) && Object.keys(reply.body).join(',')==='code') {
+      const code=(reply.body as {code?:unknown}).code;
+      if((reply.status===401&&code==='unauthenticated')||(reply.status===409&&code==='conflict')){
+        const error:NativeSyncError=new Error('sync unavailable');error.code=reply.status===401?'NATIVE_AUTH':'NATIVE_CONFLICT';finish(reply.id,undefined,error);return;
       }
     }
     if(Object.keys(value).sort().join(',')!=='body,id,status'||reply.status!==200||

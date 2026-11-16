@@ -7,7 +7,7 @@ import { COOKIE_NAME, configuredOrigin, trustedFrame, utf8Length } from '../auth
 import { TrustedOwnerLease, TrustedOwnerProvider } from '../media/VerifiedOwnerLease';
 import { SyncAuthGate } from './NativeSyncHost';
 
-interface StudyData { id: string; qid?: string; choice?: number; correct?: boolean; mode?: string;
+interface StudyData { id: string; qid?: string; choice?: number; correct?: boolean; mode?: string; firstAttemptId?: string;
   createdAt: string; seconds?: number; date?: string; minutes?: number; load?: string; note?: string; }
 interface StudyWire { id: string; owner: string; type: string; data: StudyData; }
 interface StudyRequest { id: string; action: string; owner: string; wire?: StudyWire; checkpoint?: string | null; continuation?: string | null; }
@@ -46,8 +46,9 @@ function stamp(value: string): boolean {
 function dataValid(kind: string, data: StudyData, outgoing: boolean): boolean {
   if (!data || !uuid(data.id) || !stamp(data.createdAt)) return false;
   if (kind === 'attempt') {
-    const fields: string[] = outgoing ? ['id','qid','choice','createdAt','seconds'] : ['id','qid','choice','correct','createdAt','seconds','mode'];
+    const fields: string[] = outgoing ? (data.firstAttemptId === undefined ? ['id','qid','choice','createdAt','seconds'] : ['id','qid','choice','createdAt','seconds','firstAttemptId']) : ['id','qid','choice','correct','createdAt','seconds','mode'];
     return exact(data,fields) && typeof data.qid === 'string' && data.qid.length > 0 && data.qid.length <= 100 &&
+      (!outgoing || data.firstAttemptId === undefined || uuid(data.firstAttemptId)) &&
       Number.isInteger(data.choice) && (data.choice as number) >= 0 && (data.choice as number) <= 3 &&
       Number.isInteger(data.seconds) && (data.seconds as number) >= 0 && (data.seconds as number) <= 7200 &&
       (outgoing || typeof data.correct === 'boolean' && ['first','review'].includes(data.mode as string));
@@ -183,6 +184,7 @@ export class NativeStudySyncHost {
     try { this.controller.runJavaScript('(function(){if(typeof window.__lanternStudySyncReceive==="function")window.__lanternStudySyncReceive('+safe+');})()').catch(() => {}); } catch {}
   }
   private async perform(op: Operation): Promise<void> {
+    let networkStarted: boolean=false, responseReceived: boolean=false;
     try {
       await this.gate.withSession(op.lease,async (secret: string): Promise<void> => {
         if (!this.current(op) || !/^[a-f0-9]{64}$/.test(secret)) throw new Error('unavailable');
@@ -202,8 +204,14 @@ export class NativeStudySyncHost {
           readTimeout:10000,maxLimit:LIMIT,maxRedirects:0};
         if (upload) options.extraData=JSON.stringify(input.wire);
         try {
+          networkStarted=true;
           const response: http.HttpResponse=await request.request(AUTH_API_ORIGIN+path,options);
-          if (!this.current(op) || response.responseCode!==200 || typeof response.result!=='string' || utf8Length(response.result)>LIMIT) throw new Error('unavailable');
+          responseReceived=true;
+          if (!this.current(op)) throw new Error('unavailable');
+          if (response.responseCode===401 || response.responseCode===403) { this.send(input.id,401,{code:'unauthenticated'},op.generation); return; }
+          if (response.responseCode===409) { this.send(input.id,409,{code:'conflict'},op.generation); return; }
+          if ([408,429,500,502,503,504].includes(response.responseCode)) { this.send(input.id,503,{code:'unavailable'},op.generation); return; }
+          if (response.responseCode!==200 || typeof response.result!=='string' || utf8Length(response.result)>LIMIT) throw new Error('unavailable');
           const replyHeaders: Record<string,string | string[]>=response.header as Record<string,string | string[]>;
           if (!replyHeaders || Object.keys(replyHeaders).length>64) throw new Error('unavailable');
           let contentType: boolean=false;
@@ -221,7 +229,7 @@ export class NativeStudySyncHost {
           this.send(input.id,200,result,op.generation);
         } finally { try { request.destroy(); } catch {} if (this.network===request) this.network=undefined; }
       });
-    } catch { if (this.current(op)) this.send(op.input.id,503,{code:'unavailable'},op.generation); }
+    } catch { if (this.current(op)) this.send(op.input.id,503,{code:networkStarted&&!responseReceived?'unavailable':'rejected'},op.generation); }
     finally { if (this.operation===op) { this.operation=undefined;this.flushDrains(); } }
   }
 }

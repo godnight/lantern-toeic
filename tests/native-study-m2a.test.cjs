@@ -88,6 +88,18 @@ test('continuation and checkpoint progress are separate from upload acknowledgem
  await assert.rejects(native.acknowledgeNativeUpload({...finished,pendingOperations:[op,op]},prepared,{status:200,body:{ok:true}},lease()));
 });
 
+test('attempt upload preserves an explicit first anchor without sending client score or mode',async()=>{
+ const first=attempt(),review=attempt({mode:'review'});
+ const root={id:randomUUID(),owner,type:'attempt',data:first,firstAttemptId:first.id};
+ const next={id:randomUUID(),owner,type:'attempt',data:review,firstAttemptId:first.id};
+ assert.equal((await native.prepareNativeUpload(root,lease())).wire.data.firstAttemptId,first.id);
+ const wire=(await native.prepareNativeUpload(next,lease())).wire.data;
+ assert.equal(wire.firstAttemptId,first.id);assert.equal('correct' in wire,false);assert.equal('mode' in wire,false);
+ await assert.rejects(native.prepareNativeUpload({...root,firstAttemptId:randomUUID()},lease()));
+ await assert.rejects(native.prepareNativeUpload({...next,firstAttemptId:review.id},lease()));
+ await assert.rejects(native.prepareNativeUpload({...next,firstAttemptId:'bad'},lease()));
+});
+
 test('response must match the original request state across initial, continued, and completed rounds',()=>{
  const initial=snapshot(),initialRequest=request(initial);
  const midway=native.projectNativeStudyPage(initial,page({nextCursor:tok('B'),checkpoint:null}),initialRequest,lease());

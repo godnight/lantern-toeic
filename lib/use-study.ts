@@ -8,7 +8,7 @@ import {fetchStudySyncPages,applyStudySyncPage,studySyncStateFromSnapshot,StudyS
 import {RemoteRecordingCache,createSameOriginRecordingLoader} from './remote-recording-cache';
 import {createIndexedDbRecordingStore} from './indexeddb-recording-store';
 import {readStudyCheckpoints,readStableStudyJournal,replayStudyOperations,compactStudyJournal} from './study-journal';
-type Op={id:string;owner:string|null;type:'profile'|'theme'|'attempt'|'checkin'|'questionMark'|'resourceTask';data:Profile|{theme:Theme}|Attempt|Checkin|QuestionMark|ResourceTask};
+type Op={id:string;owner:string|null;type:'profile'|'theme'|'attempt'|'checkin'|'questionMark'|'resourceTask';data:Profile|{theme:Theme}|Attempt|Checkin|QuestionMark|ResourceTask;firstAttemptId?:string};
 function openAudioDB():Promise<IDBDatabase>{return new Promise((resolve,reject)=>{const r=indexedDB.open('lantern-audio',1);r.onupgradeneeded=()=>r.result.createObjectStore('audio');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 export async function putAudio(key:string,blob:Blob){
  const db=await openAudioDB();
@@ -287,7 +287,7 @@ export function useStudy(owner:string|null,remoteEnabled=true){
   return()=>{generation.current++;remoteAudioCache.current?.setOwner(null);dirty.current=false;if(retryTimer.current)clearTimeout(retryTimer.current);retryTimer.current=null;window.removeEventListener('online',online);window.removeEventListener('focus',online);window.removeEventListener('storage',changed);};
  },[key,syncNow,persist,blockReads]);
  const retryIssue=(issue:SyncIssue)=>{if(!accountAccess()||activeKey.current!==key)return;if(readOnly.current){void syncNow();return;}if(!editableSnapshot())return;try{localStorage.removeItem(key+':sync:'+issue.kind+':'+issue.id);setIssues(syncIssues(key));void syncNow();}catch{toast.error('本机存储不可用，请保留记录后重试');}};
- const enqueue=(type:Op['type'],value:Op['data'],d:StudyData):boolean=>{if(!accountAccess()||activeKey.current!==key||readOnly.current||!editableSnapshot())return false;const op:Op={id:createId(),owner,type,data:value};try{localStorage.setItem(key+':op:'+op.id,JSON.stringify(op));if(type==='profile'||type==='theme')localStorage.setItem(key+':profile',JSON.stringify(d.profile));}catch{setSync('blocked');toast.error('本机存储不可用，保存未完成；请保留记录后重试');return false;}if(!persist(d))return false;setSync('pending');void syncNow();return true;};
+ const enqueue=(type:Op['type'],value:Op['data'],d:StudyData,firstAttemptId?:string):boolean=>{if(!accountAccess()||activeKey.current!==key||readOnly.current||!editableSnapshot())return false;const op:Op={id:createId(),owner,type,data:value,...(firstAttemptId?{firstAttemptId}:{})};try{localStorage.setItem(key+':op:'+op.id,JSON.stringify(op));if(type==='profile'||type==='theme')localStorage.setItem(key+':profile',JSON.stringify(d.profile));}catch{setSync('blocked');toast.error('本机存储不可用，保存未完成；请保留记录后重试');return false;}if(!persist(d))return false;setSync('pending');void syncNow();return true;};
  const saveProfile=(p:Profile)=>{if(p.examDate!==''&&!validStudyDate(p.examDate)){toast.error('考试日期无效，偏好未保存；原记录未修改。');return false;}return enqueue('profile',p,{...current.current,profile:p});};
  const saveTheme=(theme:Theme)=>{
   if(!accountAccess()||activeKey.current!==key||readOnly.current)return false;
@@ -312,7 +312,14 @@ export function useStudy(owner:string|null,remoteEnabled=true){
    const prior=readAttempt(a.id);
    if(prior){if(immutablePayload('attempt',prior)===payload)return true;toast.error('答题事件标识已用于不同内容，请保留记录后重试');return false;}
    const latest=editableSnapshot();if(!latest)return false;
-   return enqueue('attempt',JSON.parse(payload),{...latest,attempts:[...latest.attempts,JSON.parse(payload)]});
+   // Preserve an explicit first-attempt anchor in the same durable write as
+   // the operation. Missing or ambiguous historical facts leave it absent;
+   // cloud sync must then retain the record instead of guessing an order.
+   const sameQuestion=latest.attempts.filter(item=>item.qid===a.qid);
+   const first=sameQuestion.filter(item=>item.mode==='first');
+   const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+   const anchor=a.mode==='first'&&sameQuestion.length===0?a.id:a.mode==='review'&&first.length===1?first[0].id:undefined;
+   return enqueue('attempt',JSON.parse(payload),{...latest,attempts:[...latest.attempts,JSON.parse(payload)]},anchor&&uuid.test(anchor)?anchor:undefined);
   }catch{return false;}
  };
  const addCheckin=(c:Checkin):boolean=>{
