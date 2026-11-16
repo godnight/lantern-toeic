@@ -19,7 +19,7 @@ function assetHarness(initial){
  const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;
  const exports={},imports={'@ohos.security.asset':{__esModule:true,default:asset},'@kit.BasicServicesKit':{},'./AuthMigrationConfiguration':{AUTH_MIGRATION_ENABLED:false}};
  vm.runInNewContext(js,{exports,require:id=>{if(!(id in imports))throw Error('unexpected import');return imports[id];},Uint8Array,Map,JSON,Number,String,Error,Date:{now:()=>now}});
- return {store:new exports.AuthSessionStore(),advance:ms=>now+=ms,get bytes(){return bytes;},get removes(){return removes;}};
+ return {store:new exports.AuthSessionStore(),newStore:()=>new exports.AuthSessionStore(),advance:ms=>now+=ms,get bytes(){return bytes;},get removes(){return removes;}};
 }
 
 test('Asset preserves v1 compatibility and gates versioned long sessions without deleting them',async()=>{
@@ -105,7 +105,7 @@ test('rollback hides but preserves a long credential until explicit login rotati
    assert.equal((await oldHost.invoke({id:'register',action:'register',body:credentials})).status,200);
    const original=JSON.parse(Buffer.from(asset.bytes).toString()),hash=e.rows('auth_sessions')[0].token_hash;assert.equal(original.version,2);
    oldHost.dispose();oldHost=undefined;
-   newHost=hostRuntime({origin:ORIGIN,persistent:false,sessionStore:asset.store,dispatch});
+   newHost=hostRuntime({origin:ORIGIN,persistent:false,sessionStore:asset.newStore(),dispatch});
    const dormant=await newHost.invoke({version:2,id:'session',action:'session'});assert.equal(dormant.status,401);
    assert.equal(Buffer.from(asset.bytes).toString(),JSON.stringify(original),'automatic 401 must not delete dormant credentials');
    assert.equal(newHost.requests[0].hasCookie,false,'dormant credentials do not prove account access');
@@ -131,7 +131,7 @@ test('a failed rollback login preserves the dormant credential and later logout 
   const credentials={username:'rollback_failure',password:'Synthetic rollback password 42!'};
   oldHost=hostRuntime({origin:ORIGIN,persistent:true,sessionStore:asset.store,dispatch});assert.equal((await oldHost.invoke({id:'register',action:'register',body:credentials})).status,200);
   const original=Buffer.from(asset.bytes).toString(),hash=e.rows('auth_sessions')[0].token_hash;oldHost.dispose();oldHost=undefined;
-  newHost=hostRuntime({origin:ORIGIN,persistent:false,sessionStore:asset.store,dispatch});assert.equal((await newHost.invoke({version:2,id:'session',action:'session'})).status,401);
+  newHost=hostRuntime({origin:ORIGIN,persistent:false,sessionStore:asset.newStore(),dispatch});assert.equal((await newHost.invoke({version:2,id:'session',action:'session'})).status,401);
   failLogin=true;assert.equal((await newHost.invoke({id:'failed',action:'login',body:credentials})).status,503);await newHost.settle();assert.equal(Buffer.from(asset.bytes).toString(),original);
   failLogin=false;assert.equal((await newHost.invoke({id:'logout',action:'logout'})).status,200);assert(newHost.requests.at(-1).hasCookie);
   assert(!e.rows('auth_sessions').some(row=>row.token_hash===hash));assert.equal(asset.bytes,undefined);
