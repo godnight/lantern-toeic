@@ -112,7 +112,7 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     assert.equal((await app.fetch(request('/candidate/sync/append', { cookie, body: { owner, event: { ...event, grade: 'remembered' } } }))).status, 409);
     // Exercise the repository's actual question catalog and native journal
     // through the same Worker and D1 as the account service.
-    const question = (await modelInfo.importModel()).QUESTIONS[0];
+    const questions = (await modelInfo.importModel()).QUESTIONS, question = questions[0];
     const attempt = { id: randomUUID(), qid: question.id, choice: 0, correct: question.correctIndex !== 0,
       mode: 'first', createdAt: new Date().toISOString(), seconds: 3 };
     const checkin = { id: randomUUID(), date: '2026-01-01', minutes: 5, load: '轻', note: '', createdAt: new Date().toISOString() };
@@ -142,6 +142,28 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     const competing = await Promise.all([otherFirstA, otherFirstB].map(row => saveStudy(otherCookie, otherOwner, 'attempt', wireAttempt(row, row.id))));
     assert.deepEqual(competing.map(result => result.status).sort(), [200, 409]);
     assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM attempts WHERE user_id=? AND qid=? AND mode=?').bind(otherOwner, question.id, 'first').first()).n, 1);
+    const distinctQuestions = questions.filter(row => row.id !== question.id).slice(0, 2);
+    assert.equal(distinctQuestions.length, 2);
+    const acrossQuestions = distinctQuestions.map(row => ({ ...attempt, id: randomUUID(), qid: row.id, choice: 0 }));
+    const independent = await Promise.all(acrossQuestions.map(row => saveStudy(otherCookie, otherOwner, 'attempt', wireAttempt(row, row.id))));
+    assert.deepEqual(independent.map(result => result.status), [200, 200]);
+    // An imported review without a first cannot establish a safe baseline.
+    const registration3 = await app.fetch(request('/api/auth/register', { body: { username: 'synthetic_third', password: 'synthetic-password-123' } }));
+    assert.equal(registration3.status, 200);
+    const thirdOwner = (await registration3.json()).user.id, thirdCookie = registration3.headers.get('set-cookie').split(';')[0];
+    const orphan = { ...attempt, id: randomUUID() };
+    await db.prepare('INSERT INTO attempts(id,user_id,qid,choice,correct,created_at,seconds,mode) VALUES(?,?,?,?,?,?,?,?)')
+      .bind(orphan.id, thirdOwner, orphan.qid, orphan.choice, Number(question.correctIndex === orphan.choice), orphan.createdAt, orphan.seconds, 'review').run();
+    const afterOrphan = { ...attempt, id: randomUUID() };
+    assert.equal((await saveStudy(thirdCookie, thirdOwner, 'attempt', wireAttempt(afterOrphan, afterOrphan.id))).status, 409);
+    assert.equal((await saveStudy(thirdCookie, thirdOwner, 'attempt', wireAttempt(afterOrphan, orphan.id))).status, 409);
+    assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM attempts WHERE user_id=? AND qid=?').bind(thirdOwner, question.id).first()).n, 1);
+    const sharedQuestion = questions.find(row => row.id !== question.id && !distinctQuestions.some(seen => seen.id === row.id));
+    assert.ok(sharedQuestion);
+    const isolatedFirst = [otherOwner, thirdOwner].map(() => ({ ...attempt, id: randomUUID(), qid: sharedQuestion.id, choice: 0 }));
+    const crossOwner = await Promise.all([[otherCookie, otherOwner], [thirdCookie, thirdOwner]].map(([device, who], index) =>
+      saveStudy(device, who, 'attempt', wireAttempt(isolatedFirst[index], isolatedFirst[index].id))));
+    assert.deepEqual(crossOwner.map(result => result.status), [200, 200]);
     // A previously committed event remains safe to acknowledge using the
     // old unanchored format, including a response lost before offline retry.
     for (const [type, data] of [['attempt', attempt], ['checkin', checkin]]) {
@@ -189,6 +211,7 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     const reviewRow = await db.prepare('SELECT mode,correct FROM attempts WHERE id=? AND user_id=?').bind(review.id, owner).first();
     assert.equal(reviewRow.mode, 'review');
     assert.equal(reviewRow.correct, Number(review.choice === question.correctIndex));
+    assert.equal((await saveStudy(cookieB, owner, 'attempt', review)).status, 200);
   } finally {
     if (mf) await mf.dispose();
     const resolved = await realpath(directory), tmp = await realpath(os.tmpdir());
