@@ -45,7 +45,8 @@ export async function createUnifiedD1Sync({enabled=false,orderedAttemptsEnabled=
    await db.prepare(`INSERT INTO lantern_vocab_events(owner,event_id,body,revision) SELECT ?,?,?,COALESCE((SELECT MAX(revision) FROM lantern_vocab_events WHERE owner=?),0)+1 WHERE ${validSessionSql} ON CONFLICT(owner,event_id) DO NOTHING`).bind(owner,event.id,text,owner,hash,owner).run();
    if(!await live(hash,owner))return reply(401,{error:'unauthenticated'});
    const row=await db.prepare('SELECT revision,body FROM lantern_vocab_events WHERE owner=? AND event_id=?').bind(owner,event.id).first();
-   if(!row||row.body!==text)return reply(409,{error:'event conflict'});
+   if(!row)return reply(503,{error:'sync unavailable'});
+   if(row.body!==text)return reply(409,{code:'event-payload-conflict'});
    return reply(200,{ok:true,owner,id:event.id});
   }
   if(url.pathname==='/candidate/sync/snapshot'){

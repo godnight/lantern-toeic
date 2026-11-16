@@ -116,7 +116,9 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     const otherCookie = registration2.headers.get('set-cookie').split(';')[0];
     assert.equal((await app.fetch(request('/candidate/sync/append', { cookie: otherCookie, body: { owner, event } }))).status, 409);
     assert.equal((await readPage(otherCookie)).status, 409);
-    assert.equal((await app.fetch(request('/candidate/sync/append', { cookie, body: { owner, event: { ...event, grade: 'remembered' } } }))).status, 409);
+    const vocabularyConflict = await app.fetch(request('/candidate/sync/append', { cookie, body: { owner, event: { ...event, grade: 'remembered' } } }));
+    assert.equal(vocabularyConflict.status, 409);
+    assert.deepEqual(await vocabularyConflict.json(), { code: 'event-payload-conflict' });
     // Exercise the repository's actual question catalog and native journal
     // through the same Worker and D1 as the account service.
     const questions = (await modelInfo.importModel()).QUESTIONS, question = questions[0];
