@@ -130,7 +130,14 @@ export class NativeAccountController {
       }
       if(proof.user)this.everAuthenticated=true;
       this.localAbort?.abort();this.localAbort=null;this.localAccess=null;
-      const deadline=proof.user?new SessionDeadline(proof.validForMs!,()=>{if(this.current(generation)){this.begin('会话已到期，学习分区已锁定。',true);this.update({status:'blocked',message:'会话有效期已结束，原数据保留。请联网重新核对账号。'},true);}},this.clock):null;
+      const deadline=proof.user?new SessionDeadline(proof.validForMs!,()=>{
+        if(!this.current(generation))return;
+        const owner=proof.user!.id,next=this.begin('会话已到期，学习分区已锁定。',true);
+        this.update({status:'blocked',message:'会话有效期已结束，原数据保留。请联网重新核对账号。'},true);
+        // A local lease is not a refresh or server proof. Reacquire it through
+        // the native host and permit only the same previously verified owner.
+        if(this.options.localOffline===true)this.initialProbe=this.startWithLocal(next,owner);
+      },this.clock):null;
       this.deadline=deadline;
       const access:AccountAccess=deadline?{user:proof.user!,owner:proof.user!.id,epoch:generation,scope:'remote',canAccess:deadline.canAccess,assertAccess:deadline.assertAccess,sessionSignal:deadline.signal}:publicLocalAccess(null,generation);
       if(deadline&&!deadline.canAccess()){deadline.assertAccess();return;}
@@ -140,14 +147,14 @@ export class NativeAccountController {
       if(this.current(generation)){if(this.huaweiGeneration===generation)this.held=true;this.update({status:'blocked',message:'当前账号状态未获确认，学习分区保持暂停。请重新核对账号。'});}
     }
   }
-  private async startWithLocal(generation:number):Promise<void>{
+  private async startWithLocal(generation:number,expectedLocalOwner?:string):Promise<void>{
     let localOwner:string|undefined;
     if(this.options.localOffline===true&&this.transport.isLocalActive){
       try{
         const reply=await this.transport.request('local-session');
         if(!this.current(generation))return;
         const user=reply.status===200?parseProductIdentity(reply.body.user):null,local=reply.body.local;
-        if(user&&local&&typeof local==='object'&&!Array.isArray(local)&&Object.keys(local).sort().join(',')==='generation,scope'){
+        if(user&&(!expectedLocalOwner||user.id===expectedLocalOwner)&&local&&typeof local==='object'&&!Array.isArray(local)&&Object.keys(local).sort().join(',')==='generation,scope'){
           const proof=local as {scope?:unknown;generation?:unknown};
           if(proof.scope==='local-study-only'&&typeof proof.generation==='number'&&Number.isSafeInteger(proof.generation)&&proof.generation>0){
             const localGeneration=proof.generation,abort=new AbortController();
@@ -163,6 +170,9 @@ export class NativeAccountController {
       }catch{/* No native local identity; retain the existing online gate. */}
     }
     if(this.current(generation)){
+      // At expiry, an absent or different cached owner must never cause an
+      // automatic account switch or fall through to another remote identity.
+      if(expectedLocalOwner&&!localOwner)return;
       if(localOwner)await this.verifyLocal(generation,localOwner);
       else await this.probe(generation);
     }

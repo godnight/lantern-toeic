@@ -99,6 +99,55 @@ test('a network return during an in-flight local check automatically retries wit
   h.reply(2,session(A));await tick();assert.equal(h.value.getSnapshot().access.scope,'remote');
  }finally{h.value.dispose();assert.equal(listeners.size,0);}
 });
+test('online session expiry aborts remote access before reacquiring the same native local owner',async()=>{
+ const h=controller({localOffline:true,localActive:({uid,generation})=>uid===A.id&&generation===7});try{
+  h.value.start();h.reply(0,{status:401,body:{code:'local-unavailable'}});await tick();h.reply(1,session(A));await tick();
+  const online=h.value.getSnapshot().access;assert.equal(online.scope,'remote');assert(online.canAccess());
+  h.timer.advance(3600000);assert.equal(online.canAccess(),false);assert.equal(online.sessionSignal.aborted,true);
+  assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(h.calls[2].action,'local-session');
+  h.reply(2,{status:200,body:{user:A,local:{scope:'local-study-only',generation:7}}});await tick();
+  let state=h.value.getSnapshot();assert.equal(state.status,'ready');assert.equal(state.access.scope,'local-study-only');assert(state.access.canAccess());
+  h.reply(3,{status:503,body:{code:'native-auth-unavailable'}});await tick();state=h.value.getSnapshot();
+  assert.equal(state.access.scope,'local-study-only');assert(state.access.canAccess());
+ }finally{h.value.dispose();}
+});
+test('expiry cannot restore a different cached owner or a session invalidated during local read',async()=>{
+ for(const interruption of ['different','suspended']){
+  const h=controller({localOffline:true,localActive:()=>true});try{
+   h.value.start();h.reply(0,{status:401,body:{code:'local-unavailable'}});await tick();h.reply(1,session(A));await tick();
+   const online=h.value.getSnapshot().access;h.timer.advance(3600000);assert.equal(online.canAccess(),false);assert.equal(h.calls[2].action,'local-session');
+   if(interruption==='suspended')h.value.suspend();
+   h.reply(2,{status:200,body:{user:interruption==='different'?B:A,local:{scope:'local-study-only',generation:7}}});await tick();
+   assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(h.calls.length,3,'no automatic remote retry or account switch');
+  }finally{h.value.dispose();}
+ }
+});
+test('expiry to local-only immediately cancels cloud synchronization and cannot reactivate it',async()=>{
+ const h=controller({localOffline:true,localActive:()=>true}),{createNativeSyncLifecycle}=load('lib/cloud-sync/native-lifecycle.ts');
+ let starts=0,cancels=0;
+ const client={async activate(){},async cancel(){cancels++;},async start(){starts++;}};
+ const port={snapshot:async()=>({owner:A.id,seq:1}),subscribeRevocation:()=>()=>{},drain:async()=>{},hold:async()=>{},complete:async()=>{},resume:async()=>{}};
+ const lifecycle=createNativeSyncLifecycle(h.value,client,port);
+ try{
+  h.value.start();h.reply(0,{status:401,body:{code:'local-unavailable'}});await tick();h.reply(1,session(A));await tick();await lifecycle.settled();
+  assert.equal(lifecycle.status().phase,'ready');assert.equal(starts,1);
+  h.timer.advance(3600000);assert.notEqual(lifecycle.status().phase,'ready');const priorCancels=cancels;
+  h.reply(2,{status:200,body:{user:A,local:{scope:'local-study-only',generation:7}}});await tick();
+  h.reply(3,{status:503,body:{code:'native-auth-unavailable'}});await tick();await lifecycle.settled();
+  assert.equal(h.value.getSnapshot().access.scope,'local-study-only');assert.notEqual(lifecycle.status().phase,'ready');assert.equal(starts,1);assert(cancels>=priorCancels);
+ }finally{lifecycle.dispose();h.value.dispose();}
+});
+test('explicit logout supersedes an online expiry and never revives its local owner',async()=>{
+ const h=controller({localOffline:true,localActive:()=>true});try{
+  h.value.start();h.reply(0,{status:401,body:{code:'local-unavailable'}});await tick();h.reply(1,session(A));await tick();
+  const old=h.value.getSnapshot().access,pending=h.value.mutate('logout');assert.equal(old.canAccess(),false);assert.equal(old.sessionSignal.aborted,true);
+  assert.equal(h.calls[2].action,'logout');assert.equal(h.calls.filter(call=>call.action==='local-session').length,1);
+  h.reply(2,{status:200,body:{ok:true}});await tick();assert.equal(h.calls[3].action,'session');h.reply(3,guest);
+  assert.equal(await pending,true);assert.equal(h.value.getSnapshot().status,'ready');assert.equal(h.value.getSnapshot().user,null);
+  h.timer.advance(3600000);
+  assert.equal(h.calls.filter(call=>call.action==='local-session').length,1);
+ }finally{h.value.dispose();}
+});
 
 test('register/login navigation succeeds only after the independent live session proof',async()=>{
  for(const action of ['register','login']){
