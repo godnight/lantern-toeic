@@ -214,6 +214,77 @@ test('journal capture discovers the root before its earlier-enumerated review at
  try{await c.activate(A);assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),2);await c.run();assert.deepEqual(arrivals,[first.id,review.id]);assert.equal(s.rows.size,2);assert.equal(source.raw.size,2);}
  finally{await c.cancel();db.close();s.close();}
 });
+test('an old full review queue yields atomically to its matching root and resumes after restart',async()=>{
+ const source=memoryStorage(),s=server(),factory=new IDBFactory(),first=attempt(),review={...attempt(),mode:'review'},firstId=randomUUID(),reviewId=randomUUID(),arrivals=[];
+ let db=await open(factory,'study-existing-review');const make=()=>createSyntheticClient({db,project,vocabTransport:s.vt,studyTransport:s.st,createStudyRunner:args=>page.createStudyRunner({...args,maxPending:1})});let c=make();
+ for(const op of [{id:reviewId,owner:A,type:'attempt',data:review,firstAttemptId:first.id},{id:firstId,owner:A,type:'attempt',data:first,firstAttemptId:first.id}])source.storage.setItem('lantern-v1-'+A+':op:'+op.id,JSON.stringify(op));
+ s.st.upload=async p=>{const d=p.wire.data;if(d.firstAttemptId!==d.id&&!s.rows.has(p.owner+':attempt:'+d.firstAttemptId)){const e=Error('root absent');e.code='NATIVE_EVENT_CONFLICT';throw e;}
+  arrivals.push(d.id);const {firstAttemptId,...body}=d;s.rows.set(p.owner+':attempt:'+d.id,{kind:'attempt',id:d.id,data:{...body,correct:body.choice===0,mode:d.id===firstAttemptId?'first':'review'}});return {status:200,body:{ok:true}};};
+ try{
+  await c.activate(A);await c.answer('attempt',review,undefined,reviewId,first.id);
+  assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),2);let state=await c.readStudy();
+  assert.equal(state.pendingOperations[0].id,firstId);assert.equal(state.deferredOperations[0].id,reviewId);assert.equal(source.raw.size,2);
+  await c.cancel();db.close();db=await open(factory,'study-existing-review');c=make();await c.activate(A);await c.run();
+  state=await c.readStudy();assert.deepEqual(arrivals,[first.id,review.id]);assert.equal(state.pendingOperations.length,0);assert.equal(state.deferredOperations.length,0);assert.equal(state.uploadAcks.length,2);assert.equal(s.rows.size,2);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('a permanently conflicting root cannot confirm or repeatedly run its deferred review',async()=>{
+ const source=memoryStorage(),s=server(),db=await open(new IDBFactory(),'study-root-conflict'),first=attempt(),review={...attempt(),mode:'review'},firstId=randomUUID(),reviewId=randomUUID();let uploads=0;
+ const c=createSyntheticClient({db,project,vocabTransport:s.vt,studyTransport:s.st,createStudyRunner:args=>page.createStudyRunner({...args,maxPending:1})});
+ for(const op of [{id:reviewId,owner:A,type:'attempt',data:review,firstAttemptId:first.id},{id:firstId,owner:A,type:'attempt',data:first,firstAttemptId:first.id}])source.storage.setItem('lantern-v1-'+A+':op:'+op.id,JSON.stringify(op));
+ s.st.upload=async()=>{uploads++;const e=Error('conflict');e.code='NATIVE_EVENT_CONFLICT';throw e;};
+ try{
+  await c.activate(A);await c.answer('attempt',review,undefined,reviewId,first.id);await page.scanSyntheticStudyJournal(source.storage,A,c);
+  await assert.rejects(c.run(),e=>e.code==='NATIVE_EVENT_CONFLICT');const state=await c.readStudy();
+  assert.equal(uploads,1);assert.equal(state.pendingOperations[0].id,firstId);assert.equal(state.deferredOperations[0].id,reviewId);assert.equal(state.uploadAcks.length,0);assert.equal(state.download.checkpoint,null);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('a lost root acknowledgement retries the same root before releasing its review',async()=>{
+ const source=memoryStorage(),s=server(),db=await open(new IDBFactory(),'study-root-ack-loss'),first=attempt(),review={...attempt(),mode:'review'},firstId=randomUUID(),reviewId=randomUUID(),seen=[];let lost=false;
+ const c=createSyntheticClient({db,project,vocabTransport:s.vt,studyTransport:s.st,createStudyRunner:args=>page.createStudyRunner({...args,maxPending:1})});
+ for(const op of [{id:reviewId,owner:A,type:'attempt',data:review,firstAttemptId:first.id},{id:firstId,owner:A,type:'attempt',data:first,firstAttemptId:first.id}])source.storage.setItem('lantern-v1-'+A+':op:'+op.id,JSON.stringify(op));
+ s.st.upload=async p=>{const d=p.wire.data,key=p.owner+':attempt:'+d.id;seen.push(p.wire.id);
+  if(d.id!==d.firstAttemptId&&!s.rows.has(p.owner+':attempt:'+d.firstAttemptId)){const e=Error('missing root');e.code='NATIVE_EVENT_CONFLICT';throw e;}
+  const {firstAttemptId,...body}=d;s.rows.set(key,{kind:'attempt',id:d.id,data:{...body,correct:body.choice===0,mode:d.id===firstAttemptId?'first':'review'}});
+  if(d.id===first.id&&!lost){lost=true;const e=Error('lost');e.code='NATIVE_TRANSIENT';throw e;}return {status:200,body:{ok:true}};};
+ try{
+  await c.activate(A);await c.answer('attempt',review,undefined,reviewId,first.id);await page.scanSyntheticStudyJournal(source.storage,A,c);
+  await assert.rejects(c.run(),e=>e.code==='NATIVE_TRANSIENT');let state=await c.readStudy();assert.equal(state.pendingOperations[0].id,firstId);assert.equal(state.deferredOperations[0].id,reviewId);assert.equal(state.uploadAcks.length,0);
+  await c.run();state=await c.readStudy();assert.deepEqual(seen,[firstId,firstId,reviewId]);assert.equal(state.deferredOperations.length,0);assert.equal(state.uploadAcks.length,2);assert.equal(s.rows.size,2);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('unrelated reviews are never deferred to make room for a different question',async()=>{
+ const source=memoryStorage(),s=server(),db=await open(new IDBFactory(),'study-unrelated-review'),first=attempt(),review={...attempt(),qid:'other-question',mode:'review'},firstId=randomUUID(),reviewId=randomUUID();
+ const c=createSyntheticClient({db,project,vocabTransport:s.vt,studyTransport:s.st,createStudyRunner:args=>page.createStudyRunner({...args,maxPending:1})});
+ source.storage.setItem('lantern-v1-'+A+':op:'+firstId,JSON.stringify({id:firstId,owner:A,type:'attempt',data:first,firstAttemptId:first.id}));
+ s.st.upload=async()=>{const e=Error('conflict');e.code='NATIVE_EVENT_CONFLICT';throw e;};
+ try{
+  await c.activate(A);await c.answer('attempt',review,undefined,reviewId,first.id);
+  await assert.rejects(page.scanSyntheticStudyJournal(source.storage,A,c),e=>e.code==='NATIVE_EVENT_CONFLICT');const state=await c.readStudy();
+  assert.equal(state.pendingOperations[0].id,reviewId);assert.equal(state.deferredOperations.length,0);assert.equal(source.raw.size,1);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('root priority rejects operation IDs already held in blocked or deferred areas without writes',async()=>{
+ for(const area of ['blockedOperations','deferredOperations']){
+  const s=server(),db=await open(new IDBFactory(),'study-root-id-'+area.toLowerCase()),first=attempt(),review={...attempt(),mode:'review'},rootOpId=randomUUID(),reviewOpId=randomUUID();
+  const c=createSyntheticClient({db,project,vocabTransport:s.vt,studyTransport:s.st,createStudyRunner:args=>page.createStudyRunner({...args,maxPending:1})});
+  try{
+   await c.activate(A);await c.answer('attempt',review,undefined,reviewOpId,first.id);let state=await c.readStudy(),held={...attempt(),mode:'review'};
+   state.data.attempts.push(held);state[area]=[{id:rootOpId,owner:A,type:'attempt',data:held,...(area==='deferredOperations'?{firstAttemptId:randomUUID()}:{})}];
+   await new Promise((resolve,reject)=>{const tx=db.transaction(study.STATE,'readwrite');tx.objectStore(study.STATE).put(state);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});
+   const before=await c.readStudy();await assert.rejects(c.prioritizeRoot(first,c.session,rootOpId,first.id),/conflict/);assert.deepEqual(await c.readStudy(),before);
+  }finally{await c.cancel();db.close();s.close();}
+ }
+});
+test('an orphaned deferred review cannot advance the download checkpoint',async()=>{
+ const s=server(),db=await open(new IDBFactory(),'study-deferred-orphan'),c=client(db,s),rootId=randomUUID(),review={...attempt(),mode:'review'},operation={id:randomUUID(),owner:A,type:'attempt',data:review,firstAttemptId:rootId};let pulls=0;
+ s.st.pull=async()=>{pulls++;throw Error('must not pull');};
+ try{
+  await c.activate(A);let state=await c.readStudy();state.data.attempts.push(review);state.deferredOperations=[operation];
+  await new Promise((resolve,reject)=>{const tx=db.transaction(study.STATE,'readwrite');tx.objectStore(study.STATE).put(state);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});
+  await assert.rejects(c.run(),e=>e.code==='NATIVE_EVENT_CONFLICT');state=await c.readStudy();assert.equal(pulls,0);assert.equal(state.download.checkpoint,null);assert.deepEqual(state.deferredOperations,[operation]);
+ }finally{await c.cancel();db.close();s.close();}
+});
 test('an old unanchored conflict in a full queue is preserved separately so a new proven root can upload',async()=>{
  const source=memoryStorage(),s=server(),db=await open(new IDBFactory(),'study-legacy-quarantine'),old={...attempt(),mode:'review'},first=attempt(),oldId=randomUUID(),firstId=randomUUID(),original=s.st.upload;
  const c=createSyntheticClient({db,project,vocabTransport:s.vt,studyTransport:s.st,createStudyRunner:args=>page.createStudyRunner({...args,maxPending:1})});
