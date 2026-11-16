@@ -38,7 +38,8 @@ export function isRootControlledStat(st, gid, directory) {
     (st.mode & 0o7777) === (directory ? 0o750 : 0o640) && (directory || st.nlink === 1);
 }
 
-async function readRootControlled(file, maxBytes) {
+// Shared only by the protected native configuration/artifact loaders.
+export async function readRootControlled(file, maxBytes) {
   if (process.platform !== 'linux' || typeof process.geteuid !== 'function' || process.geteuid() === 0 || !absolute(file) || await realpath(file) !== file) throw Error('root controlled file required');
   const dir = path.dirname(file), gid = process.getgid(), parent = await lstat(dir);
   if (!parent.isDirectory() || parent.isSymbolicLink() || await realpath(dir) !== dir || !isRootControlledStat(parent, gid, true)) throw Error('unsafe protected directory');

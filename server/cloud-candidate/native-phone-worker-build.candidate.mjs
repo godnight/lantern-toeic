@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parseProductionPhonePolicy, validateLimiterCompatibility } from './production-phone-preflight.candidate.mjs';
+export { verifyPinnedNativePhoneWorker } from './native-phone-verification.candidate.mjs';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const here = path.join(root, 'server/cloud-candidate');
 const limiterPath = path.join(here, 'phone-limiter.candidate.ts');
@@ -50,16 +51,3 @@ export default {fetch(request,env,ctx) {
   return Object.freeze({ bytes, sha256, budget: Object.freeze(budget(config)) });
 }
 
-/** Compare exact bytes against an independently trusted digest before module
- * evaluation, then compare the embedded build budget to the intended policy.
- * This helper does not establish file ownership or make the digest trusted. */
-export async function verifyPinnedNativePhoneWorker({ enabled = false, bytes, sha256, policy } = {}) {
-  if (enabled !== true || !Buffer.isBuffer(bytes) || bytes.length === 0 || bytes.length > 2 * 1024 * 1024 ||
-      typeof sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(sha256)) throw Error('invalid pinned phone artifact');
-  const config=parseProductionPhonePolicy(policy);
-  if (!config.enabled || createHash('sha256').update(bytes).digest('hex') !== sha256) throw Error('phone artifact digest mismatch');
-  const module=await import('data:text/javascript;base64,'+bytes.toString('base64'));
-  if (!module.default || typeof module.default.fetch !== 'function' || !Array.isArray(module.LANTERN_PHONE_BUILD_BUDGET) ||
-      JSON.stringify(module.LANTERN_PHONE_BUILD_BUDGET)!==JSON.stringify(budget(config))) throw Error('phone artifact budget mismatch');
-  return module.default;
-}
