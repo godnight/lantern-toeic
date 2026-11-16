@@ -52,3 +52,14 @@ test('timeout, page departure and disposal during pending persistence cannot iss
   }finally{h.dispose();}
  }
 });
+test('background and foreground during a Huawei pending write cannot start SDK or network afterward',async()=>{
+ for(const action of ['huawei-login','huawei-bind']){
+  let release,entered=0;const pending=new Promise(resolve=>{release=resolve;});
+  const h=hostRuntime({initialToken:'a'.repeat(64),huawei:true,offlineFence:async()=>{entered++;await pending;},dispatch:async()=>response(200,{huaweiLogin:true,huaweiBinding:true})});
+  try{
+   h.send({id:'delayed-'+action,action});await h.settle();assert.equal(entered,1,action);
+   h.lifecycle(false);h.lifecycle(true);release();await h.settle();
+   assert.equal(h.sdkCalls.length,0,action);assert.equal(h.requests.length,0,action);
+  }finally{h.dispose();}
+ }
+});

@@ -29,6 +29,7 @@ interface Operation {
   transitionStart: number;
   transitionProof: number;
   huawei?: boolean;
+  huaweiSdkStarted?: boolean;
 }
 
 // ArkWeb compares the serialized URL port: default HTTPS is empty, not "443".
@@ -100,7 +101,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
   // navigation/dispose still uses invalidate(), including during an SDK dialog.
   onForegroundChanged(foreground: boolean): void {
     this.ownerLease.revoke();
-    if (this.huaweiOperation !== undefined && this.current(this.huaweiOperation)) {
+    if (this.huaweiOperation !== undefined && this.huaweiOperation.huaweiSdkStarted === true && this.current(this.huaweiOperation)) {
       if (foreground) this.wakeForeground();
       return;
     }
@@ -231,7 +232,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
 
   private current(operation: Operation): boolean {
     if (operation.timedOut) return false;
-    if (operation.huawei === true && this.huaweiOperation === operation) {
+    if (operation.huawei === true && operation.huaweiSdkStarted === true && this.huaweiOperation === operation) {
       if (this.disposed || !this.attached || operation.epoch !== this.epoch) return false;
       try { return trustedFrame(this.controller.getUrl()); } catch { return false; }
     }
@@ -388,6 +389,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       const bindingUser: AuthUser | undefined = input.action === 'huawei-bind' ? await this.huaweiSession(token, operation) : undefined;
       if (!this.current(operation)) return;
       arm(180000, true);
+      operation.huaweiSdkStarted = true;
       const authorization: HuaweiAuthorization = await new HuaweiAccountProvider().authorize(this.context());
       if (!this.current(operation)) return;
       await this.awaitForeground(operation);
