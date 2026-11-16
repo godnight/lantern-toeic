@@ -5,6 +5,7 @@ import { systemDateTime } from '@kit.BasicServicesKit';
 import { common } from '@kit.AbilityKit';
 import { HuaweiAccountProvider, HuaweiAuthorization } from './HuaweiAccountProvider';
 import { AuthSessionStore } from './AuthSessionStore';
+import { OfflineOwnerFence, OFFLINE_OWNER_ENABLED } from './OfflineOwnerFence';
 import { TrustedOwnerLease, VerifiedOwnerLease, TrustedOwnerProvider } from '../media/VerifiedOwnerLease';
 import { SyncAuthGate } from '../sync/NativeSyncHost';
 import { NativeTransitionEvidence } from '../sync/NativeTransitionEvidence';
@@ -43,6 +44,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
   private controller: webview.WebviewController;
   private active: () => boolean;
   private store: AuthSessionStore = new AuthSessionStore();
+  private offlineOwnerFence: OfflineOwnerFence = new OfflineOwnerFence();
   private ownerLease: VerifiedOwnerLease = new VerifiedOwnerLease();
   private epoch: number = 0;
   private attached: boolean = false;
@@ -362,6 +364,12 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
     };
     arm(AUTH_TIMEOUT_MS, false);
     try {
+      // A future offline identity must be invalidated before any operation
+      // that can alter it. This gate is not enabled or used for offline entry.
+      if (OFFLINE_OWNER_ENABLED && operation.transitionStart > 0) {
+        await this.offlineOwnerFence.markPending(AUTH_API_ORIGIN);
+        if (!this.current(operation)) return;
+      }
       if (!this.huaweiAvailable() || this.context === undefined) {
         this.finish(operation, 503, { code: 'huawei-unavailable', error: '此设备暂不支持华为账号登录。' });
         return;
@@ -445,6 +453,10 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       this.send(operation.id, 503, operationUnknownBody(input.action), operation.epoch, operation.version);
     }, AUTH_TIMEOUT_MS);
     try {
+      if (OFFLINE_OWNER_ENABLED && operation.transitionStart > 0) {
+        await this.offlineOwnerFence.markPending(AUTH_API_ORIGIN);
+        if (!this.current(operation)) return;
+      }
       let token: string | undefined = undefined;
       if (NativeAuthHost.quarantined) await this.store.clear();
       else token = await this.store.load(AUTH_API_ORIGIN);
