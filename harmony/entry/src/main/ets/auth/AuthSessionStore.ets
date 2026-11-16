@@ -104,8 +104,8 @@ export class AuthSessionStore {
       typeof record.origin !== 'string' || typeof record.token !== 'string' ||
       !/^[a-f0-9]{64}$/.test(record.token) || typeof record.expiresAt !== 'number' ||
       !Number.isFinite(record.expiresAt)) throw new Error('Store unavailable');
-    // Version 2 cannot be mistaken for an old-format session by a downgraded
-    // app. Do not delete a valid record if the experiment is switched off.
+    // This candidate understands v2 but old releases sharing this alias do not.
+    // Keep it disabled until an independently reviewed downgrade path exists.
     if (record.version === 2) {
       if (!allowPersistent) { this.preserveDormant = true; return undefined; }
       this.preserveDormant = preserveOnFailure;
@@ -114,6 +114,13 @@ export class AuthSessionStore {
       if (!Number.isSafeInteger(issuedAt) || issuedAt < 0 || !Number.isSafeInteger(record.expiresAt) ||
         !Number.isSafeInteger(now) || issuedAt > now || record.expiresAt - issuedAt > 2592000000 ||
         record.expiresAt <= issuedAt) throw new Error('Store unavailable');
+      if (preserveOnFailure) {
+        // Identity mutations may submit an expired bearer only for server-side
+        // revocation/rotation, never as an account proof. The device clock can
+        // be wrong, so expiry alone cannot establish that the server revoked it.
+        if (record.origin !== origin) throw new Error('Store unavailable');
+        return record.token;
+      }
     }
     if (record.origin !== origin || record.expiresAt <= Date.now()) {
       await this.clear();

@@ -147,6 +147,46 @@ test('quarantined Host recreation preserves and revokes a dormant credential',as
  }
 });
 
+test('expired dormant credential is sent only for server-side login rotation or logout',async()=>{
+ for(const [action,quarantined,serverExpired] of [['login',false,false],['login',true,false],['logout',false,false],['logout',true,false],['login',true,true],['logout',true,true]]){
+  const e=environment({env:{LANTERN_PERSISTENT_SESSION_ENABLED:'true'}}),asset=assetHarness();let oldHost,newHost,fail=false;
+  const dispatch=async(url,options)=>{
+   const route=new URL(url).pathname.split('/').at(-1),headers={};
+   if(fail&&route==='login')return response(503,{code:'synthetic-unavailable'});
+   for(const key of ['X-Lantern-Session-Policy','X-Lantern-Session-Proof'])if(options.header[key])headers[key]=options.header[key];
+   const r=await e.call(route,options.method,{cookie:options.header.Cookie,headers,...options.extraData?{body:JSON.parse(options.extraData)}:{}});
+   const body=await r.json(),setCookie=r.headers.get('set-cookie');return response(r.status,body,setCookie?{'Set-Cookie':setCookie}:{});
+  };
+  try{
+   const credentials={username:'expired_'+action+'_'+Number(quarantined)+'_'+Number(serverExpired),password:'Synthetic expired password 42!'};
+   oldHost=hostRuntime({origin:ORIGIN,persistent:true,sessionStore:asset.store,dispatch});assert.equal((await oldHost.invoke({id:'register',action:'register',body:credentials})).status,200);
+   const hash=e.rows('auth_sessions')[0].token_hash;oldHost.dispose();oldHost=undefined;
+   newHost=hostRuntime({origin:ORIGIN,persistent:false,sessionStoreFactory:()=>asset.newStore(),dispatch});
+   if(quarantined){fail=true;assert.equal((await newHost.invoke({id:'failed',action:'login',body:credentials})).status,503);await newHost.settle();fail=false;newHost.recreate();}
+   // Deliberately advance only the device clock: server still holds a live
+   // session, so deleting locally without revocation would be unsafe.
+   asset.advance(LONG*1000+1);if(serverExpired)e.sqlite.prepare('UPDATE auth_sessions SET expires_at=? WHERE token_hash=?').run(Date.now()-1,hash);assert(e.rows('auth_sessions').some(row=>row.token_hash===hash));
+   const result=await newHost.invoke(action==='login'?{id:'recover',action,body:credentials}:{id:'logout',action});
+   assert.equal(result.status,200);assert(newHost.requests.find(r=>r.path.endsWith('/'+action)&&r.hasCookie));
+   assert(!e.rows('auth_sessions').some(row=>row.token_hash===hash));
+   if(action==='login')assert.equal(JSON.parse(Buffer.from(asset.bytes).toString()).version,1);else assert.equal(asset.bytes,undefined);
+  }finally{oldHost?.dispose();newHost?.dispose();e.close();}
+ }
+});
+
+test('foreign or malformed dormant credentials are retained and block explicit identity mutation',async()=>{
+ const now=1800000000000;
+ for(const changes of [{origin:'https://other.invalid'},{issuedAt:now+1},{expiresAt:now+LONG*1000+1}]){
+  const original=JSON.stringify({version:2,origin:ORIGIN,token:TOKEN,issuedAt:now,expiresAt:now+1000,...changes});
+  const asset=assetHarness(new Uint8Array(Buffer.from(original)));let h;
+  try{
+   h=hostRuntime({origin:ORIGIN,sessionStoreFactory:()=>asset.newStore(),dispatch:async()=>response(503,{code:'must-not-call'})});
+   const result=await h.invoke({id:'login',action:'login',body:{username:'synthetic_user',password:'Synthetic password 42!'}});
+   assert.equal(result.status,503);assert.equal(h.requests.length,0);assert.equal(Buffer.from(asset.bytes).toString(),original);
+  }finally{h?.dispose();}
+ }
+});
+
 test('long cookies reject excessive or malformed TTL and untrusted action headers',async()=>{
  const policy=hostRuntime({persistent:true});
  try{
