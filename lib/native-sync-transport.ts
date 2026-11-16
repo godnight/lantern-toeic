@@ -2,7 +2,7 @@
 export type SyncAction = 'append' | 'begin' | 'page';
 type Body = {owner:string;event?:object;pageSize?:number;snapshot?:string;cursor?:string};
 type Reply = {id:string;status:number;body:unknown};
-type NativeSyncError = Error & {code?:'NATIVE_BUSY'|'NATIVE_REQUEST_LIMIT'|'NATIVE_AUTH'|'NATIVE_CONFLICT'|'NATIVE_TRANSIENT'};
+type NativeSyncError = Error & {code?:'NATIVE_BUSY'|'NATIVE_REQUEST_LIMIT'|'NATIVE_AUTH'|'NATIVE_CONFLICT'|'NATIVE_EVENT_CONFLICT'|'NATIVE_TRANSIENT'};
 type Pending = {resolve:(body:unknown)=>void;reject:(error:Error)=>void;timer:ReturnType<typeof setTimeout>;abort:()=>void};
 export type SyncWindow = {location:{origin:string};top?:unknown;self?:unknown;
   crypto:{randomUUID:()=>string};LanternSyncHost?:{request:(raw:string)=>void;cancel:(id:string)=>void};
@@ -34,8 +34,8 @@ export function createNativeSyncTransport(target:SyncWindow=window as unknown as
     if(Object.keys(value).sort().join(',')==='body,id,status' && (reply.status===401||reply.status===409) &&
       reply.body && typeof reply.body==='object' && !Array.isArray(reply.body) && Object.keys(reply.body).join(',')==='code') {
       const code=(reply.body as {code?:unknown}).code;
-      if((reply.status===401&&code==='unauthenticated')||(reply.status===409&&code==='conflict')){
-        const error:NativeSyncError=new Error('sync unavailable');error.code=reply.status===401?'NATIVE_AUTH':'NATIVE_CONFLICT';finish(reply.id,undefined,error);return;
+      if((reply.status===401&&code==='unauthenticated')||(reply.status===409&&(code==='conflict'||code==='event_conflict'))){
+        const error:NativeSyncError=new Error('sync unavailable');error.code=reply.status===401?'NATIVE_AUTH':code==='event_conflict'?'NATIVE_EVENT_CONFLICT':'NATIVE_CONFLICT';finish(reply.id,undefined,error);return;
       }
     }
     if(Object.keys(value).sort().join(',')!=='body,id,status'||reply.status!==200||
@@ -51,7 +51,7 @@ export function createNativeSyncTransport(target:SyncWindow=window as unknown as
     const nativeAction=action==='begin'?'snapshot':action;
     return new Promise((resolve,reject)=>{
       const abort=()=>{try{target.LanternSyncHost?.cancel(requestId);}catch{}finish(requestId,undefined,new Error('sync cancelled'));};
-      const timer=setTimeout(abort,15000);
+      const timer=setTimeout(()=>{try{target.LanternSyncHost?.cancel(requestId);}catch{}const error:NativeSyncError=new Error('sync timeout');error.code='NATIVE_TRANSIENT';finish(requestId,undefined,error);},15000);
       pending.set(requestId,{resolve,reject,timer,abort:()=>signal.removeEventListener('abort',abort)});
       signal.addEventListener('abort',abort,{once:true});
       const clean=action==='append'?{owner:body.owner,event:body.event}:action==='begin'?{owner:body.owner,pageSize:body.pageSize}:

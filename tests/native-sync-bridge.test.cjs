@@ -6,7 +6,7 @@ const ts=createRequire(path.join(root,'package.json'))('typescript');
 const owner='usr_00000000-0000-4000-8000-000000000001';
 const event={id:'review-1',wordId:'word-1',createdAt:'2026-01-01T10:00:00.000Z',type:'review',grade:'remembered'};
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-function compile(file,imports){const exports={};const out=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}});vm.runInNewContext(out.outputText,{exports,require:n=>{if(!(n in imports))throw Error('unexpected import '+n);return imports[n];},canIUse:()=>true,Date,JSON,Object,Array,Number,Math,String,Error,Promise,Set,Map,setTimeout,clearTimeout},{filename:file});return exports;}
+function compile(file,imports,timer=setTimeout){const exports={};const out=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}});vm.runInNewContext(out.outputText,{exports,require:n=>{if(!(n in imports))throw Error('unexpected import '+n);return imports[n];},canIUse:()=>true,Date,JSON,Object,Array,Number,Math,String,Error,Promise,Set,Map,setTimeout:timer,clearTimeout},{filename:file});return exports;}
 function setup(kind){
  const vocab=kind==='vocabulary',callback=vocab?'__lanternSyncReceive':'__lanternStudySyncReceive',hostName=vocab?'LanternSyncHost':'LanternStudySyncHost';
  const lease={uid:owner,authEpoch:1,expiresAtUptimeMs:1000};let release,started;let calls=0;
@@ -21,7 +21,7 @@ function setup(kind){
  target[hostName]={request:raw=>host.request(raw),cancel:id=>host.cancel(id)};
  const transport=vocab?compile(path.join(root,'lib/native-sync-transport.ts'),{}).createNativeSyncTransport(target):compile(path.join(root,'lib/native-study-transport.ts'),{}).createNativeStudyTransport(target);
  function request(signal){return vocab?transport.append({owner,event},signal):transport.pull({owner,checkpoint:null,continuation:null,signal});}
- return {host,target,transport,request,entered,release:(status=503)=>release({responseCode:status,header:{'content-type':'application/json'},result:'{}'}),calls:()=>calls,close(){transport.dispose();host.dispose();}};
+ return {host,target,transport,request,entered,release:(status=503,body='{}',headers={'content-type':'application/json'})=>release({responseCode:status,header:headers,result:body}),calls:()=>calls,close(){transport.dispose();host.dispose();}};
 }
 for(const kind of ['vocabulary','study']){
  test(kind+' native busy is distinct and has no automatic retry promise',async()=>{
@@ -75,5 +75,30 @@ test('native study bridge accepts the optional first-attempt anchor and rejects 
    if(valid){await f.entered;assert.equal(f.calls(),1);f.release();await assert.rejects(result,err=>err.code==='NATIVE_TRANSIENT');}
    else{await tick();assert.equal(f.calls(),0);abort.abort();await assert.rejects(result);}
   }finally{f.close();}
+ }
+});
+test('only exact authenticated upload conflict codes become record-scoped conflicts',async()=>{
+ for(const kind of ['vocabulary','study'])for(const scenario of ['event','generic','extra','cookie']){
+  const f=setup(kind),id=randomUUID(),wire={id:randomUUID(),owner,type:'attempt',data:{id,qid:'q',choice:0,createdAt:'2026-01-01T10:00:00.000Z',seconds:3,firstAttemptId:id}};
+  try{
+   const pending=kind==='vocabulary'?f.request(new AbortController().signal):f.transport.upload({owner,wire,signal:new AbortController().signal});await f.entered;
+   const body=scenario==='generic'?{error:'owner mismatch'}:scenario==='extra'?{code:'event-payload-conflict',extra:true}:{code:'event-payload-conflict'};
+   f.release(409,JSON.stringify(body),scenario==='cookie'?{'content-type':'application/json','set-cookie':'bad'}:{'content-type':'application/json'});
+   await assert.rejects(pending,e=>e.code===(scenario==='event'?'NATIVE_EVENT_CONFLICT':'NATIVE_CONFLICT'));
+  }finally{f.close();}
+ }
+});
+test('native adapter timeout cancels the request and is retryable without confusing session cancellation',async()=>{
+ for(const kind of ['vocabulary','study']){
+  const vocab=kind==='vocabulary',host=vocab?'LanternSyncHost':'LanternStudySyncHost',cancelled=[];
+  const target={location:{origin:'https://lantern.local'},crypto:{randomUUID},[host]:{request(){},cancel(id){cancelled.push(id);}}};
+  const module=compile(path.join(root,'lib',vocab?'native-sync-transport.ts':'native-study-transport.ts'),{},(fn,ms)=>setTimeout(fn,ms===15000?5:ms));
+  const transport=vocab?module.createNativeSyncTransport(target):module.createNativeStudyTransport(target);
+  try{
+   const pending=vocab?transport.append({owner,event},new AbortController().signal):transport.pull({owner,checkpoint:null,continuation:null,signal:new AbortController().signal});
+   await assert.rejects(pending,e=>e.code==='NATIVE_TRANSIENT');assert.equal(cancelled.length,1);
+   const abort=new AbortController(),cancel=vocab?transport.append({owner,event},abort.signal):transport.pull({owner,checkpoint:null,continuation:null,signal:abort.signal});abort.abort();
+   await assert.rejects(cancel,e=>e.code===undefined);assert.equal(cancelled.length,2);
+  }finally{transport.dispose();}
  }
 });

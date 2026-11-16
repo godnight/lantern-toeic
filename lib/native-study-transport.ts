@@ -1,6 +1,6 @@
 // Candidate-only ArkWeb adapter; credentials and URL stay in native code.
 type Pending={resolve:(body:unknown)=>void;reject:(error:Error)=>void;timer:ReturnType<typeof setTimeout>;cleanup:()=>void};
-type NativeStudyError=Error & {code?:'NATIVE_BUSY'|'NATIVE_REQUEST_LIMIT'|'NATIVE_AUTH'|'NATIVE_CONFLICT'|'NATIVE_TRANSIENT'};
+type NativeStudyError=Error & {code?:'NATIVE_BUSY'|'NATIVE_REQUEST_LIMIT'|'NATIVE_AUTH'|'NATIVE_CONFLICT'|'NATIVE_EVENT_CONFLICT'|'NATIVE_TRANSIENT'};
 type Target={location:{origin:string};top?:unknown;self?:unknown;crypto:{randomUUID:()=>string};
   LanternStudySyncHost?:{request:(raw:string)=>void;cancel:(id:string)=>void};__lanternStudySyncReceive?:(payload:unknown)=>void};
 type Payload={owner:string;wire?:unknown;checkpoint?:string|null;continuation?:string|null;signal:AbortSignal};
@@ -18,7 +18,7 @@ export function createNativeStudyTransport(target:Target=window as unknown as Ta
   }
   if(Object.keys(input).sort().join(',')==='body,id,status'&&(value.status===401||value.status===409)&&value.body&&typeof value.body==='object'&&!Array.isArray(value.body)&&Object.keys(value.body).join(',')==='code'){
    const code=(value.body as {code?:unknown}).code;
-   if((value.status===401&&code==='unauthenticated')||(value.status===409&&code==='conflict')){const error:NativeStudyError=Error('study sync unavailable');error.code=value.status===401?'NATIVE_AUTH':'NATIVE_CONFLICT';return finish(value.id,undefined,error);}
+   if((value.status===401&&code==='unauthenticated')||(value.status===409&&(code==='conflict'||code==='event_conflict'))){const error:NativeStudyError=Error('study sync unavailable');error.code=value.status===401?'NATIVE_AUTH':code==='event_conflict'?'NATIVE_EVENT_CONFLICT':'NATIVE_CONFLICT';return finish(value.id,undefined,error);}
   }
   if(Object.keys(input).sort().join(',')!=='body,id,status'||value.status!==200||!value.body||typeof value.body!=='object'||Array.isArray(value.body))return finish(value.id,undefined,Error('study sync unavailable'));
   finish(value.id,value.body);
@@ -30,7 +30,7 @@ export function createNativeStudyTransport(target:Target=window as unknown as Ta
   const fields=action==='upload'?{owner:payload.owner,wire:payload.wire}:{owner:payload.owner,checkpoint:payload.checkpoint??null,continuation:payload.continuation??null};
   return new Promise((resolve,reject)=>{
    const abort=()=>{try{target.LanternStudySyncHost?.cancel(id);}catch{}finish(id,undefined,Error('study sync cancelled'));};
-   const timer=setTimeout(abort,15000);pending.set(id,{resolve,reject,timer,cleanup:()=>payload.signal.removeEventListener('abort',abort)});
+   const timer=setTimeout(()=>{try{target.LanternStudySyncHost?.cancel(id);}catch{}const error:NativeStudyError=Error('study sync timeout');error.code='NATIVE_TRANSIENT';finish(id,undefined,error);},15000);pending.set(id,{resolve,reject,timer,cleanup:()=>payload.signal.removeEventListener('abort',abort)});
    payload.signal.addEventListener('abort',abort,{once:true});
    try{target.LanternStudySyncHost!.request(JSON.stringify({id,action,...fields}));}catch{finish(id,undefined,Error('study sync unavailable'));}
   });

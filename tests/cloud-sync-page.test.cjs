@@ -4,7 +4,7 @@ const {createRequire,Module}=require('node:module'),{randomUUID}=require('node:c
 const root=path.resolve(__dirname,'..');
 const req=createRequire(path.join(root,'package.json')),{IDBFactory}=req('fake-indexeddb'),{buildSync}=req('esbuild');
 const {SyntheticTransport}=require('./helpers/synthetic-sync-transport.cjs');
-const entry=`export * from './lib/cloud-sync/candidate-page.js'; export * from './lib/cloud-sync/offline-queue.js'; export {FENCE,COMMITS} from './lib/cloud-sync/idb-fence.js'; export * from './lib/cloud-sync/client.js'; export * from './lib/cloud-sync/study-runner.js'; export * from './lib/cloud-sync/vocabulary-projection.ts'; export * from './lib/cloud-sync/capture-vocabulary.js'; export * from './lib/cloud-sync/capture-study-journal.js'; export * from './lib/cloud-sync/vocabulary-capture.ts'; export {readVocabulary,writeVocabulary,vocabularyKey} from './lib/vocabulary-model.ts';`;
+const entry=`export * from './lib/cloud-sync/candidate-page.js'; export * from './lib/cloud-sync/offline-queue.js'; export {FENCE,COMMITS,createFence} from './lib/cloud-sync/idb-fence.js'; export {createRunner} from './lib/cloud-sync/sync-runner.js'; export * from './lib/cloud-sync/client.js'; export * from './lib/cloud-sync/study-runner.js'; export * from './lib/cloud-sync/vocabulary-projection.ts'; export * from './lib/cloud-sync/capture-vocabulary.js'; export * from './lib/cloud-sync/capture-study-journal.js'; export * from './lib/cloud-sync/vocabulary-capture.ts'; export {readVocabulary,writeVocabulary,vocabularyKey} from './lib/vocabulary-model.ts';`;
 const built=buildSync({stdin:{contents:entry,resolveDir:root,loader:'js'},bundle:true,write:false,format:'cjs',platform:'node',target:'node24',logLevel:'silent'});
 const file=path.join(__dirname,'cloud-sync-test-bundle.cjs'),moduleForTest=new Module(file);moduleForTest.filename=file;moduleForTest.paths=Module._nodeModulePaths(__dirname);moduleForTest._compile(built.outputFiles[0].text,file);
 const page=moduleForTest.exports,q=page,study=page,{FENCE,COMMITS,createSyntheticClient,projectNativeVocabularyEvents:project}=page;
@@ -43,7 +43,7 @@ test('study journal capture preserves operation ids and resumes without duplicat
   db=await open(factory,'journal-restart');c=client(db,s);await c.activate(A);
   assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),2);s.setOffline(false);await c.run();
   assert.equal(await page.scanSyntheticStudyJournal(source.storage,A,c),2);
-  const state=await c.readStudy();assert.deepEqual(state.pendingOperations.map(x=>x.id),ids);assert.equal(state.uploadAcks.length,2);assert.equal(s.rows.size,2);
+  const state=await c.readStudy();assert.deepEqual(state.pendingOperations,[]);assert.equal(state.uploadAcks.length,2);assert.equal(s.rows.size,2);
   assert.equal(source.raw.size,2);
  }finally{await c.cancel();db.close();s.close();}
 });
@@ -61,7 +61,7 @@ test('a reordered offline queue uploads a proven first before its review and pre
   await c.run();assert.deepEqual(arrivals,[first.id,review.id]);assert.equal((await c.readStudy()).uploadAcks.length,2);
   const orphan={...attempt(),qid:'unknown-q',mode:'review'};await c.answer('attempt',orphan,undefined,randomUUID(),randomUUID());
   await assert.rejects(c.run(),error=>error.code==='NATIVE_CONFLICT');
-  assert.equal((await c.readStudy()).pendingOperations.length,3);assert.equal((await c.readStudy()).uploadAcks.length,2);
+  assert.equal((await c.readStudy()).pendingOperations.length,1);assert.equal((await c.readStudy()).uploadAcks.length,2);
  }finally{await c.cancel();db.close();s.close();}
 });
 test('a server score disagreement stops download without losing the local attempt or advancing the checkpoint',async()=>{
@@ -71,7 +71,7 @@ test('a server score disagreement stops download without losing the local attemp
   await assert.rejects(c.run(),error=>error.status===422);
   const state=await c.readStudy();
   assert.deepEqual(state.data.attempts,[local]);assert.equal(state.download.checkpoint,null);
-  assert.equal(state.pendingOperations.length,1);assert.equal(state.pendingOperations[0].data.correct,true);
+  assert.equal(state.pendingOperations.length,0);assert.equal(state.data.attempts[0].correct,true);
  }finally{await c.cancel();db.close();s.close();}
 });
 test('study journal capture rejects account switch while an enqueue is pending',async()=>{
@@ -174,6 +174,75 @@ test('one wake captures offline study and vocabulary, then retries both without 
   const retry=timer;timer=null;retry();await pump.wake();
   assert.equal((await c.readStudy()).uploadAcks[0].id,opId);assert.equal(s.rows.size,1);assert.equal(s.vocab.server.db.prepare('SELECT COUNT(*) AS n FROM events WHERE owner=?').get(A).n,1);
  }finally{pump?.stop();await c.cancel();db.close();s.close();}
+});
+test('same-document study writes wake capture and upload without a focus or online event',async()=>{
+ const source=memoryStorage(),db=await open(new IDBFactory(),'study-wake'),s=server(),c=client(db,s),target=new EventTarget(),first=attempt(),opId=randomUUID();let pump;
+ try{
+  await c.activate(A);pump=page.createCapturedVocabularyMarkPump({storage:source.storage,owner:A,client:c,target,captureStudy:()=>page.scanSyntheticStudyJournal(source.storage,A,c)});
+  source.storage.setItem('lantern-v1-'+A+':op:'+opId,JSON.stringify({id:opId,owner:A,type:'attempt',data:first,firstAttemptId:first.id}));
+  const change=new Event('lantern-study-changed');Object.defineProperty(change,'detail',{value:'lantern-v1-'+A});target.dispatchEvent(change);
+  await pump.wake();assert.equal((await c.readStudy()).uploadAcks[0].id,opId);assert.equal(s.rows.size,1);
+ }finally{pump?.stop();await c.cancel();db.close();s.close();}
+});
+test('a full study queue still accepts an exact rescan and never drops unacknowledged entries',async()=>{
+ const s=server(),db=await open(new IDBFactory(),'study-cap'),c=client(db,s);
+ try{
+  await c.activate(A);const state=await c.readStudy(),rows=Array.from({length:5000},()=>({id:randomUUID(),owner:A,type:'checkin',data:checkin()}));
+  state.pendingOperations=rows;state.data.checkins=rows.map(x=>x.data);
+  await new Promise((resolve,reject)=>{const tx=db.transaction(study.STATE,'readwrite');tx.objectStore(study.STATE).put(state);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});
+  await c.answer('checkin',rows[0].data,undefined,rows[0].id);await assert.rejects(c.answer('checkin',checkin(),undefined,randomUUID()),/queue full/);
+  assert.equal((await c.readStudy()).pendingOperations.length,5000);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('confirmed study uploads compact only the pending entry and keep the event and fingerprint for rescans',async()=>{
+ const s=server(),db=await open(new IDBFactory(),'study-ack-retention'),c=client(db,s),item=checkin(),id=randomUUID();
+ try{
+  await c.activate(A);await c.answer('checkin',item,undefined,id);await c.run();
+  let state=await c.readStudy();assert.equal(state.pendingOperations.length,0);assert.equal(state.uploadAcks.length,1);assert.equal(state.data.checkins[0].id,item.id);
+  await c.answer('checkin',item,undefined,id);state=await c.readStudy();assert.equal(state.pendingOperations.length,0);assert.equal(s.rows.size,1);
+  await assert.rejects(c.answer('checkin',{...item,note:'conflicting'},undefined,id),/conflict/);assert.equal((await c.readStudy()).data.checkins[0].note,item.note);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('a single study record conflict keeps its queue and checkpoint while independent checkins upload',async()=>{
+ const s=server(),db=await open(new IDBFactory(),'study-isolate-conflict'),c=client(db,s),bad=attempt(),good=checkin(),goodOp=randomUUID(),original=s.st.upload;
+ s.st.upload=async p=>{if(p.wire.type==='attempt'){const e=Error('conflict');e.code='NATIVE_EVENT_CONFLICT';throw e;}return original(p);};
+ try{
+  await c.activate(A);await c.answer('attempt',bad,undefined,randomUUID(),bad.id);await c.answer('checkin',good,undefined,goodOp);
+  await assert.rejects(c.run(),e=>e.code==='NATIVE_EVENT_CONFLICT');const state=await c.readStudy();
+  assert.equal(state.pendingOperations.length,1);assert.equal(state.pendingOperations[0].data.id,bad.id);assert.equal(state.uploadAcks[0].id,goodOp);assert.equal(state.download.checkpoint,null);assert.equal(s.rows.size,1);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('vocabulary event conflict permits independent study upload, but account errors stop both',async()=>{
+ for(const code of ['NATIVE_EVENT_CONFLICT','NATIVE_AUTH','NATIVE_CONFLICT']){
+  const s=server(),db=await open(new IDBFactory(),'vocab-study-'+code.toLowerCase().replaceAll('_','-')),c=client(db,s),item=checkin(),id=randomUUID();
+  s.vt.append=async()=>{const error=Error('rejected');error.code=code;throw error;};
+  try{
+   await c.activate(A);await c.vocabulary(vocabMark('vocab-conflict'));await c.answer('checkin',item,undefined,id);
+   await assert.rejects(c.run(),e=>e.code===code);const state=await c.readStudy();
+   assert.equal(state.uploadAcks.length,code==='NATIVE_EVENT_CONFLICT'?1:0);assert.equal(state.pendingOperations.length,code==='NATIVE_EVENT_CONFLICT'?0:1);
+  }finally{await c.cancel();db.close();s.close();}
+ }
+});
+test('study timeout aborts its request and retries the same durable operation ID',async()=>{
+ const s=server(),db=await open(new IDBFactory(),'study-timeout'),id=randomUUID(),item=checkin(),calls=[],original=s.st.upload;
+ const c=createSyntheticClient({db,project,vocabTransport:s.vt,studyTransport:s.st,createStudyRunner:args=>page.createStudyRunner({...args,timeoutMs:10})});
+ s.st.upload=async p=>{calls.push(p.wire.id);return new Promise((_resolve,reject)=>p.signal.addEventListener('abort',()=>reject(Error('aborted')),{once:true}));};
+ try{
+  await c.activate(A);await c.answer('checkin',item,undefined,id);await assert.rejects(c.run(),e=>e.code==='NATIVE_TRANSIENT');
+  assert.equal((await c.readStudy()).pendingOperations[0].id,id);s.st.upload=async p=>{calls.push(p.wire.id);return original(p);};
+  await c.run();assert.deepEqual(calls,[id,id]);assert.equal(s.rows.size,1);
+ }finally{await c.cancel();db.close();s.close();}
+});
+test('vocabulary timeout aborts and preserves the same durable event for retry',async()=>{
+ const s=server(),db=await open(new IDBFactory(),'vocab-timeout'),fence=page.createFence(db),ticket=await fence.activate(A),session={owner:A,ticket,signal:new AbortController().signal},seen=[],original=s.vt.append;
+ s.vt.append=async (p,signal)=>{seen.push(p.event.id);return new Promise((_resolve,reject)=>signal.addEventListener('abort',()=>reject(Error('aborted')),{once:true}));};
+ const runner=page.createRunner({db,project,transport:s.vt,timeoutMs:10});
+ try{
+  await page.prepareVocab(db,session);runner.activate(A,ticket);await runner.enqueue(word('vocab-timeout'));
+  await assert.rejects(runner.run(),e=>e.code==='NATIVE_TRANSIENT');assert.equal((await read(db,q.STORE,A)).queue[0].acked,false);
+  s.vt.append=async (...args)=>{seen.push(args[0].event.id);return original(...args);};await runner.run();
+  assert.deepEqual(seen,['vocab-timeout','vocab-timeout']);assert.equal((await read(db,q.STORE,A)).queue[0].acked,true);
+ }finally{runner.cancel();await fence.revoke(ticket);db.close();s.close();}
 });
 
 test('product entry is disabled before accessing storage or network',()=>{

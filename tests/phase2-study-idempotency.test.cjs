@@ -41,11 +41,19 @@ function harness(storage=new Map(),options={}){
  // Most journal tests use a synthetic granted session. The guard integration
  // case opts into the real learning-access module with a controlled context.
  const learningAccess=options.getAccess?load('lib/learning-access.tsx',{react:{createContext:initial=>({initial}),useContext:()=>options.getAccess()}}):{useLearningAccess:()=>()=>true};
- const hook=load('lib/use-study.ts',{react,'./learning-access':learningAccess,sonner:{toast:{error:value=>errors.push(value)}},'./study-model':model,'./study-backup':backup},{localStorage,navigator:{get onLine(){return online;}},window:{addEventListener(){},removeEventListener(){}},setTimeout:()=>1,clearTimeout(){},fetch:async(url,init)=>{requests.push({url,init});if(options.fetch)return options.fetch(url,init);throw Error('Offline test must not fetch');}});
+ const hook=load('lib/use-study.ts',{react,'./learning-access':learningAccess,sonner:{toast:{error:value=>errors.push(value)}},'./study-model':model,'./study-backup':backup},{localStorage,navigator:{get onLine(){return online;}},window:options.window??{addEventListener(){},removeEventListener(){}},CustomEvent:options.CustomEvent,setTimeout:()=>1,clearTimeout(){},fetch:async(url,init)=>{requests.push({url,init});if(options.fetch)return options.fetch(url,init);throw Error('Offline test must not fetch');}});
  const render=(nextOwner=owner)=>{owner=nextOwner;cursor=0;const api=hook.useStudy(owner);const batch=effects;effects=[];batch.forEach(fn=>fn());return api;};
  render();return {render,storage,writes,errors,requests,online(value){online=value;},ops:()=>[...storage.entries()].filter(([k])=>k.startsWith(main+':op:')).map(([,v])=>JSON.parse(v))};
 }
 function journal(storage,type,data,{id=randomUUID(),owner='alice',ack=false}={}){storage.set(main+':op:'+id,JSON.stringify({id,owner,type,data}));if(ack)storage.set(main+':ack:'+id,'1');return id;}
+
+test('actual study writer notifies the current account only after its local save succeeds',()=>{
+ const events=[],window={addEventListener(){},removeEventListener(){},dispatchEvent(event){events.push(event);}},CustomEvent=class {constructor(type,options){this.type=type;this.detail=options.detail;}};
+ const h=harness(new Map(),{window,CustomEvent});assert.equal(h.render().addAttempt(a()),true);
+ assert.deepEqual(events.map(e=>[e.type,e.detail]),[['lantern-study-changed',main]]);
+ const failed=harness(new Map(),{window,CustomEvent,beforeSet(key){if(key.includes(':op:'))throw Error('quota');}});
+ assert.equal(failed.render().addAttempt(a()),false);assert.equal(events.length,1);
+});
 
 test('single-device journal atomically preserves the first-attempt anchor across reload',()=>{
  const storage=new Map(),first=harness(storage),api=first.render(),root=a();
