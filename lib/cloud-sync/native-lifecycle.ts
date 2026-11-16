@@ -14,7 +14,7 @@ export type NativeSyncLeasePort={
   complete:()=>Promise<void>;
   resume:()=>Promise<void>;
 };
-export type LocalSyncClient={activate:(owner:string)=>Promise<unknown>;cancel:()=>Promise<unknown>};
+export type LocalSyncClient={activate:(owner:string)=>Promise<unknown>;cancel:()=>Promise<unknown>;start?:(owner:string)=>Promise<unknown>|unknown};
 export type LifecycleStatus=Readonly<{phase:'blocked'|'checking'|'ready'|'disposed';owner:string|null}>;
 
 const OWNER=/^usr_[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -22,6 +22,11 @@ function candidate(state:NativeAccountState):{owner:string;access:AccountAccess}
   if(state.status!=='ready'||state.unavailable||!state.user||!OWNER.test(state.user.id)||
     state.access.owner!==state.user.id||state.access.user?.id!==state.user.id||
     !state.access.sessionSignal||state.access.sessionSignal.aborted||!state.access.assertAccess())return null;
+  // Older online leases have no scope property and are still independently
+  // checked against the native owner/sequence below. A local-only lease must
+  // never activate cloud sync, even if an old native snapshot arrives late.
+  const scope=(state.access as AccountAccess&{scope?:unknown}).scope;
+  if(scope!==undefined&&scope!=='remote')return null;
   return {owner:state.user.id,access:state.access};
 }
 function snapshot(value:unknown):NativeLeaseSnapshot|null {
@@ -39,7 +44,7 @@ function snapshot(value:unknown):NativeLeaseSnapshot|null {
 export function createNativeSyncLifecycle(account:Pick<NativeAccountController,'getSnapshot'|'subscribe'>&Partial<Pick<NativeAccountController,'setSyncTransitionGuard'>>,
  client:LocalSyncClient,native:NativeSyncLeasePort,options?:{nativeTimeoutMs?:number}){
   if(!account||typeof account.getSnapshot!=='function'||typeof account.subscribe!=='function'||
-    !client||typeof client.activate!=='function'||typeof client.cancel!=='function'||
+    !client||typeof client.activate!=='function'||typeof client.cancel!=='function'||(client.start!==undefined&&typeof client.start!=='function')||
     !native||typeof native.snapshot!=='function'||typeof native.drain!=='function'||typeof native.hold!=='function'||typeof native.complete!=='function'||typeof native.resume!=='function'||typeof native.subscribeRevocation!=='function')throw Error('native sync lifecycle unavailable');
   const nativeTimeoutMs=options?.nativeTimeoutMs??10000;
   if(!Number.isSafeInteger(nativeTimeoutMs)||nativeTimeoutMs<1||nativeTimeoutMs>30000)throw Error('invalid native timeout');
@@ -88,6 +93,10 @@ export function createNativeSyncLifecycle(account:Pick<NativeAccountController,'
       await bounded(()=>native.resume());
       const resumed=snapshot(await bounded(()=>native.snapshot()));
       if(!resumed||resumed.owner!==after.owner||resumed.seq!==after.seq||!same(id,state,next.access))throw Error('native lease changed');
+      // No source scanner or network pump may start while the native bridges
+      // are still held. A cancelled or superseded start is drained by the
+      // same activation cleanup path above before another owner can start.
+      if(client.start){await client.start(next.owner);if(!same(id,state,next.access))throw Error('session revoked');}
       owner=next.owner;phase='ready';
     }).catch(async()=>{
       // A late activation is drained before a newer state can pass the serial
