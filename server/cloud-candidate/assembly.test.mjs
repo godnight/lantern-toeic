@@ -10,6 +10,7 @@ import os from 'node:os';
 import https from 'node:https';
 import { Miniflare, Log, LogLevel } from 'miniflare';
 import { build } from 'esbuild';
+import { IDBFactory } from 'fake-indexeddb';
 import { buildAccountWorker, buildSyncModel } from './build-inputs.mjs';
 import { prepareAccountSyncAssembly } from './assembly.candidate.mjs';
 import { validateSyncDatabase } from './production-sync-preflight.candidate.mjs';
@@ -39,6 +40,12 @@ async function buildNativeStudyClient() {
   const result = await build({ absWorkingDir: fileURLToPath(root), entryPoints: ['lib/native-study-m2a.ts'],
     bundle: true, write: false, format: 'esm', platform: 'node', target: 'node24' });
   return import('data:text/javascript;base64,' + Buffer.from(result.outputFiles[0].contents).toString('base64'));
+}
+async function buildVocabularyCandidateClient() {
+  const directory=fileURLToPath(root);
+  const result=await build({absWorkingDir:directory,stdin:{contents:"export * from './lib/cloud-sync/candidate-page.js'; export {STORE} from './lib/cloud-sync/offline-queue.js'; export {vocabularyReviewHash} from './lib/vocabulary-model.ts';",resolveDir:directory,loader:'js'},
+    bundle:true,write:false,format:'esm',platform:'node',target:'node24'});
+  return import('data:text/javascript;base64,'+Buffer.from(result.outputFiles[0].contents).toString('base64'));
 }
 function httpsStudy(port, cert, cookie, owner) {
   return new Promise((resolve, reject) => {
@@ -110,6 +117,32 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     const readPage = device => app.fetch(request('/candidate/sync/page', { cookie: device, body: pageBody }));
     assert.deepEqual((await (await readPage(cookieB)).json()).events, [event]);
     assert.equal((await append('different-owner')).status, 409);
+    // Simulate a second device whose IDB is initially empty: download an
+    // existing remembered review from the real candidate Worker/D1, then
+    // correct it. The source review has no local queue acknowledgement and
+    // must be idempotently confirmed before the correction is sent.
+    const recoveredReview={id:'synthetic-downloaded-review',wordId:'archive',createdAt:new Date().toISOString(),type:'review',grade:'remembered'};
+    assert.equal((await app.fetch(request('/candidate/sync/append',{cookie,body:{owner,event:recoveredReview}}))).status,200);
+    const vocab=await buildVocabularyCandidateClient(),sent=[];
+    const callVocab=async(route,body)=>{const response=await app.fetch(request('/candidate/sync/'+route,{cookie,body}));
+      if(!response.ok){const payload=await response.json();const error=Error('vocabulary unavailable');
+        if(response.status===409&&payload.code==='event-payload-conflict')error.code='NATIVE_EVENT_CONFLICT';throw error;}
+      return response.json();};
+    const vocabTransport={append:async p=>{sent.push(p.event.id);return callVocab('append',p);},
+      begin:async p=>callVocab('snapshot',p),page:async p=>callVocab('page',p)};
+    const studyTransport={upload:async()=>{throw Error('unexpected study upload');},pull:async()=>({syncProtocol:'native-m2a-v1',schemaVersion:2,owner,
+      hasProfile:false,profilePolicy:'preserve-local-when-absent',changes:[],nextCursor:null,checkpoint:'n1.'+'A'.repeat(2086)})};
+    const vocabDb=await vocab.openSyntheticSyncDatabase(new IDBFactory(),'lantern-synthetic-sync-recovered-review');
+    const vocabClient=vocab.createCandidatePageClient({db:vocabDb,vocabTransport,studyTransport});
+    try{
+      await vocabClient.activate(owner);await vocabClient.run();assert.deepEqual(sent,[]);
+      const correction={id:'synthetic-downloaded-correction',wordId:recoveredReview.wordId,createdAt:recoveredReview.createdAt,
+        type:'review-correction',reviewId:recoveredReview.id,reviewHash:vocab.vocabularyReviewHash(recoveredReview),grade:'again'};
+      await vocabClient.vocabulary(correction);await vocabClient.run();
+      assert.deepEqual(sent,[recoveredReview.id,correction.id]);
+      assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM lantern_vocab_events WHERE owner=? AND event_id IN (?,?)')
+        .bind(owner,recoveredReview.id,correction.id).first()).n,2);
+    }finally{await vocabClient.cancel();vocabDb.close();}
     const registration2 = await app.fetch(request('/api/auth/register', { body: { username: 'synthetic_other', password: 'synthetic-password-123' } }));
     assert.equal(registration2.status, 200);
     const otherOwner = (await registration2.json()).user.id;
@@ -214,7 +247,9 @@ test('repository Worker and model share one D1; phone stays closed; session, iso
     app = await prepareAccountSyncAssembly({ settings, mf, origin, privateRoot, key, proxy, phoneKey, modelInfo, orderedAttemptsEnabled: true });
     for (const device of [cookie, cookieB, legacyCookie]) assert.equal((await app.fetch(request('/api/auth/session', { cookie: device }))).status, 200);
     const row = await db.prepare('SELECT COUNT(*) AS n FROM lantern_vocab_events WHERE owner=?').bind(owner).first();
-    assert.equal(row.n, 1);
+    assert.equal(row.n, 3);
+    assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM lantern_vocab_events WHERE owner=? AND event_id IN (?,?)')
+      .bind(owner,recoveredReview.id,'synthetic-downloaded-correction').first()).n,2);
     assert.equal((await app.fetch(request('/api/auth/logout', { cookie, body: {} }))).status, 200);
     assert.equal((await append()).status, 401);
     assert.equal((await app.fetch(request('/api/auth/session', { cookie: cookieB }))).status, 200);
