@@ -64,3 +64,37 @@ export function captureNativeVocabularySource(storage:StorageLike,lease:Lease):N
 export function nativeVocabularySourceIsCurrent(storage:StorageLike,lease:Lease,source:NativeVocabularySource):boolean{
  try{return active(lease,source.owner)&&same(source.chunks.map(chunk=>chunk.name),names(storage,vocabularyKey(source.owner)))&&source.chunks.every(chunk=>storage.getItem(chunk.name)===chunk.bytes)&&active(lease,source.owner);}catch{return false;}
 }
+
+type ImportSession={readonly owner:string;readonly signal:AbortSignal};
+type ImportClient={readonly session:ImportSession|null;
+ importVocabularySource:(event:VocabularyEvent,session:ImportSession,sourceGuard:()=>boolean)=>Promise<unknown>};
+type ImportResult=Readonly<{accepted:number;conflictingEventIds:readonly string[];deferredCorrectionIds:readonly string[]}>;
+
+/** Re-scan the actual append-only local source and enqueue each event with its
+ * original ID. The queue must check the guard synchronously in its IDB write
+ * transaction. A process death after any successful enqueue is safe to retry:
+ * the source remains intact and the queue rejects changed same-ID payloads.
+ *
+ * This is still a candidate: the recheck cannot lock another document's
+ * localStorage transaction or make localStorage and IDB atomic, and the full
+ * snapshot guard can be expensive for large histories. It must not be wired
+ * into the product until its writer/lifecycle fence and recovery are proven. */
+export async function importNativeVocabularySource(storage:StorageLike,client:ImportClient):Promise<ImportResult>{
+ const session=client?.session;
+ if(!session||typeof client.importVocabularySource!=='function'||!session.signal||session.signal.aborted)throw Error('account lease unavailable');
+ const lease:Lease={owner:session.owner,signal:session.signal,isCurrent:()=>client.session===session&&!session.signal.aborted};
+ const snapshot=captureNativeVocabularySource(storage,lease),conflicts:string[]=[],blocked=new Set<string>(),deferred=[...snapshot.deferredCorrectionIds];let accepted=0;
+ const current=()=>nativeVocabularySourceIsCurrent(storage,lease,snapshot);
+ for(const event of snapshot.events){
+  if(!current())throw Error('vocabulary source changed');
+  if(event.type==='review-correction'&&blocked.has(event.reviewId)){deferred.push(event.id);continue;}
+  try{await client.importVocabularySource(event,session,current);accepted++;}
+  catch(error){
+   if(!current())throw Error('vocabulary source changed');
+   if(!error||typeof error!=='object'||!('code' in error)||error.code!=='NATIVE_EVENT_CONFLICT')throw error;
+   conflicts.push(event.id);blocked.add(event.id);
+  }
+  if(!current())throw Error('vocabulary source changed');
+ }
+ return Object.freeze({accepted,conflictingEventIds:Object.freeze(conflicts.sort()),deferredCorrectionIds:Object.freeze(deferred.sort())});
+}
