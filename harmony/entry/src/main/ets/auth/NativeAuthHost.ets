@@ -15,7 +15,7 @@ import { AuthRequest, AuthBody, AuthReply, AuthUser, AuthCookie, AuthRoute, COOK
   utf8Length, capabilities, unavailableBody, unknownBody, unauthenticatedBody,
   parseResponseBody, publicUser, publicFailure, sessionCookie, productCookieLines, authRoute, phoneAction,
   operationUnknownBody, phoneStatus, phoneChallenge, phoneFailure, phoneSuccessCapabilities, sessionProofBudget,
-  huaweiProviders, huaweiFailure } from './AuthPolicy';
+  huaweiProviders, huaweiFailure, PERSISTENT_SESSION_ENABLED } from './AuthPolicy';
 
 interface Operation {
   version?: number;
@@ -218,7 +218,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
     NativeAuthHost.busy = true;
     try {
       if (!same()) throw new Error('Unconfirmed');
-      const token: string | undefined = await this.store.load(AUTH_API_ORIGIN);
+      const token: string | undefined = await this.store.load(AUTH_API_ORIGIN, PERSISTENT_SESSION_ENABLED);
       if (!same() || token === undefined || !/^[a-f0-9]{64}$/.test(token)) throw new Error('Unconfirmed');
       await work(token);
       if (!same()) throw new Error('Unconfirmed');
@@ -383,6 +383,9 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
     const route: AuthRoute | undefined = authRoute(action);
     if (route === undefined) throw new Error('Unconfirmed');
     const headers: Record<string, string> = { 'Accept': 'application/json', 'Origin': AUTH_API_ORIGIN };
+    if (PERSISTENT_SESSION_ENABLED && ['register', 'login', 'huawei-login', 'phone-login'].includes(action)) {
+      headers['X-Lantern-Session-Policy'] = 'persistent-v1';
+    }
     if (action === 'session' && (operation.version === 2 || proof)) headers['X-Lantern-Session-Proof'] = '2';
     if (route.method === 'POST') headers['Content-Type'] = 'application/json';
     if (token !== undefined) {
@@ -455,7 +458,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       }
       let token: string | undefined = undefined;
       if (NativeAuthHost.quarantined) await this.store.clear();
-      else token = await this.store.load(AUTH_API_ORIGIN);
+      else token = await this.store.load(AUTH_API_ORIGIN, PERSISTENT_SESSION_ENABLED);
       if (!this.current(operation)) return;
       const providerReply: http.HttpResponse = await this.fetch('providers', '', token, operation);
       if (this.cookieHeaders(providerReply).length !== 0 || providerReply.responseCode !== 200) throw new Error('Unconfirmed');
@@ -499,9 +502,9 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
         NativeAuthHost.quarantined = false;
         this.finish(operation, 200, { ok: true, user: confirmed });
       } else {
-        const cookie: AuthCookie | undefined = sessionCookie(lines);
+        const cookie: AuthCookie | undefined = sessionCookie(lines, PERSISTENT_SESSION_ENABLED);
         if (!cookie || cookie.token === '' || cookie.maxAge < 1 || payload.capabilities?.passwordLogin !== true || !this.current(operation)) throw new Error('Unconfirmed');
-        await this.store.save(AUTH_API_ORIGIN, cookie.token, cookie.maxAge);
+        await this.store.save(AUTH_API_ORIGIN, cookie.token, cookie.maxAge, PERSISTENT_SESSION_ENABLED);
         const confirmed: AuthUser = await this.huaweiSession(cookie.token, operation);
         if (confirmed.id !== user.id) throw new Error('Unconfirmed');
         operation.sessionMayHaveChanged = false;
@@ -540,7 +543,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       }
       let token: string | undefined = undefined;
       if (NativeAuthHost.quarantined) await this.store.clear();
-      else token = await this.store.load(AUTH_API_ORIGIN);
+      else token = await this.store.load(AUTH_API_ORIGIN, PERSISTENT_SESSION_ENABLED);
       if (!this.current(operation)) return;
       let bindingUser: AuthUser | undefined = undefined;
       if (input.action === 'phone-bind') {
@@ -624,7 +627,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       // A challenge has only one success shape/status; 200 cannot mean sent.
       if (input.action === 'phone-challenge') throw new Error('Unconfirmed');
       if (input.action === 'logout') {
-        const cookie: AuthCookie | undefined = sessionCookie(lines);
+        const cookie: AuthCookie | undefined = sessionCookie(lines, PERSISTENT_SESSION_ENABLED);
         if (!cookie || cookie.token !== '' || cookie.maxAge !== 0 || payload.ok !== true) throw new Error('Unconfirmed');
         await this.store.clear();
         if (!this.current(operation)) return;
@@ -687,10 +690,10 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
         return;
       }
       if (input.action !== 'session') {
-        const cookie: AuthCookie | undefined = sessionCookie(lines);
+        const cookie: AuthCookie | undefined = sessionCookie(lines, PERSISTENT_SESSION_ENABLED);
         if (!cookie || cookie.token === '' || cookie.maxAge < 1) throw new Error('Unconfirmed');
         if (!this.current(operation)) return;
-        await this.store.save(AUTH_API_ORIGIN, cookie.token, cookie.maxAge);
+        await this.store.save(AUTH_API_ORIGIN, cookie.token, cookie.maxAge, PERSISTENT_SESSION_ENABLED);
         if (!this.current(operation)) return;
         // The mutation JSON never selects an identity by itself.
         const proof: http.HttpResponse = await this.fetch('session', '', cookie.token, operation);

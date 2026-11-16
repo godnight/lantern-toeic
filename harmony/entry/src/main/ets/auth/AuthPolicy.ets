@@ -317,7 +317,9 @@ export function productCookieLines(lines: string[]): string[] | undefined {
   return selected;
 }
 
-export function sessionCookie(lines: string[]): AuthCookie | undefined {
+// A staged compatibility candidate; old releases and normal builds remain at 12h.
+export const PERSISTENT_SESSION_ENABLED: boolean = false;
+export function sessionCookie(lines: string[], allowPersistent: boolean = false): AuthCookie | undefined {
   const selected: string[] | undefined = productCookieLines(lines);
   if (selected === undefined) return undefined;
   let result: AuthCookie | undefined = undefined;
@@ -345,10 +347,10 @@ export function sessionCookie(lines: string[]): AuthCookie | undefined {
       else if (name === 'httponly' && equal < 0) httpOnly = true;
       else if (name === 'path' && value === '/') path = true;
       else if (name === 'samesite' && value.toLowerCase() === 'strict') sameSite = true;
-      else if (name === 'max-age' && /^(0|[1-9][0-9]{0,4})$/.test(value)) maxAge = Number(value);
+      else if (name === 'max-age' && /^(0|[1-9][0-9]{0,6})$/.test(value)) maxAge = Number(value);
       else return undefined; // Includes Domain, Expires, duplicate or unknown attributes.
     }
-    if (!secure || !httpOnly || !path || !sameSite || maxAge < 0 || maxAge > 43200 ||
+    if (!secure || !httpOnly || !path || !sameSite || maxAge < 0 || maxAge > (allowPersistent ? 2592000 : 43200) ||
       (token === '' ? maxAge !== 0 : maxAge === 0)) return undefined;
     result = { token: token, maxAge: maxAge };
   }

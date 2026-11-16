@@ -7,6 +7,7 @@ interface StoredSession {
   origin: string;
   token: string;
   expiresAt: number;
+  issuedAt?: number;
 }
 
 // Native-only candidate input. An Asset record does not contain a trusted
@@ -80,7 +81,7 @@ export class AuthSessionStore {
     return { token: record.token, expiresAt: record.expiresAt };
   }
 
-  async load(origin: string): Promise<string | undefined> {
+  async load(origin: string, allowPersistent: boolean = false): Promise<string | undefined> {
     const query: asset.AssetMap = this.queryMap();
     query.set(asset.Tag.RETURN_TYPE, asset.ReturnType.ALL);
     let rows: asset.AssetMap[];
@@ -94,10 +95,20 @@ export class AuthSessionStore {
     const secret: asset.Value | undefined = rows[0].get(asset.Tag.SECRET);
     if (!(secret instanceof Uint8Array)) throw new Error('Store unavailable');
     const record: StoredSession = JSON.parse(text(secret)) as StoredSession;
-    if (record === null || typeof record !== 'object' || record.version !== 1 ||
+    if (record === null || typeof record !== 'object' || (record.version !== 1 && record.version !== 2) ||
       typeof record.origin !== 'string' || typeof record.token !== 'string' ||
       !/^[a-f0-9]{64}$/.test(record.token) || typeof record.expiresAt !== 'number' ||
       !Number.isFinite(record.expiresAt)) throw new Error('Store unavailable');
+    // Version 2 cannot be mistaken for an old-format session by a downgraded
+    // app. Do not delete a valid record if the experiment is switched off.
+    if (record.version === 2) {
+      if (!allowPersistent) throw new Error('Store unavailable');
+      const now: number = Date.now();
+      const issuedAt: number = record.issuedAt === undefined ? -1 : record.issuedAt;
+      if (!Number.isSafeInteger(issuedAt) || issuedAt < 0 || !Number.isSafeInteger(record.expiresAt) ||
+        !Number.isSafeInteger(now) || issuedAt > now || record.expiresAt - issuedAt > 2592000000 ||
+        record.expiresAt <= issuedAt) throw new Error('Store unavailable');
+    }
     if (record.origin !== origin || record.expiresAt <= Date.now()) {
       await this.clear();
       return undefined;
@@ -105,11 +116,15 @@ export class AuthSessionStore {
     return record.token;
   }
 
-  async save(origin: string, token: string, maxAge: number): Promise<void> {
-    if (!/^[a-f0-9]{64}$/.test(token) || !Number.isInteger(maxAge) || maxAge < 1 || maxAge > 43200) {
+  async save(origin: string, token: string, maxAge: number, allowPersistent: boolean = false): Promise<void> {
+    if (!/^[a-f0-9]{64}$/.test(token) || !Number.isInteger(maxAge) || maxAge < 1 || maxAge > (allowPersistent ? 2592000 : 43200)) {
       throw new Error('Store unavailable');
     }
-    const record: StoredSession = { version: 1, origin: origin, token: token, expiresAt: Date.now() + maxAge * 1000 };
+    const now: number = Date.now();
+    if (!Number.isSafeInteger(now) || !Number.isSafeInteger(now + maxAge * 1000)) throw new Error('Store unavailable');
+    const record: StoredSession = maxAge > 43200
+      ? { version: 2, origin: origin, token: token, issuedAt: now, expiresAt: now + maxAge * 1000 }
+      : { version: 1, origin: origin, token: token, expiresAt: now + maxAge * 1000 };
     const secret: Uint8Array = ascii(JSON.stringify(record));
     const attributes: asset.AssetMap = this.queryMap();
     attributes.set(asset.Tag.SECRET, secret);
