@@ -123,6 +123,25 @@ test('candidate refuses stale or missing reconstructed source and ambiguous firs
   }finally{await client.cancel();db.close();}
  }
 });
+test('existing ACK cannot remove a queued reconstructed event after its source changes',async()=>{
+ for(const scenario of ['unchanged','changed']){
+  const s=storage(),first=event('first');putPrimary(s,A,data([first]));const {db,client,sent,done}=await guardedBackfill('backfill-ack-'+scenario,s);
+  try{
+   await backfillNativeStudy({enabled:true,storage:s,client});const staged=await client.readStudy(),op=staged.pendingOperations[0];
+   client.start(A);await settlePump(done);let state=await client.readStudy();
+   assert.equal(sent.length,1);assert.equal(state.pendingOperations.length,0);assert.equal(state.uploadAcks.length,1);
+   // Model a preserved ACK and a pending operation left by a legacy or
+   // interrupted producer. The ACK is for the original payload only.
+   await new Promise((resolve,reject)=>{const tx=db.transaction('syntheticNativeStudyState','readwrite'),store=tx.objectStore('syntheticNativeStudyState'),g=store.get(A);
+    g.onsuccess=()=>{const value=g.result;value.pendingOperations.push(op);value.stateVersion++;store.put(value);};tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});
+   if(scenario==='changed')putPrimary(s,A,data([{...first,choice:2}]));
+   await client.run(client.session).catch(()=>{});state=await client.readStudy();
+   assert.equal(sent.length,1,scenario);assert.equal(state.pendingOperations.length,scenario==='changed'?1:0,scenario);
+   assert.equal(state.uploadAcks.length,1,scenario);assert.equal(state.data.attempts[0].choice,first.choice,scenario);
+   assert.equal(JSON.parse(s.getItem('lantern-v1-'+A)).data.attempts[0].choice,scenario==='changed'?2:first.choice,scenario);
+  }finally{await client.cancel();db.close();}
+ }
+});
 test('source change during reconstructed-id hashing prevents dispatch',async()=>{
  const s=storage(),first=event('first');putPrimary(s,A,data([first]));const {db,client,sent,done}=await guardedBackfill('backfill-guard-hash-race',s);
  const waiting=Promise.withResolvers(),release=Promise.withResolvers(),subtle=globalThis.crypto.subtle,own=Object.getOwnPropertyDescriptor(subtle,'digest'),original=subtle.digest.bind(subtle);let count=0;

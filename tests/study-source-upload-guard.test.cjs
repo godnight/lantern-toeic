@@ -30,6 +30,12 @@ test('source mutation during upload prevents accepting its acknowledgement',asyn
  await assert.rejects(guard.upload(f.payload),e=>e.code==='NATIVE_EVENT_CONFLICT');
  assert.equal(JSON.parse(f.rows.get(f.key)).data.minutes,6);
 });
+test('a previously acknowledged event is fenced again when its source changes before IDB removal',async()=>{
+ const f=setup();let sent=0;const guard=guardStudyJournalUpload(f.storage,f.client,{upload:async()=>{sent++;},pull:async()=>{}});
+ await guard.validatePendingSource(f.payload);guard.assertUploadCurrent();
+ f.rows.set(f.key,JSON.stringify({...f.operation,data:{...f.operation.data,minutes:6}}));
+ assert.throws(()=>guard.assertUploadCurrent(),e=>e.code==='NATIVE_EVENT_CONFLICT');assert.equal(sent,0);
+});
 test('changed local grading also blocks dispatch although grading is omitted from the wire',async()=>{
  const f=setup(),attempt={id:f.operation.data.id,qid:'question-1',choice:1,correct:true,createdAt:f.operation.data.createdAt,seconds:5,mode:'first'};
  const operation={id:f.operation.id,owner:f.operation.owner,type:'attempt',data:attempt,firstAttemptId:attempt.id};
