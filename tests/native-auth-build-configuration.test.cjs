@@ -107,6 +107,16 @@ test('missing or unreviewed staged Asset store cannot silently use a different n
   assert.equal(fs.readFileSync(f.target, 'utf8'), original);
 });
 
+test('nested Git checkout around the staged destination is never overwritten', t => {
+  const f = fixture(t);
+  const original = fs.readFileSync(f.target, 'utf8');
+  fs.writeFileSync(path.join(f.stage, 'harmony', '.git'), 'gitdir: synthetic');
+  const result = run(f.config, f.stage);
+  assert.notEqual(result.status, 0);
+  assert.ok(!result.stdout.includes(origin) && !result.stderr.includes(alias));
+  assert.equal(fs.readFileSync(f.target, 'utf8'), original);
+});
+
 test('template substitution preserves additional exports and rejects ambiguous targets', async () => {
   const { renderAuthConfiguration } = await import('../harmony/scripts/prepare-auth-configuration.mjs');
   const current = fs.readFileSync(path.join(root, ...configRelative.split('/')), 'utf8');

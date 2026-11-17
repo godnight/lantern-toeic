@@ -55,7 +55,9 @@ export function prepareAuthConfiguration(configFile, stagingDirectory) {
       inGitCheckout(dirname(configPath)) || inGitCheckout(stage) || stage === sourceRoot ||
       inside(sourceRoot, stage) || inside(sourceRoot, configPath)) fail();
   const target = join(stage, ...configurationPath.split('/'));
-  if (!lstatSync(target).isFile() || !inside(stage, realpathSync(target))) fail();
+  const targetReal = realpathSync(target);
+  if (!lstatSync(target).isFile() || !inside(stage, targetReal) ||
+      inGitCheckout(dirname(target)) || inGitCheckout(dirname(targetReal))) fail();
   const store = join(stage, ...storePath.split('/'));
   if (!lstatSync(store).isFile() || !inside(stage, realpathSync(store)) ||
       readFileSync(store, 'utf8') !== readFileSync(join(sourceRoot, ...storePath.split('/')), 'utf8')) fail();
