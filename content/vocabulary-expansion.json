@@ -1,0 +1,3971 @@
+[
+  {
+    "id": "vx-512afb6c763173d396ba",
+    "word": "administration",
+    "category": "office",
+    "meaning": "行政管理；管理部门",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-51f6f029928f3d0d10b5",
+    "word": "administrative",
+    "category": "office",
+    "meaning": "行政的；管理事务的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-4194d1706ed1f408d5e0",
+    "word": "administrator",
+    "category": "office",
+    "meaning": "行政管理人员；管理员",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a39a7ffad4a3013f29da",
+    "word": "assistant",
+    "category": "office",
+    "meaning": "助理；助手",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a8148532caf684760a38",
+    "word": "secretary",
+    "category": "office",
+    "meaning": "秘书",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-6ee4a469cd4e91053847",
+    "word": "manager",
+    "category": "office",
+    "meaning": "经理；管理者",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-288965a1f2c883c71bff",
+    "word": "management",
+    "category": "office",
+    "meaning": "管理；管理层",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ef7d74898c22a4bf0be4",
+    "word": "director",
+    "category": "office",
+    "meaning": "主管；董事",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-180b988a36f655a375c5",
+    "word": "executive",
+    "category": "office",
+    "meaning": "高管；执行主管",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-582a5164e20a5be0f93b",
+    "word": "headquarters",
+    "category": "office",
+    "meaning": "总部",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-af3a1bb312bf8430055d",
+    "word": "organization",
+    "category": "office",
+    "meaning": "组织；机构",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9bf5a24e4aa779981ac4",
+    "word": "operation",
+    "category": "office",
+    "meaning": "运作；业务活动",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-823412d1eacb67956220",
+    "word": "policy",
+    "category": "office",
+    "meaning": "政策；办事规定",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-383b6630e8241d34d54b",
+    "word": "regulation",
+    "category": "office",
+    "meaning": "规章；管理条例",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5a92f6f089f63f0d476b",
+    "word": "instruction",
+    "category": "office",
+    "meaning": "指示；操作说明",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-03ce8b95eb32632192ca",
+    "word": "guideline",
+    "category": "office",
+    "meaning": "指导原则；参考准则",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-36bde66f289a35683683",
+    "word": "manual",
+    "category": "office",
+    "meaning": "使用手册；操作指南",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b4128df29f3726b470dc",
+    "word": "handbook",
+    "category": "office",
+    "meaning": "手册；指南",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-70ce871f8a3d3fb449bc",
+    "word": "record",
+    "category": "office",
+    "meaning": "记录；档案",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-845e91831319e89c4d65",
+    "word": "report",
+    "category": "office",
+    "meaning": "报告",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-2564570691d15a74e6d9",
+    "word": "memorandum",
+    "category": "office",
+    "meaning": "备忘录；内部通知",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-14654bf2b7733e0f1c97",
+    "word": "correspondence",
+    "category": "office",
+    "meaning": "往来信件；通信",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f80105efab6d863fd8fc",
+    "word": "letter",
+    "category": "office",
+    "meaning": "信；函件",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4c503ca67761e5c4aaec",
+    "word": "envelope",
+    "category": "office",
+    "meaning": "信封",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-034a0062488256f14c8b",
+    "word": "folder",
+    "category": "office",
+    "meaning": "文件夹",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a6e42a44e79e131a63d2",
+    "word": "cabinet",
+    "category": "office",
+    "meaning": "储物柜；文件柜",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ba70e1dacc17e1a77072",
+    "word": "printer",
+    "category": "office",
+    "meaning": "打印机",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-6105d8625ada3c9bf514",
+    "word": "scanner",
+    "category": "office",
+    "meaning": "扫描仪",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-6247f77181245a32148f",
+    "word": "stapler",
+    "category": "office",
+    "meaning": "订书机",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-fd37f875ad2991f4970f",
+    "word": "appointment",
+    "category": "office",
+    "meaning": "预约；约定的会面",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-438b5e575a59cd42e234",
+    "word": "arrangement",
+    "category": "office",
+    "meaning": "安排；筹备",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9deb65b8788f41ff94a2",
+    "word": "approval",
+    "category": "office",
+    "meaning": "批准；认可",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-cbb82ebec6051b780ad2",
+    "word": "authorization",
+    "category": "office",
+    "meaning": "授权；批准",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-fdeb33892d1867626d6d",
+    "word": "permission",
+    "category": "office",
+    "meaning": "许可；准许",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-1f58b9145b24d108d7ac",
+    "word": "request",
+    "category": "office",
+    "meaning": "请求；申请",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f8dcb7a13bf4991a7d79",
+    "word": "requirement",
+    "category": "office",
+    "meaning": "要求；必要条件",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-6cd6f41455d78245f129",
+    "word": "notify",
+    "category": "office",
+    "meaning": "通知；告知",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-ac7f1c227985687b4b72",
+    "word": "coordinate",
+    "category": "office",
+    "meaning": "协调；统筹安排",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-9300b4d2567aad13f65c",
+    "word": "assign",
+    "category": "office",
+    "meaning": "分配；指派",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-c5f88e747d24a44c9d46",
+    "word": "responsibility",
+    "category": "office",
+    "meaning": "职责；责任",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3092a5f0dba05ff3cadc",
+    "word": "priority",
+    "category": "office",
+    "meaning": "优先事项；优先权",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f9d37c23fcc0f03c15a8",
+    "word": "urgent",
+    "category": "office",
+    "meaning": "紧急的；急需处理的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-480e4f1d08e9079c05c0",
+    "word": "efficient",
+    "category": "office",
+    "meaning": "效率高的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-10cdb6d6fe701fe6c1bf",
+    "word": "accurate",
+    "category": "office",
+    "meaning": "准确的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-0dd1b6d5c52eec73e28b",
+    "word": "permanent",
+    "category": "office",
+    "meaning": "永久的；长期固定的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-3d7f19555f1d2f0722c7",
+    "word": "occupation",
+    "category": "people",
+    "meaning": "职业；工作",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-50e0d250228d28f81a60",
+    "word": "profession",
+    "category": "people",
+    "meaning": "职业；需要专业训练的行业",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-89b7505ad79ad4892d6f",
+    "word": "career",
+    "category": "people",
+    "meaning": "职业生涯",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-0b22f40bb71c86c993f0",
+    "word": "employment",
+    "category": "people",
+    "meaning": "就业；雇用",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-0ab37c8e4a2ef4607964",
+    "word": "unemployment",
+    "category": "people",
+    "meaning": "失业",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3cdc6d6e23e0f9475e98",
+    "word": "recruitment",
+    "category": "people",
+    "meaning": "招聘；招募",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-1fe289205936c3fdb611",
+    "word": "application",
+    "category": "people",
+    "meaning": "申请；申请材料",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-45fa5047ae71ed93e17d",
+    "word": "personnel",
+    "category": "people",
+    "meaning": "全体员工；人事部门",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-1562206543da764123c2",
+    "word": "staff",
+    "category": "people",
+    "meaning": "员工；工作人员",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b6f80f8db1ed2c2d73e1",
+    "word": "workforce",
+    "category": "people",
+    "meaning": "全体员工；劳动力",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-716dd708841b8de22a6c",
+    "word": "trainee",
+    "category": "people",
+    "meaning": "受训人员；实习人员",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-fbb5a0ea913573794253",
+    "word": "intern",
+    "category": "people",
+    "meaning": "实习生",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-aed7e01a3eb8634a524e",
+    "word": "internship",
+    "category": "people",
+    "meaning": "实习；实习期",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-042b8f64044ee7990f52",
+    "word": "apprentice",
+    "category": "people",
+    "meaning": "学徒",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-c2fb788c7deedbeaa296",
+    "word": "training",
+    "category": "people",
+    "meaning": "培训；训练",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f30976e0e3b300565e8c",
+    "word": "probation",
+    "category": "people",
+    "meaning": "试用期",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-612546d7f1fb0753371c",
+    "word": "full-time",
+    "category": "people",
+    "meaning": "全职的；全日制的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-763545525fdf55b7bd0a",
+    "word": "part-time",
+    "category": "people",
+    "meaning": "兼职的；非全日制的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-d998262a26d6842c0340",
+    "word": "overtime",
+    "category": "people",
+    "meaning": "加班；加班时间",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ecd3fad7a4d35d7130c6",
+    "word": "shift",
+    "category": "people",
+    "meaning": "轮班；班次",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9d9a67a66df1a0220ff1",
+    "word": "teamwork",
+    "category": "people",
+    "meaning": "团队合作",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9e720e53885580b1e0c5",
+    "word": "leadership",
+    "category": "people",
+    "meaning": "领导能力；领导工作",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9c53c074d7ac6a2728b6",
+    "word": "skill",
+    "category": "people",
+    "meaning": "技能；技巧",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5c8ed2c5b63d1f504d21",
+    "word": "competence",
+    "category": "people",
+    "meaning": "胜任能力；专业能力",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-03d66dd08835c1ca3f12",
+    "word": "certificate",
+    "category": "people",
+    "meaning": "证书；证明文件",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b308a7f43bba8e7a366b",
+    "word": "degree",
+    "category": "people",
+    "meaning": "学位",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-81e901b4262cabd9caa6",
+    "word": "diploma",
+    "category": "people",
+    "meaning": "毕业文凭；学历证书",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9ec0375ea56387e5c8f0",
+    "word": "graduate",
+    "category": "people",
+    "meaning": "毕业生",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-52367a6622b19f08825e",
+    "word": "reference",
+    "category": "people",
+    "meaning": "推荐人；推荐信",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-dbfe937585b4147cb6f3",
+    "word": "recommendation",
+    "category": "people",
+    "meaning": "推荐；建议",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-363256bd153813bc7b3e",
+    "word": "promote",
+    "category": "people",
+    "meaning": "晋升；提拔",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-22a44dc676278497c549",
+    "word": "appoint",
+    "category": "people",
+    "meaning": "任命；指定",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-06028c9760f4dfd106aa",
+    "word": "resign",
+    "category": "people",
+    "meaning": "辞职",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-d636fa71c59b22158606",
+    "word": "resignation",
+    "category": "people",
+    "meaning": "辞职；辞职信",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-0b80c840b3218a5f4e71",
+    "word": "retirement",
+    "category": "people",
+    "meaning": "退休",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f94510ee44a9bbec84a7",
+    "word": "pension",
+    "category": "people",
+    "meaning": "养老金；退休金",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b66ecab57861b7224199",
+    "word": "compensation",
+    "category": "people",
+    "meaning": "报酬；补偿",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-06aca62677f73f8634f5",
+    "word": "wage",
+    "category": "people",
+    "meaning": "工资；工钱",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5f220b4a45832c0710e5",
+    "word": "bonus",
+    "category": "people",
+    "meaning": "奖金",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ba66450affc4547b40d2",
+    "word": "incentive",
+    "category": "people",
+    "meaning": "激励措施；奖励",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-32f09fa1e0d7bc303890",
+    "word": "allowance",
+    "category": "people",
+    "meaning": "津贴；补助",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-64e8937abc6d71cf2d2f",
+    "word": "insurance",
+    "category": "people",
+    "meaning": "保险",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-d44df45fb340afe3f2a9",
+    "word": "sick leave",
+    "category": "people",
+    "meaning": "病假",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-d8883df81672fd3cbad3",
+    "word": "maternity leave",
+    "category": "people",
+    "meaning": "产假",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-76d9a5d8536f690e37a1",
+    "word": "annual leave",
+    "category": "people",
+    "meaning": "年假",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-1888101dae1d8fc2c564",
+    "word": "absence",
+    "category": "people",
+    "meaning": "缺席；未到岗",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f036b21c8bbfb1149055",
+    "word": "punctual",
+    "category": "people",
+    "meaning": "准时的；守时的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-fc99c152d84713fe276d",
+    "word": "eligible",
+    "category": "people",
+    "meaning": "符合条件的；有资格的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-37806e80c15b91408f5e",
+    "word": "convention",
+    "category": "meetings",
+    "meaning": "大型会议；行业大会",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-e020bdf568793dee747a",
+    "word": "assembly",
+    "category": "meetings",
+    "meaning": "集会；大会",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-c1bb3894443fd9088c9c",
+    "word": "committee",
+    "category": "meetings",
+    "meaning": "委员会",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-859169b38185780daa54",
+    "word": "board",
+    "category": "meetings",
+    "meaning": "董事会；委员会",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-e57854055350a26cbbef",
+    "word": "chairperson",
+    "category": "meetings",
+    "meaning": "主席；会议主持人",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4740ae6347b0172c0125",
+    "word": "host",
+    "category": "meetings",
+    "meaning": "主持人；主办方",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-291ea5ef94dffda4f444",
+    "word": "speaker",
+    "category": "meetings",
+    "meaning": "演讲者；发言人",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-adf0e0999386dae758e1",
+    "word": "audience",
+    "category": "meetings",
+    "meaning": "听众；观众",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-6f216e33c5cf9add9d70",
+    "word": "delegate",
+    "category": "meetings",
+    "meaning": "代表；会议代表",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5214bf637717ddb480ec",
+    "word": "delegation",
+    "category": "meetings",
+    "meaning": "代表团",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a3013c082c75edc91359",
+    "word": "invitation",
+    "category": "meetings",
+    "meaning": "邀请；请柬",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5014f9af3a684fdd64a7",
+    "word": "invite",
+    "category": "meetings",
+    "meaning": "邀请",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-c125d0397b605657bc89",
+    "word": "accept",
+    "category": "meetings",
+    "meaning": "接受；同意",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-fd5f8cbed3d05d63b307",
+    "word": "decline",
+    "category": "meetings",
+    "meaning": "婉拒；谢绝",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-192f9a06d1dd2d246239",
+    "word": "attend",
+    "category": "meetings",
+    "meaning": "参加；出席",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-d3db5338aae140c5cc04",
+    "word": "introduction",
+    "category": "meetings",
+    "meaning": "介绍；开场说明",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f178ad42d80eb9cd1638",
+    "word": "announce",
+    "category": "meetings",
+    "meaning": "宣布；公布",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-86118a3b7fc92492b026",
+    "word": "announcement",
+    "category": "meetings",
+    "meaning": "公告；通知",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-05fb617ad543807c0c3f",
+    "word": "speech",
+    "category": "meetings",
+    "meaning": "演讲；讲话",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-6bc636ff0103a2888fb3",
+    "word": "lecture",
+    "category": "meetings",
+    "meaning": "讲座；演讲",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-1ca7aaa322fbe8cd8619",
+    "word": "lecturer",
+    "category": "meetings",
+    "meaning": "讲师；讲课人",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-d6a919ef536282bf60c0",
+    "word": "discuss",
+    "category": "meetings",
+    "meaning": "讨论；商议",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-6f7a9000cccc11b52237",
+    "word": "debate",
+    "category": "meetings",
+    "meaning": "辩论；讨论",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a9f4b3d22a523fdada41",
+    "word": "response",
+    "category": "meetings",
+    "meaning": "回复；回应",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-c010d5892545f57eb436",
+    "word": "clarify",
+    "category": "meetings",
+    "meaning": "澄清；讲清楚",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-e2f97782f9dbe89f2779",
+    "word": "clarification",
+    "category": "meetings",
+    "meaning": "澄清；进一步说明",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9c0211c51d04574fdaee",
+    "word": "detail",
+    "category": "meetings",
+    "meaning": "细节；具体情况",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-23d611a6f6f8e3ef8775",
+    "word": "topic",
+    "category": "meetings",
+    "meaning": "话题；议题",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ecd1378bc9dc130008f0",
+    "word": "proposal",
+    "category": "meetings",
+    "meaning": "提议；方案",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-650ffa82126b74c533df",
+    "word": "suggestion",
+    "category": "meetings",
+    "meaning": "建议",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4379105aca40fc3c6b7c",
+    "word": "opinion",
+    "category": "meetings",
+    "meaning": "意见；看法",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-46a81739c6ee7c1d5ed0",
+    "word": "agreement",
+    "category": "meetings",
+    "meaning": "协议；意见一致",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-c983c585ac3c40d92083",
+    "word": "consensus",
+    "category": "meetings",
+    "meaning": "共识；一致意见",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-86ae35d58a6aa3b5742d",
+    "word": "decision",
+    "category": "meetings",
+    "meaning": "决定；决策",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-852408bfbc8333513e7c",
+    "word": "conclusion",
+    "category": "meetings",
+    "meaning": "结论；结束",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-761b7ad8ad439b2855fc",
+    "word": "summary",
+    "category": "meetings",
+    "meaning": "摘要；总结",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-318678825324247b8176",
+    "word": "outline",
+    "category": "meetings",
+    "meaning": "提纲；概要",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-1d6f04754f9f8c5464cb",
+    "word": "preparation",
+    "category": "meetings",
+    "meaning": "准备；筹备工作",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-caa79af4db67695cce51",
+    "word": "duration",
+    "category": "meetings",
+    "meaning": "持续时间",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3fe1406a8254afd471de",
+    "word": "interval",
+    "category": "meetings",
+    "meaning": "间隔；间歇",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ee5e2878c48558bcbd8d",
+    "word": "annual",
+    "category": "meetings",
+    "meaning": "每年的；年度的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-0f12166cd5d87ffdea9f",
+    "word": "projector",
+    "category": "meetings",
+    "meaning": "投影仪",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-d7f4d3ccee7acd3dd7fa",
+    "word": "microphone",
+    "category": "meetings",
+    "meaning": "麦克风",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-492f0278e5832fed6f9d",
+    "word": "auditorium",
+    "category": "meetings",
+    "meaning": "礼堂；报告厅",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5791798a5d57ca5232fa",
+    "word": "reschedule",
+    "category": "meetings",
+    "meaning": "重新安排时间",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-1e4f2a053c5ca50da813",
+    "word": "adjourn",
+    "category": "meetings",
+    "meaning": "休会；将会议延期",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-fed0e4820af42571c936",
+    "word": "financial",
+    "category": "finance",
+    "meaning": "财务的；金融的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-29d8c99ec25b271007f0",
+    "word": "accountant",
+    "category": "finance",
+    "meaning": "会计师；会计人员",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-2a31aefa266db9cca794",
+    "word": "accounting",
+    "category": "finance",
+    "meaning": "会计工作；会计核算",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4381dc2ab14285160c80",
+    "word": "bank",
+    "category": "finance",
+    "meaning": "银行",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ab0fcec08e18a7bccda1",
+    "word": "cash",
+    "category": "finance",
+    "meaning": "现金",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-466e5b9cd57fa444ccea",
+    "word": "currency",
+    "category": "finance",
+    "meaning": "货币",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-c752ae6dd44b6f0fa9cd",
+    "word": "cheque",
+    "category": "finance",
+    "meaning": "支票",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ecc4873a1694eb0de0b3",
+    "word": "credit",
+    "category": "finance",
+    "meaning": "信用；赊购额度",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-50e16bdd9480b5ca1847",
+    "word": "debit",
+    "category": "finance",
+    "meaning": "借记；账户扣款",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-652d75f9bafb25e55c0e",
+    "word": "debt",
+    "category": "finance",
+    "meaning": "债务；欠款",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-472bbf14923e2e7cefd8",
+    "word": "loan",
+    "category": "finance",
+    "meaning": "贷款；借款",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-adf27cc54e26ca64846f",
+    "word": "mortgage",
+    "category": "finance",
+    "meaning": "抵押贷款",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-828408e40d4fe651488b",
+    "word": "interest",
+    "category": "finance",
+    "meaning": "利息",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-286d4726e10586b5919a",
+    "word": "savings",
+    "category": "finance",
+    "meaning": "储蓄；存款",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f9b21c4bda58a6317953",
+    "word": "investment",
+    "category": "finance",
+    "meaning": "投资；投资款",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5c417c6c8127d2a31c8d",
+    "word": "invest",
+    "category": "finance",
+    "meaning": "投资",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-bd08022e8fb80701512c",
+    "word": "capital",
+    "category": "finance",
+    "meaning": "资本；资金",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-639f78fb7729d09dc606",
+    "word": "fund",
+    "category": "finance",
+    "meaning": "资金；基金",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-371f7e4223809d8bce3d",
+    "word": "revenue",
+    "category": "finance",
+    "meaning": "营收；收入总额",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-00cf141f881d4b5572d4",
+    "word": "income",
+    "category": "finance",
+    "meaning": "收入；所得",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-d23be8d1141403ea5dd4",
+    "word": "profit",
+    "category": "finance",
+    "meaning": "利润；收益",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-2ea71c18131a7f038329",
+    "word": "loss",
+    "category": "finance",
+    "meaning": "亏损；损失",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-e7d78e39e8ccc66caf71",
+    "word": "expenditure",
+    "category": "finance",
+    "meaning": "支出；花费",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9f82f7b375f4aa1bd7d5",
+    "word": "cost",
+    "category": "finance",
+    "meaning": "成本；费用",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-97488fbab3282166738a",
+    "word": "charge",
+    "category": "finance",
+    "meaning": "收费；费用",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-c549779d79e5c8e9c9a6",
+    "word": "rate",
+    "category": "finance",
+    "meaning": "费率；比率",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-cf38d95c9c6b1d9d5125",
+    "word": "amount",
+    "category": "finance",
+    "meaning": "金额；数量",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-8975c9b4ea061e5476c7",
+    "word": "percentage",
+    "category": "finance",
+    "meaning": "百分比",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-22c2ada68577df8a7c9b",
+    "word": "commission",
+    "category": "finance",
+    "meaning": "佣金；手续费",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ce922519a3c3ecaf9b09",
+    "word": "transaction",
+    "category": "finance",
+    "meaning": "交易；业务往来",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b111c6e1d318f203063e",
+    "word": "statement",
+    "category": "finance",
+    "meaning": "对账单；财务报表",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-623210167553939c87ed",
+    "word": "bill",
+    "category": "finance",
+    "meaning": "账单",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4c32f19462ec62f9edab",
+    "word": "installment",
+    "category": "finance",
+    "meaning": "分期付款中的一期款项",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ab39a00236186da7aef1",
+    "word": "outstanding",
+    "category": "finance",
+    "meaning": "尚未支付的；未结清的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-9d00405fffdff582522d",
+    "word": "payable",
+    "category": "finance",
+    "meaning": "应支付的；可支付的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-71bdd372fc935798c541",
+    "word": "due date",
+    "category": "finance",
+    "meaning": "付款到期日；截止日期",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-2570319fef239a21af6d",
+    "word": "affordable",
+    "category": "finance",
+    "meaning": "价格可承受的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-52cb0c6abb02dced4eb9",
+    "word": "quarterly",
+    "category": "finance",
+    "meaning": "每季度的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-b81f37a043a6f767e7c9",
+    "word": "audit",
+    "category": "finance",
+    "meaning": "审计；账目检查",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-d59386e0ae435e292fbe",
+    "word": "asset",
+    "category": "finance",
+    "meaning": "资产",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-c5fd94b8c335618802e8",
+    "word": "liability",
+    "category": "finance",
+    "meaning": "负债；应承担的责任",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b79e8c5b67bcad216587",
+    "word": "withdrawal",
+    "category": "finance",
+    "meaning": "提款；取款",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-0fca39a9b31f4e32d5e6",
+    "word": "exchange rate",
+    "category": "finance",
+    "meaning": "汇率",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-fdc4917f70bd1a7334f1",
+    "word": "bankruptcy",
+    "category": "finance",
+    "meaning": "破产",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-d8806ee41898c3007efd",
+    "word": "taxation",
+    "category": "finance",
+    "meaning": "征税；税制",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-debfc54303301ee216c1",
+    "word": "penalty",
+    "category": "finance",
+    "meaning": "罚款；处罚",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4c03df9cdfacd7ea8e0d",
+    "word": "reimbursement",
+    "category": "finance",
+    "meaning": "报销；费用偿还",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-2aaf9a112578b0758b35",
+    "word": "deduction",
+    "category": "finance",
+    "meaning": "扣款；扣除额",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-1778c2d9b45bac0ae39a",
+    "word": "retail",
+    "category": "sales",
+    "meaning": "零售",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-36b2a10044ffe600e916",
+    "word": "retailer",
+    "category": "sales",
+    "meaning": "零售商",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-12ddcbf42dc486453aab",
+    "word": "wholesale",
+    "category": "sales",
+    "meaning": "批发",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-2f1a5ecbf727ffc04e23",
+    "word": "wholesaler",
+    "category": "sales",
+    "meaning": "批发商",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-6bfbd709d5fdc0618ab5",
+    "word": "consumer",
+    "category": "sales",
+    "meaning": "消费者",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-cfb240efa8670bfe5c76",
+    "word": "commerce",
+    "category": "sales",
+    "meaning": "商业；贸易",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-d01acdec3a3b87b33882",
+    "word": "commercial",
+    "category": "sales",
+    "meaning": "商业的；营利的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-e4d693d24e646cb78784",
+    "word": "market",
+    "category": "sales",
+    "meaning": "市场",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-e2a530e251d3675034d2",
+    "word": "marketing",
+    "category": "sales",
+    "meaning": "市场营销",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-aacfba7d190db7655bed",
+    "word": "advertisement",
+    "category": "sales",
+    "meaning": "广告",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9b08415867cfc8eb8c2a",
+    "word": "advertise",
+    "category": "sales",
+    "meaning": "登广告；宣传",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-3dc260b2472062d9c57b",
+    "word": "campaign",
+    "category": "sales",
+    "meaning": "宣传活动；促销活动",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-7583c8caa81355ff8888",
+    "word": "promotional",
+    "category": "sales",
+    "meaning": "促销的；宣传推广的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-cb9d3dfade7c0127ed55",
+    "word": "publicity",
+    "category": "sales",
+    "meaning": "宣传；公众关注",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-04a9fba2f0c404565e6b",
+    "word": "brand",
+    "category": "sales",
+    "meaning": "品牌",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-40f41af6e6a817c86a9d",
+    "word": "trademark",
+    "category": "sales",
+    "meaning": "商标",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-d2504e52b8b07484a2b6",
+    "word": "catalogue",
+    "category": "sales",
+    "meaning": "产品目录",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-c318132fa32974d9b455",
+    "word": "brochure",
+    "category": "sales",
+    "meaning": "宣传册",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f7a241127b76ea41742a",
+    "word": "flyer",
+    "category": "sales",
+    "meaning": "传单；宣传单",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-72309c04a62543846322",
+    "word": "coupon",
+    "category": "sales",
+    "meaning": "优惠券",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-8923fedfd16a77b1fe21",
+    "word": "voucher",
+    "category": "sales",
+    "meaning": "代金券；凭券",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-60bca9331d028dd7de2f",
+    "word": "bargain",
+    "category": "sales",
+    "meaning": "便宜货；划算的交易",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-988180bf0c9328c9e8bd",
+    "word": "offer",
+    "category": "sales",
+    "meaning": "优惠；报价",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-433cd7fc8060e0821280",
+    "word": "exclusive",
+    "category": "sales",
+    "meaning": "独家的；专享的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-abfc412ce6e530df63b0",
+    "word": "launch",
+    "category": "sales",
+    "meaning": "推出；上市",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-6611032577e5a7b3a146",
+    "word": "innovation",
+    "category": "sales",
+    "meaning": "创新；新产品或新方法",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-acef2c15bcd349db900d",
+    "word": "quality",
+    "category": "sales",
+    "meaning": "质量；品质",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-cd42404d52ad55ccfa9a",
+    "word": "value",
+    "category": "sales",
+    "meaning": "价值；划算程度",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-870dc23d21836b97b58a",
+    "word": "premium",
+    "category": "sales",
+    "meaning": "高档的；优质的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-020dae383219bf785518",
+    "word": "competitive",
+    "category": "sales",
+    "meaning": "有竞争力的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-c378ee41c2783d081fb4",
+    "word": "competitor",
+    "category": "sales",
+    "meaning": "竞争对手",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4721819b2bf3e332787f",
+    "word": "competition",
+    "category": "sales",
+    "meaning": "竞争",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-c271f2bb931810eef633",
+    "word": "comparison",
+    "category": "sales",
+    "meaning": "比较；对比",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-65045134064dd4d90566",
+    "word": "selection",
+    "category": "sales",
+    "meaning": "可选商品；选择",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b530f329d65f246114bd",
+    "word": "variety",
+    "category": "sales",
+    "meaning": "种类；多样性",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a11a75e0feeecc1a9eff",
+    "word": "option",
+    "category": "sales",
+    "meaning": "选项；可选方案",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-6dbd0f28d0d97656768b",
+    "word": "buyer",
+    "category": "sales",
+    "meaning": "买家；采购人员",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a4279eae47aaa7417da6",
+    "word": "seller",
+    "category": "sales",
+    "meaning": "卖家",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-634e92fa7130dd801e03",
+    "word": "showroom",
+    "category": "sales",
+    "meaning": "展示厅；样品陈列室",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-7647af7af268c583c941",
+    "word": "outlet",
+    "category": "sales",
+    "meaning": "销售门店；销售渠道",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-dfbb889cf19bda82ed8d",
+    "word": "display",
+    "category": "sales",
+    "meaning": "陈列；展示",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-af2bdbe1aa9b6ec1e2ad",
+    "word": "sample",
+    "category": "sales",
+    "meaning": "样品",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-79891e980747ffbd21e6",
+    "word": "trial",
+    "category": "sales",
+    "meaning": "试用；试验",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-811f2a14b9850c9d9c75",
+    "word": "survey",
+    "category": "sales",
+    "meaning": "调查",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ba8850dcf4bd973fa65e",
+    "word": "questionnaire",
+    "category": "sales",
+    "meaning": "调查问卷",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-1242033f8edfae7b32ed",
+    "word": "defective",
+    "category": "sales",
+    "meaning": "有缺陷的；有故障的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-fdf09cdfc26cccf610ed",
+    "word": "resolve",
+    "category": "sales",
+    "meaning": "解决；处理好",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-0b349c79e44d2b99d730",
+    "word": "transportation",
+    "category": "logistics",
+    "meaning": "运输；交通运输",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-740062676a3134f36f0f",
+    "word": "shipping",
+    "category": "logistics",
+    "meaning": "货物运输；运送",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3322532d8589f95c912a",
+    "word": "cargo",
+    "category": "logistics",
+    "meaning": "货物；船运或空运货物",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a42d519714d616e9411d",
+    "word": "container",
+    "category": "logistics",
+    "meaning": "集装箱；容器",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f5fe331d2367a7a67ee2",
+    "word": "crate",
+    "category": "logistics",
+    "meaning": "大木箱；板条箱",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-2fb41c42cec5d64aee37",
+    "word": "cardboard",
+    "category": "logistics",
+    "meaning": "硬纸板",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-71669691cb0b0f1bf662",
+    "word": "packaging",
+    "category": "logistics",
+    "meaning": "包装；包装材料",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f0a289923ed634acec74",
+    "word": "wrap",
+    "category": "logistics",
+    "meaning": "包裹；包装",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-eb8771659e9fb622424b",
+    "word": "fragile",
+    "category": "logistics",
+    "meaning": "易碎的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-c2a116aa910d147bd5bd",
+    "word": "handle",
+    "category": "logistics",
+    "meaning": "搬运；处理",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-3d0cf80e926a80a9066a",
+    "word": "unload",
+    "category": "logistics",
+    "meaning": "卸货",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-0cf67fc72b3c86c7a454",
+    "word": "load",
+    "category": "logistics",
+    "meaning": "装载；装货",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-1f64847ea58525bd846b",
+    "word": "pickup",
+    "category": "logistics",
+    "meaning": "取货；接送",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-81824c90f8a5276bc87e",
+    "word": "collect",
+    "category": "logistics",
+    "meaning": "收取；取走",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-93354845030274cd4bf1",
+    "word": "distribution",
+    "category": "logistics",
+    "meaning": "配送；分发",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-62f2f0f1eff10d3152c9",
+    "word": "distributor",
+    "category": "logistics",
+    "meaning": "经销商；分销商",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-580f3cccb40b9f641e6e",
+    "word": "consignment",
+    "category": "logistics",
+    "meaning": "一批托运货物",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5803587e6791c11992f3",
+    "word": "carrier",
+    "category": "logistics",
+    "meaning": "承运人；运输公司",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-24611dec0a0a3ae6f9f3",
+    "word": "truck",
+    "category": "logistics",
+    "meaning": "卡车；货车",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-970b1897af0abab6127d",
+    "word": "van",
+    "category": "logistics",
+    "meaning": "厢式货车",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5eb2ce291c7d227dd684",
+    "word": "fleet",
+    "category": "logistics",
+    "meaning": "车队；船队",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5d3d318a749ef73cac18",
+    "word": "forklift",
+    "category": "logistics",
+    "meaning": "叉车",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b8902a0baa8670515636",
+    "word": "pallet",
+    "category": "logistics",
+    "meaning": "货运托盘",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a864ed013d128c9c908c",
+    "word": "dock",
+    "category": "logistics",
+    "meaning": "码头；装卸平台",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f8d397a33fcb9725db96",
+    "word": "port",
+    "category": "logistics",
+    "meaning": "港口",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-49a25f9feefaffecad0f",
+    "word": "storage",
+    "category": "logistics",
+    "meaning": "储存；仓储",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-77d716e2532be480b4c8",
+    "word": "shortage",
+    "category": "logistics",
+    "meaning": "短缺；不足",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-1bd305c929ba350e05b4",
+    "word": "surplus",
+    "category": "logistics",
+    "meaning": "剩余；过剩量",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-625dbdd35aabb2660d88",
+    "word": "reorder",
+    "category": "logistics",
+    "meaning": "再次订购",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-4160b054a29aee62c21c",
+    "word": "fulfill",
+    "category": "logistics",
+    "meaning": "履行；完成订单",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-d942f64886578d874731",
+    "word": "import",
+    "category": "logistics",
+    "meaning": "进口",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-d46aee08cc49f6d1eb41",
+    "word": "export",
+    "category": "logistics",
+    "meaning": "出口",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-ed0a3b494b3cd42a8d03",
+    "word": "manufacture",
+    "category": "logistics",
+    "meaning": "制造；生产",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-06c8aaa93d80a768829b",
+    "word": "factory",
+    "category": "logistics",
+    "meaning": "工厂",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-96044d9734b6044127de",
+    "word": "plant",
+    "category": "logistics",
+    "meaning": "工厂；生产设施",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ab8e18ef4ebebeddc0b3",
+    "word": "production",
+    "category": "logistics",
+    "meaning": "生产；产量",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-63ebfab6ce4e84c4f846",
+    "word": "assemble",
+    "category": "logistics",
+    "meaning": "组装",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-7cb194d9414fdb990b0e",
+    "word": "machinery",
+    "category": "logistics",
+    "meaning": "机器；机械设备",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-61e63f1aafb433ac8c13",
+    "word": "raw material",
+    "category": "logistics",
+    "meaning": "原材料",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-6985ca1f4daa5a584a28",
+    "word": "component",
+    "category": "logistics",
+    "meaning": "零部件；组成部分",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4bb24efc9641afc5ded1",
+    "word": "batch",
+    "category": "logistics",
+    "meaning": "一批；批次",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-385cfdbc00ec32031699",
+    "word": "unit",
+    "category": "logistics",
+    "meaning": "单位；一件产品",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-0844df8fee9eeadaa344",
+    "word": "weight",
+    "category": "logistics",
+    "meaning": "重量",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-48eb632fe16ae19550af",
+    "word": "dimension",
+    "category": "logistics",
+    "meaning": "尺寸；长宽高中的一项",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ec21b3b973a3a0e70503",
+    "word": "capacity",
+    "category": "logistics",
+    "meaning": "容量；生产能力",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3b1957f394d1b896c806",
+    "word": "inspection",
+    "category": "logistics",
+    "meaning": "检查；检验",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-90c1551105755a3a577d",
+    "word": "barcode",
+    "category": "logistics",
+    "meaning": "条形码",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-cde56892bbebbf6c5fe5",
+    "word": "journey",
+    "category": "travel",
+    "meaning": "旅程；行程",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-8bd0f4bb7d222c5a808c",
+    "word": "tourism",
+    "category": "travel",
+    "meaning": "旅游业；旅游",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-cd50fc998e7e535b8908",
+    "word": "traveler",
+    "category": "travel",
+    "meaning": "旅行者；旅客",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ccc9ff052aee8da1c7d6",
+    "word": "airport",
+    "category": "travel",
+    "meaning": "机场",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-1b288c5c6dc91655abda",
+    "word": "airline",
+    "category": "travel",
+    "meaning": "航空公司",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-d10149eecff30f56d947",
+    "word": "aircraft",
+    "category": "travel",
+    "meaning": "飞机；航空器",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-03b6b3e9163de296faeb",
+    "word": "flight",
+    "category": "travel",
+    "meaning": "航班；飞行",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-07ae38b93d8054d84aac",
+    "word": "pilot",
+    "category": "travel",
+    "meaning": "飞行员",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9cae07a2e9ceea5b8860",
+    "word": "crew",
+    "category": "travel",
+    "meaning": "全体机组人员；乘务组",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-bf816809a4d8aa98ed09",
+    "word": "passenger",
+    "category": "travel",
+    "meaning": "乘客",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-14069429150abcbf244c",
+    "word": "ticket",
+    "category": "travel",
+    "meaning": "票；车票或机票",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-001d057c49888db925f4",
+    "word": "booking",
+    "category": "travel",
+    "meaning": "预订",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-1d6f21ea90c6de24052b",
+    "word": "baggage",
+    "category": "travel",
+    "meaning": "行李",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9817a64167e5ea6c638f",
+    "word": "suitcase",
+    "category": "travel",
+    "meaning": "手提箱；旅行箱",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5f00368a6ad231c3c439",
+    "word": "backpack",
+    "category": "travel",
+    "meaning": "背包",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4539016c2d796f8c71d6",
+    "word": "carry-on",
+    "category": "travel",
+    "meaning": "随身行李",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-cb5cb6d2cd8500c9666c",
+    "word": "boarding pass",
+    "category": "travel",
+    "meaning": "登机牌",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-a0823cfac0be1cffde20",
+    "word": "check-in",
+    "category": "travel",
+    "meaning": "值机手续；入住登记",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-47320987f9a49d5b0011",
+    "word": "checkpoint",
+    "category": "travel",
+    "meaning": "检查站；安检关卡",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9ecfc652f6b09c9facb7",
+    "word": "immigration",
+    "category": "travel",
+    "meaning": "入境检查；移民事务",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-bfb9e6d725a09bd166dd",
+    "word": "domestic",
+    "category": "travel",
+    "meaning": "国内的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-1e3bb894756f8d62b575",
+    "word": "international",
+    "category": "travel",
+    "meaning": "国际的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-4240e31b6a90fc542604",
+    "word": "overseas",
+    "category": "travel",
+    "meaning": "在海外；到国外",
+    "pos": "副词"
+  },
+  {
+    "id": "vx-a6278590a4ba1f3cea11",
+    "word": "abroad",
+    "category": "travel",
+    "meaning": "在国外；到国外",
+    "pos": "副词"
+  },
+  {
+    "id": "vx-80812d7992dd498c03bb",
+    "word": "cancellation",
+    "category": "travel",
+    "meaning": "取消",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b38d9d168c3aedf156f4",
+    "word": "connection",
+    "category": "travel",
+    "meaning": "中转衔接；转乘航班或车次",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-e28bf5ac4a7d9b164927",
+    "word": "nonstop",
+    "category": "travel",
+    "meaning": "中途不停的；不经停的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-dcdd22226bc947f5071f",
+    "word": "round trip",
+    "category": "travel",
+    "meaning": "往返行程",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-a6ae2cbf5b10eb5a84bf",
+    "word": "one-way",
+    "category": "travel",
+    "meaning": "单程的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-5d2c13d6f9fa421125a9",
+    "word": "seat",
+    "category": "travel",
+    "meaning": "座位",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-e4ebe51cc383b709a875",
+    "word": "economy class",
+    "category": "travel",
+    "meaning": "经济舱",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-c4edfe61041061c9cb15",
+    "word": "business class",
+    "category": "travel",
+    "meaning": "商务舱",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-7fef9479c8bc5a3c8689",
+    "word": "upgrade",
+    "category": "travel",
+    "meaning": "升级；升舱",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-e0c146e3d9648bd10bf0",
+    "word": "rental",
+    "category": "travel",
+    "meaning": "租用；租赁",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-12796d3d5f4e132385f8",
+    "word": "taxi",
+    "category": "travel",
+    "meaning": "出租车",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-e0f167bc84b881bc06f6",
+    "word": "coach",
+    "category": "travel",
+    "meaning": "长途客车",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-e34d1c9011e06204d054",
+    "word": "railway",
+    "category": "travel",
+    "meaning": "铁路",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9f3a4329d8325465f71e",
+    "word": "subway",
+    "category": "travel",
+    "meaning": "地铁",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9b4ef3e5b7b4d1759cb8",
+    "word": "station",
+    "category": "travel",
+    "meaning": "车站；站点",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-fddbb38a8c0c18b628a0",
+    "word": "cruise",
+    "category": "travel",
+    "meaning": "乘船游览；邮轮旅行",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-6168d576bc095d58a1de",
+    "word": "bus stop",
+    "category": "travel",
+    "meaning": "公交车站",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-075f4ab854e2a33c8ac1",
+    "word": "traffic",
+    "category": "travel",
+    "meaning": "交通；车流",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-76a46512186eeecb0d4b",
+    "word": "congestion",
+    "category": "travel",
+    "meaning": "拥堵",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-bcade5095df6aac49c93",
+    "word": "toll",
+    "category": "travel",
+    "meaning": "道路或桥梁通行费",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5fa896b2fbacdfc6676d",
+    "word": "highway",
+    "category": "travel",
+    "meaning": "公路；干道",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-6fda7451bc6b4a595141",
+    "word": "intersection",
+    "category": "travel",
+    "meaning": "交叉路口",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-cea5cd4fd91f7fa0acf0",
+    "word": "detour",
+    "category": "travel",
+    "meaning": "绕行路线",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-750cfe5c94c6b2f63d3b",
+    "word": "pedestrian",
+    "category": "travel",
+    "meaning": "行人",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-8d53a3e3672946bd802c",
+    "word": "hotel",
+    "category": "hospitality",
+    "meaning": "酒店；旅馆",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-70cc7d3c6e9a2a308b25",
+    "word": "motel",
+    "category": "hospitality",
+    "meaning": "汽车旅馆",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a6188622aab1dfdbcd13",
+    "word": "hostel",
+    "category": "hospitality",
+    "meaning": "青年旅舍；简易旅馆",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a05744e1bf9b659d8b0c",
+    "word": "accommodation",
+    "category": "hospitality",
+    "meaning": "住宿；住处",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4bb6794bff884d75de01",
+    "word": "resort",
+    "category": "hospitality",
+    "meaning": "度假胜地；度假酒店",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4b5dc076e7b9c122b3c8",
+    "word": "lobby",
+    "category": "hospitality",
+    "meaning": "大厅；酒店大堂",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-67d3e22ffdf32bc7b366",
+    "word": "lounge",
+    "category": "hospitality",
+    "meaning": "休息室；休息区",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-c3bca14c650063bb88e5",
+    "word": "receptionist",
+    "category": "hospitality",
+    "meaning": "前台接待员",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-84983c60f7daadc1cb86",
+    "word": "guest",
+    "category": "hospitality",
+    "meaning": "宾客；住客",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4c23c3188b938e5979ba",
+    "word": "vacant",
+    "category": "hospitality",
+    "meaning": "空着的；未被占用的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-cf7ae13e44d84545481e",
+    "word": "single room",
+    "category": "hospitality",
+    "meaning": "单人房",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-e8ff96390434558a32ae",
+    "word": "double room",
+    "category": "hospitality",
+    "meaning": "双人房",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-4095f603052daa790350",
+    "word": "balcony",
+    "category": "hospitality",
+    "meaning": "阳台",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-69e0b709f65619bcbc08",
+    "word": "swimming pool",
+    "category": "hospitality",
+    "meaning": "游泳池",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-01698ce1dc071ffe2992",
+    "word": "spa",
+    "category": "hospitality",
+    "meaning": "水疗中心；温泉疗养地",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3a03dc4bfc9586f223ee",
+    "word": "sauna",
+    "category": "hospitality",
+    "meaning": "桑拿浴；桑拿房",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-47edce64a7b2bdebf8de",
+    "word": "key card",
+    "category": "hospitality",
+    "meaning": "门卡",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-760e1e01f3543be9e088",
+    "word": "wake-up call",
+    "category": "hospitality",
+    "meaning": "叫醒服务；叫醒电话",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-fe37a04231164ad81f44",
+    "word": "room service",
+    "category": "hospitality",
+    "meaning": "客房送餐服务",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-7c58ea253628feed6583",
+    "word": "breakfast",
+    "category": "hospitality",
+    "meaning": "早餐",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f3bb79e48a7a8af1d028",
+    "word": "lunch",
+    "category": "hospitality",
+    "meaning": "午餐",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-dda209044ad44962b012",
+    "word": "dinner",
+    "category": "hospitality",
+    "meaning": "晚餐；正餐",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-aec6c3d03f013562eb39",
+    "word": "meal",
+    "category": "hospitality",
+    "meaning": "一餐；饭食",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ee275d64dafcd283c25b",
+    "word": "restaurant",
+    "category": "hospitality",
+    "meaning": "餐馆",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-41d6f409e16df1200721",
+    "word": "cafeteria",
+    "category": "hospitality",
+    "meaning": "自助餐厅；食堂",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-398991009da1d251792e",
+    "word": "menu",
+    "category": "hospitality",
+    "meaning": "菜单",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9beb7c0bd91394a08c11",
+    "word": "waiter",
+    "category": "hospitality",
+    "meaning": "男服务员",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-79faa2b54e341ffa9d5f",
+    "word": "waitress",
+    "category": "hospitality",
+    "meaning": "女服务员",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f59ac0828b9a32293b34",
+    "word": "chef",
+    "category": "hospitality",
+    "meaning": "厨师；主厨",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3171d89ad00530ffa19a",
+    "word": "kitchen",
+    "category": "hospitality",
+    "meaning": "厨房",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-efe899c74558f20b08bb",
+    "word": "counter",
+    "category": "hospitality",
+    "meaning": "柜台；服务台",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9db44611cf4a08a87bfa",
+    "word": "napkin",
+    "category": "hospitality",
+    "meaning": "餐巾",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ad9a0cab12eef9063923",
+    "word": "tray",
+    "category": "hospitality",
+    "meaning": "托盘",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-20cd4732ae60507a2e2e",
+    "word": "kettle",
+    "category": "hospitality",
+    "meaning": "水壶",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-65cd9e48ef4dc4a01b90",
+    "word": "seafood",
+    "category": "hospitality",
+    "meaning": "海鲜",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-28af4d7711a60323a070",
+    "word": "vegetarian",
+    "category": "hospitality",
+    "meaning": "素食的；不含肉的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-1f10711a285fd3cc3ade",
+    "word": "vegan",
+    "category": "hospitality",
+    "meaning": "纯素的；不含动物产品的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-83e01dda3eb5a450a0a4",
+    "word": "portion",
+    "category": "hospitality",
+    "meaning": "一份食物；一人份",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-d8178aae87b9a429761b",
+    "word": "ingredient",
+    "category": "hospitality",
+    "meaning": "食材；配料",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-e1d8e552330911f9f779",
+    "word": "recipe",
+    "category": "hospitality",
+    "meaning": "食谱；烹饪方法",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b5d2f4515ba34f2f83f3",
+    "word": "flavor",
+    "category": "hospitality",
+    "meaning": "味道；风味",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-2efa64f91736e51bfbca",
+    "word": "spicy",
+    "category": "hospitality",
+    "meaning": "辛辣的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-435bee0ece4786884238",
+    "word": "specialty",
+    "category": "hospitality",
+    "meaning": "特色菜；招牌菜",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-36c8f7d18825383df94d",
+    "word": "main course",
+    "category": "hospitality",
+    "meaning": "主菜",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-3f7cb7bef76f72616a84",
+    "word": "takeout",
+    "category": "hospitality",
+    "meaning": "外带餐食",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-97380187a878903ffe72",
+    "word": "tip",
+    "category": "hospitality",
+    "meaning": "小费",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4d7e99c1bb1643d937f0",
+    "word": "gratuity",
+    "category": "hospitality",
+    "meaning": "小费；酬谢金",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-1e7b5b4ffd8807bad081",
+    "word": "service charge",
+    "category": "hospitality",
+    "meaning": "服务费",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-aa97302150fce811425c",
+    "word": "computer",
+    "category": "technology",
+    "meaning": "电脑；计算机",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5eec0dc419aa8337bf72",
+    "word": "laptop",
+    "category": "technology",
+    "meaning": "笔记本电脑",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-68693d02ab4fbb2331b8",
+    "word": "desktop",
+    "category": "technology",
+    "meaning": "台式电脑；桌面",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5bed85bd69a5502a8f64",
+    "word": "tablet",
+    "category": "technology",
+    "meaning": "平板电脑",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-358aea9928a74643fe55",
+    "word": "smartphone",
+    "category": "technology",
+    "meaning": "智能手机",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-7de97367c9cdc3c6db31",
+    "word": "monitor",
+    "category": "technology",
+    "meaning": "显示器",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-47c5c28cae2574cdf5a1",
+    "word": "mouse",
+    "category": "technology",
+    "meaning": "鼠标",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-df31ce5aab9e6548dce8",
+    "word": "headset",
+    "category": "technology",
+    "meaning": "耳麦；头戴式耳机",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-86d6e84ef9a21b74c964",
+    "word": "headphones",
+    "category": "technology",
+    "meaning": "耳机",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-7d6e18d0ff4bed3b1d1f",
+    "word": "cable",
+    "category": "technology",
+    "meaning": "电缆；连接线",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-47dd56c2c7a7f7aac789",
+    "word": "socket",
+    "category": "technology",
+    "meaning": "插座；接口",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-0daf0c9ca37fec6e1d5a",
+    "word": "plug",
+    "category": "technology",
+    "meaning": "插头",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-38102b4b8d453fbae854",
+    "word": "charger",
+    "category": "technology",
+    "meaning": "充电器",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f3d1701e1d575e129478",
+    "word": "battery",
+    "category": "technology",
+    "meaning": "电池",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ae1eae1d76e5b7c865c4",
+    "word": "adapter",
+    "category": "technology",
+    "meaning": "适配器；转接器",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3009be769fb8f956e841",
+    "word": "network",
+    "category": "technology",
+    "meaning": "网络",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3b0fe0d342e9fa16a5c6",
+    "word": "internet",
+    "category": "technology",
+    "meaning": "互联网",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-747a8f398395dde8e524",
+    "word": "website",
+    "category": "technology",
+    "meaning": "网站",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-03f284969994fcdcb36d",
+    "word": "web page",
+    "category": "technology",
+    "meaning": "网页",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-82244417f956ac7c599f",
+    "word": "email",
+    "category": "technology",
+    "meaning": "电子邮件",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-caadbcffec9038112a56",
+    "word": "inbox",
+    "category": "technology",
+    "meaning": "收件箱",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4e388ab32b10dc8dbc7e",
+    "word": "spam",
+    "category": "technology",
+    "meaning": "垃圾邮件",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ab530a13e45914982b79",
+    "word": "message",
+    "category": "technology",
+    "meaning": "消息；信息",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-68ff63fb82e0e5dfec2a",
+    "word": "download",
+    "category": "technology",
+    "meaning": "下载",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-ff4085ad157354dc8ea6",
+    "word": "upload",
+    "category": "technology",
+    "meaning": "上传",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-1e142e6277b12b7e1110",
+    "word": "install",
+    "category": "technology",
+    "meaning": "安装",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-38227bb04e6df14a065d",
+    "word": "uninstall",
+    "category": "technology",
+    "meaning": "卸载",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-5ca4f3850ccc331aaf8a",
+    "word": "version",
+    "category": "technology",
+    "meaning": "版本",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-1310ca2c8932dbd11866",
+    "word": "program",
+    "category": "technology",
+    "meaning": "计算机程序",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-7bd9ca7a756115eabdff",
+    "word": "programmer",
+    "category": "technology",
+    "meaning": "程序员",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-88fa0d759f845b47c044",
+    "word": "developer",
+    "category": "technology",
+    "meaning": "软件开发人员",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f93f800502948043c87c",
+    "word": "operating system",
+    "category": "technology",
+    "meaning": "操作系统",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-c796d37c6d491e8f0c6e",
+    "word": "interface",
+    "category": "technology",
+    "meaning": "界面；接口",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-c2d4b446a44ce54fab8e",
+    "word": "icon",
+    "category": "technology",
+    "meaning": "图标",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-e5c7ffac26fed654fe62",
+    "word": "click",
+    "category": "technology",
+    "meaning": "点击",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-e16a9d4d1cf9ead81f53",
+    "word": "scroll",
+    "category": "technology",
+    "meaning": "滚动页面",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-6197595503f01ee2a34e",
+    "word": "delete",
+    "category": "technology",
+    "meaning": "删除",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-a2c183d5a12aea35598b",
+    "word": "paste",
+    "category": "technology",
+    "meaning": "粘贴",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-262121c5372be8af3ae6",
+    "word": "edit",
+    "category": "technology",
+    "meaning": "编辑；修改",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-e904c9ccfa425ff0b055",
+    "word": "format",
+    "category": "technology",
+    "meaning": "格式",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b7d64a9221007dfd5390",
+    "word": "configuration",
+    "category": "technology",
+    "meaning": "配置；设置",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-7f0348c1e2dd94ac9ec3",
+    "word": "log in",
+    "category": "technology",
+    "meaning": "登录",
+    "pos": "动词短语"
+  },
+  {
+    "id": "vx-6a832af49de9b6b93fab",
+    "word": "log out",
+    "category": "technology",
+    "meaning": "退出登录",
+    "pos": "动词短语"
+  },
+  {
+    "id": "vx-f6fc84c9f21c24907d6b",
+    "word": "online",
+    "category": "technology",
+    "meaning": "在线的；联网的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-8e2c7ac508139a02af85",
+    "word": "offline",
+    "category": "technology",
+    "meaning": "离线的；未联网的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-a4cc6bc01a927e2a78fd",
+    "word": "privacy",
+    "category": "technology",
+    "meaning": "隐私",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-2898a07b2cf23dda8530",
+    "word": "virus",
+    "category": "technology",
+    "meaning": "计算机病毒",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a1613be9e3df6e9a2d9f",
+    "word": "compatible",
+    "category": "technology",
+    "meaning": "兼容的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-5167e9677e1fbc500ecb",
+    "word": "building",
+    "category": "facilities",
+    "meaning": "建筑物",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-7a01adea4b8a1084a7ae",
+    "word": "construction",
+    "category": "facilities",
+    "meaning": "施工；建设",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-fc9184134ae567287841",
+    "word": "property",
+    "category": "facilities",
+    "meaning": "房地产；房产",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a4b52f4884cdd3a60b52",
+    "word": "premises",
+    "category": "facilities",
+    "meaning": "营业场所；办公场地",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-6f347b04efac92cf6edc",
+    "word": "apartment",
+    "category": "facilities",
+    "meaning": "公寓",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-e9da86d351cf9a7642d8",
+    "word": "tenant",
+    "category": "facilities",
+    "meaning": "租户",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-c4a11b3a02a7908b51ba",
+    "word": "landlord",
+    "category": "facilities",
+    "meaning": "房东；出租人",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b544a7686d1186680a9d",
+    "word": "lease",
+    "category": "facilities",
+    "meaning": "租约；租赁合同",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3902eb874fcc6c8a1dbf",
+    "word": "entrance",
+    "category": "facilities",
+    "meaning": "入口",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-e596899f114b51624023",
+    "word": "exit",
+    "category": "facilities",
+    "meaning": "出口",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ceb04a698ebb3a692774",
+    "word": "hallway",
+    "category": "facilities",
+    "meaning": "走廊；过道",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3ff758e26dd919e9e8d5",
+    "word": "terrace",
+    "category": "facilities",
+    "meaning": "露台",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-953ff581e859b90bbcf5",
+    "word": "courtyard",
+    "category": "facilities",
+    "meaning": "庭院",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-87346eb282352fda74ad",
+    "word": "fence",
+    "category": "facilities",
+    "meaning": "围栏；栅栏",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b6dce9d1302b80abcb3e",
+    "word": "sidewalk",
+    "category": "facilities",
+    "meaning": "人行道",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-847fd46115c9199683ef",
+    "word": "parking lot",
+    "category": "facilities",
+    "meaning": "停车场",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-21b747de22dbb757fde3",
+    "word": "garage",
+    "category": "facilities",
+    "meaning": "车库",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ff298e4c4f975caa2511",
+    "word": "concrete",
+    "category": "facilities",
+    "meaning": "混凝土",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-c762830741c126f19e44",
+    "word": "brick",
+    "category": "facilities",
+    "meaning": "砖",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5dd46878bb0b580b3086",
+    "word": "timber",
+    "category": "facilities",
+    "meaning": "木材",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b86262f9bc892590bb31",
+    "word": "steel",
+    "category": "facilities",
+    "meaning": "钢；钢材",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4008294739162e8f0119",
+    "word": "pipe",
+    "category": "facilities",
+    "meaning": "管道；管子",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-c9af477d19b132dbcda4",
+    "word": "valve",
+    "category": "facilities",
+    "meaning": "阀门",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f40b4c5241c68cafc72d",
+    "word": "faucet",
+    "category": "facilities",
+    "meaning": "水龙头",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-1978baf2c153fd3bf363",
+    "word": "sink",
+    "category": "facilities",
+    "meaning": "水槽；洗涤池",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f2ee8db7682b9f0ba180",
+    "word": "restroom",
+    "category": "facilities",
+    "meaning": "洗手间；卫生间",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f79e5dd024261a8b5f69",
+    "word": "heating",
+    "category": "facilities",
+    "meaning": "供暖；暖气系统",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-bbe81278780d62460410",
+    "word": "heater",
+    "category": "facilities",
+    "meaning": "加热器；取暖器",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-21f471a9fe3358c05249",
+    "word": "air conditioning",
+    "category": "facilities",
+    "meaning": "空调；空气调节系统",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-ae80c184961f8640e6de",
+    "word": "electricity",
+    "category": "facilities",
+    "meaning": "电；电力",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-78b49fb2cc2d2ed6c1bb",
+    "word": "switch",
+    "category": "facilities",
+    "meaning": "开关",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f814c1700248277f0b3d",
+    "word": "wiring",
+    "category": "facilities",
+    "meaning": "电线布设；电路布线",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9123dcbb0b42652b0e10",
+    "word": "generator",
+    "category": "facilities",
+    "meaning": "发电机",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b4942fb4e8b58995227b",
+    "word": "bulb",
+    "category": "facilities",
+    "meaning": "灯泡",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5e94ec139442cfe98f5c",
+    "word": "alarm",
+    "category": "facilities",
+    "meaning": "警报；警报器",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-012d6a08f0d0e62546b9",
+    "word": "evacuation",
+    "category": "facilities",
+    "meaning": "疏散；撤离",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-824d61d9f6c12c04ef9b",
+    "word": "fire extinguisher",
+    "category": "facilities",
+    "meaning": "灭火器",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-856e8bd358ece398c72f",
+    "word": "safety",
+    "category": "facilities",
+    "meaning": "安全",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-652607e181622fd24a78",
+    "word": "hazard",
+    "category": "facilities",
+    "meaning": "危险源；安全隐患",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3cf083c28255868b5f46",
+    "word": "caution",
+    "category": "facilities",
+    "meaning": "小心；警示",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4bd9354bb652233497a0",
+    "word": "warning",
+    "category": "facilities",
+    "meaning": "警告；提醒",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-91bb720d0df350055e59",
+    "word": "maintain",
+    "category": "facilities",
+    "meaning": "保养；维护",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-db709dbd299db08f60a8",
+    "word": "cleaning",
+    "category": "facilities",
+    "meaning": "清洁；打扫",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f526795c95399cea27c0",
+    "word": "broken",
+    "category": "facilities",
+    "meaning": "坏了的；损坏的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-2c7e34291dba41872286",
+    "word": "contractor",
+    "category": "facilities",
+    "meaning": "承包商",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f2e40fc1edb72ee9ed58",
+    "word": "architect",
+    "category": "facilities",
+    "meaning": "建筑师",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-7826b958b79c70626801",
+    "word": "engineer",
+    "category": "facilities",
+    "meaning": "工程师",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-8be5de38826b494a8ad1",
+    "word": "renovate",
+    "category": "facilities",
+    "meaning": "翻新；整修",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-87695fdac81728b9d7f2",
+    "word": "healthy",
+    "category": "health",
+    "meaning": "健康的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-948dbde67a8ef961ee8b",
+    "word": "medical",
+    "category": "health",
+    "meaning": "医疗的；医学的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-a82ce870f999b01b17b9",
+    "word": "medicine",
+    "category": "health",
+    "meaning": "药；医学",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-876636910b597ab4f30f",
+    "word": "medication",
+    "category": "health",
+    "meaning": "药物；药物治疗",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-8afe3c83decffdf6dc48",
+    "word": "hospital",
+    "category": "health",
+    "meaning": "医院",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b955e6cd0808744cf5cb",
+    "word": "emergency",
+    "category": "health",
+    "meaning": "紧急情况；急诊情况",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-efdfcc0967c1b7cfe88a",
+    "word": "ambulance",
+    "category": "health",
+    "meaning": "救护车",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ace72b3572c18de8b376",
+    "word": "specialist",
+    "category": "health",
+    "meaning": "专科医生；专家",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-48271388865ea6816866",
+    "word": "surgeon",
+    "category": "health",
+    "meaning": "外科医生",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-fc00eb484b582cfb374e",
+    "word": "surgery",
+    "category": "health",
+    "meaning": "外科手术",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-d138e4e2606d9c58caab",
+    "word": "dental",
+    "category": "health",
+    "meaning": "牙齿的；牙科的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-aa61a1f238a7a7a1daed",
+    "word": "optician",
+    "category": "health",
+    "meaning": "验配眼镜人员；眼镜商",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4af009dcd561b8060a9e",
+    "word": "therapy",
+    "category": "health",
+    "meaning": "治疗；疗法",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4b60d190e95e57693396",
+    "word": "physical",
+    "category": "health",
+    "meaning": "身体的；体力的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-888df6d1572d02bc1a80",
+    "word": "mental",
+    "category": "health",
+    "meaning": "心理的；精神的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-9da4925c250a6afedd61",
+    "word": "health care",
+    "category": "health",
+    "meaning": "医疗保健",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-b54e2b152c2135f45dfc",
+    "word": "diagnosis",
+    "category": "health",
+    "meaning": "诊断；诊断结果",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b8e8c313b6712eb77272",
+    "word": "disease",
+    "category": "health",
+    "meaning": "疾病",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-6f4f1b1c9d25ee4a551e",
+    "word": "illness",
+    "category": "health",
+    "meaning": "疾病；患病",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3f36e4307cf5d409bb92",
+    "word": "infection",
+    "category": "health",
+    "meaning": "感染",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-1e44a1c45388c81c1a4b",
+    "word": "fever",
+    "category": "health",
+    "meaning": "发烧；发热",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-866ab33b8463db1b3906",
+    "word": "cough",
+    "category": "health",
+    "meaning": "咳嗽",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-e272deecde720ffc773d",
+    "word": "cold",
+    "category": "health",
+    "meaning": "感冒",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-92f75a33d5898073e05d",
+    "word": "flu",
+    "category": "health",
+    "meaning": "流感",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-cfa9ac1e084975b5d646",
+    "word": "headache",
+    "category": "health",
+    "meaning": "头痛",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5c78c8e7160e76ba9b6c",
+    "word": "pain",
+    "category": "health",
+    "meaning": "疼痛",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a945a02a044c3286e670",
+    "word": "injury",
+    "category": "health",
+    "meaning": "伤害；受伤",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-89364a0a769977b32c6e",
+    "word": "wound",
+    "category": "health",
+    "meaning": "伤口",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-859facc5a4c9b80ac2ee",
+    "word": "burn",
+    "category": "health",
+    "meaning": "烧伤；烫伤",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a9f4b8a0587af2d0c080",
+    "word": "bruise",
+    "category": "health",
+    "meaning": "瘀伤；淤青",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5489eb1d2a0285016de3",
+    "word": "accident",
+    "category": "health",
+    "meaning": "意外事故",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a232163263c32f908c66",
+    "word": "first aid",
+    "category": "health",
+    "meaning": "急救",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-fe4190c0bc0ee116b11c",
+    "word": "bandage",
+    "category": "health",
+    "meaning": "绷带",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-856fa50792e3c8450607",
+    "word": "antibiotic",
+    "category": "health",
+    "meaning": "抗生素",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-881df12b68cd344e83f6",
+    "word": "capsule",
+    "category": "health",
+    "meaning": "胶囊",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-daf81fe9648c6ae09439",
+    "word": "dose",
+    "category": "health",
+    "meaning": "一次用药量；一剂",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ed31e03af5ae5ef07979",
+    "word": "vitamin",
+    "category": "health",
+    "meaning": "维生素",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-03dd65bf2241cb43fca6",
+    "word": "supplement",
+    "category": "health",
+    "meaning": "营养补充剂",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a36c443337b53097a1ba",
+    "word": "diet",
+    "category": "health",
+    "meaning": "日常饮食；规定食谱",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f55101cb5e7453c770d2",
+    "word": "exercise",
+    "category": "health",
+    "meaning": "锻炼；运动",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f43dc8790ed621568492",
+    "word": "stress",
+    "category": "health",
+    "meaning": "压力；紧张",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-bd01a89edc9ae07e3202",
+    "word": "blood pressure",
+    "category": "health",
+    "meaning": "血压",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-b314ae60cb741e69f1cc",
+    "word": "temperature",
+    "category": "health",
+    "meaning": "体温；温度",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-bcc3aa029a10fa3e5ede",
+    "word": "vaccine",
+    "category": "health",
+    "meaning": "疫苗",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-93255449bc2d46d635fd",
+    "word": "prevention",
+    "category": "health",
+    "meaning": "预防",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-51cc6dfe4d3c65f6f461",
+    "word": "hygiene",
+    "category": "health",
+    "meaning": "卫生；卫生习惯",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-d296add506bba3096a4f",
+    "word": "disability",
+    "category": "health",
+    "meaning": "残障；身体或心理功能障碍",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-1fb680d52f6e1a7fa195",
+    "word": "rehabilitation",
+    "category": "health",
+    "meaning": "康复；康复治疗",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-efa1f375d76194fa51a3",
+    "word": "public",
+    "category": "services",
+    "meaning": "公共的；公众的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-25bf8e1a2393f1108d37",
+    "word": "local",
+    "category": "services",
+    "meaning": "本地的；当地的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-5b361dfe3a8fc504c982",
+    "word": "neighborhood",
+    "category": "services",
+    "meaning": "社区；附近地区",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-7c4483cece55839512ff",
+    "word": "district",
+    "category": "services",
+    "meaning": "地区；行政区",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-6e5f6170d4e1f2560ecb",
+    "word": "citizen",
+    "category": "services",
+    "meaning": "公民",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ab5e9e376f9539179e46",
+    "word": "government",
+    "category": "services",
+    "meaning": "政府",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-8f76fd501bb68ef71f4e",
+    "word": "authority",
+    "category": "services",
+    "meaning": "主管部门；职权",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-dd51a825d06aae5299fc",
+    "word": "mayor",
+    "category": "services",
+    "meaning": "市长",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-85441a43c7cb9f242a5c",
+    "word": "permit",
+    "category": "services",
+    "meaning": "许可证",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-cc1d3b0234846714b0ae",
+    "word": "license",
+    "category": "services",
+    "meaning": "执照；许可证",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-29c9c30e0604515ced98",
+    "word": "registration",
+    "category": "services",
+    "meaning": "登记；注册",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-78bf8ee749fe16fd3d83",
+    "word": "renewal",
+    "category": "services",
+    "meaning": "续期；更新",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-fd3dfa76050e048e229d",
+    "word": "identification",
+    "category": "services",
+    "meaning": "身份证明；身份确认",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ef805cb6e2412c1e3234",
+    "word": "identity card",
+    "category": "services",
+    "meaning": "身份证",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-4b3baa4f4e5850eacd28",
+    "word": "post office",
+    "category": "services",
+    "meaning": "邮局",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-41104bdc0dafdad13638",
+    "word": "postal",
+    "category": "services",
+    "meaning": "邮政的",
+    "pos": "形容词"
+  },
+  {
+    "id": "vx-00d8d3f11739d2f35370",
+    "word": "mail",
+    "category": "services",
+    "meaning": "邮件；信件",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-61a9ed08e99790ecba38",
+    "word": "postage",
+    "category": "services",
+    "meaning": "邮资",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-df9d79f52caf03d49cd1",
+    "word": "police station",
+    "category": "services",
+    "meaning": "警察局",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-3fd8406c608965116713",
+    "word": "firefighter",
+    "category": "services",
+    "meaning": "消防员",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-824ef7874151e9c8c4f7",
+    "word": "rescue",
+    "category": "services",
+    "meaning": "救援；营救",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f29c4511672f1610be08",
+    "word": "newspaper",
+    "category": "services",
+    "meaning": "报纸",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-208be34b55c3475df168",
+    "word": "magazine",
+    "category": "services",
+    "meaning": "杂志",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-a8fa7fd60893411a4990",
+    "word": "subscription",
+    "category": "services",
+    "meaning": "订阅；订阅费",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f40fd562f63078722310",
+    "word": "subscribe",
+    "category": "services",
+    "meaning": "订阅；定期订购",
+    "pos": "动词"
+  },
+  {
+    "id": "vx-24507df15ae5fe5c32ff",
+    "word": "bookstore",
+    "category": "services",
+    "meaning": "书店",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-4919063719e8c3888b72",
+    "word": "museum",
+    "category": "services",
+    "meaning": "博物馆",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-83a2bff84b1d599d9eed",
+    "word": "exhibition",
+    "category": "services",
+    "meaning": "展览；展览会",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3121771b9c5973e0f089",
+    "word": "theater",
+    "category": "services",
+    "meaning": "剧院；剧场",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-5359565a1aca1516be11",
+    "word": "concert",
+    "category": "services",
+    "meaning": "音乐会",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b34564f1c4cd1d98dc26",
+    "word": "entertainment",
+    "category": "services",
+    "meaning": "娱乐；文娱活动",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-8ffaaf97add883ad7d02",
+    "word": "festival",
+    "category": "services",
+    "meaning": "节日；庆典活动",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3789e352cc1eacc0f1fd",
+    "word": "recreation",
+    "category": "services",
+    "meaning": "娱乐；休闲活动",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-dafc4889ee011aab244b",
+    "word": "stadium",
+    "category": "services",
+    "meaning": "体育场",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-b59bc9d84658b984116c",
+    "word": "community center",
+    "category": "services",
+    "meaning": "社区活动中心",
+    "pos": "名词短语"
+  },
+  {
+    "id": "vx-5a1c0e4143fa974f7cae",
+    "word": "daycare",
+    "category": "services",
+    "meaning": "日间托管服务",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-7e48b820f4c8f67210bf",
+    "word": "kindergarten",
+    "category": "services",
+    "meaning": "幼儿园",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-cf2eb894cc40f5c6e781",
+    "word": "instructor",
+    "category": "services",
+    "meaning": "指导员；授课教师",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-9c6d86c4393319c271d4",
+    "word": "tuition",
+    "category": "services",
+    "meaning": "学费；教学",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-eb0b9c61cefd62358850",
+    "word": "charity",
+    "category": "services",
+    "meaning": "慈善组织；慈善事业",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-3433844a443e80708d70",
+    "word": "donation",
+    "category": "services",
+    "meaning": "捐款；捐赠物",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-bf5cf59e356652253268",
+    "word": "membership",
+    "category": "services",
+    "meaning": "会员资格；会籍",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-2f0724ffee1368766c72",
+    "word": "disposal",
+    "category": "services",
+    "meaning": "处置；清除",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-ba5285161ba6eed0085f",
+    "word": "environment",
+    "category": "services",
+    "meaning": "环境",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-f4873b35ecfe7c16121c",
+    "word": "conservation",
+    "category": "services",
+    "meaning": "保护；节约使用资源",
+    "pos": "名词"
+  },
+  {
+    "id": "vx-7736ef88b46bed0607f0",
+    "word": "lost and found",
+    "category": "services",
+    "meaning": "失物招领处",
+    "pos": "名词短语"
+  }
+]

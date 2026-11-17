@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 2,
+  "status": "PRIVATE_COMPLETE_UNITS_AUTOMATED_SCREEN_PASS",
+  "sourceQuestionsSha256": "776c071ab3ae2763c9c0a13ca71448ead7ebabb8d8a638dc0ac1e975e6758821",
+  "effectiveAudioRequestsSha256": "d33d2aab94dd395720650b83dc382491f3d14d694de6b05d8e8116fb23761cdc",
+  "packId": "v040-natural-d6b00608bbf5",
+  "units": [
+    {
+      "unitId": "question:v040-b03-p2-01",
+      "questionIds": [
+        "v040-b03-p2-01"
+      ],
+      "sourceQuestionsSha256": "776c071ab3ae2763c9c0a13ca71448ead7ebabb8d8a638dc0ac1e975e6758821",
+      "effectiveAudioRequestsSha256": "d33d2aab94dd395720650b83dc382491f3d14d694de6b05d8e8116fb23761cdc",
+      "candidateStatus": "accepted-for-candidate",
+      "policy": "private-candidate-automated-screen",
+      "privatePracticeEligible": true,
+      "formalAllowed": false,
+      "publishAllowed": false,
+      "humanListeningPerformed": false,
+      "validatedLocale": null,
+      "audio": {
+        "audioKey": "994f1f372bd3eadfe7d63af397dfbe994f7959228290f064d5d27c2b9703ea30",
+        "materialId": "v040-b03-p2-01",
+        "segmentId": "question",
+        "voiceProfileId": "kokoro-82m-v1.0/am_michael"
+      },
+      "spokenText": "Who will pay for the replacement parts? A. The warranty covers them. B. They arrived yesterday. C. Beside the repair counter.",
+      "mediaTextSha256": "b675e7b54c5fd4f2e6b2c5e4879e68191649b5ac7eb612c08cdd6f4e4f454ab7",
+      "mp3Sha256": "74f2085c1da23d3d3daca567a18000c8848435c6799a9b16aa84f900b1435634",
+      "sourceWavSha256": "a54720aea23484f886a61a8ddaf41153f28ed69b84cb576a1e149480453ec3ff",
+      "producerBindingsSha256": "0b67ef0e7afbd6f5ee55c2f5eebf1cd9532df2b8b1c70349e960f3bf921741a9",
+      "label": "自然语音自动校验，未口音标定"
+    },
+    {
+      "unitId": "question:v040-b03-p2-03",
+      "questionIds": [
+        "v040-b03-p2-03"
+      ],
+      "sourceQuestionsSha256": "776c071ab3ae2763c9c0a13ca71448ead7ebabb8d8a638dc0ac1e975e6758821",
+      "effectiveAudioRequestsSha256": "d33d2aab94dd395720650b83dc382491f3d14d694de6b05d8e8116fb23761cdc",
+      "candidateStatus": "accepted-for-candidate",
+      "policy": "private-candidate-automated-screen",
+      "privatePracticeEligible": true,
+      "formalAllowed": false,
+      "publishAllowed": false,
+      "humanListeningPerformed": false,
+      "validatedLocale": null,
+      "audio": {
+        "audioKey": "2f717a81b9487dc05a090ff8fedce469666bd428a7ae9a693a354d18dce8aa00",
+        "materialId": "v040-b03-p2-03",
+        "segmentId": "question",
+        "voiceProfileId": "kokoro-82m-v1.0/am_michael"
+      },
+      "spokenText": "Why don't we send the samples by express delivery? A. The sender wrote in blue ink. B. No, the samples are on a shelf. C. Good idea; the client needs them urgently.",
+      "mediaTextSha256": "ba6bdc9b116792e16216cbcd28675f9c3a2d9748f2a5e478ca21aaf21d01a73f",
+      "mp3Sha256": "882503d4eec1c8a7d1c4a4a073647536b77907cf80229bcbca617edc19e0c4b6",
+      "sourceWavSha256": "f7b3194df803eaf81b6b9d9033d18eb9e3aa31e583a60109fb71a26f3ee36359",
+      "producerBindingsSha256": "0b67ef0e7afbd6f5ee55c2f5eebf1cd9532df2b8b1c70349e960f3bf921741a9",
+      "label": "自然语音自动校验，未口音标定"
+    },
+    {
+      "unitId": "question:v040-b03-p2-04",
+      "questionIds": [
+        "v040-b03-p2-04"
+      ],
+      "sourceQuestionsSha256": "776c071ab3ae2763c9c0a13ca71448ead7ebabb8d8a638dc0ac1e975e6758821",
+      "effectiveAudioRequestsSha256": "d33d2aab94dd395720650b83dc382491f3d14d694de6b05d8e8116fb23761cdc",
+      "candidateStatus": "accepted-for-candidate",
+      "policy": "private-candidate-automated-screen",
+      "privatePracticeEligible": true,
+      "formalAllowed": false,
+      "publishAllowed": false,
+      "humanListeningPerformed": false,
+      "validatedLocale": null,
+      "audio": {
+        "audioKey": "a5b9b2f8883361f7df212ed51c5ee00c7f6be6547040aeb6b3d0a86eb8a082e2",
+        "materialId": "v040-b03-p2-04",
+        "segmentId": "question",
+        "voiceProfileId": "kokoro-82m-v1.0/am_michael"
+      },
+      "spokenText": "I can't log in to the booking system. A. Try resetting your password. B. The booking was for two nights. C. A new log arrived this morning.",
+      "mediaTextSha256": "20ec5834ac9c61cf6da223b165f3614def7644747f72909da053ebc8ec6bbd7b",
+      "mp3Sha256": "c6ae91d538beb81aa5d1cc69b7e944ae158a31fc33f4a67b17885a80e5041160",
+      "sourceWavSha256": "beecf5cff2602b52f05624739140fdaf6195efecfe037eeae5e9cb7d0fa75e81",
+      "producerBindingsSha256": "0b67ef0e7afbd6f5ee55c2f5eebf1cd9532df2b8b1c70349e960f3bf921741a9",
+      "label": "自然语音自动校验，未口音标定"
+    },
+    {
+      "unitId": "question:v040-b03-p2-05",
+      "questionIds": [
+        "v040-b03-p2-05"
+      ],
+      "sourceQuestionsSha256": "776c071ab3ae2763c9c0a13ca71448ead7ebabb8d8a638dc0ac1e975e6758821",
+      "effectiveAudioRequestsSha256": "d33d2aab94dd395720650b83dc382491f3d14d694de6b05d8e8116fb23761cdc",
+      "candidateStatus": "accepted-for-candidate",
+      "policy": "private-candidate-automated-screen",
+      "privatePracticeEligible": true,
+      "formalAllowed": false,
+      "publishAllowed": false,
+      "humanListeningPerformed": false,
+      "validatedLocale": null,
+      "audio": {
+        "audioKey": "989c2d80fa588aef8cf5911de27f5fb61d5d1a80105d5d808812d69b3ef6d109",
+        "materialId": "v040-b03-p2-05",
+        "segmentId": "question",
+        "voiceProfileId": "kokoro-82m-v1.0/am_michael"
+      },
+      "spokenText": "Can we store these boxes here overnight? A. Only if the fire exit stays clear. B. At nine this morning. C. The boxes are made of cardboard.",
+      "mediaTextSha256": "1c1002d8a9303423b1d2408be15df7129dcf097c64ccf0430ef562eb71cc9dea",
+      "mp3Sha256": "b9cd2616eac2a57571f61dfc145fa3519c0b99a78f25b3e73318123cc6f2dfc7",
+      "sourceWavSha256": "9f8229d465cc99893f87c9000dc3f2b9804067bc0b9df7168f84f563efa1e488",
+      "producerBindingsSha256": "0b67ef0e7afbd6f5ee55c2f5eebf1cd9532df2b8b1c70349e960f3bf921741a9",
+      "label": "自然语音自动校验，未口音标定"
+    },
+    {
+      "unitId": "group:3:b03-catering",
+      "questionIds": [
+        "v040-b03-p3-01",
+        "v040-b03-p3-02",
+        "v040-b03-p3-03"
+      ],
+      "sourceQuestionsSha256": "776c071ab3ae2763c9c0a13ca71448ead7ebabb8d8a638dc0ac1e975e6758821",
+      "effectiveAudioRequestsSha256": "d33d2aab94dd395720650b83dc382491f3d14d694de6b05d8e8116fb23761cdc",
+      "candidateStatus": "accepted-for-candidate",
+      "policy": "private-candidate-automated-screen",
+      "privatePracticeEligible": true,
+      "formalAllowed": false,
+      "publishAllowed": false,
+      "humanListeningPerformed": false,
+      "validatedLocale": null,
+      "audio": {
+        "audioKey": "8a00477ae89f2b202acb2714e35a0acef322bfde33804740e03d6989c2b15d15",
+        "materialId": "b03-catering",
+        "segmentId": "question",
+        "voiceProfileId": "kokoro-82m-v1.0/multirole-0e9f0a30646d3ddf"
+      },
+      "spokenText": "A: The guests have confirmed. We need lunch for twenty-four people, not twenty.\nB: I can increase the order, but the caterer needs the final number by ten this morning.\nA: It is only nine fifteen. Could you call now and ask for four more vegetarian meals?\nB: Certainly. I will also ask them to label the vegetarian boxes clearly.",
+      "mediaTextSha256": "488a9858765d6a51307c6380d04bed1c623c074b0fadfd4d66f0d221b2b46a9d",
+      "mp3Sha256": "35ea300828da35eb75b076567fd03181fcd0ee9db37fc500c245c31c1155248b",
+      "sourceWavSha256": "908f550865735cf98f7ec53000d75b87960e4170263056283af6e6663d4d5de8",
+      "producerBindingsSha256": "0b67ef0e7afbd6f5ee55c2f5eebf1cd9532df2b8b1c70349e960f3bf921741a9",
+      "label": "自然语音自动校验，未口音标定"
+    },
+    {
+      "unitId": "group:4:b03-ferry",
+      "questionIds": [
+        "v040-b03-p4-01",
+        "v040-b03-p4-02",
+        "v040-b03-p4-03"
+      ],
+      "sourceQuestionsSha256": "776c071ab3ae2763c9c0a13ca71448ead7ebabb8d8a638dc0ac1e975e6758821",
+      "effectiveAudioRequestsSha256": "d33d2aab94dd395720650b83dc382491f3d14d694de6b05d8e8116fb23761cdc",
+      "candidateStatus": "accepted-for-candidate",
+      "policy": "private-candidate-automated-screen",
+      "privatePracticeEligible": true,
+      "formalAllowed": false,
+      "publishAllowed": false,
+      "humanListeningPerformed": false,
+      "validatedLocale": null,
+      "audio": {
+        "audioKey": "b0e89e50df88b26d7552e95cbc94f821655528a05f225533883d89310369485d",
+        "materialId": "b03-ferry",
+        "segmentId": "question",
+        "voiceProfileId": "kokoro-82m-v1.0/am_michael"
+      },
+      "spokenText": "Attention, passengers for East Bay. The eleven o'clock ferry will depart from Pier Five today instead of Pier Two because maintenance work is taking place at Pier Two. The departure time has not changed. Follow the blue signs from the ticket office to Pier Five, a walk of about eight minutes. Passengers requiring assistance should speak to a staff member at the ticket office. Boarding will close five minutes before departure.",
+      "mediaTextSha256": "84adadef74930355b231c45708164e41b196a9aafd08e1ea69dac7c217c11cd0",
+      "mp3Sha256": "beed99b87f96b09577838e70f2fa76286718596d921d356360dc6458e4eb0e8e",
+      "sourceWavSha256": "2fa9667e473ef34df0a27fa263266d6da8ca060f058f634ea85220ba4af97bfd",
+      "producerBindingsSha256": "0b67ef0e7afbd6f5ee55c2f5eebf1cd9532df2b8b1c70349e960f3bf921741a9",
+      "label": "自然语音自动校验，未口音标定"
+    },
+    {
+      "unitId": "group:4:b03-rooftop",
+      "questionIds": [
+        "v040-b03-p4-07",
+        "v040-b03-p4-08",
+        "v040-b03-p4-09"
+      ],
+      "sourceQuestionsSha256": "776c071ab3ae2763c9c0a13ca71448ead7ebabb8d8a638dc0ac1e975e6758821",
+      "effectiveAudioRequestsSha256": "d33d2aab94dd395720650b83dc382491f3d14d694de6b05d8e8116fb23761cdc",
+      "candidateStatus": "accepted-for-candidate",
+      "policy": "private-candidate-automated-screen",
+      "privatePracticeEligible": true,
+      "formalAllowed": false,
+      "publishAllowed": false,
+      "humanListeningPerformed": false,
+      "validatedLocale": null,
+      "audio": {
+        "audioKey": "56810facaad76da77f6a27d180e1efcc1ac1c1c6c544ca3e3aa62c6b66e2b12a",
+        "materialId": "b03-rooftop",
+        "segmentId": "question",
+        "voiceProfileId": "kokoro-82m-v1.0/am_michael"
+      },
+      "spokenText": "Welcome to the Green Roof workshop. Please leave large bags in the lockers next to the classroom. We will start with a short indoor demonstration and then visit the rooftop garden. Everyone must wear the closed-toe shoes listed in your confirmation email. If you are wearing unsuitable shoes, you can attend the indoor session, but you cannot join the rooftop visit. Our staff will provide gloves and all gardening tools. Photography is permitted, but please ask before including other participants in your pictures.",
+      "mediaTextSha256": "3dea4865935aeb2805709392b574bd1dcde3cd675ff698deb9a0efdc30bf7a1d",
+      "mp3Sha256": "6ebc56fd88ca803c29e5a1b739352706e8f7090336b4842281e595cc13a6f45d",
+      "sourceWavSha256": "dc3643a323e2d601d282505ad9b3b3016720a68c2787d6db7918f1e73e082ff0",
+      "producerBindingsSha256": "0b67ef0e7afbd6f5ee55c2f5eebf1cd9532df2b8b1c70349e960f3bf921741a9",
+      "label": "自然语音自动校验，未口音标定"
+    },
+    {
+      "unitId": "question:v040-b03-p2-02",
+      "questionIds": [
+        "v040-b03-p2-02"
+      ],
+      "sourceQuestionsSha256": "776c071ab3ae2763c9c0a13ca71448ead7ebabb8d8a638dc0ac1e975e6758821",
+      "effectiveAudioRequestsSha256": "d33d2aab94dd395720650b83dc382491f3d14d694de6b05d8e8116fb23761cdc",
+      "candidateStatus": "accepted-for-candidate",
+      "policy": "private-candidate-automated-screen",
+      "privatePracticeEligible": true,
+      "formalAllowed": false,
+      "publishAllowed": false,
+      "humanListeningPerformed": false,
+      "validatedLocale": null,
+      "audio": {
+        "audioKey": "b810fd126e08f14e32cf21fb9a3235178bcbfef06bf1bd37cb3300a641783049",
+        "materialId": "v040-b03-p2-02",
+        "segmentId": "question",
+        "voiceProfileId": "assembled-v2-3654d7e524f2888feb259d2ea18d874d"
+      },
+      "spokenText": "Is the inspection on Tuesday or Wednesday? The inspector is very experienced. Wednesday, according to the latest notice. On the second floor.",
+      "mediaTextSha256": "2a363631d780f22412e87f7f065b45827627a0811361d12216610cc9321823ab",
+      "mp3Sha256": "ab7e86282e2925b85eaf51e3db42ed81f625171bbfc06c033ae3105f579bb5a5",
+      "sourceWavSha256": "c4217b14bbd78b68c572facd24df9469a4331aa37f79cab484f16f7dd5f45ef1",
+      "producerBindingsSha256": "2b9607c4c7c9dc097b78641bed69339c12166954dd07be338301585bb3395252",
+      "engine": "mixed",
+      "provenanceSha256": "655e2657307c6f589aab62e380fc68a1b535ec28b71d938617cfa0a4f49ad096",
+      "label": "自然语音自动校验，未口音标定"
+    },
+    {
+      "unitId": "group:3:b03-tablet",
+      "questionIds": [
+        "v040-b03-p3-04",
+        "v040-b03-p3-05",
+        "v040-b03-p3-06"
+      ],
+      "sourceQuestionsSha256": "776c071ab3ae2763c9c0a13ca71448ead7ebabb8d8a638dc0ac1e975e6758821",
+      "effectiveAudioRequestsSha256": "d33d2aab94dd395720650b83dc382491f3d14d694de6b05d8e8116fb23761cdc",
+      "candidateStatus": "accepted-for-candidate",
+      "policy": "private-candidate-automated-screen",
+      "privatePracticeEligible": true,
+      "formalAllowed": false,
+      "publishAllowed": false,
+      "humanListeningPerformed": false,
+      "validatedLocale": null,
+      "audio": {
+        "audioKey": "70760613d9ad8ec6bb711253da4b5d38a73a7f17d95ab43cc8f48b15f7a5dc14",
+        "materialId": "b03-tablet",
+        "segmentId": "question",
+        "voiceProfileId": "assembled-v2-ca5e9e1c192a8759ec7ae7b03420d293"
+      },
+      "spokenText": "This rental tablet will not connect to the wireless network in Room Four. Other guests there are connected. Have you tried restarting it? Yes, twice. My presentation begins in fifteen minutes. Then I will exchange it for a tested tablet now. Your rental charge will stay the same. What problem is reported? Why does the customer mention a presentation? What will the clerk do?",
+      "mediaTextSha256": "f26e85015e1628d7449057d0cce676cc9bc7cf540300535859b5d9743ccf26eb",
+      "mp3Sha256": "bdfe6a7ffa0a1f072ba94b6aa09f5b754c4829a0ba03ee57611731fad2fc6dbf",
+      "sourceWavSha256": "a062bf72a84b1384b596e5edde42d9c5cb513ad1cae9334619f18eec32c6a7c1",
+      "producerBindingsSha256": "2b9607c4c7c9dc097b78641bed69339c12166954dd07be338301585bb3395252",
+      "engine": "kokoro",
+      "provenanceSha256": "244dc6deca8a7648ead1c18cf092d0c97ae8bc19356f701086402b014a3f29f5",
+      "label": "自然语音自动校验，未口音标定"
+    },
+    {
+      "unitId": "group:4:b03-interview",
+      "questionIds": [
+        "v040-b03-p4-04",
+        "v040-b03-p4-05",
+        "v040-b03-p4-06"
+      ],
+      "sourceQuestionsSha256": "776c071ab3ae2763c9c0a13ca71448ead7ebabb8d8a638dc0ac1e975e6758821",
+      "effectiveAudioRequestsSha256": "d33d2aab94dd395720650b83dc382491f3d14d694de6b05d8e8116fb23761cdc",
+      "candidateStatus": "accepted-for-candidate",
+      "policy": "private-candidate-automated-screen",
+      "privatePracticeEligible": true,
+      "formalAllowed": false,
+      "publishAllowed": false,
+      "humanListeningPerformed": false,
+      "validatedLocale": null,
+      "audio": {
+        "audioKey": "02c300a296a828faac8e8e4a89931598d39dcf1abf7d3c5e768f7c7921d9199c",
+        "materialId": "b03-interview",
+        "segmentId": "question",
+        "voiceProfileId": "assembled-v2-5656d0ba87343a0934e7d3f125516742"
+      },
+      "spokenText": "Hello, this is Priya from Meadow Books calling about your application. We would like to invite you to an interview next Thursday at three in the afternoon. The interview will take place at our warehouse office, not at the shop where you submitted your application. Please bring photo identification. You do not need another résumé; we have your electronic copy. Please call me by tomorrow afternoon to confirm whether you can attend. Why is Priya calling? Where will the interview take place? What should the applicant bring?",
+      "mediaTextSha256": "a4b391bb27cb68a2660e1bce931dddaec237d45cffc1aee7943345cc0007d83e",
+      "mp3Sha256": "2f258ff8976f99c0893f8a8edc86141546ed318c07431da6c62d1418995fcab1",
+      "sourceWavSha256": "3372042008c152cf056b599d9a1175d203273006efed00b22b4c00a3c544ce21",
+      "producerBindingsSha256": "2b9607c4c7c9dc097b78641bed69339c12166954dd07be338301585bb3395252",
+      "engine": "kokoro",
+      "provenanceSha256": "dce38e8e1f4464b658bebc291af75f229cdbde0c83dfafe904b8c18e4ad7e8dd",
+      "label": "自然语音自动校验，未口音标定"
+    }
+  ],
+  "formalAllowed": false,
+  "publishAllowed": false,
+  "humanListeningPerformed": false,
+  "validatedLocale": null
+}

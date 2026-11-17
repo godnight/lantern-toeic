@@ -1,0 +1,11 @@
+{
+  "checkedAtUtc": "2026-10-13T09:24:26.0746133Z",
+  "target": "127.0.0.1:15551",
+  "bundle": "com.lantern.toeic",
+  "oldAppPid": "7678",
+  "stopExit": 0,
+  "coldStartExit": 0,
+  "stopOtherApps": false,
+  "dataClearOrUninstall": false,
+  "UIInputUsed": false
+}

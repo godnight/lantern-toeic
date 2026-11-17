@@ -1,0 +1,195 @@
+{
+  "generated_utc": "2026-10-13T10:10:38.4109139Z",
+  "report": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\independent-visual\\I09-I11-VISUAL-RECHECK.md",
+  "personally_viewed_count": 10,
+  "scope": "Separate follow-up batch. Old non-focused Toast photos excluded. Does not close I01 P1 or full terminal implementation review.",
+  "files": [
+    {
+      "file": "toast-day-390-I10-focused.jpg",
+      "path": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\testing\\ui-redesign-20261013\\screenshots\\toast-day-390-I10-focused.jpg",
+      "pixel_dimensions": {
+        "height": 812,
+        "width": 375
+      },
+      "bytes": 32177,
+      "sha256": "5b1fc57281006316b02beb3cde0ff84ef6a0921a7867fca3c95274b541c494c2",
+      "file_mtime_utc": "2026-10-13T09:38:32.0087824Z",
+      "css_viewport": {
+        "width": 390,
+        "source": "Root actual DOM report in delegated task; not inferred from name or image dimensions",
+        "height": 844
+      },
+      "personally_viewed_by": "implementation_visual_review",
+      "scope": "Limited actual Chrome I09/I10/I11 visual sample; no independent behavior or device execution"
+    },
+    {
+      "file": "toast-night-390-I10-focused.jpg",
+      "path": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\testing\\ui-redesign-20261013\\screenshots\\toast-night-390-I10-focused.jpg",
+      "pixel_dimensions": {
+        "height": 812,
+        "width": 375
+      },
+      "bytes": 32841,
+      "sha256": "722e0fe6d72ab00889f28b82a9b5658a87f514ace4e97c6d156231032f18aca5",
+      "file_mtime_utc": "2026-10-13T09:44:16.4047489Z",
+      "css_viewport": {
+        "width": 390,
+        "source": "Root actual DOM report in delegated task; not inferred from name or image dimensions",
+        "height": 844
+      },
+      "personally_viewed_by": "implementation_visual_review",
+      "scope": "Limited actual Chrome I09/I10/I11 visual sample; no independent behavior or device execution"
+    },
+    {
+      "file": "toast-hollow-390-I10-focused.jpg",
+      "path": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\testing\\ui-redesign-20261013\\screenshots\\toast-hollow-390-I10-focused.jpg",
+      "pixel_dimensions": {
+        "height": 812,
+        "width": 375
+      },
+      "bytes": 34646,
+      "sha256": "78a9b476c254c2f10660392bdb16b942033081e1140b11f97528f583e5294c23",
+      "file_mtime_utc": "2026-10-13T09:40:00.4833286Z",
+      "css_viewport": {
+        "width": 390,
+        "source": "Root actual DOM report in delegated task; not inferred from name or image dimensions",
+        "height": 844
+      },
+      "personally_viewed_by": "implementation_visual_review",
+      "scope": "Limited actual Chrome I09/I10/I11 visual sample; no independent behavior or device execution"
+    },
+    {
+      "file": "toast-silk-390-I10-focused.jpg",
+      "path": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\testing\\ui-redesign-20261013\\screenshots\\toast-silk-390-I10-focused.jpg",
+      "pixel_dimensions": {
+        "height": 812,
+        "width": 375
+      },
+      "bytes": 33249,
+      "sha256": "56317284032ca961268497de37bf9fd78708e7df130d02c9f36ffce0a44712a3",
+      "file_mtime_utc": "2026-10-13T09:43:19.2194332Z",
+      "css_viewport": {
+        "width": 390,
+        "source": "Root actual DOM report in delegated task; not inferred from name or image dimensions",
+        "height": 844
+      },
+      "personally_viewed_by": "implementation_visual_review",
+      "scope": "Limited actual Chrome I09/I10/I11 visual sample; no independent behavior or device execution"
+    },
+    {
+      "file": "speaking-focus-night-390-I11.jpg",
+      "path": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\testing\\ui-redesign-20261013\\screenshots\\speaking-focus-night-390-I11.jpg",
+      "pixel_dimensions": {
+        "height": 844,
+        "width": 390
+      },
+      "bytes": 47793,
+      "sha256": "76f5160a07f760c6e1061eca0c10583730c5af186561417cd6a752efdc187389",
+      "file_mtime_utc": "2026-10-13T09:45:31.4721161Z",
+      "css_viewport": {
+        "width": 390,
+        "source": "Root actual DOM report in delegated task; not inferred from name or image dimensions",
+        "height": 844
+      },
+      "personally_viewed_by": "implementation_visual_review",
+      "scope": "Limited actual Chrome I09/I10/I11 visual sample; no independent behavior or device execution"
+    },
+    {
+      "file": "speaking-focus-night-1440-I11.jpg",
+      "path": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\testing\\ui-redesign-20261013\\screenshots\\speaking-focus-night-1440-I11.jpg",
+      "pixel_dimensions": {
+        "height": 1000,
+        "width": 1440
+      },
+      "bytes": 80278,
+      "sha256": "a50cb50ff956cbf00701be0ad023057a585f1c1d11b691afc30f6ab2becb77ac",
+      "file_mtime_utc": "2026-10-13T09:45:39.5352169Z",
+      "css_viewport": {
+        "width": 1440,
+        "source": "Root actual DOM report in delegated task; not inferred from name or image dimensions",
+        "height": 1000
+      },
+      "personally_viewed_by": "implementation_visual_review",
+      "scope": "Limited actual Chrome I09/I10/I11 visual sample; no independent behavior or device execution"
+    },
+    {
+      "file": "practice-focus-night-1440-I11.jpg",
+      "path": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\testing\\ui-redesign-20261013\\screenshots\\practice-focus-night-1440-I11.jpg",
+      "pixel_dimensions": {
+        "height": 1000,
+        "width": 1440
+      },
+      "bytes": 87508,
+      "sha256": "21a51f7c8e4b42b7eb3410b27edef866393c83817b25776ed5e6c7028833d413",
+      "file_mtime_utc": "2026-10-13T09:47:08.7417824Z",
+      "css_viewport": {
+        "width": 1440,
+        "source": "Root actual DOM report in delegated task; not inferred from name or image dimensions",
+        "height": 1000
+      },
+      "personally_viewed_by": "implementation_visual_review",
+      "scope": "Limited actual Chrome I09/I10/I11 visual sample; no independent behavior or device execution"
+    },
+    {
+      "file": "practice-lookup-night-1440-I09.jpg",
+      "path": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\testing\\ui-redesign-20261013\\screenshots\\practice-lookup-night-1440-I09.jpg",
+      "pixel_dimensions": {
+        "height": 1000,
+        "width": 1440
+      },
+      "bytes": 55816,
+      "sha256": "f4bc0e09f9c4d06914b78e934aeae06a8e495578eb29423c2ae444c1a3addbf2",
+      "file_mtime_utc": "2026-10-13T09:48:35.7372784Z",
+      "css_viewport": {
+        "width": 1440,
+        "source": "Root actual DOM report in delegated task; not inferred from name or image dimensions",
+        "height": 1000
+      },
+      "personally_viewed_by": "implementation_visual_review",
+      "scope": "Limited actual Chrome I09/I10/I11 visual sample; no independent behavior or device execution"
+    },
+    {
+      "file": "practice-lookup-detail-night-390-I09.jpg",
+      "path": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\testing\\ui-redesign-20261013\\screenshots\\practice-lookup-detail-night-390-I09.jpg",
+      "pixel_dimensions": {
+        "height": 844,
+        "width": 390
+      },
+      "bytes": 26508,
+      "sha256": "61b15ab83b794b73329d5f0ee477d411cc0cd399e9d0c2ec867c48c647bfe84d",
+      "file_mtime_utc": "2026-10-13T09:48:57.9726053Z",
+      "css_viewport": {
+        "width": 390,
+        "source": "Root actual DOM report in delegated task; not inferred from name or image dimensions",
+        "height": 844
+      },
+      "personally_viewed_by": "implementation_visual_review",
+      "scope": "Limited actual Chrome I09/I10/I11 visual sample; no independent behavior or device execution"
+    },
+    {
+      "file": "practice-lookup-return-night-390-I09-I11.jpg",
+      "path": "D:\\zzl\\托业学习\\vocab-work\\theme-redesign-20261012\\site\\docs\\testing\\ui-redesign-20261013\\screenshots\\practice-lookup-return-night-390-I09-I11.jpg",
+      "pixel_dimensions": {
+        "height": 844,
+        "width": 390
+      },
+      "bytes": 27913,
+      "sha256": "4a54166ea46731906c688f966f3281bb4b6eec2deb0f1c0733b823d12fad8ac5",
+      "file_mtime_utc": "2026-10-13T09:50:55.4343711Z",
+      "css_viewport": {
+        "width": 390,
+        "source": "Root actual DOM report in delegated task; not inferred from name or image dimensions",
+        "height": 844
+      },
+      "personally_viewed_by": "implementation_visual_review",
+      "scope": "Limited actual Chrome I09/I10/I11 visual sample; no independent behavior or device execution",
+      "rechecked_utc": "2026-10-13T10:10:38.4109139Z",
+      "recheck_scope": "Only this current formal-path actual image re-viewed: q1/4, saved B/correct, submitted1, vocabulary tab retained, depart lookup trigger visible focus; other nine observations unchanged. Current hash/bytes/mtime equal previous observation; no different overwritten-file hash observed.",
+      "previous_observation": {
+        "sha256": "4a54166ea46731906c688f966f3281bb4b6eec2deb0f1c0733b823d12fad8ac5",
+        "bytes": 27913,
+        "file_mtime_utc": "2026-10-13T09:50:55.4343711Z"
+      }
+    }
+  ]
+}

@@ -1,4 +1,7 @@
-export type Theme = 'hollow' | 'silk' | 'paper';
+import {recommendLearningParts} from './learning-recommendation';
+import {studyDayKey} from './study-format';
+export const THEME_IDS = ['hollow','silk','paper','crystal','whale-bay','whale-moon'] as const;
+export type Theme = typeof THEME_IDS[number];
 // randomUUID is restricted to secure contexts in some browsers; getRandomValues
 // still provides cryptographic randomness in local HTTP development previews.
 export function createId():string {
@@ -12,7 +15,8 @@ export type Question = { id: string; part: number; title: string; groupId?: stri
 export type Speaking = { id: string; type: string; title: string; prompt: string; prepSeconds: number; answerSeconds: number; guide: string[]; sampleAnswer: string; passage?: string; image?: string };
 export type Attempt = {id:string;qid:string;choice:number;correct:boolean;createdAt:string;seconds:number;mode:'first'|'review'};
 export type Checkin = {id:string;date:string;minutes:number;load:'轻'|'刚好'|'重';note:string;createdAt:string};
-export type Recording = {id:string;promptId:string;title:string;createdAt:string;duration:number;mime:string;uploaded?:boolean;note?:string};
+export type CaptureImplementation='arkweb-pcm-wav'|'harmony-avrecorder-aac'|'browser-mediarecorder';
+export type Recording = {id:string;promptId:string;title:string;createdAt:string;duration:number;mime:string;uploaded?:boolean;note?:string;captureImplementation?:CaptureImplementation};
 export const DATA_SCHEMA_VERSION = 2;
 export const WRONG_REASONS = ['listening','vocabulary','grammar','evidence','timing'] as const;
 export type WrongReason = typeof WRONG_REASONS[number];
@@ -20,7 +24,7 @@ export type MutableStudyRecord = {revision:number;mutationId:string;updatedAt:st
 export type QuestionMark = MutableStudyRecord & {qid:string;flagged:boolean;reason:WrongReason|null;note:string};
 export type ResourceTask = MutableStudyRecord & {id:string;resourceId:string;plannedDate:string;status:'planned'|'in_progress'|'completed'|'cancelled';minutes:number;checkinId:string|null};
 export type StudyData = {schemaVersion:2;profile:Profile;attempts:Attempt[];checkins:Checkin[];recordings:Recording[];questionMarks:QuestionMark[];resourceTasks:ResourceTask[]};
-export const DEFAULT_PROFILE:Profile={name:'学习者',lrGoal:650,speakingGoal:130,examDate:'2026-12-20',dailyMinutes:25,timezone:'Asia/Shanghai',theme:'hollow',weeklyTarget:4,onboarded:false};
+export const DEFAULT_PROFILE:Profile={name:'学习者',lrGoal:650,speakingGoal:130,examDate:'2026-12-20',dailyMinutes:25,timezone:'Asia/Shanghai',theme:'paper',weeklyTarget:4,onboarded:false};
 export const EMPTY_DATA:StudyData={schemaVersion:DATA_SCHEMA_VERSION,profile:DEFAULT_PROFILE,attempts:[],checkins:[],recordings:[],questionMarks:[],resourceTasks:[]};
 const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export function validStudyDate(value:unknown):value is string {
@@ -70,7 +74,7 @@ export function migrateStudyData(value:unknown):StudyData {
  return result;
 }
 export const PARTS=['照片描述','应答问题','简短对话','简短独白','短句填空','长文填空','阅读理解'];
-export function dayKey(date:Date|string=new Date(),timezone='Asia/Shanghai'){return new Intl.DateTimeFormat('en-CA',{timeZone:timezone,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(date));}
+export function dayKey(date:Date|string=new Date(),timezone='Asia/Shanghai'){return studyDayKey(date,timezone);}
 export function dayOffset(day:string,offset:number){const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+offset);return d.toISOString().slice(0,10);}
 export function daysUntil(exam:string,today:string){if(!exam)return null;return Math.ceil((Date.parse(exam+'T12:00:00Z')-Date.parse(today+'T12:00:00Z'))/86400000);}
 export function uniqueById<T extends {id:string}>(items:T[]):T[]{return [...new Map(items.map(x=>[x.id,x])).values()];}
@@ -81,16 +85,14 @@ export function firstAttempts(attempts:Attempt[]){const seen=new Set<string>();r
 export function dailyPlan(data:StudyData,questions:Question[],prompts:Speaking[],today=dayKey(new Date(),data.profile.timezone)){
  const timezone=data.profile.timezone;
  const parts=new Map(questions.map(q=>[q.id,q.part]));
- const history=firstAttempts(data.attempts.filter(a=>dayKey(a.createdAt,timezone)<today));
- const stats=PARTS.map((_,i)=>{const attempts=history.filter(a=>parts.get(a.qid)===i+1);return {part:i+1,total:attempts.length,rate:attempts.length?attempts.filter(a=>a.correct).length/attempts.length:1};});
- const seed=Math.floor(Date.parse(today+'T00:00:00Z')/86400000);
- const pick=(listening:boolean)=>{const group=stats.filter(s=>listening?s.part<=4:s.part>4);const weakest=group.filter(s=>s.total>0).sort((a,b)=>a.rate-b.rate)[0];return weakest&&weakest.rate<.7?weakest.part:group.find(s=>s.total===0)?.part||group[((seed%group.length)+group.length)%group.length].part;};
- const listeningPart=pick(true),readingPart=pick(false);
+ const recommendation=recommendLearningParts({attempts:data.attempts,questions,timezone,today});
+ // Preserve the legacy numeric return shape. Empty banks still launch zero questions.
+ const listeningPart=recommendation.listening.part??1,readingPart=recommendation.reading.part??5;
  const priorRecordings=data.recordings.filter(r=>dayKey(r.createdAt,timezone)<today);
  const oral=prompts[priorRecordings.length%prompts.length];
  const attempts=data.attempts.filter(a=>dayKey(a.createdAt,timezone)===today);
  const checkedTasks=[attempts.some(a=>parts.get(a.qid)===listeningPart),attempts.some(a=>parts.get(a.qid)===readingPart),!!oral&&data.recordings.some(r=>dayKey(r.createdAt,timezone)===today&&r.promptId===oral.id)];
- return {listeningPart,readingPart,oral,checkedTasks};
+ return {listeningPart,readingPart,oral,checkedTasks,recommendation};
 }
 export function reviewSchedule(attempts:Attempt[],now=Date.now()){
  const grouped=new Map<string,Attempt[]>();for(const a of attempts){const arr=grouped.get(a.qid)||[];arr.push(a);grouped.set(a.qid,arr);}

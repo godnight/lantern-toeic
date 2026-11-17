@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "batchId": "v040-vocab100-text-b02-v1",
+  "entries": 100,
+  "reviewStatus": "independent-ai-limited-text-pass",
+  "audioStatus": "not-generated",
+  "activatedLearningEntries": 0,
+  "sourceSha256": "72326c8fcb2531bcfd581ea4fa8b35d2d33416cca6f684f193b575772881ae07",
+  "note": "Independent AI text review verified against source freeze; no teacher certification. B02 audio remains unavailable and no B02 teaching IDs activated in this slice.",
+  "reviewId": "V040-B02-VOCAB100-INDEPENDENT-AI-r1",
+  "reviewSourceFreezeSha256": "bfe7b4c0ac90ca9e4a5b6d518db6ad365b424903de2c74d012a7a86c79af14c8",
+  "reviewEvidenceSha256": "85426703086560d2a860c3defe7f673234d567f70a332eee6cc0aa3702589d8a",
+  "activationStatus": "not-activated-awaiting-audio-gate"
+}

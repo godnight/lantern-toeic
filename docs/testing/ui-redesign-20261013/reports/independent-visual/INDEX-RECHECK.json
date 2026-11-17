@@ -1,0 +1,51 @@
+{
+  "generated_utc": "2026-10-13T09:14:30.8119490Z",
+  "archive_path": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\acceptance-archive\\ui-redesign-20261013\\evidence-index.json",
+  "archive_sha256": "bd68e20bef18141380b6add9093ee2d02bc4e33d547e61fac5e0432322361993",
+  "observed_count": 48,
+  "archive_count": 53,
+  "differences": [],
+  "status_counts": [
+    {
+      "Name": "excluded",
+      "Count": 10
+    },
+    {
+      "Name": "fixture-seam-only",
+      "Count": 2
+    },
+    {
+      "Name": "historical-limited",
+      "Count": 2
+    },
+    {
+      "Name": "sample",
+      "Count": 39
+    }
+  ],
+  "not_personally_viewed": [
+    {
+      "file": "screenshots/home-silk-320-viewport.jpg",
+      "status": "excluded"
+    },
+    {
+      "file": "screenshots/mock-rc-single-fixture-day-1440.jpg",
+      "status": "excluded"
+    },
+    {
+      "file": "screenshots/mock-seven-part-table-fixture-day-1440.jpg",
+      "status": "excluded"
+    },
+    {
+      "file": "screenshots/preferences-silk-320-verified.jpg",
+      "status": "excluded"
+    },
+    {
+      "file": "screenshots/resource-detail-lower-hollow-390.jpg",
+      "status": "excluded"
+    }
+  ],
+  "scope": "Independent dimension/bytes/SHA comparison and personally viewed screenshot scope; author DOM metrics attributed, not independently operated",
+  "iv01": "Closed: pixel/CSS split, missing CSS height null, wrong/scaled/old samples excluded, all current sample screenshots personally viewed, source-return workflows split outside picture DOM, resource content columns corrected",
+  "overall_implementation": "Not accepted: same terminal reviewer has I01 P1 and I02-I11 P2. Limited IV closure does not supersede these issues."
+}

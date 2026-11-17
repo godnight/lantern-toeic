@@ -8,12 +8,14 @@ const LOCAL_ORIGIN: string = 'https://lantern.local';
 
 function allowedBlob(name: string, mime: string): boolean {
   const type: string = mime.toLowerCase().split(';')[0].trim();
-  if (name === 'lantern-vocabulary-records.json' || name === 'lantern-original-starter.json' || name === 'lantern-my-study-records.json' || name === 'lantern-exam-backup.json') {
+  if (name === 'lantern-vocabulary-records.json' || name === 'lantern-original-starter.json' || name === 'lantern-my-study-records.json' || name === 'lantern-exam-backup.json' || name === 'lantern-workflow-backup.json') {
     return type === 'application/json';
   }
   if (name === 'lantern-weekly-review.md') return type === 'text/markdown';
+  if (name === 'lantern-vocabulary-plan.txt') return type === 'text/plain';
   if (name === 'speaking-recording.m4a') return type === 'audio/mp4';
   if (name === 'speaking-recording.webm') return type === 'audio/webm';
+  if (name === 'speaking-recording.wav') return type === 'audio/wav';
   return false;
 }
 

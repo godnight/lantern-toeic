@@ -8,12 +8,19 @@ const ts = require(root + '/node_modules/typescript');
 
 // Transpile and run the actual source. No model implementation is copied here.
 function load(file, imports = {}, globals = {}) {
+ imports={...require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root),...imports};
+  const dependencies=require('./helpers/actual-source-loader.cjs').createSourceLoader({permitLearningAccess:true,root,imports,globals});
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(root + '/' + file, 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX }
   }).outputText;
   vm.runInNewContext(code, { exports, require: n => {
-    if (!(n in imports)) throw new Error('Unexpected import: ' + n);
+    if (n === '@/lib/pcm-recorder') return {createRecordingCapture:stream=>new globals.MediaRecorder(stream),captureDuration:(_rec,seconds)=>seconds,captureWarning:()=>''};
+    if (n === '@/lib/recording-capture-diagnostics') return {createRecordingCaptureTrace:()=>()=>{}};
+    if (n === '@/lib/recording-media-diagnostics') return {recordingMediaTrace(){}};
+    if (n === '@/lib/recording-upload') return load('lib/recording-upload.ts', {}, {crypto:require('node:crypto').webcrypto});
+    if (n === '@/lib/use-dialog-viewport') return load('lib/use-dialog-viewport.ts', {react: imports.react}, globals);
+    if (!(n in imports)) return dependencies.resolve(n,file);
     return imports[n];
   }, Date, Intl, Map, Set, structuredClone, AbortController, FormData, crypto: { randomUUID }, ...globals }, { filename: file });
   return exports;
@@ -175,7 +182,7 @@ function hookHarness(sharedStorage = new Map(), options = {}) {
     window: {addEventListener:(event,fn)=>{if(!listeners.has(event))listeners.set(event,new Set());listeners.get(event).add(fn);},removeEventListener:(event,fn)=>listeners.get(event)?.delete(fn)},
     fetch:async (url, init) => {
       if (!online) throw new Error('offline');
-      requests.push({owner,url,headers:new Headers(init?.headers),body:typeof init?.body==='string'?JSON.parse(init.body):init?.body});
+      requests.push({owner,url,method:init?.method,headers:new Headers(init?.headers),body:typeof init?.body==='string'?JSON.parse(init.body):init?.body});
       if(options.handle){const custom=await options.handle(url,init,requests.at(-1));if(custom)return custom;}
       if (init?.method==='POST') return {ok:new Headers(init.headers).get('x-lantern-owner')===owner};
       return {ok:true,json:async()=>({...base(),owner,hasProfile:false,...options.remote})};
@@ -284,6 +291,24 @@ test('missing local audio stays visible while a valid recording uploads', async 
   assert.equal(api.data.recordings.find(r=>r.id==='good-audio').uploaded,true);assert.notEqual(api.sync,'synced');
 });
 
+test('real recording content conflict blocks only that item while other uploads and account refresh continue', async t => {
+  const {environment}=require('./helpers/recording-storage-harness.cjs');const server=await environment();t.after(()=>server.close());
+  const conflict=randomUUID(),good=randomUUID();await server.upload('alice',conflict,'server-original');
+  const storage=new Map(),audio=new Map([['lantern-v1-alice:'+conflict,new Blob(['local-different'],{type:'audio/webm'})],['lantern-v1-alice:'+good,new Blob(['new-audio'],{type:'audio/webm'})]]);
+  const h=hookHarness(storage,{audio,handle:async(url,init)=>{
+    if(url==='/api/recordings'&&init?.method==='POST'){
+      const meta=JSON.parse(init.body.get('meta'));return server.upload('alice',meta.id,await init.body.get('audio').text(),meta);
+    }
+  }});h.render();await flush();
+  for(const id of [conflict,good])storage.set('lantern-v1-alice:recording:'+id,JSON.stringify({id,title:id,promptId:server.prompt.id,createdAt:'2026-01-01T00:00:00.000Z',duration:4,note:'fixture',uploaded:false}));
+  h.setOnline(true);await h.render().syncNow();const api=h.render();
+  assert.ok(api.issues.some(x=>x.id===conflict&&x.kind==='recording'&&x.status==='blocked'));
+  assert.equal(api.issues.some(x=>x.kind==='session'||x.status==='auth'),false);
+  assert.equal(api.data.recordings.find(r=>r.id===good).uploaded,true);assert.equal(api.data.recordings.find(r=>r.id===conflict).uploaded,false);
+  assert.equal(await audio.get('lantern-v1-alice:'+conflict).text(),'local-different');assert.equal(await (await server.get('alice',conflict)).text(),'server-original');
+  assert.ok(h.requests.some(r=>r.url.startsWith('/api/study')&&!r.method));
+});
+
 test('recording queued during remote refresh triggers another pass without another user event', async () => {
   let release,started;const entered=new Promise(resolve=>{started=resolve;});const waiting=new Promise(resolve=>{release=resolve;});let hold=true;
   const audio=new Map();const h=hookHarness(new Map(),{audio,handle:async(url,init)=>{if(!init?.method&&hold){hold=false;started();await waiting;}}});
@@ -294,7 +319,7 @@ test('recording queued during remote refresh triggers another pass without anoth
 });
 
 test('remote audio acknowledgement repairs independent metadata and removes a missing-blob error', async () => {
-  const rec={id:'remote-audio',title:'Remote recording',promptId:'test',createdAt:'2026-09-07T10:00:00.000Z',duration:2,uploaded:true};
+  const rec={id:'remote-audio',title:'Remote recording',promptId:'test',mime:'audio/webm',createdAt:'2026-09-07T10:00:00.000Z',duration:2,uploaded:true};
   const storage=new Map([['lantern-v1-alice:recording:'+rec.id,JSON.stringify({...rec,uploaded:false})]]);
   const h=hookHarness(storage,{audio:new Map(),remote:{recordings:[rec]}});h.render();await flush();h.setOnline(true);await h.render().syncNow();
   assert.equal(JSON.parse(storage.get('lantern-v1-alice:recording:'+rec.id)).uploaded,true);assert.equal(h.render().issues.length,0);
@@ -333,32 +358,22 @@ test('very long Retry-After cannot overflow into a rapid timer', async () => {
 test('invalid recording metadata and malformed multipart are permanent input failures', async () => {
   const route=load('app/api/recordings/route.ts',{
     'cloudflare:workers':{env:{}},'drizzle-orm':{eq(){},and(){}},'@/db':{getDb(){throw Error('Storage must not be reached');}},'@/db/schema':{recordings:{}},
-    '@/lib/server-auth':{userId:async()=>'alice',safeMutation:()=>true,privateJson:(body,status=200)=>({body,status})},'@/content/speaking.json':{default:[]}
+    '@/lib/request-body':load('lib/request-body.ts'),'@/lib/server-auth':{userId:async()=>'alice',safeMutation:()=>true,privateJson:(body,status=200)=>({body,status})},'@/content/speaking.json':{default:[]}
   },{File,Response});
   const headers=new Headers({'x-lantern-owner':'alice'});
   for(const metadata of ['null','[1]','{bad json']){
-    const result=await route.POST({headers,formData:async()=>({get:()=>metadata})});assert.equal(result.status,400);
+    const form=new FormData();form.set('meta',metadata);const result=await route.POST(new Request('https://test.local/api/recordings',{method:'POST',headers,body:form}));assert.equal(result.status,400);
   }
-  assert.equal((await route.POST({headers,formData:async()=>{throw new TypeError('bad multipart');}})).status,400);
+  assert.equal((await route.POST(new Request('https://test.local/api/recordings',{method:'POST',headers:{'x-lantern-owner':'alice','Content-Type':'multipart/form-data; boundary=missing'},body:'not a multipart body'}))).status,400);
 });
 
-test('uploading an offline recording retains the date the practice occurred', async () => {
-  let stored;
-  const prompts=JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8'));
-  const auth={userId:async()=>'alice',safeMutation:()=>true,privateJson:(body,status=200)=>({body,status})};
-  const route=load('app/api/recordings/route.ts',{
-    'cloudflare:workers':{env:{BUCKET:{put:async()=>{}}}},
-    'drizzle-orm':{eq(){},and(){}},
-    '@/db':{getDb:()=>({insert:()=>({values:row=>({onConflictDoNothing:async()=>{stored=row;}})})})},
-    '@/db/schema':{recordings:{}},
-    '@/lib/server-auth':auth,
-    '@/content/speaking.json':{default:prompts}
-  },{File,Response});
-  const meta={id:randomUUID(),promptId:prompts[0].id,duration:20,createdAt:'2026-09-01T12:00:00.000Z'};
-  const file=new File(['audio data'],'sample.webm',{type:'audio/webm'});
-  const result=await route.POST({headers:new Headers({'x-lantern-owner':'alice'}),formData:async()=>({get:key=>key==='audio'?file:JSON.stringify(meta)})});
+test('uploading an offline recording retains the date the practice occurred', async t => {
+  const {environment}=require('./helpers/recording-storage-harness.cjs');
+  const storage=await environment();t.after(()=>storage.close());
+  const meta={duration:20,createdAt:'2026-09-01T12:00:00.000Z'};
+  const result=await storage.upload('alice',randomUUID(),'audio data',meta);
   assert.equal(result.status,200);
-  assert.equal(JSON.parse(stored.body).createdAt,meta.createdAt,'Sync day must not replace original recording date');
+  assert.equal(JSON.parse(storage.rows()[0].body).createdAt,meta.createdAt,'Sync day must not replace original recording date');
 });
 
 test('an earlier recording save cannot mark the current recording as saved', async () => {
@@ -377,10 +392,10 @@ test('an earlier recording save cannot mark the current recording as saved', asy
   }
   const jsx=(type,props)=>({type,props});
   const stub=new Proxy({},{get:(_,name)=>String(name)});
-  const Room=load('app/learn/speaking.tsx',{
+  const Room=load('app/learn/speaking.tsx',{'@/lib/lesson-audio':{stopLessonAudio(){}},
     '@/lib/study-model':model,
     react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stub,
-    '@/components/ui/dialog':stub,'@/components/ui/checkbox':stub,
+    '@/components/ui/dialog':stub,'@/components/ui/checkbox':stub,'./recording-player':{RecordingPlayer:'audio'},
     sonner:{toast:Object.assign(()=>{},{error(){},success(){}})},'./practice':stub,'@/lib/native-host':load('lib/native-host.ts')
   },{Blob,URL,MediaRecorder:Recorder,window:{MediaRecorder:Recorder},document:{hidden:false,addEventListener(){},removeEventListener(){}},navigator:{mediaDevices:{getUserMedia:async()=>({getTracks:()=>[{stop(){}}]})}},setInterval:()=>1,clearInterval(){}}).default;
   const prompt=JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8'))[0];
@@ -424,10 +439,10 @@ test('background recording stop preserves elapsed time and pending save completi
   const document={hidden:false,addEventListener(type,fn){if(type==='visibilitychange')this.onVisibility=fn;},removeEventListener(){}};
   const jsx=(type,props)=>({type,props});
   const stub=new Proxy({},{get:(_,name)=>String(name)});
-  const Room=load('app/learn/speaking.tsx',{
+  const Room=load('app/learn/speaking.tsx',{'@/lib/lesson-audio':{stopLessonAudio(){}},
     '@/lib/study-model':model,
     react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':stub,
-    '@/components/ui/dialog':stub,'@/components/ui/checkbox':stub,
+    '@/components/ui/dialog':stub,'@/components/ui/checkbox':stub,'./recording-player':{RecordingPlayer:'audio'},
     sonner:{toast:Object.assign(()=>{},{error(){},success(){}})},'./practice':stub,'@/lib/native-host':load('lib/native-host.ts')
   },{Date:ClockDate,Blob,URL,MediaRecorder:Recorder,window:{MediaRecorder:Recorder},document,navigator:{mediaDevices:{getUserMedia:async()=>({getTracks:()=>[{stop(){}}]})}},setInterval:()=>1,clearInterval(){}}).default;
   const prompt=JSON.parse(fs.readFileSync(root+'/content/speaking.json','utf8'))[0];
@@ -507,4 +522,145 @@ test('a late GET cannot roll back a newer profile already acknowledged by anothe
     'Ignoring one stale profile should not create an additional GET or upload');
   assert.equal(first.timers.size, 0,
     'Profile freshness protection alone must not create a polling loop');
+});
+
+// Actual hook with synthetic owner, storage and cloud responses.
+const chooseAppearance=(api,theme)=>api.saveTheme(theme);
+
+test('theme-only save before first Web GET preserves all existing cloud settings',async()=>{
+ let releaseGet,firstGet=true;const remote=base();
+ remote.profile={...remote.profile,name:'Cloud learner',dailyMinutes:45,lrGoal:800,theme:'paper'};
+ const expected={...remote.profile,theme:'crystal'};
+ remote.attempts=[{...attempt(randomUUID(),'2026-01-01T00:00:00.000Z'),qid:'p1-01'}];
+ const h=hookHarness(new Map(),{handle:async(url,init,request)=>{
+  if(init?.method==='POST'){
+   if(request.body.type==='profile')remote.profile=request.body.data;
+   if(request.body.type==='theme')remote.profile={...remote.profile,...request.body.data};
+   return {ok:true};
+  }
+  const snapshot={...structuredClone(remote),owner:'alice',hasProfile:true};
+  if(firstGet){firstGet=false;await new Promise(resolve=>{releaseGet=resolve;});}
+  return {ok:true,json:async()=>snapshot};
+ }});
+ h.setOnline(true);h.render('alice');await flush();
+ assert.equal(h.render().ready,true);
+ assert.equal(chooseAppearance(h.render(),'crystal'),true);
+ assert.equal(h.render().data.profile.theme,'crystal','appearance updates immediately');
+ releaseGet();await flush();await flush();await h.render().syncNow();
+ assert.deepEqual(JSON.parse(JSON.stringify(remote.profile)),expected);
+ assert.deepEqual(JSON.parse(JSON.stringify(h.render().data.profile)),expected);
+ assert.deepEqual(JSON.parse(JSON.stringify(h.render().data.attempts)),JSON.parse(JSON.stringify(remote.attempts)));
+ assert.deepEqual(h.requests.filter(x=>x.body?.type==='theme').map(x=>x.body.data),[{theme:'crystal'}]);
+ assert.equal(h.requests.some(x=>x.body?.type==='profile'),false);
+});
+
+test('theme-only save never sends stale cached settings over newer cloud settings',async()=>{
+ const remote=base();remote.profile={...remote.profile,name:'Remote update',dailyMinutes:60,lrGoal:900};
+ const cached=base();cached.profile={...cached.profile,name:'Old cache',dailyMinutes:15,lrGoal:650};
+ const h=hookHarness(new Map([['lantern-v1-alice',JSON.stringify({data:cached})]]),{handle:async(url,init,request)=>{
+  if(init?.method==='POST'){
+   if(request.body.type==='profile')remote.profile=request.body.data;
+   if(request.body.type==='theme')remote.profile={...remote.profile,...request.body.data};
+   return {ok:true};
+  }
+  return {ok:true,json:async()=>({...structuredClone(remote),owner:'alice',hasProfile:true})};
+ }});
+ h.render('alice');await flush();chooseAppearance(h.render(),'silk');
+ h.setOnline(true);await h.render().syncNow();
+ assert.equal(remote.profile.name,'Remote update');assert.equal(remote.profile.dailyMinutes,60);assert.equal(remote.profile.lrGoal,900);
+ assert.equal(h.render().data.profile.name,'Remote update');assert.equal(h.render().data.profile.theme,'silk');
+});
+
+test('rapid theme-only choices converge while a preceding upload is in flight',async()=>{
+ let releasePost,firstPost=true;const remote=base();remote.profile={...remote.profile,name:'Keep name',dailyMinutes:45};
+ const h=hookHarness(new Map(),{handle:async(url,init,request)=>{
+  if(init?.method==='POST'){
+   if(firstPost){firstPost=false;await new Promise(resolve=>{releasePost=resolve;});}
+   assert.equal(request.body.type,'theme');assert.deepEqual(Object.keys(request.body.data),['theme']);
+   remote.profile={...remote.profile,...request.body.data};return {ok:true};
+  }
+  return {ok:true,json:async()=>({...structuredClone(remote),owner:'alice',hasProfile:true})};
+ }});
+ h.setOnline(true);h.render('alice');await flush();await h.render().syncNow();
+ chooseAppearance(h.render(),'silk');await flush();
+ chooseAppearance(h.render(),'paper');chooseAppearance(h.render(),'crystal');
+ releasePost();await flush();await flush();await h.render().syncNow();
+ assert.equal(remote.profile.theme,'crystal');assert.equal(h.render().data.profile.theme,'crystal');
+ assert.equal(remote.profile.name,'Keep name');assert.equal(remote.profile.dailyMinutes,45);
+});
+
+test('legacy pending full profiles remain supported beside the new theme-only journal',async()=>{
+ const remote=base();
+ const h=hookHarness(new Map(),{handle:async(url,init,request)=>{
+  if(init?.method==='POST'){
+   if(request.body.type==='profile')remote.profile=request.body.data;
+   if(request.body.type==='theme')remote.profile={...remote.profile,...request.body.data};
+   return {ok:true};
+  }
+  return {ok:true,json:async()=>({...structuredClone(remote),owner:'alice',hasProfile:true})};
+ }});
+ h.render('alice');await flush();
+ h.render().saveProfile({...h.render().data.profile,name:'Intentional settings update',dailyMinutes:45});
+ chooseAppearance(h.render(),'crystal');h.setOnline(true);await h.render().syncNow();
+ assert.equal(remote.profile.name,'Intentional settings update');assert.equal(remote.profile.dailyMinutes,45);assert.equal(remote.profile.theme,'crystal');
+ assert.ok(h.requests.some(x=>x.body?.type==='profile'));assert.ok(h.requests.some(x=>x.body?.type==='theme'));
+ assert.equal(h.render().issues.length,0);
+});
+
+test('a rejected theme-only upload retains local appearance and pending data for retry',async()=>{
+ const h=hookHarness(new Map(),{remote:{hasProfile:true},handle:async(url,init)=>{
+  if(init?.method==='POST')return {ok:false,status:400,headers:new Headers()};
+ }});
+ h.render('alice');await flush();chooseAppearance(h.render(),'silk');
+ h.setOnline(true);await h.render().syncNow();
+ assert.equal(h.render().data.profile.theme,'silk');
+ assert.equal(JSON.parse(h.storage.get('lantern-v1-alice:profile')).theme,'silk');
+ assert.ok(h.render().issues.some(x=>x.kind==='op'&&x.status==='blocked'));
+ assert.ok(h.requests.some(x=>x.body?.type==='theme'));
+});
+
+test('stale tab theme-only choice preserves newer local settings awaiting sync', async()=>{
+ const data=base();data.profile.name='Original';
+ const storage=new Map([['lantern-v1-alice',JSON.stringify({data})],['lantern-v1-alice:profile',JSON.stringify(data.profile)]]);
+ const server={...base(),hasProfile:true,profile:{...data.profile}};
+ const handle=async(url,init,request)=>{
+  if(init?.method==='POST'){
+   if(request.body.type==='profile')server.profile=request.body.data;
+   if(request.body.type==='theme')server.profile={...server.profile,...request.body.data};
+   return {ok:true};
+  }
+  return {ok:true,json:async()=>({...structuredClone(server),owner:'alice'})};
+ };
+ const first=hookHarness(storage,{handle}),second=hookHarness(storage,{handle});
+ first.render();second.render();await flush();
+ first.render().saveProfile({...first.render().data.profile,name:'Newer local settings',dailyMinutes:45});
+ second.render().saveTheme('crystal');
+ assert.equal(JSON.parse(storage.get('lantern-v1-alice:profile')).name,'Newer local settings','A theme-only action must not roll back newer settings in durable storage');
+ second.setOnline(true);await second.render().syncNow();
+ assert.equal(server.profile.name,'Newer local settings');assert.equal(server.profile.dailyMinutes,45);assert.equal(server.profile.theme,'crystal');
+});
+
+test('older theme upload finishing after a second tab cannot replace the latest choice', async()=>{
+ const data=base();data.profile.name='Kept';
+ const storage=new Map([['lantern-v1-alice',JSON.stringify({data})],['lantern-v1-alice:profile',JSON.stringify(data.profile)]]);
+ const server={...base(),hasProfile:true,profile:{...data.profile}};
+ let releaseOldPost,enteredOldPost;
+ const entered=new Promise(resolve=>enteredOldPost=resolve);const waiting=new Promise(resolve=>releaseOldPost=resolve);
+ let hold=true;
+ const handle=(holds)=>async(url,init,request)=>{
+  if(init?.method==='POST'){
+   if(holds&&hold){hold=false;enteredOldPost();await waiting;}
+   if(request.body.type==='theme')server.profile={...server.profile,...request.body.data};
+   return {ok:true};
+  }
+  return {ok:true,json:async()=>({...structuredClone(server),owner:'alice'})};
+ };
+ const first=hookHarness(storage,{handle:handle(true)}),second=hookHarness(storage,{handle:handle(false)});
+ first.render();second.render();await flush();first.setOnline(true);await first.render().syncNow();
+ first.render().saveTheme('silk');await entered;
+ second.render().saveTheme('crystal');second.setOnline(true);await second.render().syncNow();
+ assert.equal(server.profile.theme,'crystal');
+ releaseOldPost();await flush();await flush();
+ assert.equal(JSON.parse(storage.get('lantern-v1-alice:profile')).theme,'crystal');
+ assert.equal(server.profile.theme,'crystal');
 });

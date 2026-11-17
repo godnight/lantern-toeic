@@ -1,0 +1,79 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-10-13T09:03:26.788340+00:00",
+  "sourceScope": {
+    "folders": [
+      "app",
+      "lib",
+      "components",
+      "content",
+      "public",
+      "mobile",
+      "harmony",
+      "hooks",
+      "types",
+      "vendor"
+    ],
+    "rootFiles": [
+      "package.json",
+      "package-lock.json",
+      "tsconfig.json",
+      "postcss.config.mjs",
+      ".gitignore",
+      "release-manifest.json"
+    ],
+    "ignoredDirectoryNames": [
+      "node_modules",
+      "dist",
+      "build",
+      ".git",
+      ".hvigor",
+      "oh_modules",
+      ".sites-runtime",
+      ".wrangler",
+      "rawfile",
+      "__pycache__"
+    ],
+    "excludedPrefixes": [
+      "harmony/tests/",
+      "harmony/scripts/ui/"
+    ],
+    "excludedDocumentationExtensionsExceptPublic": [
+      ".md",
+      ".txt"
+    ],
+    "excludedByNotSelectingRoots": [
+      "README.md",
+      "docs/",
+      "tests/",
+      "reports/"
+    ],
+    "publicAssetPolicy": "All public assets are preserved, including any license/attribution documentation shipped as files.",
+    "dependencyPolicy": "Root package.json/lock and build config are pinned; package script changes alter that config proof.",
+    "purpose": "Mobile/Harmony build input snapshot and runtime assets; not repository-wide documentation/test freeze."
+  },
+  "sourcePathSetAndHashesMatch": true,
+  "sourceFileCount": 1228,
+  "addedSourceFiles": [],
+  "missingSourceFiles": [],
+  "changedSourceFiles": [],
+  "resourceByteChecks": 1071,
+  "hapBytes": 44282830,
+  "hapSha256": "1fa43622e1c740d76a943889de69b9778d5466dc0892f0be3be7765655cccb8a",
+  "sourceManifestSha256": "9ab3644d25288c954f3c5f7e44ddddb1378af55b57163e1bf33b16f1ea80f5d9",
+  "webManifestSha256": "970336a9e187baabcff25a195826e2f0d82caf621c2cc4434dd073c98ef16c0c",
+  "app": {
+    "bundleName": "com.lantern.toeic",
+    "versionName": "0.3.3",
+    "versionCode": 20009,
+    "buildMode": "debug",
+    "compileSdkType": "HarmonyOS",
+    "compileSdkVersion": "26.0.0.105",
+    "minAPIVersion": 50000012,
+    "targetAPIVersion": 50000012
+  },
+  "installed": false,
+  "signed": false,
+  "arkWebOrDeviceTested": false,
+  "approvalRequestedByThisWorkline": false
+}

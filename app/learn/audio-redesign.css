@@ -1,0 +1,25 @@
+/* Shared SpeechPlayer modes. Load after the existing application styles. */
+.speech-audio{min-width:0;max-width:100%;color:var(--foreground)}
+.speech-audio-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:44px;min-width:44px;min-height:44px;border-radius:50%;border:0;background:var(--accent-soft);color:var(--primary);cursor:pointer}
+.speech-audio-icon svg{flex:none}
+.speech-audio-icon:hover:not(:disabled){background:var(--secondary)}
+.speech-audio-icon:focus-visible{outline:2px solid var(--ring);outline-offset:3px}
+.speech-audio-icon:disabled{cursor:default;opacity:.5}
+.speech-audio--word,.speech-audio--example{display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px 8px;vertical-align:middle;margin:0;padding:0;border:0;background:transparent}
+.speech-audio--word>.speech-audio-feedback:empty,.speech-audio--example>.speech-audio-feedback:empty{display:none}
+.speech-audio-feedback{min-width:0;max-width:100%;font-size:13px;line-height:1.5;color:var(--muted-foreground);overflow-wrap:anywhere}
+.speech-audio-feedback small{font-size:inherit}
+.speech-audio-feedback [role=alert],.speech-audio-feedback[role=alert],.speech-audio [role=alert]{color:var(--bad,var(--destructive))}
+.speech-audio--word>.speech-audio-feedback,.speech-audio--example>.speech-audio-feedback{flex:1 1 auto}
+.speech-audio--listening.audio-player,.practice-dialog .speech-audio--listening.practice-audio-player{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:8px 12px;width:100%;margin:12px 0;padding:10px 0;border:0;border-radius:0;background:transparent}
+.speech-audio--listening .audio-meta{min-width:0;gap:3px}
+.speech-audio--listening .audio-meta b{font-size:15px;font-weight:600;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+.speech-audio--listening .audio-meta small{font-size:13px;line-height:1.5}
+.speech-audio--listening>.speed-select,.practice-dialog .speech-audio--listening>.speed-select,.transcript-lines .speech-audio--listening>.speed-select{display:flex!important;width:74px!important;min-height:44px;height:44px!important;margin:0;padding:6px 9px!important;font-size:13px!important;flex-shrink:0}
+.speech-audio--listening>.practice-audio-restart{grid-column:2/-1;justify-self:start;min-height:36px;margin:0;padding:2px 0;font-size:13px}
+.dictionary-word-audio{display:inline-flex;min-width:0;max-width:100%;vertical-align:middle}
+.speech-audio-loading{animation:speech-audio-spin 1s linear infinite}
+.practice-dialog .practice-footer>.button{margin-left:auto}
+@keyframes speech-audio-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.speech-audio-loading{animation:none}}
+@media(max-width:380px){.speech-audio--listening.audio-player,.practice-dialog .speech-audio--listening.practice-audio-player{gap:8px}.speech-audio--listening>.speed-select,.practice-dialog .speech-audio--listening>.speed-select{width:66px!important}}

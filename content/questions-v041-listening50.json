@@ -1,0 +1,978 @@
+[
+  {
+    "id": "v041-l50-p1-01",
+    "part": 1,
+    "title": "Part 1 · 01",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "A man is painting a door with a brush.",
+      "A man is hanging a picture on a wall.",
+      "A man is carrying a ladder up some stairs.",
+      "A man is sweeping a path beside a building."
+    ],
+    "correctIndex": 0,
+    "explanation": "男子手中的刷子接触木门，门面有新刷的漆痕，脚边还放着漆罐，因此选A。painting a door表示给门刷漆；画面没有挂画、搬梯子上楼或扫路的动作。",
+    "evidence": "A man is painting a door with a brush.\n男子站在木门旁，手持刷子，刷毛接触门面。\n门面可见新漆痕，地上有打开的漆罐。",
+    "skill": "人物动作：刷漆与其他手工作业区分",
+    "difficulty": "未标定",
+    "transcript": "A. A man is painting a door with a brush.\nB. A man is hanging a picture on a wall.\nC. A man is carrying a ladder up some stairs.\nD. A man is sweeping a path beside a building.",
+    "translation": "A. 一名男子正在用刷子给门刷漆。\nB. 一名男子正在把一幅画挂到墙上。\nC. 一名男子正在把梯子搬上楼梯。\nD. 一名男子正在清扫建筑物旁的小路。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening50-r3/46f9887d1f4554254e550f7558fe3d45ba8fecf5cfcbe7d3d1ef9d74f6d53315.png"
+  },
+  {
+    "id": "v041-l50-p1-02",
+    "part": 1,
+    "title": "Part 1 · 02",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "Several people are eating at outdoor tables.",
+      "Chairs are arranged around tables on a terrace.",
+      "Chairs are stacked against a wall.",
+      "Workers are covering the tables with cloths."
+    ],
+    "correctIndex": 1,
+    "explanation": "露台上的椅子分别摆在圆桌周围，因此选B。arranged around表示围绕着摆放。椅子没有堆叠，画面也没有用餐者或铺桌布的工人。",
+    "evidence": "Chairs are arranged around tables on a terrace.\n露台上有三张圆桌，椅子分别摆在桌边。\n椅子直立且未堆叠，桌面没有桌布，画面没有人物。",
+    "skill": "无人场景：家具摆放与进行时动作区分",
+    "difficulty": "未标定",
+    "transcript": "A. Several people are eating at outdoor tables.\nB. Chairs are arranged around tables on a terrace.\nC. Chairs are stacked against a wall.\nD. Workers are covering the tables with cloths.",
+    "translation": "A. 几个人正在室外餐桌旁用餐。\nB. 椅子摆放在露台上的桌子周围。\nC. 椅子靠着墙堆叠着。\nD. 工人们正在给桌子铺桌布。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening50-r3/4fac01e65c77bad25be18db9550b56597e8a80e9dc35fcab25f9050cc8f82930.png"
+  },
+  {
+    "id": "v041-l50-p1-03",
+    "part": 1,
+    "title": "Part 1 · 03",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "A woman is placing books into a box.",
+      "A woman is wiping a window with a cloth.",
+      "A woman is holding a book in front of a bookcase.",
+      "A woman is reading a book at a desk."
+    ],
+    "correctIndex": 2,
+    "explanation": "女子在书架前用双手拿着一本合上的书，因此选C。holding描述可直接看见的持物状态；这张照片无法判断她正在把书放入还是抽出书架。画面没有箱子、擦窗动作或在书桌旁读书的情景。",
+    "evidence": "A woman is holding a book in front of a bookcase.\n女子面对木质书架，双手拿着一本合上的绿色书。\n书在女子与书架之间；静止画面不能确定放入或抽出的方向。",
+    "skill": "人物持物状态与位置：区分可见事实和运动方向推断",
+    "difficulty": "未标定",
+    "transcript": "A. A woman is placing books into a box.\nB. A woman is wiping a window with a cloth.\nC. A woman is holding a book in front of a bookcase.\nD. A woman is reading a book at a desk.",
+    "translation": "A. 一名女子正在把书放进箱子里。\nB. 一名女子正在用布擦窗户。\nC. 一名女子正在书架前拿着一本书。\nD. 一名女子正在书桌旁读书。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening50-r3/9caf2d57da501b835cd2fe8aa5e78cb34f182b3f96e5f9330858a42eef6ece77.png"
+  },
+  {
+    "id": "v041-l50-p1-04",
+    "part": 1,
+    "title": "Part 1 · 04",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "A bicycle is being loaded onto a truck.",
+      "A man is riding a bicycle along a road.",
+      "A man is inflating a bicycle tire with a pump.",
+      "A man is working on a bicycle with a wrench."
+    ],
+    "correctIndex": 3,
+    "explanation": "男子跪在自行车旁，手中的扳手接触后轮轴附近的部件，因此选D。working on a bicycle with a wrench表示用扳手维修自行车，不要求判断扳手的转动方向。画面没有装车、骑车或打气的动作。",
+    "evidence": "A man is working on a bicycle with a wrench.\n男子跪在自行车旁，手持扳手接触后轮轴附近部件。\n自行车车轮接触地面，男子不在骑车。",
+    "skill": "工具与动作：扳手维修",
+    "difficulty": "未标定",
+    "transcript": "A. A bicycle is being loaded onto a truck.\nB. A man is riding a bicycle along a road.\nC. A man is inflating a bicycle tire with a pump.\nD. A man is working on a bicycle with a wrench.",
+    "translation": "A. 一辆自行车正被装上卡车。\nB. 一名男子正在路上骑自行车。\nC. 一名男子正在用打气筒给自行车轮胎充气。\nD. 一名男子正在用扳手维修自行车。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening50-r3/8451f755eb830a011de7057620a17162e8f056ac4c14bedb09576e63b5e9d42d.png"
+  },
+  {
+    "id": "v041-l50-p1-05",
+    "part": 1,
+    "title": "Part 1 · 05",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "A woman is pouring water into a flowerpot.",
+      "A woman is cutting branches from a tree.",
+      "A woman is pushing a lawn mower across the grass.",
+      "A woman is picking flowers from a garden bed."
+    ],
+    "correctIndex": 0,
+    "explanation": "女子双手握着倾斜的浇水壶，水从壶嘴流入面前的花盆，因此选A。pouring water into a flowerpot强调水进入花盆。她没有剪树枝、推割草机或摘花。",
+    "evidence": "A woman is pouring water into a flowerpot.\n女子双手握住倾斜的浇水壶。\n可见水流从壶嘴落到前方花盆内的土壤上。",
+    "skill": "人物动作：浇水与园艺干扰项",
+    "difficulty": "未标定",
+    "transcript": "A. A woman is pouring water into a flowerpot.\nB. A woman is cutting branches from a tree.\nC. A woman is pushing a lawn mower across the grass.\nD. A woman is picking flowers from a garden bed.",
+    "translation": "A. 一名女子正在往花盆里浇水。\nB. 一名女子正在修剪树枝。\nC. 一名女子正在草地上推割草机。\nD. 一名女子正在从花坛里摘花。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening50-r3/0c2dd6cba4022e52c125f3b5aea2309f92369e4ff9a025fecef91e1816aa35ab.png"
+  },
+  {
+    "id": "v041-l50-p1-06",
+    "part": 1,
+    "title": "Part 1 · 06",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "A woman is serving a meal to a customer.",
+      "A woman is wiping a counter with a cloth.",
+      "A woman is washing plates in a sink.",
+      "A woman is carrying a stack of trays."
+    ],
+    "correctIndex": 1,
+    "explanation": "女子站在柜台后，手掌把一块折叠布按在台面上，姿势符合擦拭，因此选B。wiping a counter with a cloth表示用布擦柜台。她没有给顾客端饭、洗盘子或搬托盘。",
+    "evidence": "A woman is wiping a counter with a cloth.\n女子站在柜台后，一只手将折叠布按在台面上。\n背景架上有杯子，但女子没有端饭、洗盘子或搬托盘。",
+    "skill": "人物动作：擦拭表面",
+    "difficulty": "未标定",
+    "transcript": "A. A woman is serving a meal to a customer.\nB. A woman is wiping a counter with a cloth.\nC. A woman is washing plates in a sink.\nD. A woman is carrying a stack of trays.",
+    "translation": "A. 一名女子正在给顾客端饭。\nB. 一名女子正在用布擦柜台。\nC. 一名女子正在水槽里洗盘子。\nD. 一名女子正在搬一摞托盘。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening50-r3/58fe443afa2eb7088d8e1839dcf5b245a6c081e682ca44d6f1d4bf1476da2b52.png"
+  },
+  {
+    "id": "v041-l50-p1-07",
+    "part": 1,
+    "title": "Part 1 · 07",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "A worker is opening a cardboard box.",
+      "A worker is loading boxes onto a shelf.",
+      "A worker is pushing a cart loaded with boxes.",
+      "A worker is pulling a suitcase through a doorway."
+    ],
+    "correctIndex": 2,
+    "explanation": "工人站在推车把手后方，双手握把、身体前倾并迈步，车上放着两个封闭纸箱，因此选C。loaded with boxes修饰推车，表示车上装着箱子；图中不是开箱、往货架搬箱或拖行李箱。",
+    "evidence": "A worker is pushing a cart loaded with boxes.\n工人在装有两个封闭纸箱的平板推车后方，双手握住把手。\n工人身体前倾、迈步，形成推车姿势。",
+    "skill": "动作与承载关系：推车运输",
+    "difficulty": "未标定",
+    "transcript": "A. A worker is opening a cardboard box.\nB. A worker is loading boxes onto a shelf.\nC. A worker is pushing a cart loaded with boxes.\nD. A worker is pulling a suitcase through a doorway.",
+    "translation": "A. 一名工人正在打开纸箱。\nB. 一名工人正在把箱子搬到架子上。\nC. 一名工人正在推一辆装着箱子的推车。\nD. 一名工人正在拖着行李箱穿过门口。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening50-r3/4b6544f0142c88c86b75558b960b4936a0e8a9e3d62bf5307e91ff65d9c84772.png"
+  },
+  {
+    "id": "v041-l50-p1-08",
+    "part": 1,
+    "title": "Part 1 · 08",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "People are walking across a bridge.",
+      "A boat is being lifted out of the water.",
+      "Several boats are moving beneath a bridge.",
+      "A small boat is tied to a dock."
+    ],
+    "correctIndex": 3,
+    "explanation": "小船浮在码头旁的水面上，两根绳索连接船与码头的固定柱，因此选D。is tied to表示被系在某处。画面没有人过桥、起吊船只或多船在桥下航行的情景。",
+    "evidence": "A small boat is tied to a dock.\n一艘小船浮在木码头旁。\n两根可见绳索连接小船和码头固定柱。",
+    "skill": "无人场景：船只位置与连接关系",
+    "difficulty": "未标定",
+    "transcript": "A. People are walking across a bridge.\nB. A boat is being lifted out of the water.\nC. Several boats are moving beneath a bridge.\nD. A small boat is tied to a dock.",
+    "translation": "A. 人们正在过桥。\nB. 一艘船正被吊离水面。\nC. 几艘船正在桥下行驶。\nD. 一艘小船系在码头边。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening50-r3/0fb77dfbb44b9f0cb04c2f0c6be7f58f031c00017ec4c1ce70a83d80e68685ec.png"
+  },
+  {
+    "id": "v041-l50-p2-01",
+    "part": 2,
+    "title": "回收投放地点",
+    "prompt": "Where should I put the empty toner cartridges?",
+    "options": [
+      "At the end of each month.",
+      "In the marked bin beside the copier.",
+      "Yes, the ink is blue."
+    ],
+    "correctIndex": 1,
+    "explanation": "给出明确地点，直接回应用完的墨粉盒应放在哪里。",
+    "evidence": "In the marked bin beside the copier.",
+    "skill": "where地点问答",
+    "difficulty": "未标定",
+    "transcript": "Where should I put the empty toner cartridges?\nA. At the end of each month.\nB. In the marked bin beside the copier.\nC. Yes, the ink is blue.",
+    "translation": "我应该把用完的墨粉盒放在哪里？\nA. 在每个月月底。\nB. 放在复印机旁有标记的回收箱里。\nC. 是的，墨水是蓝色的。"
+  },
+  {
+    "id": "v041-l50-p2-02",
+    "part": 2,
+    "title": "入职说明时长",
+    "prompt": "How long does the new employee orientation last?",
+    "options": [
+      "For all new employees.",
+      "In the downstairs training room.",
+      "About forty-five minutes."
+    ],
+    "correctIndex": 2,
+    "explanation": "四十五分钟是时长，直接回答how long。",
+    "evidence": "About forty-five minutes.",
+    "skill": "how long时长问答",
+    "difficulty": "未标定",
+    "transcript": "How long does the new employee orientation last?\nA. For all new employees.\nB. In the downstairs training room.\nC. About forty-five minutes.",
+    "translation": "新员工入职说明会持续多长时间？\nA. 面向所有新员工。\nB. 在楼下的培训室里。\nC. 大约四十五分钟。"
+  },
+  {
+    "id": "v041-l50-p2-03",
+    "part": 2,
+    "title": "加班审批权限",
+    "prompt": "Who is authorized to approve the overtime request?",
+    "options": [
+      "Only the department supervisor can sign it.",
+      "It takes about an hour to get there.",
+      "The form is printed on yellow paper."
+    ],
+    "correctIndex": 0,
+    "explanation": "指出唯一有签批权限的人，直接回应who。",
+    "evidence": "Only the department supervisor can sign it.",
+    "skill": "who人员与权限问答",
+    "difficulty": "未标定",
+    "transcript": "Who is authorized to approve the overtime request?\nA. Only the department supervisor can sign it.\nB. It takes about an hour to get there.\nC. The form is printed on yellow paper.",
+    "translation": "谁有权批准这份加班申请？\nA. 只有部门主管可以签批。\nB. 到那里大约需要一小时。\nC. 这张表格印在黄色纸上。"
+  },
+  {
+    "id": "v041-l50-p2-04",
+    "part": 2,
+    "title": "重发发票原因",
+    "prompt": "Why did you send the invoice again?",
+    "options": [
+      "The amount is listed in euros.",
+      "The first attachment would not open.",
+      "Before the end of next month."
+    ],
+    "correctIndex": 1,
+    "explanation": "原附件打不开，为重发提供明确原因。",
+    "evidence": "The first attachment would not open.",
+    "skill": "why原因问答",
+    "difficulty": "未标定",
+    "transcript": "Why did you send the invoice again?\nA. The amount is listed in euros.\nB. The first attachment would not open.\nC. Before the end of next month.",
+    "translation": "你为什么又发了一次发票？\nA. 金额以欧元列出。\nB. 第一次发的附件打不开。\nC. 在下个月月底之前。"
+  },
+  {
+    "id": "v041-l50-p2-05",
+    "part": 2,
+    "title": "移桌建议",
+    "prompt": "Why don't we move this table away from the doorway?",
+    "options": [
+      "The door was installed last week.",
+      "A round wooden one.",
+      "That would make it easier to get through."
+    ],
+    "correctIndex": 2,
+    "explanation": "说明移桌后更易通行，间接赞同该建议；Why don't we在此不是追问未做某事的原因。",
+    "evidence": "That would make it easier to get through.",
+    "skill": "建议与间接赞同",
+    "difficulty": "未标定",
+    "transcript": "Why don't we move this table away from the doorway?\nA. The door was installed last week.\nB. A round wooden one.\nC. That would make it easier to get through.",
+    "translation": "我们把这张桌子搬离门口怎么样？\nA. 这扇门是上周安装的。\nB. 一张圆木桌。\nC. 那样通过这里就会更容易。"
+  },
+  {
+    "id": "v041-l50-p2-06",
+    "part": 2,
+    "title": "标签脱落处理",
+    "prompt": "The labels on these two sample jars have come off.",
+    "options": [
+      "I'll print a new set for them.",
+      "The jars arrived on a Tuesday.",
+      "The printer was made in Germany."
+    ],
+    "correctIndex": 0,
+    "explanation": "提出补打标签的具体解决办法，直接承接标签脱落的问题。",
+    "evidence": "I'll print a new set for them.",
+    "skill": "陈述句与解决办法",
+    "difficulty": "未标定",
+    "transcript": "The labels on these two sample jars have come off.\nA. I'll print a new set for them.\nB. The jars arrived on a Tuesday.\nC. The printer was made in Germany.",
+    "translation": "这两个样品罐上的标签掉了。\nA. 我会给它们打印一套新标签。\nB. 这些罐子是一个周二送到的。\nC. 这台打印机是在德国制造的。"
+  },
+  {
+    "id": "v041-l50-p2-07",
+    "part": 2,
+    "title": "座位偏好",
+    "prompt": "Would you prefer an aisle seat or a window seat?",
+    "options": [
+      "The flight lasts two hours.",
+      "A window seat, if one is available.",
+      "The seat covers are in storage."
+    ],
+    "correctIndex": 1,
+    "explanation": "明确选择靠窗座位并附上有空位的条件，完整回应偏好。",
+    "evidence": "A window seat, if one is available.",
+    "skill": "选择疑问句",
+    "difficulty": "未标定",
+    "transcript": "Would you prefer an aisle seat or a window seat?\nA. The flight lasts two hours.\nB. A window seat, if one is available.\nC. The seat covers are in storage.",
+    "translation": "您更喜欢靠过道的座位还是靠窗的座位？\nA. 这趟航班持续两小时。\nB. 如果还有的话，我想要靠窗的座位。\nC. 座椅套放在储藏处。"
+  },
+  {
+    "id": "v041-l50-p2-08",
+    "part": 2,
+    "title": "幻灯片保存确认",
+    "prompt": "You've saved the revised slides, haven't you?",
+    "options": [
+      "The sliding door needs oil.",
+      "The seminar starts at nine.",
+      "Yes, they're in the shared folder."
+    ],
+    "correctIndex": 2,
+    "explanation": "肯定已保存，并说明文件所在共享文件夹，准确回应确认。",
+    "evidence": "Yes, they're in the shared folder.",
+    "skill": "反意疑问句确认",
+    "difficulty": "未标定",
+    "transcript": "You've saved the revised slides, haven't you?\nA. The sliding door needs oil.\nB. The seminar starts at nine.\nC. Yes, they're in the shared folder.",
+    "translation": "你已经保存修改后的幻灯片了，对吧？\nA. 推拉门需要上油。\nB. 研讨会九点开始。\nC. 保存了，它们在共享文件夹里。"
+  },
+  {
+    "id": "v041-l50-p2-09",
+    "part": 2,
+    "title": "维修完成时间不详",
+    "prompt": "When will the technician finish servicing the coffee machine?",
+    "options": [
+      "I'm not sure; she hasn't given me a finishing time.",
+      "The beans are from Brazil.",
+      "Two cups without sugar, please."
+    ],
+    "correctIndex": 0,
+    "explanation": "说明尚不知道完成时间，是对when问题的自然间接回应，并非必须猜出一个钟点。",
+    "evidence": "I'm not sure; she hasn't given me a finishing time.",
+    "skill": "when问句的间接回应",
+    "difficulty": "未标定",
+    "transcript": "When will the technician finish servicing the coffee machine?\nA. I'm not sure; she hasn't given me a finishing time.\nB. The beans are from Brazil.\nC. Two cups without sugar, please.",
+    "translation": "技术人员什么时候会完成咖啡机保养？\nA. 我不确定；她还没有告诉我完成时间。\nB. 咖啡豆来自巴西。\nC. 请给我两杯不加糖的。"
+  },
+  {
+    "id": "v041-l50-p2-10",
+    "part": 2,
+    "title": "遮光请求",
+    "prompt": "Could you lower the blinds? The sunlight is on my screen.",
+    "options": [
+      "My laptop is silver.",
+      "The weather report is on the radio.",
+      "Of course, I'll close them now."
+    ],
+    "correctIndex": 2,
+    "explanation": "明确接受请求并马上关闭百叶窗；them指blinds，能解决阳光照屏幕的问题。",
+    "evidence": "Of course, I'll close them now.",
+    "skill": "礼貌请求与接受",
+    "difficulty": "未标定",
+    "transcript": "Could you lower the blinds? The sunlight is on my screen.\nA. My laptop is silver.\nB. The weather report is on the radio.\nC. Of course, I'll close them now.",
+    "translation": "你能把百叶窗放下来吗？阳光照在我的屏幕上。\nA. 我的笔记本电脑是银色的。\nB. 收音机正在播天气预报。\nC. 当然，我现在就把它们关上。"
+  },
+  {
+    "id": "v041-l50-p2-11",
+    "part": 2,
+    "title": "停车许可证未到",
+    "prompt": "Didn't our visitor parking permits arrive this morning?",
+    "options": [
+      "No, the mailroom is still waiting for them.",
+      "The permits are valid for six months.",
+      "The visitor spoke for ten minutes."
+    ],
+    "correctIndex": 0,
+    "explanation": "明确说没有到，收发室仍在等，回答是否今天上午已送达。",
+    "evidence": "No, the mailroom is still waiting for them.",
+    "skill": "否定疑问句与事实回应",
+    "difficulty": "未标定",
+    "transcript": "Didn't our visitor parking permits arrive this morning?\nA. No, the mailroom is still waiting for them.\nB. The permits are valid for six months.\nC. The visitor spoke for ten minutes.",
+    "translation": "我们的访客停车许可证不是今天上午到吗？\nA. 没有，收发室还在等它们。\nB. 这些许可证有效期为六个月。\nC. 那位访客讲了十分钟。"
+  },
+  {
+    "id": "v041-l50-p2-12",
+    "part": 2,
+    "title": "帮忙搬展板",
+    "prompt": "Would you like me to carry one of those display boards?",
+    "options": [
+      "The exhibition opens tomorrow.",
+      "Thanks, this one is heavier than I expected.",
+      "There are three boards in total."
+    ],
+    "correctIndex": 1,
+    "explanation": "表示感谢并指出这块板很重，自然接受帮忙搬运的提议。",
+    "evidence": "Thanks, this one is heavier than I expected.",
+    "skill": "帮助提议与间接接受",
+    "difficulty": "未标定",
+    "transcript": "Would you like me to carry one of those display boards?\nA. The exhibition opens tomorrow.\nB. Thanks, this one is heavier than I expected.\nC. There are three boards in total.",
+    "translation": "你需要我帮你搬其中一块展板吗？\nA. 展览明天开幕。\nB. 谢谢，这一块比我预想的重。\nC. 一共有三块展板。"
+  },
+  {
+    "id": "v041-l50-p3-01",
+    "part": 3,
+    "title": "Part 3 · 01",
+    "prompt": "What concerns the customer about the digital proof?",
+    "options": [
+      "The photographs are missing.",
+      "Some text is difficult to read.",
+      "The museum name is incorrect.",
+      "The number of copies is too small."
+    ],
+    "correctIndex": 1,
+    "explanation": "正确答案为B。A：顾客明确说照片看起来不错，不是照片缺失；B：顾客说小字号图注在电脑上难以看清；C：对话没有提到名称错误；D：五百份是印刷数量，没有说数量不足。",
+    "evidence": "the small captions are hard to read on my laptop.",
+    "skill": "细节识别",
+    "difficulty": "未标定",
+    "transcript": "customer: I received the digital proof for our museum leaflet. The photographs look good, but the small captions are hard to read on my laptop.\nprint_clerk: Before we print all five hundred copies, I suggest making one paper sample. The text may look different at its actual size.\ncustomer: Good idea. Could you make the sample on the matte paper we selected? The glossy version reflected the exhibition lights last year.\nprint_clerk: Certainly. You can collect it after two this afternoon. We will wait for your approval before starting the full run.\ncustomer: Thanks. I will bring it to the museum and check it under the display lights.\nprint_clerk: Please call me afterward, even if no changes are needed.",
+    "translation": "customer：我收到了我们博物馆宣传单的电子样稿。照片看起来不错，但小字号的图注在我的笔记本电脑上很难看清。\nprint_clerk：在印刷全部五百份之前，我建议先做一份纸质样张。文字在实际尺寸下看起来可能不同。\ncustomer：好主意。能用我们选的哑光纸做样张吗？去年的光面版本会反射展厅灯光。\nprint_clerk：当然可以。今天下午两点后您可以来取。在开始整批印刷前，我们会等您确认。\ncustomer：谢谢。我会把它带到博物馆，在展厅灯光下检查。\nprint_clerk：之后请给我打电话，即使不需要改动也请联系。\n问题：顾客对电子样稿有什么顾虑？\nA. 照片缺失。\nB. 有些文字难以看清。\nC. 博物馆名称有误。\nD. 印刷份数太少。",
+    "groupId": "v041-l50-p3-g01"
+  },
+  {
+    "id": "v041-l50-p3-02",
+    "part": 3,
+    "title": "Part 3 · 02",
+    "prompt": "Why does the customer prefer matte paper?",
+    "options": [
+      "It is available at a lower price.",
+      "It can be delivered sooner.",
+      "It is easier to fold.",
+      "Glossy paper caused reflections."
+    ],
+    "correctIndex": 3,
+    "explanation": "正确答案为D。A：未比较纸张价格；B：未比较送达速度；C：未提及折叠性能；D：去年光面版本会反射展厅灯光，因此选择哑光纸。",
+    "evidence": "The glossy version reflected the exhibition lights last year.",
+    "skill": "原因理解",
+    "difficulty": "未标定",
+    "transcript": "customer: I received the digital proof for our museum leaflet. The photographs look good, but the small captions are hard to read on my laptop.\nprint_clerk: Before we print all five hundred copies, I suggest making one paper sample. The text may look different at its actual size.\ncustomer: Good idea. Could you make the sample on the matte paper we selected? The glossy version reflected the exhibition lights last year.\nprint_clerk: Certainly. You can collect it after two this afternoon. We will wait for your approval before starting the full run.\ncustomer: Thanks. I will bring it to the museum and check it under the display lights.\nprint_clerk: Please call me afterward, even if no changes are needed.",
+    "translation": "customer：我收到了我们博物馆宣传单的电子样稿。照片看起来不错，但小字号的图注在我的笔记本电脑上很难看清。\nprint_clerk：在印刷全部五百份之前，我建议先做一份纸质样张。文字在实际尺寸下看起来可能不同。\ncustomer：好主意。能用我们选的哑光纸做样张吗？去年的光面版本会反射展厅灯光。\nprint_clerk：当然可以。今天下午两点后您可以来取。在开始整批印刷前，我们会等您确认。\ncustomer：谢谢。我会把它带到博物馆，在展厅灯光下检查。\nprint_clerk：之后请给我打电话，即使不需要改动也请联系。\n问题：顾客为什么偏好哑光纸？\nA. 价格更低。\nB. 可以更快送达。\nC. 更容易折叠。\nD. 光面纸曾造成反光。",
+    "groupId": "v041-l50-p3-g01"
+  },
+  {
+    "id": "v041-l50-p3-03",
+    "part": 3,
+    "title": "Part 3 · 03",
+    "prompt": "What must happen before the full print run begins?",
+    "options": [
+      "The customer must approve the sample.",
+      "The museum must change its lighting.",
+      "The printer must replace the photographs.",
+      "The customer must increase the order."
+    ],
+    "correctIndex": 0,
+    "explanation": "正确答案为A。A：印刷方明确表示等顾客确认后才开始整批印刷；B：顾客要在现有灯光下检查，不是更换灯光；C：照片已获顾客肯定，没有更换要求；D：没有增加数量的要求。",
+    "evidence": "We will wait for your approval before starting the full run.",
+    "skill": "流程条件",
+    "difficulty": "未标定",
+    "transcript": "customer: I received the digital proof for our museum leaflet. The photographs look good, but the small captions are hard to read on my laptop.\nprint_clerk: Before we print all five hundred copies, I suggest making one paper sample. The text may look different at its actual size.\ncustomer: Good idea. Could you make the sample on the matte paper we selected? The glossy version reflected the exhibition lights last year.\nprint_clerk: Certainly. You can collect it after two this afternoon. We will wait for your approval before starting the full run.\ncustomer: Thanks. I will bring it to the museum and check it under the display lights.\nprint_clerk: Please call me afterward, even if no changes are needed.",
+    "translation": "customer：我收到了我们博物馆宣传单的电子样稿。照片看起来不错，但小字号的图注在我的笔记本电脑上很难看清。\nprint_clerk：在印刷全部五百份之前，我建议先做一份纸质样张。文字在实际尺寸下看起来可能不同。\ncustomer：好主意。能用我们选的哑光纸做样张吗？去年的光面版本会反射展厅灯光。\nprint_clerk：当然可以。今天下午两点后您可以来取。在开始整批印刷前，我们会等您确认。\ncustomer：谢谢。我会把它带到博物馆，在展厅灯光下检查。\nprint_clerk：之后请给我打电话，即使不需要改动也请联系。\n问题：整批印刷开始前必须完成什么？\nA. 顾客必须确认样张。\nB. 博物馆必须更换灯光。\nC. 印刷方必须更换照片。\nD. 顾客必须增加订单数量。",
+    "groupId": "v041-l50-p3-g01"
+  },
+  {
+    "id": "v041-l50-p3-04",
+    "part": 3,
+    "title": "Part 3 · 04",
+    "prompt": "Why did the customer originally leave the bicycle at the shop?",
+    "options": [
+      "A tire had gone missing.",
+      "The brakes made a loud noise.",
+      "The chain kept slipping.",
+      "A light would not turn on."
+    ],
+    "correctIndex": 2,
+    "explanation": "正确答案为C。A：轮胎有裂口是后来发现的问题，且并非丢失；B：未提到刹车噪声；C：顾客开头明确说明送修原因是链条打滑；D：未提及车灯。",
+    "evidence": "because the chain kept slipping.",
+    "skill": "原始原因",
+    "difficulty": "未标定",
+    "transcript": "customer: I left my bicycle here yesterday because the chain kept slipping. Is it ready? I was hoping to ride it to work tomorrow.\nmechanic: The chain is fine now, but I noticed a crack in the rear tire. I would replace it before riding any distance.\ncustomer: Do you have the right tire in stock?\nmechanic: Not at this branch. Our other shop has one, and their driver can bring it over this evening. I can finish the work tomorrow morning.\ncustomer: Then I will take the bus to work and collect the bicycle during my lunch break. Please go ahead with the replacement.\nmechanic: All right. I will send you a text as soon as it is ready.",
+    "translation": "customer：我昨天把自行车放在这里，因为链条总是打滑。修好了吗？我原本希望明天骑它上班。\nmechanic：链条现在没问题了，但我发现后轮轮胎有一道裂口。要骑一段路的话，我会先换掉它。\ncustomer：你们有合适的轮胎现货吗？\nmechanic：这家分店没有。我们的另一家店有一个，司机今晚可以把它送过来。我明天上午能完成维修。\ncustomer：那我坐公交车去上班，午休时来取自行车。请更换轮胎吧。\nmechanic：好的。修好后我会马上给您发短信。\n问题：顾客最初为什么把自行车留在店里？\nA. 一个轮胎不见了。\nB. 刹车发出很大的噪声。\nC. 链条总是打滑。\nD. 一盏车灯无法亮起。",
+    "groupId": "v041-l50-p3-g02"
+  },
+  {
+    "id": "v041-l50-p3-05",
+    "part": 3,
+    "title": "Part 3 · 05",
+    "prompt": "What does the mechanic imply about the bicycle?",
+    "options": [
+      "It cannot be repaired at this shop.",
+      "It needs additional work before being ridden.",
+      "It should be replaced with a new bicycle.",
+      "It is ready for immediate collection."
+    ],
+    "correctIndex": 1,
+    "explanation": "正确答案为B。A：修理工表示明天上午可以完成，并非无法维修；B：链条修好后又发现轮胎裂口，并建议骑行前更换；C：只建议更换轮胎，没有建议换整车；D：尚需轮胎送到并更换，不可立即取走。",
+    "evidence": "I would replace it before riding any distance.",
+    "skill": "隐含建议",
+    "difficulty": "未标定",
+    "transcript": "customer: I left my bicycle here yesterday because the chain kept slipping. Is it ready? I was hoping to ride it to work tomorrow.\nmechanic: The chain is fine now, but I noticed a crack in the rear tire. I would replace it before riding any distance.\ncustomer: Do you have the right tire in stock?\nmechanic: Not at this branch. Our other shop has one, and their driver can bring it over this evening. I can finish the work tomorrow morning.\ncustomer: Then I will take the bus to work and collect the bicycle during my lunch break. Please go ahead with the replacement.\nmechanic: All right. I will send you a text as soon as it is ready.",
+    "translation": "customer：我昨天把自行车放在这里，因为链条总是打滑。修好了吗？我原本希望明天骑它上班。\nmechanic：链条现在没问题了，但我发现后轮轮胎有一道裂口。要骑一段路的话，我会先换掉它。\ncustomer：你们有合适的轮胎现货吗？\nmechanic：这家分店没有。我们的另一家店有一个，司机今晚可以把它送过来。我明天上午能完成维修。\ncustomer：那我坐公交车去上班，午休时来取自行车。请更换轮胎吧。\nmechanic：好的。修好后我会马上给您发短信。\n问题：修理工对这辆自行车暗示了什么？\nA. 这家店无法修理它。\nB. 骑行前还需要额外维修。\nC. 应该换成一辆新自行车。\nD. 现在就可以取走。",
+    "groupId": "v041-l50-p3-g02"
+  },
+  {
+    "id": "v041-l50-p3-06",
+    "part": 3,
+    "title": "Part 3 · 06",
+    "prompt": "When does the customer plan to collect the bicycle?",
+    "options": [
+      "This evening before the shop closes.",
+      "Tomorrow before going to work.",
+      "At the end of the week.",
+      "During tomorrow’s lunch break."
+    ],
+    "correctIndex": 3,
+    "explanation": "正确答案为D。A：今晚是轮胎送达的时间，不是顾客取车时间；B：顾客改坐公交车上班，不在上班前取车；C：未提及周末；D：修理工说次日上午完成，顾客接着安排午休取车。",
+    "evidence": "collect the bicycle during my lunch break.",
+    "skill": "时间与后续行动",
+    "difficulty": "未标定",
+    "transcript": "customer: I left my bicycle here yesterday because the chain kept slipping. Is it ready? I was hoping to ride it to work tomorrow.\nmechanic: The chain is fine now, but I noticed a crack in the rear tire. I would replace it before riding any distance.\ncustomer: Do you have the right tire in stock?\nmechanic: Not at this branch. Our other shop has one, and their driver can bring it over this evening. I can finish the work tomorrow morning.\ncustomer: Then I will take the bus to work and collect the bicycle during my lunch break. Please go ahead with the replacement.\nmechanic: All right. I will send you a text as soon as it is ready.",
+    "translation": "customer：我昨天把自行车放在这里，因为链条总是打滑。修好了吗？我原本希望明天骑它上班。\nmechanic：链条现在没问题了，但我发现后轮轮胎有一道裂口。要骑一段路的话，我会先换掉它。\ncustomer：你们有合适的轮胎现货吗？\nmechanic：这家分店没有。我们的另一家店有一个，司机今晚可以把它送过来。我明天上午能完成维修。\ncustomer：那我坐公交车去上班，午休时来取自行车。请更换轮胎吧。\nmechanic：好的。修好后我会马上给您发短信。\n问题：顾客计划什么时候取自行车？\nA. 今天晚上关店前。\nB. 明天上班前。\nC. 本周末。\nD. 明天午休时。",
+    "groupId": "v041-l50-p3-g02"
+  },
+  {
+    "id": "v041-l50-p3-07",
+    "part": 3,
+    "title": "Part 3 · 07",
+    "prompt": "What problem does Ben mention?",
+    "options": [
+      "Noise may interfere with the recording.",
+      "The guest has canceled her visit.",
+      "The microphones have been lost.",
+      "The library is closing early."
+    ],
+    "correctIndex": 0,
+    "explanation": "正确答案为A。A：同时间有舞蹈排练，而且上次音乐穿墙干扰录音；B：嘉宾仍将三点到达，只是不能久留；C：麦克风需要检查，不等于丢失；D：未提到图书馆关闭时间。",
+    "evidence": "The music came through the wall during our last recording.",
+    "skill": "问题识别",
+    "difficulty": "未标定",
+    "transcript": "producer: Ben, the room for our customer podcast is booked for three. Can you check the microphones before our guest arrives?\ntechnician: I can, Mia, but the dance studio next door has a rehearsal at the same time. The music came through the wall during our last recording.\nhost: I have already told the guest to come at three, and she cannot stay late. Is there a quieter space?\nproducer: The library’s interview room is free. Rosa, could you meet our guest at the main entrance and take her there?\nhost: Of course. I will send her a message about the new location too.\ntechnician: I will bring the portable recording kit to the library and test it there at two thirty.",
+    "translation": "producer：本，我们客户播客的房间订在三点。你能在嘉宾到达前检查一下麦克风吗？\ntechnician：可以，米娅，不过隔壁舞蹈室同时有排练。上次录音时，音乐声穿过墙传了进来。\nhost：我已经告诉嘉宾三点过来，而且她不能待到很晚。有没有更安静的地方？\nproducer：图书馆的访谈室空着。罗莎，你能在主入口迎接嘉宾，然后带她去那里吗？\nhost：当然。我也会发消息告诉她新的地点。\ntechnician：我会把便携录音设备带到图书馆，两点半在那里测试。\n问题：本提到了什么问题？\nA. 噪声可能干扰录音。\nB. 嘉宾取消了来访。\nC. 麦克风丢失了。\nD. 图书馆将提早关闭。",
+    "groupId": "v041-l50-p3-g03"
+  },
+  {
+    "id": "v041-l50-p3-08",
+    "part": 3,
+    "title": "Part 3 · 08",
+    "prompt": "Why is moving the recording preferable to delaying it?",
+    "options": [
+      "The portable equipment is unavailable later.",
+      "The producer must leave at two thirty.",
+      "The guest has limited time.",
+      "The dance rehearsal has been canceled."
+    ],
+    "correctIndex": 2,
+    "explanation": "正确答案为C。A：未说明设备晚些时候不可用；B：两点半是技术人员测试设备的时间，不是制作人离开时间；C：主持人说嘉宾三点到且不能待晚，因此保持时间换地点更合适；D：排练没有取消，正是换地点的原因之一。",
+    "evidence": "she cannot stay late.",
+    "skill": "推断与限制条件",
+    "difficulty": "未标定",
+    "transcript": "producer: Ben, the room for our customer podcast is booked for three. Can you check the microphones before our guest arrives?\ntechnician: I can, Mia, but the dance studio next door has a rehearsal at the same time. The music came through the wall during our last recording.\nhost: I have already told the guest to come at three, and she cannot stay late. Is there a quieter space?\nproducer: The library’s interview room is free. Rosa, could you meet our guest at the main entrance and take her there?\nhost: Of course. I will send her a message about the new location too.\ntechnician: I will bring the portable recording kit to the library and test it there at two thirty.",
+    "translation": "producer：本，我们客户播客的房间订在三点。你能在嘉宾到达前检查一下麦克风吗？\ntechnician：可以，米娅，不过隔壁舞蹈室同时有排练。上次录音时，音乐声穿过墙传了进来。\nhost：我已经告诉嘉宾三点过来，而且她不能待到很晚。有没有更安静的地方？\nproducer：图书馆的访谈室空着。罗莎，你能在主入口迎接嘉宾，然后带她去那里吗？\nhost：当然。我也会发消息告诉她新的地点。\ntechnician：我会把便携录音设备带到图书馆，两点半在那里测试。\n问题：为什么更换录音地点比推迟录音更合适？\nA. 便携设备晚些时候无法使用。\nB. 制作人必须两点半离开。\nC. 嘉宾时间有限。\nD. 舞蹈排练取消了。",
+    "groupId": "v041-l50-p3-g03"
+  },
+  {
+    "id": "v041-l50-p3-09",
+    "part": 3,
+    "title": "Part 3 · 09",
+    "prompt": "What will Rosa do?",
+    "options": [
+      "Test equipment at two thirty.",
+      "Meet the guest at the main entrance.",
+      "Ask the dancers to stop rehearsing.",
+      "Reserve the original room for another day."
+    ],
+    "correctIndex": 1,
+    "explanation": "正确答案为B。A：技术人员本负责测试设备；B：米娅点名请罗莎在主入口接嘉宾，罗莎明确答应；C：没有要求舞者停止排练；D：没有改订原房间到别日。",
+    "evidence": "Rosa, could you meet our guest at the main entrance and take her there?",
+    "skill": "人物分工",
+    "difficulty": "未标定",
+    "transcript": "producer: Ben, the room for our customer podcast is booked for three. Can you check the microphones before our guest arrives?\ntechnician: I can, Mia, but the dance studio next door has a rehearsal at the same time. The music came through the wall during our last recording.\nhost: I have already told the guest to come at three, and she cannot stay late. Is there a quieter space?\nproducer: The library’s interview room is free. Rosa, could you meet our guest at the main entrance and take her there?\nhost: Of course. I will send her a message about the new location too.\ntechnician: I will bring the portable recording kit to the library and test it there at two thirty.",
+    "translation": "producer：本，我们客户播客的房间订在三点。你能在嘉宾到达前检查一下麦克风吗？\ntechnician：可以，米娅，不过隔壁舞蹈室同时有排练。上次录音时，音乐声穿过墙传了进来。\nhost：我已经告诉嘉宾三点过来，而且她不能待到很晚。有没有更安静的地方？\nproducer：图书馆的访谈室空着。罗莎，你能在主入口迎接嘉宾，然后带她去那里吗？\nhost：当然。我也会发消息告诉她新的地点。\ntechnician：我会把便携录音设备带到图书馆，两点半在那里测试。\n问题：罗莎将做什么？\nA. 两点半测试设备。\nB. 在主入口迎接嘉宾。\nC. 要求舞者停止排练。\nD. 把原房间改订到另一天。",
+    "groupId": "v041-l50-p3-g03"
+  },
+  {
+    "id": "v041-l50-p3-10",
+    "part": 3,
+    "title": "Part 3 · 10",
+    "prompt": "What is the restaurant manager initially worried about?",
+    "options": [
+      "A reduction in vegetable quality.",
+      "A change to the restaurant’s menu.",
+      "An earlier delivery time.",
+      "Space needed for empty crates."
+    ],
+    "correctIndex": 3,
+    "explanation": "正确答案为D。A：没有担心蔬菜质量；B：没有提到菜单改动；C：平常周一配送不变，也未说提早；D：厨房很小，经理担心要在两次配送之间存空箱一周。",
+    "evidence": "Our kitchen is small, so I am worried about storing empty crates",
+    "skill": "顾虑识别",
+    "difficulty": "未标定",
+    "transcript": "supplier: We are changing our vegetable deliveries to reusable crates next month. Would your restaurant like to join the trial?\nrestaurant_manager: Possibly. Our kitchen is small, so I am worried about storing empty crates for a whole week between deliveries.\nsupplier: You would not have to. Our driver passes your street every Wednesday and can collect them then. Your usual Monday delivery would stay the same.\nrestaurant_manager: That could work. Is there an extra charge?\nsupplier: There is a refundable deposit for each crate, but no increase in delivery fees. The deposit comes back when we receive the crate.\nrestaurant_manager: All right. Sign us up for the first month, and I will tell the kitchen team about Wednesday collections.",
+    "translation": "supplier：下个月我们要改用可重复使用的箱子配送蔬菜。你们餐厅愿意参加试行吗？\nrestaurant_manager：可能愿意。我们的厨房很小，所以我担心两次配送之间要存放整整一周的空箱。\nsupplier：不用存那么久。我们的司机每周三都经过你们那条街，可以那时收走箱子。你们平常周一的配送安排不变。\nrestaurant_manager：这样可行。会额外收费吗？\nsupplier：每个箱子需要支付可退押金，但配送费不增加。我们收到箱子后就退回押金。\nrestaurant_manager：好的。请为我们登记试行第一个月，我会告诉厨房团队周三收箱的安排。\n问题：餐厅经理最初担心什么？\nA. 蔬菜质量下降。\nB. 餐厅菜单需要改变。\nC. 配送时间提早。\nD. 空箱所需的存放空间。",
+    "groupId": "v041-l50-p3-g04"
+  },
+  {
+    "id": "v041-l50-p3-11",
+    "part": 3,
+    "title": "Part 3 · 11",
+    "prompt": "What will happen on Wednesdays?",
+    "options": [
+      "Empty crates will be collected.",
+      "Vegetables will be delivered for the week.",
+      "The restaurant will close its kitchen.",
+      "Delivery fees will be refunded."
+    ],
+    "correctIndex": 0,
+    "explanation": "正确答案为A。A：供应商说司机周三经过并可收走空箱；B：正常送菜仍是周一；C：没有关闭厨房的安排；D：退的是箱子押金，不是配送费。",
+    "evidence": "Our driver passes your street every Wednesday and can collect them then.",
+    "skill": "安排细节",
+    "difficulty": "未标定",
+    "transcript": "supplier: We are changing our vegetable deliveries to reusable crates next month. Would your restaurant like to join the trial?\nrestaurant_manager: Possibly. Our kitchen is small, so I am worried about storing empty crates for a whole week between deliveries.\nsupplier: You would not have to. Our driver passes your street every Wednesday and can collect them then. Your usual Monday delivery would stay the same.\nrestaurant_manager: That could work. Is there an extra charge?\nsupplier: There is a refundable deposit for each crate, but no increase in delivery fees. The deposit comes back when we receive the crate.\nrestaurant_manager: All right. Sign us up for the first month, and I will tell the kitchen team about Wednesday collections.",
+    "translation": "supplier：下个月我们要改用可重复使用的箱子配送蔬菜。你们餐厅愿意参加试行吗？\nrestaurant_manager：可能愿意。我们的厨房很小，所以我担心两次配送之间要存放整整一周的空箱。\nsupplier：不用存那么久。我们的司机每周三都经过你们那条街，可以那时收走箱子。你们平常周一的配送安排不变。\nrestaurant_manager：这样可行。会额外收费吗？\nsupplier：每个箱子需要支付可退押金，但配送费不增加。我们收到箱子后就退回押金。\nrestaurant_manager：好的。请为我们登记试行第一个月，我会告诉厨房团队周三收箱的安排。\n问题：周三将发生什么？\nA. 空箱将被收走。\nB. 当周蔬菜将送达。\nC. 餐厅将关闭厨房。\nD. 配送费将被退还。",
+    "groupId": "v041-l50-p3-g04"
+  },
+  {
+    "id": "v041-l50-p3-12",
+    "part": 3,
+    "title": "Part 3 · 12",
+    "prompt": "What can be concluded about the crate deposit?",
+    "options": [
+      "It replaces the normal delivery fee.",
+      "It is paid only after the trial ends.",
+      "It is returned after the supplier receives a crate back.",
+      "It must be paid again every Wednesday."
+    ],
+    "correctIndex": 2,
+    "explanation": "正确答案为C。A：配送费不增加不等于被押金替代；B：没有说试行结束后才付款；C：供应商明确说收到箱子后退押金；D：周三是收箱日，没有每周重复缴纳的说明。",
+    "evidence": "The deposit comes back when we receive the crate.",
+    "skill": "费用条件理解",
+    "difficulty": "未标定",
+    "transcript": "supplier: We are changing our vegetable deliveries to reusable crates next month. Would your restaurant like to join the trial?\nrestaurant_manager: Possibly. Our kitchen is small, so I am worried about storing empty crates for a whole week between deliveries.\nsupplier: You would not have to. Our driver passes your street every Wednesday and can collect them then. Your usual Monday delivery would stay the same.\nrestaurant_manager: That could work. Is there an extra charge?\nsupplier: There is a refundable deposit for each crate, but no increase in delivery fees. The deposit comes back when we receive the crate.\nrestaurant_manager: All right. Sign us up for the first month, and I will tell the kitchen team about Wednesday collections.",
+    "translation": "supplier：下个月我们要改用可重复使用的箱子配送蔬菜。你们餐厅愿意参加试行吗？\nrestaurant_manager：可能愿意。我们的厨房很小，所以我担心两次配送之间要存放整整一周的空箱。\nsupplier：不用存那么久。我们的司机每周三都经过你们那条街，可以那时收走箱子。你们平常周一的配送安排不变。\nrestaurant_manager：这样可行。会额外收费吗？\nsupplier：每个箱子需要支付可退押金，但配送费不增加。我们收到箱子后就退回押金。\nrestaurant_manager：好的。请为我们登记试行第一个月，我会告诉厨房团队周三收箱的安排。\n问题：关于箱子押金，可以得出什么结论？\nA. 它取代正常配送费。\nB. 试行结束后才支付。\nC. 供应商收回箱子后会退还。\nD. 每周三都必须重新支付。",
+    "groupId": "v041-l50-p3-g04"
+  },
+  {
+    "id": "v041-l50-p3-13",
+    "part": 3,
+    "title": "Part 3 · 13",
+    "prompt": "Why does the hotel clerk request more details?",
+    "options": [
+      "The breakfast room is still closed.",
+      "There are two similar lost items.",
+      "The guest’s room number is unknown.",
+      "The delivery company requires a photograph."
+    ],
+    "correctIndex": 1,
+    "explanation": "正确答案为B。A：未提及早餐厅是否开放；B：失物柜中有两条绿色围巾，需细节区分；C：没有要求房号，也未以房号核对；D：未要求照片。",
+    "evidence": "We have two green scarves in our lost property cupboard.",
+    "skill": "请求原因",
+    "difficulty": "未标定",
+    "transcript": "guest: I checked out this morning and think I left a green scarf in the breakfast room. Has anyone handed one in?\nhotel_clerk: We have two green scarves in our lost property cupboard. Could you describe yours in more detail?\nguest: Mine has a narrow white stripe at each end and a small label with my initials, K and L.\nhotel_clerk: Yes, that matches one of them. Would you like to collect it?\nguest: I am already on the train home. Could you send it by courier? I can pay the delivery charge.\nhotel_clerk: Certainly. Email us your address, and we will reply with a payment link. Once payment arrives, we will arrange the shipment and send you the tracking number.",
+    "translation": "guest：我今天早上退了房，觉得把一条绿色围巾落在早餐厅了。有人交来过吗？\nhotel_clerk：我们的失物柜里有两条绿色围巾。您能更详细地描述您的那条吗？\nguest：我的围巾两端各有一条窄白条纹，还有一张写着我姓名首字母K和L的小标签。\nhotel_clerk：是的，其中一条符合您的描述。您想来领取吗？\nguest：我已经在回家的火车上了。能用快递寄给我吗？我可以支付运费。\nhotel_clerk：当然可以。请通过邮件发来您的地址，我们会回复一个付款链接。收到付款后，我们会安排寄出，并把运单号发给您。\n问题：酒店工作人员为什么要求提供更多细节？\nA. 早餐厅仍未开放。\nB. 有两件相似的失物。\nC. 不知道客人的房号。\nD. 快递公司要求提供照片。",
+    "groupId": "v041-l50-p3-g05"
+  },
+  {
+    "id": "v041-l50-p3-14",
+    "part": 3,
+    "title": "Part 3 · 14",
+    "prompt": "Why does the guest request courier delivery?",
+    "options": [
+      "The scarf is too large for a suitcase.",
+      "The hotel cannot store the scarf overnight.",
+      "A friend will pay the shipping fee.",
+      "The guest is already traveling home."
+    ],
+    "correctIndex": 3,
+    "explanation": "正确答案为D。A：没有谈到围巾尺寸或行李箱；B：没有提及保管时限；C：客人说自己可以支付运费；D：客人已在回家火车上，因此要求快递。",
+    "evidence": "I am already on the train home.",
+    "skill": "行动原因",
+    "difficulty": "未标定",
+    "transcript": "guest: I checked out this morning and think I left a green scarf in the breakfast room. Has anyone handed one in?\nhotel_clerk: We have two green scarves in our lost property cupboard. Could you describe yours in more detail?\nguest: Mine has a narrow white stripe at each end and a small label with my initials, K and L.\nhotel_clerk: Yes, that matches one of them. Would you like to collect it?\nguest: I am already on the train home. Could you send it by courier? I can pay the delivery charge.\nhotel_clerk: Certainly. Email us your address, and we will reply with a payment link. Once payment arrives, we will arrange the shipment and send you the tracking number.",
+    "translation": "guest：我今天早上退了房，觉得把一条绿色围巾落在早餐厅了。有人交来过吗？\nhotel_clerk：我们的失物柜里有两条绿色围巾。您能更详细地描述您的那条吗？\nguest：我的围巾两端各有一条窄白条纹，还有一张写着我姓名首字母K和L的小标签。\nhotel_clerk：是的，其中一条符合您的描述。您想来领取吗？\nguest：我已经在回家的火车上了。能用快递寄给我吗？我可以支付运费。\nhotel_clerk：当然可以。请通过邮件发来您的地址，我们会回复一个付款链接。收到付款后，我们会安排寄出，并把运单号发给您。\n问题：客人为什么要求快递寄送？\nA. 围巾太大，行李箱放不下。\nB. 酒店不能存放围巾过夜。\nC. 一位朋友会支付运费。\nD. 客人已经在回家的路上。",
+    "groupId": "v041-l50-p3-g05"
+  },
+  {
+    "id": "v041-l50-p3-15",
+    "part": 3,
+    "title": "Part 3 · 15",
+    "prompt": "What will the hotel send after arranging shipment?",
+    "options": [
+      "A tracking number.",
+      "A new room reservation.",
+      "A photograph of the breakfast room.",
+      "A replacement scarf."
+    ],
+    "correctIndex": 0,
+    "explanation": "正确答案为A。A：酒店明确表示安排寄出后发送运单号；B：没有新的住房预订；C：没有发送早餐厅照片；D：寄回的是客人原有的围巾，不是替换品。",
+    "evidence": "we will arrange the shipment and send you the tracking number.",
+    "skill": "后续步骤",
+    "difficulty": "未标定",
+    "transcript": "guest: I checked out this morning and think I left a green scarf in the breakfast room. Has anyone handed one in?\nhotel_clerk: We have two green scarves in our lost property cupboard. Could you describe yours in more detail?\nguest: Mine has a narrow white stripe at each end and a small label with my initials, K and L.\nhotel_clerk: Yes, that matches one of them. Would you like to collect it?\nguest: I am already on the train home. Could you send it by courier? I can pay the delivery charge.\nhotel_clerk: Certainly. Email us your address, and we will reply with a payment link. Once payment arrives, we will arrange the shipment and send you the tracking number.",
+    "translation": "guest：我今天早上退了房，觉得把一条绿色围巾落在早餐厅了。有人交来过吗？\nhotel_clerk：我们的失物柜里有两条绿色围巾。您能更详细地描述您的那条吗？\nguest：我的围巾两端各有一条窄白条纹，还有一张写着我姓名首字母K和L的小标签。\nhotel_clerk：是的，其中一条符合您的描述。您想来领取吗？\nguest：我已经在回家的火车上了。能用快递寄给我吗？我可以支付运费。\nhotel_clerk：当然可以。请通过邮件发来您的地址，我们会回复一个付款链接。收到付款后，我们会安排寄出，并把运单号发给您。\n问题：安排寄送后，酒店会发送什么？\nA. 运单号。\nB. 新的客房预订。\nC. 早餐厅照片。\nD. 一条替换围巾。",
+    "groupId": "v041-l50-p3-g05"
+  },
+  {
+    "id": "v041-l50-p4-01",
+    "part": 4,
+    "title": "Part 4 · 01",
+    "prompt": "What is the speaker mainly announcing?",
+    "options": [
+      "A new type of weekend screening.",
+      "A reduction in all ticket prices.",
+      "A change to the film being shown tonight.",
+      "The reopening of a theater."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：周六首场新增银幕字幕，是通知主体；B：明确票价与常规场次相同，并非全面降价；C：只在今晚放映前介绍新安排，未更换今晚影片；D：未提及影厅关闭或重新开放。",
+    "evidence": "Starting this weekend, the first showing in Theater Two will include captions displayed on the screen.",
+    "skill": "main-purpose",
+    "difficulty": "未标定",
+    "transcript": "Good evening, and welcome to Harbor Cinema. Before tonight's film begins, I have a note about our new Saturday screenings. Starting this weekend, the first showing in Theater Two will include captions displayed on the screen. These showings are open to everyone, and tickets cost the same as for our regular screenings. You do not need a special device to read the captions. We are trying this schedule for six weeks before deciding whether to continue it. After attending one of these screenings, please leave your comments using the form linked on your ticket. Your responses will help us choose suitable times for future captioned films. Now, please silence your phones and enjoy tonight's feature.",
+    "translation": "晚上好，欢迎来到海港影院。在今晚的电影开始之前，我想介绍一下我们新增的周六放映场次。从本周末开始，二号影厅的首场放映将在银幕上显示字幕。这些场次向所有人开放，票价与常规场次相同。您不需要特殊设备就能阅读字幕。我们将试行这一安排六周，再决定是否继续。观看其中一场放映后，请使用您电影票上链接的表格留下意见。您的反馈将帮助我们为今后的字幕电影选择合适的时间。现在，请将手机调至静音，享受今晚的影片。\n问题：讲话者主要宣布什么？\nA. 一种新的周末放映场次。\nB. 所有电影票降价。\nC. 今晚放映的电影更换了。\nD. 一个影厅重新开放。",
+    "groupId": "v041-l50-p4-g01"
+  },
+  {
+    "id": "v041-l50-p4-02",
+    "part": 4,
+    "title": "Part 4 · 02",
+    "prompt": "What does the speaker say about the captions?",
+    "options": [
+      "They appear on a handheld device.",
+      "They require an additional payment.",
+      "They will be available at every showing.",
+      "They can be read directly on the screen."
+    ],
+    "correctIndex": 3,
+    "explanation": "A：明确无需特殊设备；B：票价相同，不需为字幕额外付费；C：仅说周六二号厅首场，并非每场；D：字幕直接显示在银幕上。",
+    "evidence": "You do not need a special device to read the captions.",
+    "skill": "detail",
+    "difficulty": "未标定",
+    "transcript": "Good evening, and welcome to Harbor Cinema. Before tonight's film begins, I have a note about our new Saturday screenings. Starting this weekend, the first showing in Theater Two will include captions displayed on the screen. These showings are open to everyone, and tickets cost the same as for our regular screenings. You do not need a special device to read the captions. We are trying this schedule for six weeks before deciding whether to continue it. After attending one of these screenings, please leave your comments using the form linked on your ticket. Your responses will help us choose suitable times for future captioned films. Now, please silence your phones and enjoy tonight's feature.",
+    "translation": "晚上好，欢迎来到海港影院。在今晚的电影开始之前，我想介绍一下我们新增的周六放映场次。从本周末开始，二号影厅的首场放映将在银幕上显示字幕。这些场次向所有人开放，票价与常规场次相同。您不需要特殊设备就能阅读字幕。我们将试行这一安排六周，再决定是否继续。观看其中一场放映后，请使用您电影票上链接的表格留下意见。您的反馈将帮助我们为今后的字幕电影选择合适的时间。现在，请将手机调至静音，享受今晚的影片。\n问题：讲话者对字幕作了什么说明？\nA. 字幕显示在手持设备上。\nB. 观看字幕需要额外付费。\nC. 每场放映都会提供字幕。\nD. 字幕可以直接在银幕上阅读。",
+    "groupId": "v041-l50-p4-g01"
+  },
+  {
+    "id": "v041-l50-p4-03",
+    "part": 4,
+    "title": "Part 4 · 03",
+    "prompt": "Why are viewers asked to submit comments?",
+    "options": [
+      "To select the film for tonight.",
+      "To help determine future screening times.",
+      "To request a refund for their tickets.",
+      "To reserve a private theater."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：今晚影片已经安排，并非本次反馈目的；B：反馈将帮助选择今后字幕电影的合适时段；C：未提退款，不能把意见表当退款申请；D：未提包场预订。",
+    "evidence": "Your responses will help us choose suitable times for future captioned films.",
+    "skill": "purpose-of-request",
+    "difficulty": "未标定",
+    "transcript": "Good evening, and welcome to Harbor Cinema. Before tonight's film begins, I have a note about our new Saturday screenings. Starting this weekend, the first showing in Theater Two will include captions displayed on the screen. These showings are open to everyone, and tickets cost the same as for our regular screenings. You do not need a special device to read the captions. We are trying this schedule for six weeks before deciding whether to continue it. After attending one of these screenings, please leave your comments using the form linked on your ticket. Your responses will help us choose suitable times for future captioned films. Now, please silence your phones and enjoy tonight's feature.",
+    "translation": "晚上好，欢迎来到海港影院。在今晚的电影开始之前，我想介绍一下我们新增的周六放映场次。从本周末开始，二号影厅的首场放映将在银幕上显示字幕。这些场次向所有人开放，票价与常规场次相同。您不需要特殊设备就能阅读字幕。我们将试行这一安排六周，再决定是否继续。观看其中一场放映后，请使用您电影票上链接的表格留下意见。您的反馈将帮助我们为今后的字幕电影选择合适的时间。现在，请将手机调至静音，享受今晚的影片。\n问题：为什么请观众提交意见？\nA. 选择今晚的电影。\nB. 帮助决定今后的放映时间。\nC. 申请电影票退款。\nD. 预订私人影厅。",
+    "groupId": "v041-l50-p4-g01"
+  },
+  {
+    "id": "v041-l50-p4-04",
+    "part": 4,
+    "title": "Part 4 · 04",
+    "prompt": "Why is Luis calling?",
+    "options": [
+      "To request payment for a new order.",
+      "To confirm that all four sensors were lost.",
+      "To offer a revised return arrangement.",
+      "To postpone an on-site inspection."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：没有新订单或付款要求；B：三个正常、一个待维修，并非丢失；C：提出先寄三个、后寄一个的分批方案；D：设备已寄来检测，未提上门检查。",
+    "evidence": "Rather than hold the entire shipment, we can return the three working sensors tomorrow at no additional delivery charge.",
+    "skill": "main-purpose",
+    "difficulty": "未标定",
+    "transcript": "Hello, Ms. Benton. This is Luis from Northline Instrument Services, calling about the temperature sensors you sent us. We have finished the initial tests. Three sensors are working correctly, but the fourth needs a replacement part that should arrive on Wednesday. Rather than hold the entire shipment, we can return the three working sensors tomorrow at no additional delivery charge. We would then send the remaining one after its final test. Please call me before our office closes at five today to tell us whether that arrangement suits you. If we do not hear from you, we will keep all four together as originally requested. You can also ask me for the test reports when you call.",
+    "translation": "您好，本顿女士。我是北线仪器服务公司的路易斯，打电话是想谈谈您寄给我们的温度传感器。我们已完成初步测试。其中三个传感器运作正常，但第四个需要一个预计周三到货的替换零件。我们可以不扣留整批货物，而是在明天先寄回三个运作正常的传感器，不额外收取运费。剩下的一个会在完成最终测试后寄出。请在我们办公室今天五点关门之前回电，告诉我们这样的安排是否适合您。如果没有收到您的回复，我们会按照您原先的要求，将四个一起保留。您回电时也可以向我索取测试报告。\n问题：路易斯为什么打电话？\nA. 要求支付新订单的款项。\nB. 确认四个传感器全部丢失。\nC. 提出调整后的寄回安排。\nD. 推迟一次上门检查。",
+    "groupId": "v041-l50-p4-g02"
+  },
+  {
+    "id": "v041-l50-p4-05",
+    "part": 4,
+    "title": "Part 4 · 05",
+    "prompt": "What is expected to arrive on Wednesday?",
+    "options": [
+      "A replacement component.",
+      "Four new sensors.",
+      "A delivery invoice.",
+      "A signed test report."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：第四个传感器所需替换零件预计周三到货；B：原文只涉及维修已有设备，没有购买四个新设备；C：未说发票到货，分批寄送还不加运费；D：测试报告可索取，未给出周三到达安排。",
+    "evidence": "the fourth needs a replacement part that should arrive on Wednesday",
+    "skill": "detail",
+    "difficulty": "未标定",
+    "transcript": "Hello, Ms. Benton. This is Luis from Northline Instrument Services, calling about the temperature sensors you sent us. We have finished the initial tests. Three sensors are working correctly, but the fourth needs a replacement part that should arrive on Wednesday. Rather than hold the entire shipment, we can return the three working sensors tomorrow at no additional delivery charge. We would then send the remaining one after its final test. Please call me before our office closes at five today to tell us whether that arrangement suits you. If we do not hear from you, we will keep all four together as originally requested. You can also ask me for the test reports when you call.",
+    "translation": "您好，本顿女士。我是北线仪器服务公司的路易斯，打电话是想谈谈您寄给我们的温度传感器。我们已完成初步测试。其中三个传感器运作正常，但第四个需要一个预计周三到货的替换零件。我们可以不扣留整批货物，而是在明天先寄回三个运作正常的传感器，不额外收取运费。剩下的一个会在完成最终测试后寄出。请在我们办公室今天五点关门之前回电，告诉我们这样的安排是否适合您。如果没有收到您的回复，我们会按照您原先的要求，将四个一起保留。您回电时也可以向我索取测试报告。\n问题：预计周三到达的是什么？\nA. 一个替换零件。\nB. 四个新传感器。\nC. 一张运费发票。\nD. 一份签字的测试报告。",
+    "groupId": "v041-l50-p4-g02"
+  },
+  {
+    "id": "v041-l50-p4-06",
+    "part": 4,
+    "title": "Part 4 · 06",
+    "prompt": "What will happen if Ms. Benton does not respond?",
+    "options": [
+      "Three sensors will be sent immediately.",
+      "The repair order will be canceled.",
+      "An extra delivery fee will be charged.",
+      "All four sensors will be kept together."
+    ],
+    "correctIndex": 3,
+    "explanation": "A：分批寄回需要客户确认，不是默认安排；B：未提取消订单；C：明确新方案不额外收运费，也未设不回复的费用；D：未回复时沿用原先四个一起处理的要求。",
+    "evidence": "If we do not hear from you, we will keep all four together as originally requested.",
+    "skill": "conditional-outcome",
+    "difficulty": "未标定",
+    "transcript": "Hello, Ms. Benton. This is Luis from Northline Instrument Services, calling about the temperature sensors you sent us. We have finished the initial tests. Three sensors are working correctly, but the fourth needs a replacement part that should arrive on Wednesday. Rather than hold the entire shipment, we can return the three working sensors tomorrow at no additional delivery charge. We would then send the remaining one after its final test. Please call me before our office closes at five today to tell us whether that arrangement suits you. If we do not hear from you, we will keep all four together as originally requested. You can also ask me for the test reports when you call.",
+    "translation": "您好，本顿女士。我是北线仪器服务公司的路易斯，打电话是想谈谈您寄给我们的温度传感器。我们已完成初步测试。其中三个传感器运作正常，但第四个需要一个预计周三到货的替换零件。我们可以不扣留整批货物，而是在明天先寄回三个运作正常的传感器，不额外收取运费。剩下的一个会在完成最终测试后寄出。请在我们办公室今天五点关门之前回电，告诉我们这样的安排是否适合您。如果没有收到您的回复，我们会按照您原先的要求，将四个一起保留。您回电时也可以向我索取测试报告。\n问题：如果本顿女士不回复，会怎样？\nA. 三个传感器将立即寄出。\nB. 维修订单将被取消。\nC. 将加收运费。\nD. 四个传感器将继续一起保留。",
+    "groupId": "v041-l50-p4-g02"
+  },
+  {
+    "id": "v041-l50-p4-07",
+    "part": 4,
+    "title": "Part 4 · 07",
+    "prompt": "What can visitors do without making a contribution?",
+    "options": [
+      "Borrow gardening equipment.",
+      "Take a limited number of seed packets.",
+      "Reserve a private garden plot.",
+      "Attend a free planting course."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：只提供种子交换，没有工具借用；B：每次最多三小包，不要求先捐种子；C：未提地块；D：启用日说明交换方法，不是种植课程。",
+    "evidence": "You may take up to three small packets per visit, even if you have no seeds to contribute.",
+    "skill": "detail",
+    "difficulty": "未标定",
+    "transcript": "Here is some community news for gardeners. The Maple Street Library is opening a seed exchange cabinet this Monday. You may take up to three small packets per visit, even if you have no seeds to contribute. Each packet includes planting instructions and the name of the plant. The library accepts seed donations only in the original labeled packets. The labels let volunteers check the seed variety and the packing date. If a bag has no markings, we cannot accept the loose seeds inside it. The cabinet will be beside the gardening books, not at the main checkout desk. On opening day, a volunteer will be there from ten until noon to explain how the exchange works. Normal library opening hours apply on other days.",
+    "translation": "下面是一则给园艺爱好者的社区消息。枫树街图书馆将于本周一启用种子交换柜。每次到访，您最多可以拿取三小包种子，即使没有种子可捐赠也可以。每包都附有种植说明和植物名称。图书馆只接受装在原有带标签包装中的捐赠种子。这些标签让志愿者能够核对种子品种和包装日期。如果袋子没有任何标记，我们就不能接受里面的散装种子。交换柜将在园艺书籍旁边，而不是在主要借书台处。启用当天，一位志愿者会在十点至中午期间在那里说明交换方式。其他日期按图书馆正常开放时间使用。\n问题：访客不捐赠种子也能做什么？\nA. 借用园艺工具。\nB. 拿取一定数量的种子包。\nC. 预订私人种植地块。\nD. 参加免费种植课程。",
+    "groupId": "v041-l50-p4-g03"
+  },
+  {
+    "id": "v041-l50-p4-08",
+    "part": 4,
+    "title": "Part 4 · 08",
+    "prompt": "Why must donated seeds remain in labeled packets?",
+    "options": [
+      "To make the cabinet look more attractive.",
+      "To allow the library to sell the packets.",
+      "To help volunteers verify information about the seeds.",
+      "To keep each visitor from taking more than one packet."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：标签要求用于核对资料，不是装饰；B：没有出售安排；C：原包装标签可供核对品种和包装日期；D：限额是三包，不是一包。",
+    "evidence": "The labels let volunteers check the seed variety and the packing date.",
+    "skill": "reason",
+    "difficulty": "未标定",
+    "transcript": "Here is some community news for gardeners. The Maple Street Library is opening a seed exchange cabinet this Monday. You may take up to three small packets per visit, even if you have no seeds to contribute. Each packet includes planting instructions and the name of the plant. The library accepts seed donations only in the original labeled packets. The labels let volunteers check the seed variety and the packing date. If a bag has no markings, we cannot accept the loose seeds inside it. The cabinet will be beside the gardening books, not at the main checkout desk. On opening day, a volunteer will be there from ten until noon to explain how the exchange works. Normal library opening hours apply on other days.",
+    "translation": "下面是一则给园艺爱好者的社区消息。枫树街图书馆将于本周一启用种子交换柜。每次到访，您最多可以拿取三小包种子，即使没有种子可捐赠也可以。每包都附有种植说明和植物名称。图书馆只接受装在原有带标签包装中的捐赠种子。这些标签让志愿者能够核对种子品种和包装日期。如果袋子没有任何标记，我们就不能接受里面的散装种子。交换柜将在园艺书籍旁边，而不是在主要借书台处。启用当天，一位志愿者会在十点至中午期间在那里说明交换方式。其他日期按图书馆正常开放时间使用。\n问题：为什么捐赠种子必须保留带标签的包装？\nA. 让柜子更美观。\nB. 让图书馆出售种子包。\nC. 帮助志愿者核实种子的信息。\nD. 防止每位访客拿走超过一包。",
+    "groupId": "v041-l50-p4-g03"
+  },
+  {
+    "id": "v041-l50-p4-09",
+    "part": 4,
+    "title": "Part 4 · 09",
+    "prompt": "What is suggested about a visitor arriving after noon on opening day?",
+    "options": [
+      "The visitor may miss the volunteer’s explanation.",
+      "The visitor must donate seeds before using the cabinet.",
+      "The visitor should go to the main checkout desk for seeds.",
+      "The visitor can take more than three packets."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：志愿者只在十点至中午提供说明，中午后可能错过；B：无需捐赠即可拿取的规则未改变；C：交换柜明确不在主要借书台；D：没有按时间放宽每次三包的上限。",
+    "evidence": "On opening day, a volunteer will be there from ten until noon to explain how the exchange works.",
+    "skill": "inference",
+    "difficulty": "未标定",
+    "transcript": "Here is some community news for gardeners. The Maple Street Library is opening a seed exchange cabinet this Monday. You may take up to three small packets per visit, even if you have no seeds to contribute. Each packet includes planting instructions and the name of the plant. The library accepts seed donations only in the original labeled packets. The labels let volunteers check the seed variety and the packing date. If a bag has no markings, we cannot accept the loose seeds inside it. The cabinet will be beside the gardening books, not at the main checkout desk. On opening day, a volunteer will be there from ten until noon to explain how the exchange works. Normal library opening hours apply on other days.",
+    "translation": "下面是一则给园艺爱好者的社区消息。枫树街图书馆将于本周一启用种子交换柜。每次到访，您最多可以拿取三小包种子，即使没有种子可捐赠也可以。每包都附有种植说明和植物名称。图书馆只接受装在原有带标签包装中的捐赠种子。这些标签让志愿者能够核对种子品种和包装日期。如果袋子没有任何标记，我们就不能接受里面的散装种子。交换柜将在园艺书籍旁边，而不是在主要借书台处。启用当天，一位志愿者会在十点至中午期间在那里说明交换方式。其他日期按图书馆正常开放时间使用。\n问题：关于启用日中午后到达的访客，可以推知什么？\nA. 可能错过志愿者的说明。\nB. 使用柜子前必须捐赠种子。\nC. 应到主要借书台领取种子。\nD. 可以拿取超过三包种子。",
+    "groupId": "v041-l50-p4-g03"
+  },
+  {
+    "id": "v041-l50-p4-10",
+    "part": 4,
+    "title": "Part 4 · 10",
+    "prompt": "What is the main purpose of the trial?",
+    "options": [
+      "To compare two cleaning companies.",
+      "To collect deposits for kitchen equipment.",
+      "To reduce the number of staff kitchens.",
+      "To determine how many cups are needed."
+    ],
+    "correctIndex": 3,
+    "explanation": "A：清洁由现有团队负责，未比较公司；B：明确不收押金；C：东侧照常运作，并未关闭茶水间；D：扩大实施前先确认所需数量。",
+    "evidence": "We want to learn how many cups are needed before expanding the system.",
+    "skill": "main-purpose",
+    "difficulty": "未标定",
+    "transcript": "Thanks for joining this short staff update. Starting next Monday, we will test a reusable cup system in the west kitchen. Clean cups will be on the shelf above the sink, and used cups should go into the marked collection tray, not back onto the shelf. Our cleaning team will wash them each evening. This is a four-week trial in one kitchen only; the east kitchen will continue as usual. We want to learn how many cups are needed before expanding the system. There is no deposit or sign-out sheet. However, please leave the cups on this floor so other staff can find them. If the clean supply runs low, notify facilities using the usual online request form.",
+    "translation": "感谢大家参加这次简短的员工情况通报。从下周一开始，我们将在西侧茶水间试行可重复使用的杯具系统。干净的杯子会放在水槽上方的架子上，用过的杯子应放入有标记的收集托盘，不要放回架子。清洁团队每天晚上会清洗这些杯子。这是一项只在一个茶水间开展的四周试行计划；东侧茶水间将照常运作。我们想在扩大实施范围之前，了解需要多少个杯子。这里不收押金，也没有借出登记表。不过，请将杯子留在本楼层，以便其他员工找到。如果干净杯子快用完了，请使用平时的在线申请表通知设施管理部门。\n问题：这次试行的主要目的是什么？\nA. 比较两家清洁公司。\nB. 为厨房设备收取押金。\nC. 减少员工茶水间的数量。\nD. 确定所需杯子的数量。",
+    "groupId": "v041-l50-p4-g04"
+  },
+  {
+    "id": "v041-l50-p4-11",
+    "part": 4,
+    "title": "Part 4 · 11",
+    "prompt": "Where should employees put used cups?",
+    "options": [
+      "On the shelf above the sink.",
+      "In the labeled collection tray.",
+      "In the east kitchen.",
+      "At the facilities service desk."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：架子是干净杯子的存放处，明确不可放用过的杯子；B：讲话明确指示放入标记托盘；C：试行只在西侧茶水间，不要求移到东侧；D：通知可在线提交，没有要求把杯子送到服务台。",
+    "evidence": "used cups should go into the marked collection tray, not back onto the shelf",
+    "skill": "detail",
+    "difficulty": "未标定",
+    "transcript": "Thanks for joining this short staff update. Starting next Monday, we will test a reusable cup system in the west kitchen. Clean cups will be on the shelf above the sink, and used cups should go into the marked collection tray, not back onto the shelf. Our cleaning team will wash them each evening. This is a four-week trial in one kitchen only; the east kitchen will continue as usual. We want to learn how many cups are needed before expanding the system. There is no deposit or sign-out sheet. However, please leave the cups on this floor so other staff can find them. If the clean supply runs low, notify facilities using the usual online request form.",
+    "translation": "感谢大家参加这次简短的员工情况通报。从下周一开始，我们将在西侧茶水间试行可重复使用的杯具系统。干净的杯子会放在水槽上方的架子上，用过的杯子应放入有标记的收集托盘，不要放回架子。清洁团队每天晚上会清洗这些杯子。这是一项只在一个茶水间开展的四周试行计划；东侧茶水间将照常运作。我们想在扩大实施范围之前，了解需要多少个杯子。这里不收押金，也没有借出登记表。不过，请将杯子留在本楼层，以便其他员工找到。如果干净杯子快用完了，请使用平时的在线申请表通知设施管理部门。\n问题：员工应将用过的杯子放在哪里？\nA. 水槽上方的架子上。\nB. 有标记的收集托盘里。\nC. 东侧茶水间里。\nD. 设施管理服务台处。",
+    "groupId": "v041-l50-p4-g04"
+  },
+  {
+    "id": "v041-l50-p4-12",
+    "part": 4,
+    "title": "Part 4 · 12",
+    "prompt": "Why are employees asked to keep cups on the same floor?",
+    "options": [
+      "So the cups can be individually assigned.",
+      "So each cup can be sold after the trial.",
+      "So the cups remain available to other employees.",
+      "So employees can avoid filling out a deposit form."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：无个人分配或借出登记；B：没有出售计划；C：留在本楼层让其他员工能找到，共享供给得以保持；D：本来就没有押金，与放置楼层无关。",
+    "evidence": "please leave the cups on this floor so other staff can find them",
+    "skill": "purpose-of-request",
+    "difficulty": "未标定",
+    "transcript": "Thanks for joining this short staff update. Starting next Monday, we will test a reusable cup system in the west kitchen. Clean cups will be on the shelf above the sink, and used cups should go into the marked collection tray, not back onto the shelf. Our cleaning team will wash them each evening. This is a four-week trial in one kitchen only; the east kitchen will continue as usual. We want to learn how many cups are needed before expanding the system. There is no deposit or sign-out sheet. However, please leave the cups on this floor so other staff can find them. If the clean supply runs low, notify facilities using the usual online request form.",
+    "translation": "感谢大家参加这次简短的员工情况通报。从下周一开始，我们将在西侧茶水间试行可重复使用的杯具系统。干净的杯子会放在水槽上方的架子上，用过的杯子应放入有标记的收集托盘，不要放回架子。清洁团队每天晚上会清洗这些杯子。这是一项只在一个茶水间开展的四周试行计划；东侧茶水间将照常运作。我们想在扩大实施范围之前，了解需要多少个杯子。这里不收押金，也没有借出登记表。不过，请将杯子留在本楼层，以便其他员工找到。如果干净杯子快用完了，请使用平时的在线申请表通知设施管理部门。\n问题：为什么要求员工将杯子留在同一楼层？\nA. 以便将每个杯子分配给个人。\nB. 以便试行后出售每个杯子。\nC. 以便其他员工仍能找到并使用杯子。\nD. 以便员工避免填写押金表。",
+    "groupId": "v041-l50-p4-g04"
+  },
+  {
+    "id": "v041-l50-p4-13",
+    "part": 4,
+    "title": "Part 4 · 13",
+    "prompt": "Where will the walk finish?",
+    "options": [
+      "At an old stone bridge.",
+      "At the town center.",
+      "Inside a riverside museum.",
+      "At the library entrance."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：明确在旧石桥结束；B：镇中心是之后可乘公交返回的地点，不是步行终点；C：未提博物馆；D：未提图书馆。",
+    "evidence": "ends at the old stone bridge",
+    "skill": "detail",
+    "difficulty": "未标定",
+    "transcript": "Welcome to the evening river walk. I am your guide, Elena. Our route follows the riverside path for about two kilometers and ends at the old stone bridge. We will stop three times to hear short stories about buildings along the bank. The path is level, but one section has no lighting, so I will hand out small flashlights before we leave. Please return them to me at the bridge. You do not need to keep the group together after that point; the nearby bus stop has services back to the town center. Before we set off, please tell me privately if you would prefer a shorter route. A colleague can guide you directly to the final stop.",
+    "translation": "欢迎参加晚间河岸步行游。我是你们的导游埃琳娜。我们的路线沿河边小径行进约两公里，在旧石桥结束。途中我们会停三次，听取关于河岸建筑的简短故事。小径平坦，但其中一段没有照明，因此出发前我会发放小手电筒。请在石桥处把手电筒还给我。到达那里后，大家不必再作为一组同行；附近公交站有返回镇中心的班车。出发前，如果您更希望选择较短路线，请私下告诉我。一位同事可以直接带您前往最后一站。\n问题：这次步行游将在哪里结束？\nA. 一座旧石桥处。\nB. 镇中心。\nC. 河畔博物馆内。\nD. 图书馆入口处。",
+    "groupId": "v041-l50-p4-g05"
+  },
+  {
+    "id": "v041-l50-p4-14",
+    "part": 4,
+    "title": "Part 4 · 14",
+    "prompt": "Why will the guide provide flashlights?",
+    "options": [
+      "To help visitors read tickets.",
+      "To identify birds across the river.",
+      "To signal to the bus driver.",
+      "To help the group cross an unlit section."
+    ],
+    "correctIndex": 3,
+    "explanation": "A：未提阅读门票；B：未提观鸟；C：公交是结束后的交通方式，不需要打灯信号；D：一段小径无照明，所以提供手电筒。",
+    "evidence": "one section has no lighting, so I will hand out small flashlights before we leave",
+    "skill": "reason",
+    "difficulty": "未标定",
+    "transcript": "Welcome to the evening river walk. I am your guide, Elena. Our route follows the riverside path for about two kilometers and ends at the old stone bridge. We will stop three times to hear short stories about buildings along the bank. The path is level, but one section has no lighting, so I will hand out small flashlights before we leave. Please return them to me at the bridge. You do not need to keep the group together after that point; the nearby bus stop has services back to the town center. Before we set off, please tell me privately if you would prefer a shorter route. A colleague can guide you directly to the final stop.",
+    "translation": "欢迎参加晚间河岸步行游。我是你们的导游埃琳娜。我们的路线沿河边小径行进约两公里，在旧石桥结束。途中我们会停三次，听取关于河岸建筑的简短故事。小径平坦，但其中一段没有照明，因此出发前我会发放小手电筒。请在石桥处把手电筒还给我。到达那里后，大家不必再作为一组同行；附近公交站有返回镇中心的班车。出发前，如果您更希望选择较短路线，请私下告诉我。一位同事可以直接带您前往最后一站。\n问题：导游为什么会提供手电筒？\nA. 帮助游客阅读门票。\nB. 辨认河对岸的鸟。\nC. 向公交司机发信号。\nD. 帮助团队通过一段没有照明的路。",
+    "groupId": "v041-l50-p4-g05"
+  },
+  {
+    "id": "v041-l50-p4-15",
+    "part": 4,
+    "title": "Part 4 · 15",
+    "prompt": "What can be inferred about visitors who choose the shorter route?",
+    "options": [
+      "They will have to walk alone.",
+      "They can still reach the same final meeting point.",
+      "They must return their flashlights at the bus stop.",
+      "They will hear all three stories along the full route."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：有同事带领，不必独行；B：同事会直接带往最后一站，因此终点相同；C：归还地点明确为石桥，并非公交站；D：较短路线直达终点，不能断言经过所有停靠点。",
+    "evidence": "A colleague can guide you directly to the final stop.",
+    "skill": "inference",
+    "difficulty": "未标定",
+    "transcript": "Welcome to the evening river walk. I am your guide, Elena. Our route follows the riverside path for about two kilometers and ends at the old stone bridge. We will stop three times to hear short stories about buildings along the bank. The path is level, but one section has no lighting, so I will hand out small flashlights before we leave. Please return them to me at the bridge. You do not need to keep the group together after that point; the nearby bus stop has services back to the town center. Before we set off, please tell me privately if you would prefer a shorter route. A colleague can guide you directly to the final stop.",
+    "translation": "欢迎参加晚间河岸步行游。我是你们的导游埃琳娜。我们的路线沿河边小径行进约两公里，在旧石桥结束。途中我们会停三次，听取关于河岸建筑的简短故事。小径平坦，但其中一段没有照明，因此出发前我会发放小手电筒。请在石桥处把手电筒还给我。到达那里后，大家不必再作为一组同行；附近公交站有返回镇中心的班车。出发前，如果您更希望选择较短路线，请私下告诉我。一位同事可以直接带您前往最后一站。\n问题：关于选择较短路线的游客，可以推知什么？\nA. 他们必须独自行走。\nB. 他们仍可到达相同的最终会合地点。\nC. 他们必须在公交站归还手电筒。\nD. 他们会听完完整路线沿途的三个故事。",
+    "groupId": "v041-l50-p4-g05"
+  }
+]

@@ -1,0 +1,68 @@
+{
+  "synthetic": true,
+  "scope": {
+    "kind": "web-local",
+    "partition": "existing-device"
+  },
+  "keys": {
+    "study": "lantern-v1-device",
+    "vocabulary": "lantern-vocab-v1:device:synthetic-phase2-seed",
+    "workflowDatabase": "lantern-workflow-v1",
+    "workflowVersion": 1,
+    "scopeKey": "{\"kind\":\"web-local\",\"partition\":\"existing-device\"}"
+  },
+  "catalog": {
+    "sceneCapacity": 807,
+    "expressionCapacity": 55,
+    "practiceQuestionIds": [
+      "p3-01",
+      "p3-02",
+      "p3-03"
+    ]
+  },
+  "baseline": {
+    "attempts": 2,
+    "checkins": 1,
+    "minutes": 9,
+    "vocabularyEvents": 5,
+    "unknownWordId": "synthetic-missing-word",
+    "cancelledWordId": "v-file"
+  },
+  "workflow": {
+    "fixedLearningDate": "2026-10-14",
+    "fixedLearningTimezone": "Asia/Shanghai",
+    "dailyNewDone": 2,
+    "preparedCommandId": "vocab:command:00000000-0000-4000-8000-0002000003f1",
+    "preparedLegacyEventId": "00000000-0000-4000-8000-0002000003f2",
+    "preparedLegacyEventAbsent": true,
+    "practiceSessionId": "practice:00000000-0000-4000-8000-0002000003f4",
+    "practiceStatus": "completed",
+    "practiceQuestions": 3,
+    "settlementStatus": "draft",
+    "settlementMinutes": 7,
+    "checkinId": "00000000-0000-4000-8000-0002000003fe",
+    "settlementCheckinAbsent": true
+  },
+  "verification": {
+    "missingLegacy": {
+      "restoreStatus": "applied",
+      "vocabularyBlockedReason": "工作流备份尚缺对应旧词卡事件；恢复旧词卡备份后才能确认完成。",
+      "practiceIntegrityError": "reference-unverified",
+      "legacyWrites": 0
+    },
+    "matchingLegacy": {
+      "firstRestore": "applied",
+      "secondRestore": "replayed",
+      "secondRestoreAdded": 0,
+      "importLegacyWrites": 0,
+      "originalDailyNewDone": 2,
+      "preparedState": "prepared",
+      "explicitPendingRetry": "applied-with-original-id-time-payload",
+      "settlementDraftWasNotCounted": true,
+      "explicitSettlementWrites": 1,
+      "settlementRepeat": "replayed",
+      "minutesBefore": 9,
+      "minutesAfter": 16
+    }
+  }
+}
