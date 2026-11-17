@@ -10,6 +10,7 @@ import type {PhoneClientTransport,PhoneVerification} from '@/lib/phone-auth-clie
 import {INITIAL_NATIVE_ACCOUNT_STATE,NativeAccountController,type NativeAccountState} from '@/lib/native-account-controller';
 import {applyDocumentTheme} from '@/lib/ui-theme';
 import {attachNativeAccountSync} from '@/lib/cloud-sync/native-account-root';
+import {resumeForOwner,type NativeWorkspaceResume} from '@/lib/native-workspace-resume';
 // Keep the candidate disabled until native lifecycle and real-device checks pass.
 const MEMORY_RESUME_ENABLED=false;
 
@@ -17,11 +18,16 @@ export default function NativeAccountRoot(){
  const [state,setState]=useState<NativeAccountState>(INITIAL_NATIVE_ACCOUNT_STATE),[accountOpen,setAccountOpen]=useState(false),[legacy,setLegacy]=useState(false),[returnOwner,setReturnOwner]=useState<string|null>(null),[providers,setProviders]=useState({huaweiLogin:false,huaweiBinding:false});
  const [phoneTransport,setPhoneTransport]=useState<PhoneClientTransport|null>(null);
  const controller=useRef<NativeAccountController|null>(null);
+ const savedWorkspace=useRef<NativeWorkspaceResume|null>(null);
  useEffect(()=>{
   const transport=createNativeAuthTransport();const value=new NativeAccountController(transport,undefined,{resumeMemory:MEMORY_RESUME_ENABLED});controller.current=value;setPhoneTransport(nativePhoneClient(transport));
   const detachSync=attachNativeAccountSync(value);
-  const off=value.subscribe((next,sync)=>{if(sync)flushSync(()=>setState(next));else setState(next);});
   let foreground=true,initialized=false,alive=true;
+  const off=value.subscribe((next,sync)=>{
+   if(next.status==='ready'&&savedWorkspace.current&&next.user?.id!==savedWorkspace.current.owner||
+     next.status==='blocked'&&foreground&&document.visibilityState!=='hidden')savedWorkspace.current=null;
+   if(sync)flushSync(()=>setState(next));else setState(next);
+  });
   const hide=()=>value.suspend(true,true),leave=()=>value.suspend(true,false),show=()=>{if(foreground&&document.visibilityState!=='hidden'){if(value.getSnapshot().status!=='ready')value.resume();}else hide();};
   const native=subscribeNativeState(active=>{foreground=active;if(initialized){if(active)show();else hide();}});
   const visibility=()=>document.visibilityState==='hidden'?hide():show();
@@ -35,6 +41,7 @@ export default function NativeAccountRoot(){
  const enter=()=>{if(state.status!=='ready'||!state.user||controller.current?.getSnapshot()!==state||state.access.owner!==state.user.id||!state.access.assertAccess())return false;setAccountOpen(false);return true;};
  const submit=async(mode:'register'|'login',credentials:{username:string;password:string})=>{
   const active=controller.current;if(!active)return;
+  savedWorkspace.current=null;
   setAccountOpen(true);
   if(!await active.mutate(mode,credentials)||controller.current!==active)return;
   const confirmed=active.getSnapshot();
@@ -42,6 +49,7 @@ export default function NativeAccountRoot(){
  };
  const huawei=async(purpose:'login'|'bind')=>{
   const active=controller.current;if(!active)return;
+  savedWorkspace.current=null;
   setAccountOpen(true);
   if(!await active.mutateHuawei(purpose)||controller.current!==active||purpose==='bind')return;
   const confirmed=active.getSnapshot();
@@ -49,6 +57,7 @@ export default function NativeAccountRoot(){
  };
  const phoneLogin=async(body:PhoneVerification)=>{
   const active=controller.current;if(!active)return;
+  savedWorkspace.current=null;
   setAccountOpen(true);
   const outcome=await active.mutatePhone('login',body);
   if(controller.current!==active||!outcome||outcome.status!==200)return outcome;
@@ -58,7 +67,10 @@ export default function NativeAccountRoot(){
  };
  useEffect(()=>registerNativeBack(()=>{if(legacy){setLegacy(false);return true;}return canReturn?enter():false;},100),[canReturn,state,legacy]);
  if(legacy)return <GuestDataRecovery nativeMode onBack={()=>setLegacy(false)}/>;
- if(state.status==='ready'&&state.user&&!accountOpen&&state.access.canAccess())return <StudyApp key={state.user.id+':'+state.access.epoch} owner={state.user.id} nativeMode access={state.access} onAccount={()=>{setReturnOwner(state.user!.id);setAccountOpen(true);}}/>;
+ if(state.status==='ready'&&state.user&&!accountOpen&&state.access.canAccess())return <StudyApp key={state.user.id+':'+state.access.epoch} owner={state.user.id} nativeMode access={state.access}
+  resumeSnapshot={MEMORY_RESUME_ENABLED?resumeForOwner(savedWorkspace.current,state.user.id):null}
+  onResumeSnapshot={MEMORY_RESUME_ENABLED?(snapshot)=>{const current=controller.current?.getSnapshot();if(current?.status==='ready'&&current.user&&current.access.assertAccess()&&(!snapshot||snapshot.owner===current.user.id))savedWorkspace.current=snapshot;}:undefined}
+  onAccount={()=>{savedWorkspace.current=null;setReturnOwner(state.user!.id);setAccountOpen(true);}}/>;
  const panelState:NativeAccountState=state.status==='ready'&&state.user&&!state.access.canAccess()?{status:'blocked',message:'会话有效期已结束，原分区已锁定。请联网重新核对账号。'}:state;
- return <AccountPanel state={panelState} onSubmit={submit} onLogout={()=>{void controller.current?.mutate('logout');}} onRecheck={()=>controller.current?.recheck()} onEnter={enter} onBack={canReturn?enter:undefined} onLegacy={()=>setLegacy(true)} huawei={{login:providers.huaweiLogin,binding:providers.huaweiBinding,onLogin:()=>{void huawei('login');},onBind:()=>{void huawei('bind');}}} phone={phoneTransport?{transport:phoneTransport,onLogin:phoneLogin}:undefined}/>;
+ return <AccountPanel state={panelState} onSubmit={submit} onLogout={()=>{savedWorkspace.current=null;void controller.current?.mutate('logout');}} onRecheck={()=>{savedWorkspace.current=null;controller.current?.recheck();}} onEnter={enter} onBack={canReturn?enter:undefined} onLegacy={()=>{savedWorkspace.current=null;setLegacy(true);}} huawei={{login:providers.huaweiLogin,binding:providers.huaweiBinding,onLogin:()=>{void huawei('login');},onBind:()=>{void huawei('bind');}}} phone={phoneTransport?{transport:phoneTransport,onLogin:phoneLogin}:undefined}/>;
 }

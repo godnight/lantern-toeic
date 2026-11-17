@@ -54,13 +54,15 @@ import localAsrProfile from '@/content/local-asr-profile.json';
 import {stopLessonAudio} from '@/lib/lesson-audio';
 import {applyDocumentTheme,UI_THEME_META} from '@/lib/ui-theme';
 import {getSpeakingRecovery,hasSpeakingRecovery,retainSpeakingRecovery,releaseSpeakingRecovery,subscribeSpeakingRecovery} from '@/lib/speaking-recovery';
+import {nativeWorkspaceResume,resumeForOwner,type NativeWorkspaceResume} from '@/lib/native-workspace-resume';
 let workspaceOwnerEpoch=Date.now();
 const prompts=sData as Speaking[];
 const questionById=new Map(questions.map(question=>[question.id,question]));
 const ONLINE_SITE_URL='https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site';
 function saveFile(name:string,text:string,type='application/json'){const u=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);}
 function ChoiceSelect({value,onChange,items,label}:{value:string;onChange:(v:string)=>void;items:{value:string;label:string}[];label:string}){return <Select value={value} onValueChange={onChange}><SelectTrigger className="form-select" aria-label={label}><SelectValue/></SelectTrigger><SelectContent>{items.map(x=><SelectItem key={x.value} value={x.value}>{x.label}</SelectItem>)}</SelectContent></Select>}
-export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable=false,remoteLearningEnabled=false}:{owner:string|null;nativeMode?:boolean;onAccount?:()=>void;legacyAvailable?:boolean;remoteLearningEnabled?:boolean}){
+export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable=false,remoteLearningEnabled=false,resumeSnapshot,onResumeSnapshot}:{owner:string|null;nativeMode?:boolean;onAccount?:()=>void;legacyAvailable?:boolean;remoteLearningEnabled?:boolean;resumeSnapshot?:NativeWorkspaceResume|null;onResumeSnapshot?:(snapshot:NativeWorkspaceResume|null)=>void}){
+ const pendingNativeResume=useRef(nativeMode?resumeForOwner(resumeSnapshot??null,owner):null);
  const accountAccess=useLearningAccess(owner);
  useEffect(()=>()=>stopLessonAudio(),[]);
  const [feedbackOwnerGeneration]=useState(()=>++workspaceOwnerEpoch);
@@ -95,12 +97,28 @@ export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable
  const consumeDiscoveryReturn=useCallback(()=>setPendingDiscoveryReturn(previous=>previous.owner===owner&&previous.value?{...previous,value:null}:previous),[owner]);
  useLayoutEffect(()=>{setPendingDiscoveryReturn(previous=>previous.owner===owner?previous:{owner,value:null});},[owner]);
  const [discoveryLibraryActive,setDiscoveryLibraryActive]=useState(discoveryReturn?.category==='library');
- const [nav,setNav]=useState(discoveryReturn?'resources':'today');const [planRoute,setPlanRoute]=useState<{id:number;initial:LearningPlanPage}|null>(null);const [themeOpen,setThemeOpen]=useState(false);const [installOpen,setInstallOpen]=useState(false);const [speaking,setSpeaking]=useState<Speaking|null>(null);const [checkinOpen,setCheckinOpen]=useState(false);const [minutes,setMinutes]=useState('5');const [load,setLoad]=useState<'轻'|'刚好'|'重'>('刚好');const [note,setNote]=useState('');const [selectedResource,setSelectedResource]=useState<{id:string;title:string}|null>(null);const [trainingTab,setTrainingTab]=useState('lr');const [recordingPlay,setRecordingPlay]=useState<{url:string;title:string;recording:Recording;request:number}|null>(null);const [installPrompt,setInstallPrompt]=useState<any>(null);const [now,setNow]=useState(new Date());
+ const [nav,setNav]=useState<string>(pendingNativeResume.current?.nav??(discoveryReturn?'resources':'today'));const [planRoute,setPlanRoute]=useState<{id:number;initial:LearningPlanPage}|null>(null);const [themeOpen,setThemeOpen]=useState(false);const [installOpen,setInstallOpen]=useState(false);const [speaking,setSpeaking]=useState<Speaking|null>(null);const [checkinOpen,setCheckinOpen]=useState(false);const [minutes,setMinutes]=useState('5');const [load,setLoad]=useState<'轻'|'刚好'|'重'>('刚好');const [note,setNote]=useState('');const [selectedResource,setSelectedResource]=useState<{id:string;title:string}|null>(null);const [trainingTab,setTrainingTab]=useState('lr');const [recordingPlay,setRecordingPlay]=useState<{url:string;title:string;recording:Recording;request:number}|null>(null);const [installPrompt,setInstallPrompt]=useState<any>(null);const [now,setNow]=useState(new Date());
  const planId=useRef(0),planBackRef=useRef<(()=>void)|null>(null),planScroll=useRef(0);
  const searchOrigin=useRef<{nav:string;scroll:number;focus:HTMLElement|null;focusTag:string;focusLabel:string|null;focusText:string;focusIndex:number;searchTrigger?:boolean}|null>(null);const consumedSearchPop=useRef(false);
  const [resourceFocus,setResourceFocus]=useState(false);
  const [practiceLookup,setPracticeLookup]=useState<{term:string;token:string;focus:HTMLElement|null;origin:'practice'|'vocabulary';scroll:number}|null>(null);const lookupRef=useRef(practiceLookup);lookupRef.current=practiceLookup;const consumedLookupPop=useRef(false),lookupReturnRef=useRef<typeof practiceLookup>(null);
  const [searchFrom,setSearchFrom]=useState('today');const [vocabFocus,setVocabFocus]=useState(false);const [checkinError,setCheckinError]=useState('');
+ const resumeWorkflow=useRef(practiceWorkflow);resumeWorkflow.current=practiceWorkflow;
+ useEffect(()=>{
+  const saved=pendingNativeResume.current;if(!saved||!ready||!practiceWorkflow.ready||!accountAccess())return;
+  if(saved.practiceSessionId){
+   if(!resumeWorkflow.current.sessions.some(item=>item.id===saved.practiceSessionId&&item.status==='active')){pendingNativeResume.current=null;onResumeSnapshot?.(null);return;}
+   let live=true;void resumeWorkflow.current.resume(saved.practiceSessionId).then(result=>{if(!live||!accountAccess())return;pendingNativeResume.current=null;if(['restored','replayed'].includes(result.status))requestAnimationFrame(()=>{if(accountAccess())window.scrollTo({top:saved.scroll});});else onResumeSnapshot?.(null);});
+   return()=>{live=false;};
+  }
+  pendingNativeResume.current=null;requestAnimationFrame(()=>{if(accountAccess())window.scrollTo({top:saved.scroll});});
+ },[ready,practiceWorkflow.ready,accountAccess]);
+ useEffect(()=>{
+  if(!nativeMode||!onResumeSnapshot||!accountAccess()||pendingNativeResume.current||!ready||!practiceWorkflow.ready)return;
+  const excluded=mockOpen||!!speaking||!!recordingPlay||!!practiceLookup||!!practiceSettlementId||!!planRoute||themeOpen||installOpen||checkinOpen||vocabFocus||resourceFocus;
+  const publish=()=>{if(!accountAccess())return;const id=queue&&practiceWorkflow.session?.status==='active'?practiceWorkflow.session.id:null;onResumeSnapshot(nativeWorkspaceResume(owner,nav,window.scrollY,id,excluded));};
+  publish();window.addEventListener('scroll',publish,{passive:true});return()=>window.removeEventListener('scroll',publish);
+ },[nativeMode,onResumeSnapshot,owner,nav,queue,practiceWorkflow.session,practiceWorkflow.ready,ready,accountAccess,mockOpen,speaking,recordingPlay,practiceLookup,practiceSettlementId,planRoute,themeOpen,installOpen,checkinOpen,vocabFocus,resourceFocus]);
  const recordingAbort=useRef<AbortController|null>(null);
  const recordingRequest=useRef(0);const recordingScope=useRef({owner,nav,tab:trainingTab,alive:true});recordingScope.current={owner,nav,tab:trainingTab,alive:true};
  useEffect(()=>{recordingScope.current.alive=true;return()=>{recordingScope.current.alive=false;recordingRequest.current++;recordingAbort.current?.abort();recordingAbort.current=null;};},[]);
