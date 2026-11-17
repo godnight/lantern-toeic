@@ -45,6 +45,8 @@ interface ColdFlight {
   started: number;
   promise: Promise<void>;
   timer?: number;
+  deadline?: number;
+  cancel?: () => void;
 }
 interface LocalLease {
   uid: string;
@@ -92,6 +94,12 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
   private static coldVersion: number = 0;
   private static coldPoisoned: boolean = false;
   private static coldHosts: NativeAuthHost[] = [];
+  // Only a speculative, read-only cold flight may release its own slot on
+  // cancellation. Never let a late flight release a newer mutation's lock.
+  private static coldBusy: ColdFlight | undefined = undefined;
+  // An uncancellable platform query may never settle. Permit ordinary account
+  // operations to continue, but do not accumulate abandoned speculative reads.
+  private static coldAbandoned: boolean = false;
   private cold: ColdFlight | undefined = undefined;
   private seen: string[] = [];
   private network: http.HttpRequest | undefined = undefined;
@@ -129,10 +137,20 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
     }
   }
 
+  private static releaseColdStart(cold: ColdFlight): void {
+    if (NativeAuthHost.coldBusy !== cold) return;
+    NativeAuthHost.coldBusy = undefined;
+    NativeAuthHost.busy = false;
+  }
+
   private invalidateColdStart(): void {
     if (!COLD_START_PREFETCH_ENABLED) return;
-    if (this.cold?.timer !== undefined) clearTimeout(this.cold.timer);
+    const cold: ColdFlight | undefined = this.cold;
     this.cold = undefined;
+    if (cold?.timer !== undefined) clearTimeout(cold.timer);
+    if (cold !== undefined) {
+      if (cold.cancel !== undefined) cold.cancel();
+    }
     if (NativeAuthHost.coldVersion >= Number.MAX_SAFE_INTEGER) NativeAuthHost.coldPoisoned = true;
     else NativeAuthHost.coldVersion++;
   }
@@ -147,7 +165,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
   // Native-only, never part of the ArkWeb proxy. The caller must bind active()
   // to one expected main-document generation and the foreground lifecycle.
   beginColdStartCandidate(active: () => boolean): void {
-    if (!COLD_START_PREFETCH_ENABLED || NativeAuthHost.coldPoisoned || NativeAuthHost.busy ||
+    if (!COLD_START_PREFETCH_ENABLED || NativeAuthHost.coldPoisoned || NativeAuthHost.coldAbandoned || NativeAuthHost.busy ||
       NativeAuthHost.quarantined || !this.attached || this.disposed || !this.available() || this.cold !== undefined) return;
     const cold: ColdFlight = { epoch: this.epoch, processVersion: NativeAuthHost.coldVersion,
       active: active, started: 0, promise: Promise.resolve() };
@@ -157,7 +175,19 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       ownerLeaseEpoch: this.ownerLease.version(), timedOut: false, replied: false, sessionMayHaveChanged: false,
       transitionStart: 0, transitionProof: 0, volatileEpoch: VolatileOwnerFence.version(), cold: true };
     NativeAuthHost.busy = true;
-    cold.promise = (async (): Promise<void> => {
+    NativeAuthHost.coldBusy = cold;
+    const cancelled: Promise<void> = new Promise<void>((resolve: () => void) => { cold.cancel = resolve; });
+    // Asset query is read-only and session is a fixed GET. Once invalidated,
+    // neither a late Asset result nor an HTTP response can publish a lease.
+    cold.deadline = setTimeout(() => {
+      if (this.cold === cold) this.invalidateColdStart();
+      if (NativeAuthHost.coldBusy === cold) {
+        NativeAuthHost.coldAbandoned = true;
+        NativeAuthHost.releaseColdStart(cold);
+        if (cold.cancel !== undefined) cold.cancel();
+      }
+    }, AUTH_TIMEOUT_MS);
+    const work: Promise<void> = (async (): Promise<void> => {
       try {
         const token: string | undefined = await this.store.peekColdStartCandidate(AUTH_API_ORIGIN);
         if (!this.currentCold(cold) || token === undefined) return;
@@ -176,8 +206,12 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
           if (this.cold === cold) this.invalidateColdStart();
         }, Math.max(1, 5000 - Math.floor(ended - started)));
       } catch { /* Prefetch failure is not a session result. The page probes normally. */ }
-      finally { NativeAuthHost.busy = false; }
+      finally {
+        if (cold.deadline !== undefined) clearTimeout(cold.deadline);
+        NativeAuthHost.releaseColdStart(cold);
+      }
     })();
+    cold.promise = Promise.race([work, cancelled]);
   }
 
   private takeColdStart(token: string | undefined, now: number): ColdFlight | undefined {

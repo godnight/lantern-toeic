@@ -125,3 +125,51 @@ test('waiting page receives one timeout and a late result grants no owner',async
   assert.equal(h.replies.length,1);assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined);
  }finally{d.resolve(proof());h.dispose();}
 });
+
+test('a permanently pending speculative Asset read releases only its own slot after the deadline',async()=>{
+ const read=deferred(), next=deferred();let peekCount=0;
+ const store={peekColdStartCandidate:()=>{peekCount++;return read.promise;},load:async()=>token,save:async()=>{},clear:async()=>{},hasDormantPersistent:()=>false};
+ const h=hostRuntime({coldPrefetch:true,sessionStore:store,dispatch:()=>next.promise});let peer;
+ try{
+  h.host.beginColdStartCandidate(()=>true);await h.settle();assert.equal(peekCount,1);assert.equal(h.requests.length,0);
+  const waiting=h.invoke(session('hung_asset'));h.expire(15000);assert.equal((await waiting).status,503);
+  const current=h.invoke(session('after_hung_asset'));await h.settle();assert.equal(h.requests.length,1);
+  read.resolve(token);await h.settle();assert.equal(h.requests.length,1,'late read must not start its GET');
+  peer=h.newPeer();peer.request(JSON.stringify({id:'while_current_busy',action:'providers'}));await h.settle();
+  assert.equal(h.replies.find(r=>r.id==='while_current_busy').status,503,'late finally must not release the current slot');
+  next.resolve(proof());assert.equal((await current).status,200);
+  h.host.invalidate();h.host.beginColdStartCandidate(()=>true);await h.settle();assert.equal(peekCount,1,'do not accumulate abandoned speculative reads');
+ }finally{read.resolve(token);next.resolve(proof());peer?.dispose();h.dispose();}
+});
+
+test('a late speculative GET cannot restore an owner after a subsequent logout',async()=>{
+ const coldGet=deferred(), logout=deferred();let calls=0;
+ const h=hostRuntime({coldPrefetch:true,initialToken:token,dispatch:()=>++calls===1?coldGet.promise:logout.promise});let peer;
+ try{
+  h.host.beginColdStartCandidate(()=>true);await h.settle();assert.equal(h.requests.length,1);
+  const waiting=h.invoke(session('hung_get'));h.expire(15000);assert.equal((await waiting).status,503);
+  const signedOut=h.invoke({id:'logout_after_hung_get',action:'logout'});await h.settle();assert.equal(h.requests.length,2);
+  coldGet.resolve(proof());await h.settle();assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined);
+  peer=h.newPeer();peer.request(JSON.stringify({id:'while_logout_busy',action:'providers'}));await h.settle();
+  assert.equal(h.replies.find(r=>r.id==='while_logout_busy').status,503);
+  logout.resolve(response(200,{ok:true},{'set-cookie':'__Host-lantern-session=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0'}));
+  assert.equal((await signedOut).status,200);assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined);assert.equal(h.clears,1);
+ }finally{coldGet.resolve(proof());logout.resolve(response(503,{}));peer?.dispose();h.dispose();}
+});
+
+test('an invalidated unjoined flight still expires and cannot release a peer operation',async()=>{
+ const peek=deferred(), peerSession=deferred();let peekCount=0;
+ const store={peekColdStartCandidate:()=>{peekCount++;return peek.promise;},load:async()=>token,save:async()=>{},clear:async()=>{},hasDormantPersistent:()=>false};
+ const h=hostRuntime({coldPrefetch:true,sessionStore:store,dispatch:()=>peerSession.promise});let peer;
+ try{
+  h.host.beginColdStartCandidate(()=>true);await h.settle();h.host.invalidate();
+  peer=h.newPeer();peer.request(JSON.stringify(session('peer_before_deadline')));await h.settle();
+  assert.equal(h.replies.find(r=>r.id==='peer_before_deadline').status,503);
+  h.expire(15000);peer.request(JSON.stringify(session('peer_after_deadline')));await h.settle();assert.equal(h.requests.length,1);
+  peek.resolve(token);await h.settle();
+  peer.request(JSON.stringify({id:'peer_slot_still_busy',action:'providers'}));await h.settle();
+  assert.equal(h.replies.find(r=>r.id==='peer_slot_still_busy').status,503);
+  peerSession.resolve(proof());await h.settle();assert.equal(h.replies.find(r=>r.id==='peer_after_deadline').status,200);
+  h.host.beginColdStartCandidate(()=>true);await h.settle();assert.equal(peekCount,1);
+ }finally{peek.resolve(token);peerSession.resolve(proof());peer?.dispose();h.dispose();}
+});
