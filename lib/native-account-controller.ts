@@ -37,6 +37,8 @@ export class NativeAccountController {
   private deadline:SessionDeadline|null=null;
   private localAbort:AbortController|null=null;
   private localAccess:AccountAccess|null=null;
+  private localResumeOnly=false;
+  private suspendedOwner:string|null=null;
   private localProbePending=false;
   private localProbeAgain=false;
   private localFallbackGeneration:number|null=null;
@@ -53,8 +55,8 @@ export class NativeAccountController {
   private syncTransitionGuard:SyncTransitionGuard|null=null;
   private listeners=new Set<Listener>();
   private state:NativeAccountState=INITIAL_NATIVE_ACCOUNT_STATE;
-  constructor(private transport:NativeAuthTransport,private clock:SessionClock=sessionClock,private options:{localOffline?:boolean;networkEvents?:NetworkEvents}={}){
-    if(options.localOffline===true){
+  constructor(private transport:NativeAuthTransport,private clock:SessionClock=sessionClock,private options:{localOffline?:boolean;resumeMemory?:boolean;networkEvents?:NetworkEvents}={}){
+    if(options.localOffline===true||options.resumeMemory===true){
       this.networkEvents=options.networkEvents??(typeof window!=='undefined'?window:null);
       this.networkEvents?.addEventListener('online',this.onOnline);
     }
@@ -81,7 +83,7 @@ export class NativeAccountController {
     this.cancelLocalRetry();this.localFallbackGeneration=null;this.localFallbackOwner=null;this.localFallbackParked=false;
     this.huaweiGeneration=null;this.huaweiBackground=false;this.foregroundWait?.();this.foregroundWait=null;
     this.deadline?.close();this.deadline=null;
-    this.localAbort?.abort();this.localAbort=null;this.localAccess=null;
+    this.localAbort?.abort();this.localAbort=null;this.localAccess=null;this.localResumeOnly=false;
     this.transport.cancelAll();this.mutationPending=false;
     // A React subscriber flushes this notification before any bridge call starts.
     this.update({status:'checking',message},synchronous);return generation;
@@ -130,7 +132,7 @@ export class NativeAccountController {
   async getProviders():Promise<NativeAuthProviders>{
     // The native host has one process-wide operation slot. Discovery must not
     // race the startup proof and turn a configured provider into a busy failure.
-    if(this.initialProbe&&(this.state.status==='checking'||this.options.localOffline===true))await this.initialProbe;
+    if(this.initialProbe&&(this.state.status==='checking'||this.options.localOffline===true||this.options.resumeMemory===true))await this.initialProbe;
     if(!this.alive||this.state.status!=='ready'||this.state.unavailable)return CLOSED_NATIVE_PROVIDERS;
     try{const reply=await this.transport.request('providers');
       if(this.alive)this.providers=reply.status===200?parseNativeProviders(reply.body)??CLOSED_NATIVE_PROVIDERS:CLOSED_NATIVE_PROVIDERS;
@@ -148,9 +150,13 @@ export class NativeAccountController {
         if(this.huaweiGeneration===generation)this.held=true;
         this.update({status:'blocked',message:'当前账号状态无法确认，学习分区保持暂停。请重新核对账号。'});return;
       }
+      if(localOwner&&!proof.user&&this.localResumeOnly){
+        this.localAbort?.abort();this.localAbort=null;this.localAccess=null;this.localResumeOnly=false;this.deadline?.close();this.deadline=null;this.held=true;
+        this.update({status:'blocked',message:'当前账号状态无法确认，学习分区保持暂停。请重新核对账号。'},true);return;
+      }
       if(localOwner&&!proof.user&&this.localAccess?.canAccess())return;
       if(localOwner&&proof.user&&proof.user.id!==localOwner){
-        this.localAbort?.abort();this.localAbort=null;this.localAccess=null;this.held=true;
+        this.localAbort?.abort();this.localAbort=null;this.localAccess=null;this.localResumeOnly=false;this.deadline?.close();this.deadline=null;this.held=true;
         this.update({status:'blocked',message:'当前账号身份发生变化，请重新核对账号。'},true);return;
       }
       if(expectedOwner!==undefined&&proof.user?.id!==expectedOwner){
@@ -158,7 +164,7 @@ export class NativeAccountController {
         this.update({status:'blocked',message:expectedOwnerMessage},true);return;
       }
       if(proof.user)this.everAuthenticated=true;
-      this.localAbort?.abort();this.localAbort=null;this.localAccess=null;
+      this.localAbort?.abort();this.localAbort=null;this.localAccess=null;this.localResumeOnly=false;this.deadline?.close();this.deadline=null;
       const deadline=proof.user?new SessionDeadline(proof.validForMs!,()=>{
         if(!this.current(generation))return;
         const owner=proof.user!.id,next=this.begin('会话已到期，学习分区已锁定。',true);
@@ -180,10 +186,10 @@ export class NativeAccountController {
       if(this.current(generation)){if(this.huaweiGeneration===generation)this.held=true;this.update({status:'blocked',message:'当前账号状态未获确认，学习分区保持暂停。请重新核对账号。'});}
     }
   }
-  private async startWithLocal(generation:number,expectedLocalOwner?:string):Promise<void>{
+  private async startWithLocal(generation:number,expectedLocalOwner?:string,resumeExpected?:string):Promise<void>{
     let localOwner:string|undefined;
-    if(this.options.localOffline===true&&this.transport.isLocalActive){
-      const delays=expectedLocalOwner?LOCAL_RETRY_DELAYS:[];
+    if((this.options.localOffline===true||this.options.resumeMemory===true)&&this.transport.isLocalActive){
+      const delays=expectedLocalOwner||resumeExpected?LOCAL_RETRY_DELAYS:[];
       for(let attempt=0;attempt<=delays.length;attempt++){
        let retry=false;
        try{
@@ -191,16 +197,28 @@ export class NativeAccountController {
         if(!this.current(generation))return;
         retry=reply.status===503&&reply.body.code==='local-unavailable';
         const user=reply.status===200?parseProductIdentity(reply.body.user):null,local=reply.body.local;
-        if(user&&(!expectedLocalOwner||user.id===expectedLocalOwner)&&local&&typeof local==='object'&&!Array.isArray(local)&&Object.keys(local).sort().join(',')==='generation,scope'){
-          const proof=local as {scope?:unknown;generation?:unknown};
+        if(user&&resumeExpected&&user.id!==resumeExpected){this.held=true;this.update({status:'blocked',message:'当前账号身份发生变化，请重新核对账号。'},true);return;}
+        const fields=local&&typeof local==='object'&&!Array.isArray(local)?Object.keys(local).sort().join(','):'';
+        if(user&&(!expectedLocalOwner||user.id===expectedLocalOwner)&&local&&typeof local==='object'&&!Array.isArray(local)&&
+          (fields==='generation,scope'||fields==='generation,resumeOnly,scope,validForMs')){
+          const proof=local as {scope?:unknown;generation?:unknown;resumeOnly?:unknown;validForMs?:unknown};
+          const memory=fields==='generation,resumeOnly,scope,validForMs'&&proof.resumeOnly===true&&this.options.resumeMemory===true&&
+            typeof proof.validForMs==='number'&&Number.isSafeInteger(proof.validForMs)&&proof.validForMs>0&&proof.validForMs<=43200000;
+          if(fields!=='generation,scope'&&!memory)break;
           if(proof.scope==='local-study-only'&&typeof proof.generation==='number'&&Number.isSafeInteger(proof.generation)&&proof.generation>0){
             const localGeneration=proof.generation,abort=new AbortController();
             const canAccess=()=>this.current(generation)&&!abort.signal.aborted&&this.transport.isLocalActive?.(user.id,localGeneration)===true;
             const assertAccess=()=>{const ok=canAccess();if(!ok)abort.abort();return ok;};
             if(canAccess()){
-              this.localAbort=abort;localOwner=user.id;
+              this.localAbort=abort;this.localResumeOnly=memory;localOwner=user.id;
               if(this.localFallbackGeneration===generation){this.localFallbackGeneration=null;this.localFallbackOwner=null;this.localFallbackParked=false;}
-              this.localAccess={user,owner:user.id,epoch:generation,scope:'local-study-only',canAccess,assertAccess,sessionSignal:abort.signal};
+              if(memory){
+                const deadline=new SessionDeadline(proof.validForMs as number,()=>{if(!this.current(generation))return;this.localAbort?.abort();this.localAccess=null;this.localResumeOnly=false;this.held=true;this.update({status:'blocked',message:'会话有效期已结束，原数据保留。请联网重新核对账号。'},true);},this.clock);
+                this.deadline=deadline;
+                const localCanAccess=()=>canAccess()&&deadline.canAccess();
+                const localAssertAccess=()=>{const ok=assertAccess()&&deadline.assertAccess();if(!ok)abort.abort();return ok;};
+                this.localAccess={user,owner:user.id,epoch:generation,scope:'local-study-only',canAccess:localCanAccess,assertAccess:localAssertAccess,sessionSignal:abort.signal};
+              }else this.localAccess={user,owner:user.id,epoch:generation,scope:'local-study-only',canAccess,assertAccess,sessionSignal:abort.signal};
               this.update({status:'ready',user,capabilities:guestCapabilities,unavailable:false,message:'',access:this.localAccess});
             }
           }
@@ -217,6 +235,7 @@ export class NativeAccountController {
       // automatic account switch or fall through to another remote identity.
       if(expectedLocalOwner&&!localOwner)return;
       if(localOwner)await this.verifyLocal(generation,localOwner);
+      else if(resumeExpected)await this.probe(generation,'',resumeExpected);
       else await this.probe(generation);
     }
   }
@@ -224,10 +243,17 @@ export class NativeAccountController {
   // Focus/native-resume and a retry click may arrive together. Keep the pending
   // probe/mutation; suspend and unknown results enter blocked before retrying.
   recheck(){if(!this.alive||this.state.status==='checking')return;const warning=this.held?'当前身份已重新核对；这不确认原账号操作结果。':'';this.held=false;const generation=this.begin('正在重新核对账号，旧学习分区已暂停。',true);void (this.options.localOffline===true&&!warning?this.startWithLocal(generation):this.probe(generation,warning));}
-  resume(){if(this.huaweiGeneration===this.generation){this.huaweiBackground=false;this.foregroundWait?.();this.foregroundWait=null;return;}if(!this.held)this.recheck();}
-  hold(message='账号操作结果未确认，分区已锁定。请显式重新核对账号。'){if(!this.alive)return;this.held=true;this.begin(message,true);this.update({status:'blocked',message},true);}
+  resume(){if(this.huaweiGeneration===this.generation){this.huaweiBackground=false;this.foregroundWait?.();this.foregroundWait=null;return;}
+    if(!this.held&&this.options.resumeMemory===true&&this.suspendedOwner){const owner=this.suspendedOwner;this.suspendedOwner=null;const generation=this.begin('正在重新核对账号，旧学习分区已暂停。',true);this.initialProbe=this.startWithLocal(generation,undefined,owner);return;}
+    if(!this.held)this.recheck();}
+  hold(message='账号操作结果未确认，分区已锁定。请显式重新核对账号。'){if(!this.alive)return;this.suspendedOwner=null;this.held=true;this.begin(message,true);this.update({status:'blocked',message},true);}
   suspend(synchronous=true,preserveHuawei=false){if(!this.alive)return;
     if(preserveHuawei&&this.huaweiGeneration===this.generation){this.huaweiBackground=true;return;}
+    if(this.options.resumeMemory===true){
+      if(!preserveHuawei)this.suspendedOwner=null;
+      else if(this.state.status==='ready'&&this.state.user&&((this.localResumeOnly&&this.localAccess===this.state.access)||this.state.access.assertAccess()))this.suspendedOwner=this.state.user.id;
+      else if(this.state.status!=='blocked')this.suspendedOwner=null;
+    }
     this.begin('页面已离开，账号身份需要重新核对。',synchronous);
     this.update({status:'blocked',message:this.held?'账号操作结果未确认，分区已锁定。请显式重新核对账号。':'账号身份待重新核对，学习分区已暂停。'});}
   async mutate(action:'register'|'login'|'logout',credentials?:ProductCredentials):Promise<boolean> {

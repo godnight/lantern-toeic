@@ -45,6 +45,8 @@ export interface AuthBody {
 export interface AuthLocalProof {
   scope: string;
   generation: number;
+  resumeOnly?: boolean;
+  validForMs?: number;
 }
 export interface AuthReply {
   version?: number;

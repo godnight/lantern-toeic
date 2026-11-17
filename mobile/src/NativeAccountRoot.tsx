@@ -10,13 +10,15 @@ import type {PhoneClientTransport,PhoneVerification} from '@/lib/phone-auth-clie
 import {INITIAL_NATIVE_ACCOUNT_STATE,NativeAccountController,type NativeAccountState} from '@/lib/native-account-controller';
 import {applyDocumentTheme} from '@/lib/ui-theme';
 import {attachNativeAccountSync} from '@/lib/cloud-sync/native-account-root';
+// Keep the candidate disabled until native lifecycle and real-device checks pass.
+const MEMORY_RESUME_ENABLED=false;
 
 export default function NativeAccountRoot(){
  const [state,setState]=useState<NativeAccountState>(INITIAL_NATIVE_ACCOUNT_STATE),[accountOpen,setAccountOpen]=useState(false),[legacy,setLegacy]=useState(false),[returnOwner,setReturnOwner]=useState<string|null>(null),[providers,setProviders]=useState({huaweiLogin:false,huaweiBinding:false});
  const [phoneTransport,setPhoneTransport]=useState<PhoneClientTransport|null>(null);
  const controller=useRef<NativeAccountController|null>(null);
  useEffect(()=>{
-  const transport=createNativeAuthTransport();const value=new NativeAccountController(transport);controller.current=value;setPhoneTransport(nativePhoneClient(transport));
+  const transport=createNativeAuthTransport();const value=new NativeAccountController(transport,undefined,{resumeMemory:MEMORY_RESUME_ENABLED});controller.current=value;setPhoneTransport(nativePhoneClient(transport));
   const detachSync=attachNativeAccountSync(value);
   const off=value.subscribe((next,sync)=>{if(sync)flushSync(()=>setState(next));else setState(next);});
   let foreground=true,initialized=false,alive=true;

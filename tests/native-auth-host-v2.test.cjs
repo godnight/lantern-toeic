@@ -16,6 +16,98 @@ test('a later busy session cannot cause a stale native owner proof to be returne
   assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined);
  }finally{release();h.dispose();}
 });
+function memoryResumeHarness(dispatch){
+ const path=require('node:path'),crypto=require('node:crypto');
+ const {createSourceLoader}=require('./helpers/actual-source-loader.cjs');
+ const loader=createSourceLoader({root:path.resolve(__dirname,'..')});
+ const {NativeAccountController}=loader.load('lib/native-account-controller.ts');
+ const {createNativeAuthTransport}=loader.load('lib/native-auth-transport.ts');
+ const target={location:{origin:'https://lantern.local'},crypto:{randomUUID:()=>crypto.randomUUID()}};target.self=target;target.top=target;
+ const host=hostRuntime({resumeMemory:true,initialToken:token,dispatch,onReply:reply=>target.__lanternAuthReceive?.(reply)});
+ target.LanternAuthHost={request:raw=>host.host.request(raw),isLocalActive:raw=>host.host.isLocalActive(raw)};
+ const clock={now:()=>0,set:(fn,ms)=>setTimeout(fn,ms),clear:timer=>clearTimeout(timer)};
+ const account=new NativeAccountController(createNativeAuthTransport(target,clock),clock,{resumeMemory:true,networkEvents:{addEventListener(){},removeEventListener(){}}});
+ return {host,account,close(){account.dispose();host.dispose();}};
+}
+test('resume candidate restores only local study while independently checking the network',async()=>{
+ let release,entered,count=0;const inFlight=new Promise(resolve=>{entered=resolve;}),pending=new Promise(resolve=>{release=resolve;});
+ const h=memoryResumeHarness(async()=>{if(++count===1)return response(200,{user:A,capabilities:caps,session:{version:2,remainingMs:10000}});entered();await pending;return response(503,{code:'native-auth-unavailable'});});
+ try{
+  h.account.start();await h.host.settle();assert.equal(h.account.getSnapshot().access.scope,'remote');
+  const old=h.account.getSnapshot().access;h.host.lifecycle(false);h.account.suspend(true,true);assert.equal(old.canAccess(),false);
+  h.host.lifecycle(true);h.account.resume();await inFlight;const local=h.account.getSnapshot();
+  assert.equal(local.status,'ready');assert.equal(local.user.id,A.id);assert.equal(local.access.scope,'local-study-only');assert(local.access.canAccess());
+  assert.equal(h.host.host.trustedOwnerProvider().snapshot(),undefined);
+  release();await h.host.settle();assert.equal(h.account.getSnapshot().access.scope,'local-study-only');
+ }finally{release();h.close();}
+});
+test('resume candidate blocks on a confirmed 401 and never keeps a cloud owner',async()=>{
+ let count=0;const h=memoryResumeHarness(async()=>++count===1?response(200,{user:A,capabilities:caps,session:{version:2,remainingMs:10000}}):response(401,{code:'unauthenticated'}));
+ try{h.account.start();await h.host.settle();h.host.lifecycle(false);h.account.suspend(true,true);h.host.lifecycle(true);h.account.resume();await h.host.settle();
+  assert.equal(h.account.getSnapshot().status,'blocked');assert.equal(h.host.host.trustedOwnerProvider().snapshot(),undefined);
+ }finally{h.close();}
+});
+test('resume candidate cannot issue a memory proof on cold start or after host recreation',async()=>{
+ const h=memoryResumeHarness(async()=>response(503,{code:'native-auth-unavailable'}));
+ try{h.account.start();await h.host.settle();assert.equal(h.account.getSnapshot().status,'blocked');
+  assert.equal((await h.host.invoke({id:'empty_memory',action:'local-session'})).status,401);
+  h.host.recreate();assert.equal((await h.host.invoke({id:'recreated_memory',action:'local-session'})).status,401);
+ }finally{h.close();}
+});
+test('resume candidate is cleared on host recreation even after a valid proof',async()=>{
+ const h=memoryResumeHarness(async()=>response(200,{user:A,capabilities:caps,session:{version:2,remainingMs:10000}}));
+ try{h.account.start();await h.host.settle();assert.equal(h.account.getSnapshot().status,'ready');
+  h.host.recreate();assert.equal((await h.host.invoke({id:'recreated_after_proof',action:'local-session'})).status,401);
+ }finally{h.close();}
+});
+test('resume memory expires on the native monotonic clock and cannot authorize study',async()=>{
+ let release,entered,count=0;const inFlight=new Promise(resolve=>{entered=resolve;}),pending=new Promise(resolve=>{release=resolve;});
+ const h=memoryResumeHarness(async()=>{if(++count===1)return response(200,{user:A,capabilities:caps,session:{version:2,remainingMs:1000}});entered();await pending;return response(503,{code:'native-auth-unavailable'});});
+ try{h.account.start();await h.host.settle();h.host.lifecycle(false);h.account.suspend(true,true);h.host.lifecycle(true);h.account.resume();await inFlight;
+  const local=h.account.getSnapshot().access;assert(local.canAccess());h.host.advance(1000);assert.equal(local.canAccess(),false);assert.equal(local.assertAccess(),false);assert.equal(local.sessionSignal.aborted,true);
+ }finally{release();h.close();}
+});
+test('a second background during resume revokes local access and prevents its late network proof',async()=>{
+ let release,entered,count=0;const inFlight=new Promise(resolve=>{entered=resolve;}),pending=new Promise(resolve=>{release=resolve;});
+ const h=memoryResumeHarness(async()=>{if(++count===1)return response(200,{user:A,capabilities:caps,session:{version:2,remainingMs:10000}});entered();await pending;return response(200,{user:A,capabilities:caps,session:{version:2,remainingMs:10000}});});
+ try{h.account.start();await h.host.settle();h.host.lifecycle(false);h.account.suspend(true,true);h.host.lifecycle(true);h.account.resume();await inFlight;
+  const local=h.account.getSnapshot().access;assert(local.canAccess());h.host.lifecycle(false);h.account.suspend(true,true);assert.equal(local.canAccess(),false);
+  release();await h.host.settle();assert.equal(h.account.getSnapshot().status,'blocked');assert.equal(h.host.host.trustedOwnerProvider().snapshot(),undefined);
+ }finally{release();h.close();}
+});
+test('a different remote owner blocks the resumed partition until an explicit account decision',async()=>{
+ const B={id:'usr_bbbbbbbb-2222-4222-8222-222222222222',username:'synthetic_b'};let count=0;
+ const h=memoryResumeHarness(async()=>response(200,{user:++count===1?A:B,capabilities:caps,session:{version:2,remainingMs:10000}}));
+ try{h.account.start();await h.host.settle();h.host.lifecycle(false);h.account.suspend(true,true);h.host.lifecycle(true);h.account.resume();await h.host.settle();
+  assert.equal(h.account.getSnapshot().status,'blocked');h.account.resume();await h.host.settle();assert.equal(h.account.getSnapshot().status,'blocked');
+ }finally{h.close();}
+});
+test('starting logout immediately revokes a resumed memory lease and rejects a late session result',async()=>{
+ let release,entered,count=0;const inFlight=new Promise(resolve=>{entered=resolve;}),pending=new Promise(resolve=>{release=resolve;});
+ const h=memoryResumeHarness(async()=>{if(++count===1)return response(200,{user:A,capabilities:caps,session:{version:2,remainingMs:10000}});entered();await pending;return response(200,{user:A,capabilities:caps,session:{version:2,remainingMs:10000}});});
+ try{h.account.start();await h.host.settle();h.host.lifecycle(false);h.account.suspend(true,true);h.host.lifecycle(true);h.account.resume();await inFlight;
+  const local=h.account.getSnapshot().access;assert(local.canAccess());const logout=h.account.mutate('logout');assert.equal(local.canAccess(),false);assert.equal(local.sessionSignal.aborted,true);
+  assert.equal(await logout,false);release();await h.host.settle();assert.equal(h.account.getSnapshot().status,'blocked');
+  assert.equal((await h.host.invoke({id:'after_logout',action:'local-session'})).status,401);
+ }finally{release();h.close();}
+});
+test('native-first repeated foreground transitions can restore the same local owner offline',async()=>{
+ let count=0;const h=memoryResumeHarness(async()=>++count===1?response(200,{user:A,capabilities:caps,session:{version:2,remainingMs:10000}}):response(503,{code:'native-auth-unavailable'}));
+ try{h.account.start();await h.host.settle();for(let i=0;i<2;i++){
+  h.host.lifecycle(false);h.account.suspend(true,true);h.host.lifecycle(true);h.account.resume();await h.host.settle();
+  const local=h.account.getSnapshot();assert.equal(local.status,'ready');assert.equal(local.user.id,A.id);assert.equal(local.access.scope,'local-study-only');assert(local.access.canAccess());
+ }}finally{h.close();}
+});
+test('a previous local lease never revives after a different owner and a later same-owner proof',async()=>{
+ let release,entered,count=0;const inFlight=new Promise(resolve=>{entered=resolve;}),pending=new Promise(resolve=>{release=resolve;});
+ const h=memoryResumeHarness(async()=>{if(++count===1)return response(200,{user:A,capabilities:caps,session:{version:2,remainingMs:10000}});entered();await pending;return response(503,{code:'native-auth-unavailable'});});
+ try{h.account.start();await h.host.settle();h.host.lifecycle(false);h.account.suspend(true,true);h.host.lifecycle(true);h.account.resume();await inFlight;
+  const local=h.account.getSnapshot().access;assert(local.canAccess());const fence=h.host.load('VolatileOwnerFence').VolatileOwnerFence;
+  const B={uid:'usr_bbbbbbbb-2222-4222-8222-222222222222',username:'synthetic_b'};
+  assert(fence.publish('https://auth.test',B,0,10000,fence.version()));assert.equal(local.canAccess(),false);
+  assert(fence.publish('https://auth.test',{uid:A.id,username:A.username},0,10000,fence.version()));assert.equal(local.canAccess(),false);assert.equal(local.assertAccess(),false);assert(local.sessionSignal.aborted);
+ }finally{release();h.close();}
+});
 test('actual host keeps v1 exact and negotiates v2 with a fixed header and conservative uptime budget',async()=>{
  const h=hostRuntime({initialToken:token,dispatch:async(_url,options,clock)=>{clock.advance(20);return response(200,{user:A,capabilities:caps,...options.header['X-Lantern-Session-Proof']==='2'?{session:{version:2,remainingMs:1000}}:{}});}});
  try{const v1=await h.invoke({id:'legacy',action:'session'});assert.deepEqual(Object.keys(v1).sort(),['body','id','status']);assert.deepEqual(Object.keys(v1.body).sort(),['capabilities','user']);const v2=await h.invoke({version:2,id:'current',action:'session'});assert.equal(v2.version,2);assert.equal(v2.status,200);assert.equal(v2.body.session.validForMs,980);assert.equal(h.requests[0].proof,undefined);assert.equal(h.requests[1].proof,'2');assert.equal(h.saves,0);assert(!JSON.stringify(h.replies).includes(token));}finally{h.dispose();}

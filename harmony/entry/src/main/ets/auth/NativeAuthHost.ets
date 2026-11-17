@@ -6,6 +6,7 @@ import { common } from '@kit.AbilityKit';
 import { HuaweiAccountProvider, HuaweiAuthorization } from './HuaweiAccountProvider';
 import { AuthSessionStore } from './AuthSessionStore';
 import { OfflineOwnerFence, LocalOfflineOwner, OFFLINE_OWNER_ENABLED } from './OfflineOwnerFence';
+import { VolatileOwnerFence, VolatileOwnerRead, VOLATILE_OWNER_ENABLED } from './VolatileOwnerFence';
 import { TrustedOwnerLease, VerifiedOwnerLease, TrustedOwnerProvider } from '../media/VerifiedOwnerLease';
 import { SyncAuthGate } from '../sync/NativeSyncHost';
 import { NativeTransitionEvidence } from '../sync/NativeTransitionEvidence';
@@ -28,12 +29,15 @@ interface Operation {
   sessionMayHaveChanged: boolean;
   transitionStart: number;
   transitionProof: number;
+  volatileEpoch: number;
   huawei?: boolean;
   huaweiSdkStarted?: boolean;
 }
 interface LocalLease {
   uid: string;
   generation: number;
+  resumeOnly: boolean;
+  volatileVersion: number;
 }
 interface LocalLeaseCheck {
   uid: string;
@@ -97,7 +101,8 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
     try {
       // request is synchronous only long enough to capture the calling frame.
       // Its eventual result is delivered with requestId, not a proxy Promise.
-      this.controller.registerJavaScriptProxy(this, 'LanternAuthHost', OFFLINE_OWNER_ENABLED ? ['request', 'isLocalActive'] : ['request'], [], OFFLINE_OWNER_ENABLED ? LOCAL_PROXY_PERMISSION : PROXY_PERMISSION);
+      const localEnabled: boolean = OFFLINE_OWNER_ENABLED || VOLATILE_OWNER_ENABLED;
+      this.controller.registerJavaScriptProxy(this, 'LanternAuthHost', localEnabled ? ['request', 'isLocalActive'] : ['request'], [], localEnabled ? LOCAL_PROXY_PERMISSION : PROXY_PERMISSION);
       this.attached = true;
       return true;
     } catch {
@@ -106,9 +111,10 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
     }
   }
 
-  invalidate(): void {
+  invalidate(preserveVolatile: boolean = false): void {
     this.ownerLease.revoke();
-    if (OFFLINE_OWNER_ENABLED) this.revokeLocal();
+    if (OFFLINE_OWNER_ENABLED || VOLATILE_OWNER_ENABLED) this.revokeLocal();
+    if (VOLATILE_OWNER_ENABLED && !preserveVolatile) VolatileOwnerFence.clear();
     this.epoch++;
     this.seen = [];
     this.wakeForeground();
@@ -120,12 +126,12 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
   // navigation/dispose still uses invalidate(), including during an SDK dialog.
   onForegroundChanged(foreground: boolean): void {
     this.ownerLease.revoke();
-    if (OFFLINE_OWNER_ENABLED) this.revokeLocal();
+    if (OFFLINE_OWNER_ENABLED || VOLATILE_OWNER_ENABLED) this.revokeLocal();
     if (this.huaweiOperation !== undefined && (!OFFLINE_OWNER_ENABLED || this.huaweiOperation.huaweiSdkStarted === true) && this.current(this.huaweiOperation)) {
       if (foreground) this.wakeForeground();
       return;
     }
-    this.invalidate();
+    this.invalidate(true);
   }
 
   private wakeForeground(): void {
@@ -152,33 +158,39 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
   // Synchronous, native-validated local data lease. It never grants a token,
   // remote owner lease, account mutation or cloud synchronization authority.
   isLocalActive(raw: string): boolean {
-    if (!OFFLINE_OWNER_ENABLED || typeof raw !== 'string' || raw.length > 256 || NativeAuthHost.offlineOwnerPoisoned || NativeAuthHost.quarantined) return false;
+    if (!(OFFLINE_OWNER_ENABLED || VOLATILE_OWNER_ENABLED) || typeof raw !== 'string' || raw.length > 256 || NativeAuthHost.offlineOwnerPoisoned || NativeAuthHost.quarantined) return false;
     let frame: string;
     try { frame = this.controller.getLastJavascriptProxyCallingFrameUrl(); } catch { return false; }
     if (!trustedFrame(frame) || !this.live(this.epoch)) return false;
     let check: LocalLeaseCheck;
     try { check = JSON.parse(raw) as LocalLeaseCheck; } catch { return false; }
     const lease: LocalLease | undefined = this.localLease;
+    const volatileOwner: VolatileOwnerRead | undefined = lease?.resumeOnly ? VolatileOwnerFence.read(AUTH_API_ORIGIN, systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false)) : undefined;
     return check !== null && typeof check === 'object' && !Array.isArray(check) && Object.keys(check).sort().join(',') === 'generation,uid' &&
-      lease !== undefined && check.uid === lease.uid && check.generation === lease.generation && lease.generation === NativeAuthHost.localGeneration;
+      lease !== undefined && (!lease.resumeOnly || volatileOwner !== undefined && volatileOwner.uid === lease.uid && lease.volatileVersion === VolatileOwnerFence.version()) &&
+      check.uid === lease.uid && check.generation === lease.generation && lease.generation === NativeAuthHost.localGeneration;
   }
 
   private async issueLocal(input: AuthRequest, epoch: number): Promise<void> {
-    if (!OFFLINE_OWNER_ENABLED || NativeAuthHost.busy || NativeAuthHost.quarantined || NativeAuthHost.offlineOwnerPoisoned ||
-      deviceInfo.sdkApiVersion < 23 || !canIUse('SystemCapability.Security.Asset')) {
+    if (!(OFFLINE_OWNER_ENABLED || VOLATILE_OWNER_ENABLED) || NativeAuthHost.busy || NativeAuthHost.quarantined || NativeAuthHost.offlineOwnerPoisoned ||
+      deviceInfo.sdkApiVersion < 23 || OFFLINE_OWNER_ENABLED && !canIUse('SystemCapability.Security.Asset')) {
       this.send(input.id, 503, { code: 'local-unavailable' }, epoch);
       return;
     }
     const generation: number = NativeAuthHost.localGeneration;
     NativeAuthHost.busy = true;
     try {
-      const owner: LocalOfflineOwner | undefined = await this.offlineOwnerFence.readLocal(AUTH_API_ORIGIN);
-      if (!this.live(epoch) || generation !== NativeAuthHost.localGeneration) return;
+      const resumeOnly: boolean = VOLATILE_OWNER_ENABLED && !OFFLINE_OWNER_ENABLED;
+      const volatileVersion: number = VolatileOwnerFence.version();
+      const memory: VolatileOwnerRead | undefined = resumeOnly ? VolatileOwnerFence.read(AUTH_API_ORIGIN, systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false)) : undefined;
+      const owner: LocalOfflineOwner | undefined = resumeOnly ? memory : await this.offlineOwnerFence.readLocal(AUTH_API_ORIGIN);
+      if (!this.live(epoch) || generation !== NativeAuthHost.localGeneration || resumeOnly && volatileVersion !== VolatileOwnerFence.version()) return;
       if (owner === undefined) { this.revokeLocal(); this.send(input.id, 401, { code: 'local-unavailable' }, epoch); return; }
       if (NativeAuthHost.localGeneration >= Number.MAX_SAFE_INTEGER) throw new Error('Unconfirmed');
       const next: number = ++NativeAuthHost.localGeneration;
-      this.localLease = { uid: owner.uid, generation: next };
-      this.send(input.id, 200, { user: { id: owner.uid, username: owner.username }, local: { scope: 'local-study-only', generation: next } }, epoch);
+      this.localLease = { uid: owner.uid, generation: next, resumeOnly: resumeOnly, volatileVersion: volatileVersion };
+      if (resumeOnly && memory !== undefined) this.send(input.id, 200, { user: { id: owner.uid, username: owner.username }, local: { scope: 'local-study-only', generation: next, resumeOnly: true, validForMs: memory.validForMs } }, epoch);
+      else this.send(input.id, 200, { user: { id: owner.uid, username: owner.username }, local: { scope: 'local-study-only', generation: next } }, epoch);
     } catch { this.revokeLocal(); this.send(input.id, 503, { code: 'local-unavailable' }, epoch); }
     finally { NativeAuthHost.busy = false; }
   }
@@ -240,12 +252,15 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
     const epoch: number = this.epoch;
     try { frame = this.controller.getLastJavascriptProxyCallingFrameUrl(); } catch { return; }
     if (!trustedFrame(frame) || !this.live(epoch)) return;
-    const input: AuthRequest | undefined = parseAuthRequest(raw, OFFLINE_OWNER_ENABLED);
-    if (input === undefined) { this.ownerLease.revoke(); return; }
+    const input: AuthRequest | undefined = parseAuthRequest(raw, OFFLINE_OWNER_ENABLED || VOLATILE_OWNER_ENABLED);
+    if (input === undefined) { this.ownerLease.revoke(); if (VOLATILE_OWNER_ENABLED) { VolatileOwnerFence.clear(); this.revokeLocal(); } return; }
     // Discovery has no identity effect. In particular, reading it immediately
     // after a verified cold-start session must not disable native media access.
     if (input.action !== 'providers' && input.action !== 'local-session') this.ownerLease.revoke();
-    if (OFFLINE_OWNER_ENABLED && ['register', 'login', 'logout', 'phone-login', 'phone-bind', 'huawei-login', 'huawei-bind'].includes(input.action)) this.revokeLocal();
+    if ((OFFLINE_OWNER_ENABLED || VOLATILE_OWNER_ENABLED) && ['register', 'login', 'logout', 'phone-login', 'phone-bind', 'huawei-login', 'huawei-bind'].includes(input.action)) {
+      this.revokeLocal();
+      if (VOLATILE_OWNER_ENABLED) VolatileOwnerFence.clear();
+    }
     // Never send a duplicate id that could overwrite the original operation's reply.
     if (this.seen.includes(input.id)) return;
     if (this.seen.length >= 256) {
@@ -286,7 +301,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       // Timeout, failure or a later ordinary recheck must leave the hold latched.
       this.syncTransitionPending = 0;
     }
-    const operation: Operation = { id: input.id, action: input.action, version: input.version, epoch: epoch, ownerLeaseEpoch: this.ownerLease.version(), timedOut: false, replied: false, sessionMayHaveChanged: false, transitionStart: transitionStart, transitionProof: transitionProof };
+    const operation: Operation = { id: input.id, action: input.action, version: input.version, epoch: epoch, ownerLeaseEpoch: this.ownerLease.version(), timedOut: false, replied: false, sessionMayHaveChanged: false, transitionStart: transitionStart, transitionProof: transitionProof, volatileEpoch: VolatileOwnerFence.version() };
     if (input.action === 'huawei-login' || input.action === 'huawei-bind') {
       operation.huawei = true;
       this.huaweiOperation = operation;
@@ -620,6 +635,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       }
       if (response.responseCode !== 200) {
         // Explicit credential rejection does not revoke an otherwise valid old session.
+        if (input.action === 'session' && response.responseCode === 401 && VOLATILE_OWNER_ENABLED) { VolatileOwnerFence.clear(); this.revokeLocal(); }
         if (input.action === 'session' && response.responseCode === 401) await this.store.clear();
         if (input.action === 'session' && response.responseCode === 401) NativeAuthHost.quarantined = false;
         const failure: AuthReply = phoneAction(input.action) ? phoneFailure(response.responseCode, payload) : publicFailure(response.responseCode, payload);
@@ -670,6 +686,9 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
         // is in flight, even when that concurrent request is rejected as busy.
         // Do not let the web layer select an owner whose lease was not issued.
         if (!published) throw new Error('Unconfirmed');
+        if (VOLATILE_OWNER_ENABLED && !VolatileOwnerFence.publish(AUTH_API_ORIGIN, { uid: user.id, username: user.username }, ended, validForMs, operation.volatileEpoch)) {
+          this.ownerLease.revoke(); this.revokeLocal(); throw new Error('Unconfirmed');
+        }
         if (OFFLINE_OWNER_ENABLED && published && !NativeAuthHost.offlineOwnerPoisoned) {
           const proof: TrustedOwnerLease | undefined = this.ownerLease.snapshot();
           if (proof !== undefined && proof.uid === user.id) {

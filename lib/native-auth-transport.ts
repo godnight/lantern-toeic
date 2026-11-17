@@ -45,11 +45,17 @@ function publicBody(value:unknown,proof=false):Record<string,unknown> {
   return body;
 }
 
-function localBody(value:unknown):Record<string,unknown> {
+function localBody(value:unknown,elapsedMs:number):Record<string,unknown> {
   if(!object(value)||Object.keys(value).sort().join(',')!=='local,user'||!object(value.local)||
-    Object.keys(value.local).sort().join(',')!=='generation,scope'||value.local.scope!=='local-study-only'||
+    !['generation,scope','generation,resumeOnly,scope,validForMs'].includes(Object.keys(value.local).sort().join(','))||value.local.scope!=='local-study-only'||
     !Number.isSafeInteger(value.local.generation)||(value.local.generation as number)<1)throw new NativeAuthFailure('protocol');
   const user=parseProductIdentity(value.user);if(!user)throw new NativeAuthFailure('protocol');
+  if('resumeOnly' in value.local){
+    const budget=value.local.validForMs;
+    if(value.local.resumeOnly!==true||typeof budget!=='number'||!Number.isSafeInteger(budget)||budget<1||budget>43200000||!Number.isFinite(elapsedMs)||elapsedMs<0)throw new NativeAuthFailure('protocol');
+    const remaining=Math.floor(budget-elapsedMs);if(remaining<1)throw new NativeAuthFailure('protocol');
+    return {user,local:{scope:'local-study-only',generation:value.local.generation,resumeOnly:true,validForMs:remaining}};
+  }
   return {user,local:{scope:'local-study-only',generation:value.local.generation}};
 }
 
@@ -75,7 +81,7 @@ export function createNativeAuthTransport(target:NativeAuthWindow=window as unkn
       const reply={status:value.status as number,body:value.body as Record<string,unknown>};
       const providers=item.action==='providers'&&reply.status===200?parseNativeProviders(value.body):null;
       if(item.action==='providers'&&reply.status===200&&!providers)throw new NativeAuthFailure('protocol');
-      const body=providers?{...providers}:item.action==='local-session'&&reply.status===200?localBody(value.body):item.action.startsWith('phone-')?reply.body:publicBody(value.body,item.version===2);
+      const body=providers?{...providers}:item.action==='local-session'&&reply.status===200?localBody(value.body,(clock.now??monotonicNow)()-item.startedAt):item.action.startsWith('phone-')?reply.body:publicBody(value.body,item.version===2);
       if(item.version===2&&reply.status!==200&&body.session!==undefined)throw new NativeAuthFailure('protocol');
       if(item.version===2&&reply.status===200){const proof=readSessionProof(value.body,'native',(clock.now??monotonicNow)()-item.startedAt);if(!proof)throw new NativeAuthFailure('protocol');body.session={validForMs:proof.validForMs};}
       finish(value.id,item.action.startsWith('phone-')?parsePhonePublicReply(item.action.slice(6) as 'status'|'challenge'|'bind'|'login',reply):{status:reply.status,body,...item.version===2?{version:2 as const}:{}});
@@ -102,7 +108,7 @@ export function createNativeAuthTransport(target:NativeAuthWindow=window as unkn
         if(!/^[a-f0-9-]{36}$/i.test(id)||pending.has(id)){reject(new NativeAuthFailure('protocol'));return;}
         if(mutation)mutationId=id;
         const abort=()=>finish(id,undefined,new NativeAuthFailure('superseded'));
-        const item:Pending={action,version,startedAt:version===2?(clock.now??monotonicNow)():0,resolve,reject,timer:undefined,removeAbort:()=>signal?.removeEventListener('abort',abort)};
+        const item:Pending={action,version,startedAt:version===2||action==='local-session'?(clock.now??monotonicNow)():0,resolve,reject,timer:undefined,removeAbort:()=>signal?.removeEventListener('abort',abort)};
         pending.set(id,item);signal?.addEventListener('abort',abort,{once:true});
         item.timer=clock.set(()=>finish(id,undefined,new NativeAuthFailure('timeout')),action.startsWith('huawei-')?HUAWEI_DEADLINE_MS:DEADLINE_MS);
         try{
