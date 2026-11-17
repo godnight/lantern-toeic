@@ -60,6 +60,20 @@ function storeHarness({ enabled = false, record, rows, fail, clock = now } = {})
 
 const valid = () => ({ version: 1, origin: oldOrigin, token, expiresAt: now + 10000 });
 
+test('cold lookup never mutates Asset, including expired, mismatched or malformed records', async () => {
+  const match = storeHarness({ record: valid() });
+  assert.equal(await match.store.peekColdStartCandidate(oldOrigin), token);
+  for (const options of [
+    { record: { ...valid(), origin: newOrigin } }, { record: { ...valid(), expiresAt: now } },
+    { record: { ...valid(), expiresAt: now + 43200001 } }, { record: { ...valid(), version: 2 } },
+    { record: { ...valid(), token: 'bad' } }, { rows: [] }, { fail: { code: 123 } }, {},
+  ]) {
+    const h = storeHarness(options);
+    assert.equal(await h.store.peekColdStartCandidate(oldOrigin), undefined);
+    assert.equal(h.calls.remove, 0); assert.equal(h.calls.add, 0); assert.equal(h.calls.update, 0);
+  }
+});
+
 test('migration candidate is disabled before any Asset access and rejects an unapproved target', async () => {
   const disabled = storeHarness({ record: valid() });
   assert.equal(await disabled.store.peekMigrationLegacy(newOrigin), undefined);

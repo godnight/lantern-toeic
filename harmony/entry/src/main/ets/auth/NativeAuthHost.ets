@@ -11,6 +11,7 @@ import { TrustedOwnerLease, VerifiedOwnerLease, TrustedOwnerProvider } from '../
 import { SyncAuthGate } from '../sync/NativeSyncHost';
 import { NativeTransitionEvidence } from '../sync/NativeTransitionEvidence';
 import { AUTH_API_ORIGIN } from './AuthConfiguration';
+import { COLD_START_PREFETCH_ENABLED } from './ColdStartConfiguration';
 import { AuthRequest, AuthBody, AuthReply, AuthUser, AuthCookie, AuthRoute, COOKIE_NAME,
   AUTH_TIMEOUT_MS, MAX_RESPONSE_BYTES, trustedFrame, configuredOrigin, parseAuthRequest,
   utf8Length, capabilities, unavailableBody, unknownBody, unauthenticatedBody,
@@ -30,8 +31,20 @@ interface Operation {
   transitionStart: number;
   transitionProof: number;
   volatileEpoch: number;
+  coldProcessVersion?: number;
   huawei?: boolean;
   huaweiSdkStarted?: boolean;
+  cold?: boolean;
+}
+interface ColdFlight {
+  epoch: number;
+  processVersion: number;
+  active: () => boolean;
+  token?: string;
+  response?: http.HttpResponse;
+  started: number;
+  promise: Promise<void>;
+  timer?: number;
 }
 interface LocalLease {
   uid: string;
@@ -76,6 +89,9 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
   private static localGeneration: number = 0;
   private localLease: LocalLease | undefined = undefined;
   private static retryAt: number = 0;
+  private static coldVersion: number = 0;
+  private static coldPoisoned: boolean = false;
+  private cold: ColdFlight | undefined = undefined;
   private seen: string[] = [];
   private network: http.HttpRequest | undefined = undefined;
   private context: (() => common.UIAbilityContext) | undefined;
@@ -111,7 +127,94 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
     }
   }
 
+  private invalidateColdStart(): void {
+    if (!COLD_START_PREFETCH_ENABLED) return;
+    if (this.cold?.timer !== undefined) clearTimeout(this.cold.timer);
+    this.cold = undefined;
+    if (NativeAuthHost.coldVersion >= Number.MAX_SAFE_INTEGER) NativeAuthHost.coldPoisoned = true;
+    else NativeAuthHost.coldVersion++;
+  }
+
+  private currentCold(cold: ColdFlight): boolean {
+    if (!COLD_START_PREFETCH_ENABLED || NativeAuthHost.coldPoisoned || NativeAuthHost.quarantined ||
+      this.disposed || !this.attached || this.cold !== cold || this.epoch !== cold.epoch ||
+      NativeAuthHost.coldVersion !== cold.processVersion) return false;
+    try { return cold.active(); } catch { return false; }
+  }
+
+  // Native-only, never part of the ArkWeb proxy. The caller must bind active()
+  // to one expected main-document generation and the foreground lifecycle.
+  beginColdStartCandidate(active: () => boolean): void {
+    if (!COLD_START_PREFETCH_ENABLED || NativeAuthHost.coldPoisoned || NativeAuthHost.busy ||
+      NativeAuthHost.quarantined || !this.attached || this.disposed || !this.available() || this.cold !== undefined) return;
+    const cold: ColdFlight = { epoch: this.epoch, processVersion: NativeAuthHost.coldVersion,
+      active: active, started: 0, promise: Promise.resolve() };
+    this.cold = cold;
+    if (!this.currentCold(cold)) { this.cold = undefined; return; }
+    const operation: Operation = { id: '', action: 'session', version: 2, epoch: cold.epoch,
+      ownerLeaseEpoch: this.ownerLease.version(), timedOut: false, replied: false, sessionMayHaveChanged: false,
+      transitionStart: 0, transitionProof: 0, volatileEpoch: VolatileOwnerFence.version(), cold: true };
+    NativeAuthHost.busy = true;
+    cold.promise = (async (): Promise<void> => {
+      try {
+        const token: string | undefined = await this.store.peekColdStartCandidate(AUTH_API_ORIGIN);
+        if (!this.currentCold(cold) || token === undefined) return;
+        const started: number = systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false);
+        if (!Number.isFinite(started) || started < 0) return;
+        const response: http.HttpResponse = await this.fetch('session', '{}', token, operation);
+        const ended: number = systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false);
+        if (!this.currentCold(cold) || !Number.isFinite(ended) || ended < started || ended - started > 5000 ||
+          response.responseCode !== 200 || this.cookieHeaders(response).length !== 0) return;
+        cold.token = token;
+        cold.response = response;
+        cold.started = started;
+        // Drop the in-memory credential and response even if the page never
+        // asks for a session. A stale timer cannot clear a different flight.
+        cold.timer = setTimeout(() => {
+          if (this.cold === cold) this.invalidateColdStart();
+        }, Math.max(1, 5000 - Math.floor(ended - started)));
+      } catch { /* Prefetch failure is not a session result. The page probes normally. */ }
+      finally { NativeAuthHost.busy = false; }
+    })();
+  }
+
+  private takeColdStart(token: string | undefined, now: number): ColdFlight | undefined {
+    const cold: ColdFlight | undefined = this.cold;
+    const usable: boolean = cold !== undefined && this.currentCold(cold) && token !== undefined &&
+      cold.token === token && cold.response !== undefined && Number.isFinite(now) && now >= cold.started && now - cold.started <= 5000;
+    if (cold?.timer !== undefined) clearTimeout(cold.timer);
+    this.cold = undefined;
+    return usable ? cold : undefined;
+  }
+
+  private async awaitColdStart(input: AuthRequest, epoch: number, cold: ColdFlight): Promise<void> {
+    const started: number = systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false);
+    const ownerLeaseEpoch: number = this.ownerLease.version();
+    if (!Number.isFinite(started) || started < 0) { this.send(input.id, 503, operationUnknownBody(input.action), epoch, input.version); return; }
+    let expired: boolean = false;
+    const timer: number = setTimeout(() => {
+      expired = true;
+      this.invalidateColdStart();
+      this.send(input.id, 503, operationUnknownBody(input.action), epoch, input.version);
+    }, AUTH_TIMEOUT_MS);
+    try { await cold.promise; } finally { clearTimeout(timer); }
+    if (expired || !this.live(epoch)) return;
+    // A competing account action may have been rejected by the lock after it
+    // already revoked the owner. Never turn that old join into a fresh probe.
+    if (!this.currentCold(cold) || this.ownerLease.version() !== ownerLeaseEpoch) {
+      this.send(input.id, 503, operationUnknownBody(input.action), epoch, input.version);
+      return;
+    }
+    const now: number = systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false);
+    if (!Number.isFinite(now) || now < started || now - started >= AUTH_TIMEOUT_MS) {
+      this.send(input.id, 503, operationUnknownBody(input.action), epoch, input.version);
+      return;
+    }
+    this.dispatch(input, epoch, AUTH_TIMEOUT_MS - Math.floor(now - started));
+  }
+
   invalidate(preserveVolatile: boolean = false): void {
+    this.invalidateColdStart();
     this.ownerLease.revoke();
     if (OFFLINE_OWNER_ENABLED || VOLATILE_OWNER_ENABLED) this.revokeLocal();
     if (VOLATILE_OWNER_ENABLED && !preserveVolatile) VolatileOwnerFence.clear();
@@ -253,6 +356,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
     try { frame = this.controller.getLastJavascriptProxyCallingFrameUrl(); } catch { return; }
     if (!trustedFrame(frame) || !this.live(epoch)) return;
     const input: AuthRequest | undefined = parseAuthRequest(raw, OFFLINE_OWNER_ENABLED || VOLATILE_OWNER_ENABLED);
+    if (input === undefined || ['register', 'login', 'logout', 'phone-login', 'phone-bind', 'huawei-login', 'huawei-bind'].includes(input.action)) this.invalidateColdStart();
     if (input === undefined) { this.ownerLease.revoke(); if (VOLATILE_OWNER_ENABLED) { VolatileOwnerFence.clear(); this.revokeLocal(); } return; }
     // Discovery has no identity effect. In particular, reading it immediately
     // after a verified cold-start session must not disable native media access.
@@ -284,6 +388,20 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       }
     }
     if (NativeAuthHost.busy) {
+      const cold: ColdFlight | undefined = this.cold;
+      if (COLD_START_PREFETCH_ENABLED && input.action === 'session' && input.version === 2 &&
+        cold !== undefined && this.currentCold(cold)) {
+        this.awaitColdStart(input, epoch, cold).catch(() => {});
+        return;
+      }
+      this.send(input.id, 503, operationUnknownBody(input.action), epoch, input.version);
+      return;
+    }
+    this.dispatch(input, epoch);
+  }
+
+  private dispatch(input: AuthRequest, epoch: number, timeoutMs: number = AUTH_TIMEOUT_MS): void {
+    if (!this.live(epoch) || NativeAuthHost.busy || !this.available()) {
       this.send(input.id, 503, operationUnknownBody(input.action), epoch, input.version);
       return;
     }
@@ -301,14 +419,14 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       // Timeout, failure or a later ordinary recheck must leave the hold latched.
       this.syncTransitionPending = 0;
     }
-    const operation: Operation = { id: input.id, action: input.action, version: input.version, epoch: epoch, ownerLeaseEpoch: this.ownerLease.version(), timedOut: false, replied: false, sessionMayHaveChanged: false, transitionStart: transitionStart, transitionProof: transitionProof, volatileEpoch: VolatileOwnerFence.version() };
+    const operation: Operation = { id: input.id, action: input.action, version: input.version, epoch: epoch, ownerLeaseEpoch: this.ownerLease.version(), timedOut: false, replied: false, sessionMayHaveChanged: false, transitionStart: transitionStart, transitionProof: transitionProof, volatileEpoch: VolatileOwnerFence.version(), coldProcessVersion: NativeAuthHost.coldVersion };
     if (input.action === 'huawei-login' || input.action === 'huawei-bind') {
       operation.huawei = true;
       this.huaweiOperation = operation;
       this.runHuawei(input, operation).catch(() => {});
       return;
     }
-    this.run(input, operation).catch(() => { /* run publishes only sanitized failures. */ });
+    this.run(input, operation, timeoutMs).catch(() => { /* run publishes only sanitized failures. */ });
   }
 
   private available(): boolean {
@@ -323,6 +441,10 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
 
   private current(operation: Operation): boolean {
     if (operation.timedOut) return false;
+    if (operation.cold === true) {
+      const cold: ColdFlight | undefined = this.cold;
+      return cold !== undefined && operation.epoch === cold.epoch && this.currentCold(cold);
+    }
     if (operation.huawei === true && (!OFFLINE_OWNER_ENABLED || operation.huaweiSdkStarted === true) && this.huaweiOperation === operation) {
       if (this.disposed || !this.attached || operation.epoch !== this.epoch) return false;
       try { return trustedFrame(this.controller.getUrl()); } catch { return false; }
@@ -548,7 +670,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
     }
   }
 
-  private async run(input: AuthRequest, operation: Operation): Promise<void> {
+  private async run(input: AuthRequest, operation: Operation, timeoutMs: number = AUTH_TIMEOUT_MS): Promise<void> {
     const timer: number = setTimeout(() => {
       if (!this.current(operation)) return;
       operation.timedOut = true;
@@ -556,7 +678,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       // A UI deadline is not HTTP completion. Keep the operation slot until the
       // real native request/Asset operation settles, even after publishing 503.
       this.send(operation.id, 503, operationUnknownBody(input.action), operation.epoch, operation.version);
-    }, AUTH_TIMEOUT_MS);
+    }, timeoutMs);
     try {
       if (OFFLINE_OWNER_ENABLED && operation.transitionStart > 0) {
         try { await this.offlineOwnerFence.markPending(AUTH_API_ORIGIN); }
@@ -577,6 +699,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
         token = await this.store.load(AUTH_API_ORIGIN, PERSISTENT_SESSION_ENABLED || explicitIdentity, explicitIdentity);
       }
       if (!this.current(operation)) return;
+      if (COLD_START_PREFETCH_ENABLED && input.action === 'session' && operation.coldProcessVersion !== NativeAuthHost.coldVersion) throw new Error('Unconfirmed');
       let bindingUser: AuthUser | undefined = undefined;
       if (input.action === 'phone-bind') {
         // The old owner comes only from a fresh server proof using this host's
@@ -605,9 +728,12 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       const body: string = input.body === undefined ? '{}' : JSON.stringify(input.body);
       const identityMutation: boolean = ['register', 'login', 'logout', 'phone-bind', 'phone-login'].includes(input.action);
       if (identityMutation) operation.sessionMayHaveChanged = true;
-      const started: number = input.version === 2 ? systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false) : 0;
+      let started: number = input.version === 2 ? systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false) : 0;
       if (input.version === 2 && (!Number.isFinite(started) || started < 0)) throw new Error('Unconfirmed');
-      const response: http.HttpResponse = await this.fetch(input.action, body, token, operation);
+      const cached: ColdFlight | undefined = input.action === 'session' && input.version === 2 ? this.takeColdStart(token, started) : undefined;
+      if (cached !== undefined) started = cached.started;
+      const response: http.HttpResponse = cached?.response ?? await this.fetch(input.action, body, token, operation);
+      if (COLD_START_PREFETCH_ENABLED && input.action === 'session' && operation.coldProcessVersion !== NativeAuthHost.coldVersion) throw new Error('Unconfirmed');
       const lines: string[] = this.cookieHeaders(response);
       const payload: AuthBody = parseResponseBody(response.result as string);
       if (response.responseCode === 429) {
@@ -713,6 +839,9 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
             }
             if (!saved) { this.ownerLease.revoke(); this.revokeLocal(); throw new Error('Unconfirmed'); }
           }
+        }
+        if (COLD_START_PREFETCH_ENABLED && input.action === 'session' && operation.coldProcessVersion !== NativeAuthHost.coldVersion) {
+          this.ownerLease.revoke(); this.revokeLocal(); throw new Error('Unconfirmed');
         }
         this.finish(operation, 200, { user: user, capabilities: capabilities(true), session: { validForMs: validForMs } });
         return;

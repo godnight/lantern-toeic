@@ -52,6 +52,29 @@ export class AuthSessionStore {
     return query;
   }
 
+  /** Non-destructive native-only lookup for an optional cold-start probe.
+   * Unlike load(), this never clears an expired or differently bound record.
+   * Only a valid legacy session may be considered; this is not owner proof.
+   */
+  async peekColdStartCandidate(origin: string): Promise<string | undefined> {
+    const query: asset.AssetMap = this.queryMap();
+    query.set(asset.Tag.RETURN_TYPE, asset.ReturnType.ALL);
+    let rows: asset.AssetMap[];
+    try { rows = await asset.query(query); } catch { return undefined; }
+    if (rows.length !== 1) return undefined;
+    const secret: asset.Value | undefined = rows[0].get(asset.Tag.SECRET);
+    if (!(secret instanceof Uint8Array)) return undefined;
+    try {
+      const record: StoredSession = JSON.parse(text(secret)) as StoredSession;
+      const now: number = Date.now();
+      if (record === null || typeof record !== 'object' || record.version !== 1 || record.origin !== origin ||
+        typeof record.token !== 'string' || !/^[a-f0-9]{64}$/.test(record.token) ||
+        !Number.isSafeInteger(record.expiresAt) || !Number.isSafeInteger(now) || record.expiresAt <= now ||
+        record.expiresAt - now > 43200000) return undefined;
+      return record.token;
+    } catch { return undefined; }
+  }
+
   /**
    * Disabled, non-destructive migration candidate. Not called by the host or
    * exposed to ArkWeb. A future integration must first prove the deployed

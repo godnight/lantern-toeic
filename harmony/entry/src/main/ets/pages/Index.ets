@@ -527,6 +527,9 @@ struct Index {
   private attached: boolean = false;
   private alive: boolean = false;
   private documentGeneration: number = 0;
+  private coldStartDocument: string = '';
+  private coldStartForegroundSeen: boolean = false;
+  private coldStartAbandoned: boolean = false;
   private lifecycleGeneration: number = 0;
   private bridgeSequence: number = 0;
   private bridgeRetryTimer: number = -1;
@@ -613,7 +616,12 @@ struct Index {
   }
 
   private onForegroundChanged(): void {
+    if (this.foreground) {
+      if (this.coldStartForegroundSeen) this.coldStartAbandoned = true;
+      this.coldStartForegroundSeen = true;
+    } else if (this.coldStartForegroundSeen) this.coldStartAbandoned = true;
     this.authHost?.onForegroundChanged(this.foreground);
+    if (this.foreground && !this.coldStartAbandoned) this.beginColdStartCandidate();
     // @Watch runs synchronously. Even a background/foreground round trip
     // invalidates every earlier permission and Back callback.
     this.lifecycleGeneration++;
@@ -680,11 +688,21 @@ struct Index {
     }, 100);
   }
 
-  private pageBegin(): void {
+  private beginColdStartCandidate(): void {
+    if (this.coldStartAbandoned || this.documentGeneration !== 1 || this.pageReady ||
+      (this.coldStartDocument !== APP_ORIGIN && this.coldStartDocument !== APP_URL)) return;
+    const document: number = this.documentGeneration;
+    this.authHost?.beginColdStartCandidate((): boolean =>
+      this.alive && this.foreground && this.attached && this.documentGeneration === document);
+  }
+
+  private pageBegin(url: string): void {
     this.authHost?.invalidate();
     this.downloads?.invalidate();
     this.documentGeneration++;
     this.pageReady = false;
+    this.coldStartDocument = this.documentGeneration === 1 ? url : '';
+    this.beginColdStartCandidate();
     this.invalidateBridge();
     this.cancelBack();
     this.denyPendingMicrophone();
@@ -1004,6 +1022,7 @@ struct Index {
           this.authHost = new NativeAuthHost(this.controller,
             () => this.alive && this.foreground && this.pageReady && this.isTrustedDocument(), () => this.context());
           if (!this.authHost.attach()) this.authHost = undefined;
+          this.beginColdStartCandidate();
           if (this.authHost !== undefined) {
             if (NATIVE_CLOUD_SYNC_ENABLED) {
               const nativeSync: NativeSyncHost = new NativeSyncHost(this.controller,
@@ -1037,7 +1056,7 @@ struct Index {
             (message: string) => this.toast(message));
           if (!this.downloads.attach(this.controller)) this.downloads = undefined;
         })
-        .onPageBegin(() => this.pageBegin())
+        .onPageBegin((event) => this.pageBegin(event.url))
         .onPageEnd((event) => this.pageEnd(event.url))
         .onConsole((event) => this.playbackConsole(event.message))
         // SDK 18 documents null as pass-through, but its callback type omits null.
