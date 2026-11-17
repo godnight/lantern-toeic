@@ -1,0 +1,10 @@
+{
+  "kind": "lantern-workflow",
+  "schemaVersion": 999,
+  "scope": {
+    "kind": "web-local",
+    "partition": "existing-device"
+  },
+  "records": {},
+  "commands": []
+}

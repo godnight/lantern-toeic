@@ -1,0 +1,49 @@
+{
+  "data": {
+    "schemaVersion": 999,
+    "profile": {
+      "name": "SYNTHETIC Phase2 QA",
+      "lrGoal": 650,
+      "speakingGoal": 130,
+      "examDate": "2026-12-20",
+      "dailyMinutes": 25,
+      "timezone": "Asia/Shanghai",
+      "theme": "paper",
+      "weeklyTarget": 4,
+      "onboarded": true
+    },
+    "attempts": [
+      {
+        "id": "00000000-0000-4000-8000-000200000001",
+        "qid": "p1-01",
+        "choice": 0,
+        "correct": true,
+        "createdAt": "2026-10-12T08:00:00.000Z",
+        "seconds": 12,
+        "mode": "first"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000200000002",
+        "qid": "p1-01",
+        "choice": 1,
+        "correct": false,
+        "createdAt": "2026-10-13T08:00:00.000Z",
+        "seconds": 15,
+        "mode": "review"
+      }
+    ],
+    "checkins": [
+      {
+        "id": "00000000-0000-4000-8000-000200000003",
+        "date": "2026-10-13",
+        "minutes": 9,
+        "load": "刚好",
+        "note": "[SYNTHETIC] Existing legacy checkin; do not infer a session.",
+        "createdAt": "2026-10-13T08:01:00.000Z"
+      }
+    ],
+    "recordings": [],
+    "questionMarks": [],
+    "resourceTasks": []
+  }
+}

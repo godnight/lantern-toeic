@@ -1,0 +1,133 @@
+{
+  "checkedAt": "2026-10-13T10:34:50.679Z",
+  "candidateSha256": "d10202ec9ffc908e15199d8917cc270214d36b351161d90403a786faa604f573",
+  "staticMethod": "Existing @babel/parser AST of byte-verified final staged JS; no execution or dependency installation.",
+  "parsedAssets": [
+    {
+      "path": "assets/index-DRUJ_l4J.js",
+      "bytes": 1332784,
+      "sha256": "db46001fb59efe762b009c5daab883d556b4ad1f107f17f86ffc553e5a226330"
+    }
+  ],
+  "staticRefs": [
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "line": 54,
+      "column": 280434,
+      "kind": "constant-template",
+      "pathWithoutQueryOrFragment": "/images/office-practice.webp",
+      "present": true
+    },
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "line": 58,
+      "column": 323364,
+      "kind": "constant-template",
+      "pathWithoutQueryOrFragment": "/sw.js",
+      "present": false
+    }
+  ],
+  "missingStaticRefs": [
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "line": 58,
+      "column": 323364,
+      "kind": "constant-template",
+      "pathWithoutQueryOrFragment": "/sw.js",
+      "present": false
+    }
+  ],
+  "dynamicTemplates": [
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "line": 58,
+      "column": 252529,
+      "prefix": "/api/exam-library",
+      "expressions": 1,
+      "evaluated": false
+    },
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "line": 58,
+      "column": 252720,
+      "prefix": "/api/exam-library",
+      "expressions": 1,
+      "evaluated": false
+    },
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "line": 58,
+      "column": 253102,
+      "prefix": "/api/exam-library",
+      "expressions": 1,
+      "evaluated": false
+    }
+  ],
+  "limits": "Static literals and template prefixes are code evidence, not executed requests. Dynamic expressions and implicit ArkWeb requests cannot be attributed to masked request IDs.",
+  "rootPrefixedCodeLiteralsNotProvenRequests": [
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "line": 1,
+      "column": 3813,
+      "kind": "constant-template",
+      "pathWithoutQueryOrFragment": "/"
+    },
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "line": 9,
+      "column": 12557,
+      "kind": "constant-template",
+      "pathWithoutQueryOrFragment": "/$"
+    },
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "line": 9,
+      "column": 12567,
+      "kind": "constant-template",
+      "pathWithoutQueryOrFragment": "/&"
+    },
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "line": 54,
+      "column": 171927,
+      "kind": "constant-template",
+      "pathWithoutQueryOrFragment": "/api/study"
+    },
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "line": 54,
+      "column": 173098,
+      "kind": "constant-template",
+      "pathWithoutQueryOrFragment": "/api/recordings"
+    },
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "line": 58,
+      "column": 40662,
+      "kind": "constant-template",
+      "pathWithoutQueryOrFragment": "/api/vocabulary"
+    },
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "line": 58,
+      "column": 183325,
+      "kind": "constant-template",
+      "pathWithoutQueryOrFragment": "/dictionaries/"
+    },
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "line": 58,
+      "column": 184077,
+      "kind": "constant-template",
+      "pathWithoutQueryOrFragment": "/audio/offline/"
+    },
+    {
+      "source": "assets/index-DRUJ_l4J.js",
+      "line": 58,
+      "column": 249393,
+      "kind": "constant-template",
+      "pathWithoutQueryOrFragment": "/api/exam-library"
+    }
+  ],
+  "literalClassificationNote": "Root-prefixed literals include React internals /$ and /&; they are not proven routes or startup requests."
+}

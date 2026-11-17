@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "status": "PENDING_FINAL_IDENTITY_DO_NOT_SIGN",
+  "identity": null,
+  "sourceRoot": null,
+  "freezeManifest": null,
+  "nativeArtifactReceipt": null,
+  "nativeInputReceipt": null,
+  "nativePackageReceipt": null,
+  "unsignedSha256": null
+}

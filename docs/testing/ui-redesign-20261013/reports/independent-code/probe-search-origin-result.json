@@ -1,0 +1,52 @@
+{
+  "timestamp": "2026-10-13T07:52:44.714Z",
+  "observedFiles": {
+    "lib/study-model.ts": "0b966bace5f62b987c87c6500995ee15f5768839dba53bd39d8207bf197237f6",
+    "app/study-app.tsx": "93b168201089b7f905310b7a2b9980d320aa12a1e128d98d5b18bb0eb4aac755"
+  },
+  "result": "passed",
+  "browser": {
+    "nav": "resources",
+    "scroll": 420,
+    "focusCalls": 1,
+    "stack": [
+      "initial",
+      "resources",
+      "search"
+    ]
+  },
+  "button": {
+    "nav": "resources",
+    "scroll": 420,
+    "focusCalls": 3,
+    "stack": [
+      "initial",
+      "resources",
+      "search"
+    ]
+  },
+  "afterButtonBack": {
+    "nav": "today",
+    "scroll": 420
+  },
+  "native": {
+    "nav": "resources",
+    "scroll": 640,
+    "focusCalls": 5
+  },
+  "rebuiltOrigin": {
+    "scroll": 5342,
+    "focusIdentity": "resource-2-rebuilt",
+    "searchFocusTransferred": true,
+    "scrollRestoration": "manual"
+  },
+  "manualRestorationReleased": true,
+  "blockedShortcutKeptModalFocus": true,
+  "rootOverlayHandoff": {
+    "overlayDuringPractice": true,
+    "overlayDuringCheckin": true,
+    "navAfterCheckinBack": "search",
+    "overlayAfterCheckinBack": false
+  },
+  "limits": "Actual StudyApp TSX with controlled Hook, rebuilt DOM controls, rAF and asynchronous history queues; automatic UA scroll reset modeled only when scrollRestoration=auto. Vocabulary/Practice descriptors. No real ReactDOM/Chrome/ArkWeb, child dispatcher or storage"
+}

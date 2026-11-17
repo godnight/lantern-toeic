@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "packId": "v040-natural-d6b00608bbf5",
+  "manifestSha256": "d6b00608bbf53352e4d50ca137925b981e950681a8762f711dd4fd47b40f2729",
+  "sourceSpeakingSha256": "7907afee50105a91eb60d5adaeb60b41f03e76d62ef919c549c4b18ecd0cf7ef",
+  "sourceCatalogSha256": "ef26efe34d773884702f8dc4382fbd5159d10ab362092ae0e37e6671f8c74e45",
+  "rows": [
+    {
+      "promptId": "speaking-read-01",
+      "role": "sampleAnswer",
+      "textSha256": "75a3f801301be16261012bfde1f51c721b45905217fdc60ee04d33da32f766e2",
+      "snapshotContextSha256": "00a0726d007eebced777cb2c1af1cb7714feeaf87ff32baf624d6645ae35c9c7",
+      "requestContextHash": "ed9166829622f32782cf632cc0a2bde707379bd40188a2bbe48bd0e70647bdf2",
+      "mp3Sha256": "760ff122cdf0e86fd34acfaad7ec72185b20d5b939b999ebbe061c6ad27fdcdb",
+      "sourceWavSha256": "977af3cfbc746be98018a7a88627abc115930e417a58b5162857cb4132ec0744",
+      "engine": "kokoro",
+      "modelRevision": "f3ff3571791e39611d31c381e3a41a3af07b4987",
+      "provenanceSha256": "95b8dc73d39308286b01c4f83d86e509025f122aeb71fcb1277b58cbb71bae0f",
+      "audio": {
+        "audioKey": "33726362049d2463a2ce27ba6db2103e0f8cc37240f1e004ac0b7b5b5507fe34",
+        "materialId": "speaking-read-01",
+        "segmentId": "sampleAnswer",
+        "voiceProfileId": "f3ff3571791e39611d31c381e3a41a3af07b4987/am_michael"
+      }
+    },
+    {
+      "promptId": "speaking-picture-01",
+      "role": "sampleAnswer",
+      "textSha256": "3763b14bedf45d8ce84ec970c1927f4250d39417fa1b60cfdc09bac2a740cf08",
+      "snapshotContextSha256": "644099a95198de7f63db231a0ec6ffaa2b80345615b743e6520ba3ffbaf2bce1",
+      "requestContextHash": "1c1e0a05fcad7620ba7aa4e97984550277627926f36a9e431559d2cdf5dd38ce",
+      "mp3Sha256": "6e7e1d023d4fe2d8d24d27d0d98bed1c65ca2842c7c43a986bc768de6222f2a6",
+      "sourceWavSha256": "52e7071363698edf5691377bd5cf3d71ba5c14eb7b48184be854bf623583066c",
+      "engine": "kokoro",
+      "modelRevision": "f3ff3571791e39611d31c381e3a41a3af07b4987",
+      "provenanceSha256": "fcc3909f6422fb42b6b473ee920e994f4cd10a307fecd3a4c5bba64a6a2e3ef0",
+      "audio": {
+        "audioKey": "ad3b0ec9c758e7cdc789dd6bcf25fe53b1395bec30a680e891b8ee76873f0570",
+        "materialId": "speaking-picture-01",
+        "segmentId": "sampleAnswer",
+        "voiceProfileId": "f3ff3571791e39611d31c381e3a41a3af07b4987/am_michael"
+      }
+    },
+    {
+      "promptId": "speaking-respond-01",
+      "role": "sampleAnswer",
+      "textSha256": "d6ca0de5fb7f6fb14da7a33f6a84637e6906cfb655a0afb611663787f7560d58",
+      "snapshotContextSha256": "0a6c965881edf36f181ed3f8a943c639408123645092e49eac02cfc801fea560",
+      "requestContextHash": "e584bc5fd713713db9591e2154cdf1386090d22b3b54c2c3b49ee7a13cfaf7aa",
+      "mp3Sha256": "718b1909222adf51538e2c123ad4b671cd4ee1bdd613d98c57b3dd686e52713f",
+      "sourceWavSha256": "e6c43a0aca783842c154f723b9942efee7b5690ad303ea7a0f6dba4d8f43db86",
+      "engine": "kokoro",
+      "modelRevision": "f3ff3571791e39611d31c381e3a41a3af07b4987",
+      "provenanceSha256": "d76f606c495f4e120a57b7f75555c9d97211584efe5b7419c1df726955b00435",
+      "audio": {
+        "audioKey": "380cf171a918a3fc4ec873a072acca4d35ecd17196b9cb72c740f417f2304bdc",
+        "materialId": "speaking-respond-01",
+        "segmentId": "sampleAnswer",
+        "voiceProfileId": "f3ff3571791e39611d31c381e3a41a3af07b4987/am_michael"
+      }
+    },
+    {
+      "promptId": "speaking-information-01",
+      "role": "sampleAnswer",
+      "textSha256": "992772718f0a76dc3349c3fdc69aed983f2af51eb6bfc5f7955e0d2936b0a4bc",
+      "snapshotContextSha256": "9ed304c427742b81929faa130f5223208ddab146f52c6053a8f53a5212c53661",
+      "requestContextHash": "63447f5b28ba9de8b5c5914e73f57214a93b03c758e44e60d35be6106e98b996",
+      "mp3Sha256": "87f896fa6a102e35ae63b2cb2a25c1bde7fdc9242db1ba35e3476f8d964c03b5",
+      "sourceWavSha256": "688b13a411804b34af85da76a8901518e800e1a220a6889b90ee7808f8d46c04",
+      "engine": "kokoro",
+      "modelRevision": "f3ff3571791e39611d31c381e3a41a3af07b4987",
+      "provenanceSha256": "517fac4e0e6df40621fc58fbb6b0628da221f3d7a74c06c96337498f98d5f105",
+      "audio": {
+        "audioKey": "3962e747d8dba34aef265540ce29ff3671ef86952b8d83ac4f8b7e196f47c966",
+        "materialId": "speaking-information-01",
+        "segmentId": "sampleAnswer",
+        "voiceProfileId": "f3ff3571791e39611d31c381e3a41a3af07b4987/am_michael"
+      }
+    },
+    {
+      "promptId": "speaking-opinion-01",
+      "role": "sampleAnswer",
+      "textSha256": "c9a0cd247dd00ec2f48b8a1d2c0a1b3c92755e7464eb4b2532757c637892d19d",
+      "snapshotContextSha256": "ad6ec6f2357a45d596f289e806121b8fbf2662d7f328d1a87fc126743856736e",
+      "requestContextHash": "02bdaa5f65e7d670baf8810dee9b325c86aa9e646670b635fe49ac0321d18a90",
+      "mp3Sha256": "458e06fa103a54d1f9b607f6cc9f9b7515579f8ba15cfafb7e82ec35d93b8c1c",
+      "sourceWavSha256": "b648bbb8f785eefa98e4e7b9f3a419f6c01ea5193d30f82aac40c8ceee79bec9",
+      "engine": "kokoro",
+      "modelRevision": "f3ff3571791e39611d31c381e3a41a3af07b4987",
+      "provenanceSha256": "e3f69bb0c580ee220ec98a8c575c3e671a641e0f9892eeefeb5c1ccb0e9f7977",
+      "audio": {
+        "audioKey": "aa8a43a1d4a809aa243b16ca461b4130796a1c82f738d8aef7222a7bb5a7065f",
+        "materialId": "speaking-opinion-01",
+        "segmentId": "sampleAnswer",
+        "voiceProfileId": "f3ff3571791e39611d31c381e3a41a3af07b4987/am_michael"
+      }
+    }
+  ]
+}

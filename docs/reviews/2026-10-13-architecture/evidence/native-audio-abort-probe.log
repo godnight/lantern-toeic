@@ -1,0 +1,10 @@
+{
+  "probe": "abort-only synthetic transaction",
+  "source": "lib/use-study.ts",
+  "sourceSha256": "3ed624dc5f2b60a3c26ccc2f5791fbe4aa88942ad2885e4d1bc0802a33f25899",
+  "onabortHandler": "undefined",
+  "promiseState": "pending",
+  "dbCloseCalls": 0,
+  "expectedFaultReproduced": true,
+  "limitation": "Synthetic event model; not a real IndexedDB or ArkWeb device reproduction"
+}

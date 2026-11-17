@@ -1,0 +1,15 @@
+{
+  "screenshots": 53,
+  "screenshot_sha_ok": true,
+  "copied_evidence_sha_ok": true,
+  "missing_primary_doc_links": [],
+  "status": "candidate-before-independent-I01-I11-fixes",
+  "classification": {
+    "sample": 39,
+    "excluded": 10,
+    "historical-limited": 2,
+    "fixture-seam-only": 2,
+    "unclassified": 0
+  },
+  "visual_report_sha256": "1284257f3fb6ebca3ccecda675155be0ddd781b9eb8218f3056b5fcf48c902da"
+}

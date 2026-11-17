@@ -10,18 +10,22 @@ const net = require('node:net');
 const { spawn } = require('node:child_process');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
+const {NATIVE_ORIGIN,NATIVE_QA_USER,installNativeAccountFixture,fulfillNativePreview}=require('../helpers/browser-native-auth.cjs');
 
 const PORT = 4175;
-const ORIGIN = `http://127.0.0.1:${PORT}`;
+const PREVIEW_ORIGIN = `http://127.0.0.1:${PORT}`;
+const ORIGIN = NATIVE_ORIGIN;
+const MOCK_DISCOVERY_FEEDS = new Set(['https://www.nasa.gov/feed/','https://feeds.simplecast.com/BqbsxVfO']);
 const REPO = path.resolve(__dirname, '../..');
 let OUT;
-const OWNER = 'harmony-local-device';
+// MockExam keeps the verified native account in its Harmony-specific partition.
+const OWNER = 'harmony-' + NATIVE_QA_USER.id;
 const DB = 'lantern-private-exams-v1';
 const BASE_TIME = new Date('2026-10-11T06:00:00.000Z');
 const report = { scope: 'Local production Harmony shared frontend; synthetic QA only', origin: ORIGIN,
   limitations: ['Synthetic 200-question structures are not TOEIC test papers.', '20-second and 45:53 silent WAVs check decoder/playback events and timing compatibility, not audible sound or complete listening content.', 'Desktop Chrome with resized viewports is not ArkWeb/real-device acceptance.', 'Clock fast-forward validates deadline logic, not two-hour endurance.'],
-  startedAt: new Date().toISOString(), steps: [], screenshots: [], pageErrors: [], consoleErrors: [], blockedExternal: [], httpErrors: [] };
-let browser, context, page, preview, cleanupPromise;
+  startedAt: new Date().toISOString(), steps: [], screenshots: [], pageErrors: [], consoleErrors: [], blockedExternal: [], mockedDiscoveryFeeds: [], httpErrors: [] };
+let browser, context, page, preview, cleanupPromise, nativeAccount;
 let ownsOutput = false;
 const ownerToken = crypto.randomBytes(24).toString('hex');
 
@@ -69,11 +73,11 @@ async function startPreview() {
     preview.once('exit',(code,signal)=>{clearTimeout(timeout);reject(new Error(`Owned Vite preview exited (${code}/${signal}): ${logs}`));});
     preview.once('message',message=>{if(message?.ready && message.pid===preview.pid){clearTimeout(timeout);resolve();}else{clearTimeout(timeout);reject(new Error('Unexpected preview readiness message'));}});
   });
-  const response=await fetch(ORIGIN+'/',{signal:AbortSignal.timeout(10000),redirect:'error'});
+  const response=await fetch(PREVIEW_ORIGIN+'/',{signal:AbortSignal.timeout(10000),redirect:'error'});
   assert.equal(response.status,200,'Owned preview did not return HTML');
   assert.equal(response.headers.get('x-lantern-qa-owner'),ownerToken,'Port belongs to another process; refusing to test it');
   assert.equal(preview.exitCode,null); assert.equal(preview.signalCode,null);
-  report.preview={pid:preview.pid,origin:ORIGIN,ownershipVerified:true,htmlSha256:crypto.createHash('sha256').update(await response.text()).digest('hex')};
+  report.preview={pid:preview.pid,origin:PREVIEW_ORIGIN,ownershipVerified:true,htmlSha256:crypto.createHash('sha256').update(await response.text()).digest('hex')};
 }
 async function stopPreview() {
   if(!preview || preview.exitCode!==null || preview.signalCode!==null || !preview.pid)return;
@@ -179,7 +183,7 @@ async function eventually(check, message, timeout = 15000) {
 async function visible(locator) { await locator.waitFor({state:'visible', timeout:15000}); return locator; }
 async function enabled(locator) { await visible(locator); await eventually(() => locator.isEnabled(), 'Control never enabled: ' + locator); return locator; }
 async function click(name) { await (await enabled(page.getByRole('button', {name, exact:true}))).click(); }
-async function idle() { await eventually(async () => !(await page.locator('.mock-status').textContent()).includes('正在处理'), 'Local transaction did not finish'); }
+async function idle() { await eventually(async () => await page.getByRole('region',{name:'完整听读模考',exact:true}).getAttribute('aria-busy')==='false', 'Local transaction did not finish'); }
 async function newPage(at = BASE_TIME) {
   page = await context.newPage(); page.setDefaultTimeout(15000);
   page.on('pageerror', error => report.pageErrors.push(String(error)));
@@ -192,20 +196,28 @@ async function newPage(at = BASE_TIME) {
 async function freshContext() {
   if(context)await context.close();
   context=await browser.newContext({viewport:{width:390,height:844},locale:'zh-CN',timezoneId:'Asia/Shanghai',acceptDownloads:true,serviceWorkers:'block'});
+  nativeAccount=await installNativeAccountFixture(context,{report});
   await context.route('**/*', route=>{
     const url=new URL(route.request().url());
+    if (route.request().method()==='GET' && MOCK_DISCOVERY_FEEDS.has(url.href)) {
+      report.mockedDiscoveryFeeds.push(url.href);
+      return route.fulfill({status:200,contentType:'application/rss+xml',headers:{'Access-Control-Allow-Origin':'*'},body:'<?xml version="1.0"?><rss version="2.0"><channel><title>Synthetic browser fixture</title><language>en</language></channel></rss>'});
+    }
     if ((url.protocol==='http:' || url.protocol==='https:') && url.origin!==ORIGIN) {
       report.blockedExternal.push(url.origin+url.pathname);return route.abort('blockedbyclient');
     }
-    return route.continue();
+    return url.origin===ORIGIN?fulfillNativePreview(route,PREVIEW_ORIGIN):route.continue();
   });
 }
-async function enter(section = '训练之境') {
+async function enter(section = '练习') {
   // At 390px the app has a visible mobile nav, while its sidebar duplicate is hidden.
   await page.setViewportSize({width:390,height:844});
-  const nav = page.getByRole('navigation', {name:'主导航'});
-  await (await visible(nav.getByRole('button', {name:section,exact:true}))).click();
-  await (await visible(page.getByRole('button', {name:/完整听读模考/}))).click();
+  const nav = page.getByRole('navigation', {name:'手机主导航',exact:true});
+  await visible(nav);
+  nativeAccount.assertVerified(page);
+  await (await visible(nav.getByRole('button', {name:section==='资料'?'发现':section,exact:true}))).click();
+  if(section==='资料'){await click('资料库');await page.getByText('题包与模考',{exact:true}).click();await click('本机题包与模考');}
+  else await (await visible(page.getByRole('button', {name:/完整听读模考/}))).click();
   await visible(page.getByRole('button', {name:'导入题包 JSON',exact:true}));
   await idle();
 }
@@ -231,6 +243,18 @@ async function screenshot(name) {
   const file = path.join(OUT, name + '.png'); await page.screenshot({path:file,fullPage:true,animations:'disabled'}); report.screenshots.push(file);
 }
 async function layout(stage) {
+  if (stage==='reading' || stage==='results') {
+    const disclosure=page.locator('.mock-answer-card details'), summary=disclosure.locator(':scope > summary');
+    const initiallyOpen=await disclosure.evaluate(element=>element.open);
+    const label=async()=> (await summary.innerText()).trim();
+    assert.equal(await label(),initiallyOpen?'收起题号导航':'展开题号导航');
+    await summary.click();
+    assert.equal(await disclosure.evaluate(element=>element.open),!initiallyOpen);
+    assert.equal(await label(),initiallyOpen?'展开题号导航':'收起题号导航');
+    await summary.click();
+    assert.equal(await disclosure.evaluate(element=>element.open),initiallyOpen);
+    assert.equal(await label(),initiallyOpen?'收起题号导航':'展开题号导航');
+  }
   const rows=[];
   for (const width of [320,390,768]) {
     await page.setViewportSize({width,height:844});
@@ -238,11 +262,26 @@ async function layout(stage) {
       overflowing:[...document.querySelectorAll('main,section,article,aside,button,audio,table')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0 && (r.left < -1 || r.right > innerWidth+1);}).slice(0,10).map(el=>({tag:el.tagName,cls:el.className,right:el.getBoundingClientRect().right}))}));
     assert.ok(dimensions.documentWidth <= dimensions.clientWidth + 1, `${stage} horizontal overflow at ${width}: ${JSON.stringify(dimensions)}`);
     assert.ok(dimensions.bodyWidth <= dimensions.clientWidth + 1, `${stage} body overflow at ${width}: ${JSON.stringify(dimensions)}`);
-    rows.push({width,...dimensions}); await screenshot(`${stage}-${width}`);
+    let resultTable;
+    if (stage==='results') {
+      resultTable=await page.locator('.mock-results table').evaluate(table=>{
+        const wrap=table.parentElement, bounds=wrap.getBoundingClientRect();
+        return {scrollWidth:table.scrollWidth,availableWidth:wrap.clientWidth,
+          headers:[...table.querySelectorAll('thead th')].map(cell=>({text:cell.innerText,scrollWidth:cell.scrollWidth,clientWidth:cell.clientWidth,left:cell.getBoundingClientRect().left,right:cell.getBoundingClientRect().right})),
+          wrapLeft:bounds.left,wrapRight:bounds.right};
+      });
+      assert.equal(resultTable.headers.length,5);
+      assert.match(resultTable.headers[4].text,/驻留用时/);
+      assert.ok(resultTable.scrollWidth<=resultTable.availableWidth+1,`Complete result table must fit at ${width}: ${JSON.stringify(resultTable)}`);
+      assert.ok(resultTable.headers.every(cell=>cell.left>=resultTable.wrapLeft-1 && cell.right<=resultTable.wrapRight+1 && cell.scrollWidth<=cell.clientWidth+1),`Every result header must be visible at ${width}: ${JSON.stringify(resultTable)}`);
+    }
+    rows.push({width,...dimensions,...(resultTable?{resultTable}:{})}); await screenshot(`${stage}-${width}`);
   }
   await page.setViewportSize({width:390,height:844}); return rows;
 }
 async function preflight(title, allowStart = true, expectedSeconds = 20) {
+  const localTab=page.getByRole('navigation',{name:'模考资料范围'}).getByRole('button',{name:/^本机题包/});
+  if(await localTab.count())await localTab.click();
   const card = page.locator('.mock-catalog article').filter({has:page.getByRole('heading',{name:title,exact:true})});
   await (await enabled(card.getByRole('button',{name:'音频预检与新考试',exact:true}))).click();
   const start = page.getByRole('button',{name:'开始新考试 · 立即计时',exact:true});
@@ -267,8 +306,37 @@ async function answer(number, choice) {
   await currentAttempt(a=>a.status!=='submitted' && a.answers[number]?.choice===choice);
   await eventually(()=>question.getByRole('radio').nth(choice).isChecked(),'Saved answer did not render selected');
 }
+async function resultSummary(correct,unanswered) {
+  await visible(page.getByRole('heading',{name:'这一次，已交卷并保存。',exact:true}));
+  assert.match(await page.locator('.mock-results').innerText(),new RegExp('正确 '+correct+' / 200'));
+  assert.match(await page.locator('.mock-result-metrics>div').filter({hasText:'整卷漏答'}).innerText(),new RegExp('整卷漏答\\s*'+unanswered+'\\s* / 200'));
+}
+async function backupManagement() {
+  // Backups moved to the shared My > Data management screen. Use its real UI;
+  // the ordinary exam catalog intentionally has no export/restore controls.
+  await click('返回学习');
+  await click('打开个人信息与设置'); await click('数据管理');
+  const panel = page.locator('.v041-mock-data');
+  await visible(panel.getByRole('heading',{name:'模考备份',exact:true}));
+  await backupIdle();
+  return panel;
+}
+async function backupIdle() {
+  await eventually(async()=>await page.locator('.v041-mock-data').getAttribute('aria-busy')==='false', 'Backup transaction did not finish');
+}
+async function leaveBackupManagement() {
+  await click('返回我的'); await click('返回上一页'); await enter();
+}
+async function restoreBackup(file) {
+  const button = await enabled(page.locator('.v041-mock-data').getByRole('button',{name:'恢复模考备份',exact:true}));
+  const [chooser] = await Promise.all([page.waitForEvent('filechooser'), button.click()]);
+  await chooser.setFiles(file); await backupIdle();
+}
 async function downloadBackup(name) {
-  const pending = page.waitForEvent('download'); await click('导出完整备份'); const download = await pending;
+  // Resolve the control before subscribing, so a stale locator is reported as
+  // such instead of leaving an unhandled download-wait rejection.
+  const button = await enabled(page.locator('.v041-mock-data').getByRole('button',{name:'导出模考备份',exact:true}));
+  const [download] = await Promise.all([page.waitForEvent('download'), button.click()]);
   assert.equal(download.suggestedFilename(),'lantern-exam-backup.json'); const file=path.join(OUT,name); await download.saveAs(file);
   const backup = JSON.parse(await fs.readFile(file,'utf8')); assert.equal(backup.ownerId,OWNER); assert.equal(backup.kind,'lantern-exam-backup'); return {file,backup};
 }
@@ -281,7 +349,7 @@ async function downloadBackup(name) {
   await freshContext();
   let firstId, originalFirst, backupFile;
   await step('fresh local context and train/resources entry',async()=>{
-    await newPage(); await enter('学习书库'); await click('退出模考'); await enter();
+    await newPage(); await enter('资料'); await click('返回学习'); await enter();
     const db=await state(); assert.equal(db.catalog.length,0); assert.equal(db.attempts.length,0);
     return {owner:OWNER,empty:true};
   });
@@ -333,7 +401,7 @@ async function downloadBackup(name) {
     await click('提交整卷'); await visible(page.getByRole('dialog')); await click('继续答题');
     assert.equal((await currentAttempt(a=>a.id===firstId)).attempt.status,'reading');
     await click('提交整卷'); await click('确认交卷');
-    await visible(page.getByRole('heading',{name:'正确 2/200 · 漏答 197',exact:true}));
+    await resultSummary(2,197);
     await visible(page.getByRole('region',{name:'交卷后解析',exact:true}));
     originalFirst=(await currentAttempt(a=>a.id===firstId)).attempt;
     const row=await currentAttempt(a=>a.id===firstId); assert.equal(row.result.firstAttempt,true); assert.equal(row.result.correct,2);
@@ -342,24 +410,33 @@ async function downloadBackup(name) {
   });
   await step('results responsive widths',()=>layout('results'));
   await step('backup download and repeated restore through UI',async()=>{
-    await click('回到题包与记录'); const downloaded=await downloadBackup('qa-first-backup.json'); backupFile=downloaded.file;
+    await click('回到题包与记录'); await backupManagement(); const downloaded=await downloadBackup('qa-first-backup.json'); backupFile=downloaded.file;
     assert.equal(downloaded.backup.packages.length,2); assert.equal(downloaded.backup.attempts.length,1);
-    for (let i=0;i<2;i++) { await importViaUI('恢复本机备份',backupFile); assert.match(await page.locator('.mock-status').innerText(),/新增 0 套题包、0 次记录/); }
+    assert.deepEqual(downloaded.backup.packages.slice().sort((a,b)=>a.id.localeCompare(b.id)),packages.slice().sort((a,b)=>a.id.localeCompare(b.id)),'Export preserves complete question, answer and media payloads');
+    assert.deepEqual(downloaded.backup.attempts,[originalFirst],'Export preserves the exact original attempt');
+    for (let i=0;i<2;i++) { await restoreBackup(backupFile); assert.match(await page.locator('.v041-mock-data').innerText(),/新增 0 套题包、0 次记录/); }
     const db=await state(); assert.equal(db.catalog.length,2); assert.equal(db.attempts.length,1); assert.deepEqual(db.attempts[0].attempt,originalFirst);
+    // A new page reloads IndexedDB through the product before the next action.
+    const restoredAt=await page.evaluate(()=>Date.now()+2000);
+    await page.close(); await newPage(new Date(restoredAt)); await enter();
+    const cold=await state(); assert.equal(cold.catalog.length,2); assert.equal(cold.attempts.length,1); assert.deepEqual(cold.attempts[0].attempt,originalFirst);
+    await backupManagement();
     const foreign=structuredClone(downloaded.backup); foreign.ownerId='qa-other-owner'; const foreignFile=path.join(OUT,'qa-foreign-owner-backup.json'); await fs.writeFile(foreignFile,JSON.stringify(foreign));
-    await importViaUI('恢复本机备份',foreignFile); await visible(page.getByRole('alert')); assert.match(await page.getByRole('alert').innerText(),/其他账号/);
-    assert.equal((await state()).attempts.length,1); await click('重新读取记录'); await idle(); return {packages:2,attempts:1,repeatedRestores:2,foreignOwnerRejected:true};
+    await restoreBackup(foreignFile); const panel=page.locator('.v041-mock-data'); await visible(panel.getByRole('alert')); assert.match(await panel.getByRole('alert').innerText(),/其他账号/);
+    assert.equal((await state()).attempts.length,1); assert.deepEqual((await state()).attempts[0].attempt,originalFirst);
+    await (await enabled(panel.getByRole('button',{name:'重新读取',exact:true}))).click(); await backupIdle();
+    await leaveBackupManagement(); return {packages:2,attempts:1,repeatedRestores:2,coldPageRestored:true,foreignOwnerRejected:true};
   });
   await step('retake preserves first result and automatically submits at total deadline',async()=>{
     await preflight(packages[0].title); await click('开始新考试 · 立即计时');
     const row=await currentAttempt(a=>a.ordinal===2 && a.status==='listening'); await answer(1,0);
     const delta=row.attempt.readingDeadline-await page.evaluate(()=>Date.now())+1200; await page.clock.fastForward(delta);
-    await visible(page.getByRole('heading',{name:'正确 0/200 · 漏答 199',exact:true}));
+    await resultSummary(0,199);
     const retake=await currentAttempt(a=>a.ordinal===2 && a.status==='submitted');
     assert.equal(retake.attempt.submittedReason,'timeout'); assert.equal(retake.attempt.submittedAt,retake.attempt.readingDeadline); assert.equal(retake.result.firstAttempt,false); assert.equal(retake.result.elapsedMs,120*60*1000);
     assert.deepEqual((await currentAttempt(a=>a.id===firstId)).attempt,originalFirst);
     await screenshot('retake-timeout'); await click('回到题包与记录');
-    const finalBackup=await downloadBackup('qa-final-backup.json'); assert.equal(finalBackup.backup.attempts.length,2);
+    await backupManagement(); const finalBackup=await downloadBackup('qa-final-backup.json'); assert.equal(finalBackup.backup.attempts.length,2);
     return {ordinal:retake.attempt.ordinal,reason:retake.attempt.submittedReason,firstAttemptUnchanged:true,finalBackup:finalBackup.file};
   });
   await step('valid PNG header with corrupt image bytes cannot pass preflight',async()=>{
@@ -380,8 +457,8 @@ async function downloadBackup(name) {
       for(const value of Object.values(attempt.answers))value.savedAt+=shift;
       for(const interruption of attempt.interruptions)interruption.at+=shift;
     }
-    const file=path.join(OUT,'qa-future-backup.json');await fs.writeFile(file,JSON.stringify(future));await importViaUI('恢复本机备份',file);
-    await visible(page.getByRole('alert'));const rejection=await page.getByRole('alert').innerText();assert.match(rejection,/未来|时间/);
+    const file=path.join(OUT,'qa-future-backup.json');await fs.writeFile(file,JSON.stringify(future));await backupManagement();await restoreBackup(file);
+    const alert=page.locator('.v041-mock-data').getByRole('alert');await visible(alert);const rejection=await alert.innerText();assert.match(rejection,/未来|时间/);
     const db=await state();assert.equal(db.catalog.length,0);assert.equal(db.attempts.length,0);await screenshot('future-backup-blocked');return {rejection,packages:0,attempts:0};
   });
   await step('simulated quota failure keeps saved answer and allows explicit exit',async()=>{
@@ -395,9 +472,9 @@ async function downloadBackup(name) {
       window.__restoreQaPut=()=>{IDBObjectStore.prototype.put=original;delete window.__restoreQaPut;};
     },DB);
     try {
-      await click('退出模考');await visible(page.getByRole('button',{name:'中断标记未保存，仍退出（计时继续）',exact:true}));
+      await click('保存并退出');await page.getByRole('dialog').getByRole('button',{name:'保存并退出',exact:true}).click();await visible(page.getByRole('button',{name:'中断标记未保存，仍退出（计时继续）',exact:true}));
       const failed=(await currentAttempt(a=>a.id===before.id)).attempt;assert.deepEqual(failed.answers,before.answers);assert.equal(failed.listeningDeadline,before.listeningDeadline);
-      await screenshot('quota-exit-recovery');await click('中断标记未保存，仍退出（计时继续）');await visible(page.getByRole('navigation',{name:'主导航'}));
+      await screenshot('quota-exit-recovery');await click('中断标记未保存，仍退出（计时继续）');await click('确认未保存仍退出');await visible(page.getByRole('navigation',{name:'手机主导航',exact:true}));
     } finally {await page.evaluate(()=>window.__restoreQaPut?.());}
     await enter();await click('继续考试');await visible(page.getByRole('article',{name:'第 1 题',exact:true}));
     const restored=(await currentAttempt(a=>a.id===before.id)).attempt;assert.deepEqual(restored.answers,before.answers);assert.equal(restored.listeningDeadline,before.listeningDeadline);
@@ -405,11 +482,11 @@ async function downloadBackup(name) {
   });
   if(process.env.LANTERN_PAGE_PACK_QA_DIR) {
     await freshContext();await newPage();
-    await require('./page-pack-flow.cjs')({page,step,click,importViaUI,preflight,idle,enter,currentAttempt,screenshot,layout,fixtureDir:process.env.LANTERN_PAGE_PACK_QA_DIR});
+    await require('./page-pack-flow.cjs')({page,step,click,importViaUI,preflight,idle,enter,currentAttempt,screenshot,layout,resultSummary,fixtureDir:process.env.LANTERN_PAGE_PACK_QA_DIR});
   }
   await require('./listening-duration-flow.cjs')({getPage:()=>page,step,click,importViaUI,preflight,idle,enter,currentAttempt,
     screenshot,state,freshContext,newPage,eventually,visible,output:OUT,basePackage:packages[0]});
-  await step('no uncaught JS errors, local HTTP failures or external requests',async()=>{assert.deepEqual(report.pageErrors,[]); assert.deepEqual(report.httpErrors,[]);assert.deepEqual(report.blockedExternal,[]);return {pageErrors:0,httpErrors:0,blockedExternal:0,consoleErrors:report.consoleErrors};});
+  await step('no uncaught JS errors, local HTTP failures or unmocked external requests',async()=>{assert.deepEqual(report.pageErrors,[]); assert.deepEqual(report.httpErrors,[]);assert.deepEqual(report.blockedExternal,[]);assert.deepEqual(new Set(report.mockedDiscoveryFeeds),MOCK_DISCOVERY_FEEDS);return {pageErrors:0,httpErrors:0,blockedExternal:0,mockedDiscoveryFeeds:report.mockedDiscoveryFeeds.length,consoleErrors:report.consoleErrors};});
   report.status='passed';
 })().catch(async error=>{
   report.status='failed'; report.error=String(error.stack||error);

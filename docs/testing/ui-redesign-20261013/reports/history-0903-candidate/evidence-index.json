@@ -1,0 +1,1232 @@
+{
+  "schema_version": 1,
+  "status": "candidate-before-independent-I01-I11-fixes",
+  "generated_utc": "2026-10-13T09:15:36.455807+00:00",
+  "branch": "feat/ui-redesign-v11",
+  "head": "12317b26b85a71888760b0cc18242d00a843ac74",
+  "working_tree": "本机未提交实现；不是 main 或已部署新版",
+  "screenshot_count": 53,
+  "notes": [
+    "像素尺寸直接解析现有 JPEG/PNG；不从文件名推断 CSS 视口。",
+    "CSS 视口及 DOM 值来自 Root 实际 CUA 核验/任务回报；null 表示该维度未单独留存。",
+    "file_mtime_utc 为现有文件修改时间，不能扩大为可信相机时间戳。",
+    "截图是 Chrome 的有限实际组件样本；不能替代 ArkWeb、真实麦克风、系统文件选择器或整场考试验收。",
+    "保留 historical/excluded 图用于记录失败与修订；它们不计入对应现状态通过证明。"
+  ],
+  "screenshots": [
+    {
+      "file": "screenshots/checkin-silk-390.jpg",
+      "pixel_dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 24322,
+      "sha256": "01a471f1da4a950bd03180da41bf4097612a2a572a56d9753eca5ef115a566df",
+      "file_mtime_utc": "2026-10-13T07:35:16.904810+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "完成练习后的打卡表单；没有提交此打卡分钟。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/home-day-1440-final.jpg",
+      "pixel_dimensions": {
+        "width": 1425,
+        "height": 990
+      },
+      "bytes": 80106,
+      "sha256": "40277160ec9368e643a3187dda623d163be9b7c5950f27b9ee96da49a196684d",
+      "file_mtime_utc": "2026-10-13T09:05:14.671311+00:00",
+      "css_viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scope": "最终冻结后默认日间真实 StudyWorkspace 首页；scrollY0，4 次 Part6 首答/1 启动/0 已记分钟，原生本机模式；无 IP 素材。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {
+        "scroll_y_px": 0,
+        "first_answer_count": 4,
+        "start_count": 1,
+        "recorded_minutes": 0
+      }
+    },
+    {
+      "file": "screenshots/home-day-1440.jpg",
+      "pixel_dimensions": {
+        "width": 1424,
+        "height": 1231
+      },
+      "bytes": 91738,
+      "sha256": "62512c201eafb10e78c9d165d61240cc5d09d918d4ed178bac2953a0b55d1ce0",
+      "file_mtime_utc": "2026-10-13T07:18:18.857173+00:00",
+      "css_viewport": {
+        "width": 1440,
+        "height": null
+      },
+      "scope": "默认日间首页；初始 QA 数据为零。完整页面图片，仅证明布局与无 IP 素材策略。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "fullPage；高度不是 CSS 视口高度",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/home-hollow-1440-viewport.jpg",
+      "pixel_dimensions": {
+        "width": 1425,
+        "height": 990
+      },
+      "bytes": 83068,
+      "sha256": "d22f325325ee2be745f62dd1fa1db4ded7e21bfd4fb0e79aab818ba960e85b1d",
+      "file_mtime_utc": "2026-10-13T07:20:34.425980+00:00",
+      "css_viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scope": "空洞骑士普通首页；48px 原创意象；图片由工具缩放。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/home-hollow-320-verified.jpg",
+      "pixel_dimensions": {
+        "width": 305,
+        "height": 804
+      },
+      "bytes": 31864,
+      "sha256": "7d50ded900f41aed3f3e739de24639ff8c578bcf8a1651d4f160b9d557940b30",
+      "file_mtime_utc": "2026-10-13T08:01:21.487311+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "空洞骑士首页；移动标题/主按钮/原创意象实际测量。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {
+        "h1_font_px": 28,
+        "primary_height_px": 48,
+        "motif_size_px": 48
+      }
+    },
+    {
+      "file": "screenshots/home-night-1440-verified.jpg",
+      "pixel_dimensions": {
+        "width": 1425,
+        "height": 990
+      },
+      "bytes": 80366,
+      "sha256": "539a13e594a8bc434d24dcc5edc41c52951310e44650adf408ef2c54e2d9e664",
+      "file_mtime_utc": "2026-10-13T08:01:53.290974+00:00",
+      "css_viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scope": "默认夜间首页；QA 过程后 4 首答/1 启动/0 已记分钟；无 IP 素材。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/home-night-1440-viewport.jpg",
+      "pixel_dimensions": {
+        "width": 1157,
+        "height": 1000
+      },
+      "bytes": 63098,
+      "sha256": "2f89dd847d9d6bead0cd7e01c46e5e6168da65e1b793a266e7ab6f592d281627",
+      "file_mtime_utc": "2026-10-13T07:19:11.013442+00:00",
+      "css_viewport": {
+        "width": null,
+        "height": null
+      },
+      "scope": "旧取证尝试；图片 1157×1000，无法据此证明 1440 普通视口；排除尺寸/字号/控件验收。",
+      "status": "excluded",
+      "replacement": "home-night-1440-verified.jpg",
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "旧截图方法未明确",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/home-silk-320-verified.jpg",
+      "pixel_dimensions": {
+        "width": 305,
+        "height": 804
+      },
+      "bytes": 31411,
+      "sha256": "65ab875e5f3a61e0b52709c815a5b5b6fb0e48b6e5e451277b6f026d0b9d3cbb",
+      "file_mtime_utc": "2026-10-13T07:24:20.061659+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "早期丝之歌首页，原创意象可见；标题仍为修订前 26px，不代表最新 28px 标题验收。",
+      "status": "historical-limited",
+      "replacement": "home-hollow-320-verified.jpg",
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/home-silk-320-viewport.jpg",
+      "pixel_dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "bytes": 78565,
+      "sha256": "e3e16c1b3983646f733753ecf4971f39db99b30070f31d158d1bddffd54468f5",
+      "file_mtime_utc": "2026-10-13T07:23:55.440509+00:00",
+      "css_viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scope": "文件名错误；超时旧捕获恢复到桌面视口，不能作为丝之歌 320px 证据。",
+      "status": "excluded",
+      "replacement": "home-silk-320-verified.jpg",
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/mock-answer-grid-fixture-day-320.jpg",
+      "pixel_dimensions": {
+        "width": 305,
+        "height": 804
+      },
+      "bytes": 43787,
+      "sha256": "070342af47bcf43e9aaf4117bd83dae832c523cd752c23332a654893dfe7d19b",
+      "file_mtime_utc": "2026-10-13T08:13:05.296143+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "真实展开的答题卡局部；5列，当前/已答/未答状态。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {
+        "answer_button_width_px": 44.34,
+        "answer_button_height_px": 44
+      }
+    },
+    {
+      "file": "screenshots/mock-catalog-day-390.jpg",
+      "pixel_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "bytes": 38544,
+      "sha256": "b8772dae391c43a0883d3376efda8622d59a0b5ca77c1bf1fc4d9f887b3d6663",
+      "file_mtime_utc": "2026-10-13T07:52:39.024951+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "实际模考目录空态；普通应用组件，未装载 fixture。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/mock-catalog-with-fixture-day-1440.jpg",
+      "pixel_dimensions": {
+        "width": 1263,
+        "height": 1247
+      },
+      "bytes": 86736,
+      "sha256": "8b36869c9b46b55fe213881b2f4b48ee1120871335af9891507a7faeeb3a64c0",
+      "file_mtime_utc": "2026-10-13T08:04:59.512789+00:00",
+      "css_viewport": {
+        "width": 1278,
+        "height": 1262
+      },
+      "scope": "QA 模考目录与两条 fixture 记录；新页默认视口，不作为 1440 响应式证明。",
+      "status": "fixture-seam-only",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/mock-first-saved-a-fixture-day-320-fixed.jpg",
+      "pixel_dimensions": {
+        "width": 305,
+        "height": 804
+      },
+      "bytes": 36418,
+      "sha256": "94649d2cb3723e029a0d6ace337488f3993b92dbe2405cd1759c5d175279e728",
+      "file_mtime_utc": "2026-10-13T08:49:20.024884+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "原首答147 A checked、fieldset disabled；A 浅红错误面/危险色边框，D 中性正确面/成功色边框与勾，文字共同区分正确错误。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {
+        "saved_answer": "A",
+        "fieldset_disabled": true,
+        "wrong_border_rgb": [
+          170,
+          61,
+          56
+        ],
+        "wrong_background_rgb": [
+          248,
+          232,
+          229
+        ],
+        "correct_border_rgb": [
+          36,
+          107,
+          72
+        ],
+        "correct_background_rgb": [
+          239,
+          238,
+          233
+        ]
+      }
+    },
+    {
+      "file": "screenshots/mock-first-saved-a-fixture-day-320.jpg",
+      "pixel_dimensions": {
+        "width": 305,
+        "height": 804
+      },
+      "bytes": 35007,
+      "sha256": "602e6f8139bc98dab2c6c90441b090c4e8dbbb19adcbe1d638a897a1037e3ae5",
+      "file_mtime_utc": "2026-10-13T08:30:23.102364+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "原首答147保存 A 的只读答案；与复测 B 独立；错误语义颜色修订前。",
+      "status": "excluded",
+      "replacement": "mock-first-saved-a-fixture-day-320-fixed.jpg",
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/mock-jump-focus-fixture-day-320.jpg",
+      "pixel_dimensions": {
+        "width": 305,
+        "height": 804
+      },
+      "bytes": 33825,
+      "sha256": "e4f2da2e8b32a237f66f5cebcf893ab4a9ccdcac71dc99c54b4e461e1abe9792",
+      "file_mtime_utc": "2026-10-13T08:13:22.003691+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "答题卡选147后，已保存 B 且聚焦对应题目 article；不代表普通上一/下一题滚动策略改变。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {
+        "focused_question_y_px": 23.95
+      }
+    },
+    {
+      "file": "screenshots/mock-rc-multiple-fixture-day-1440-verified.jpg",
+      "pixel_dimensions": {
+        "width": 1425,
+        "height": 990
+      },
+      "bytes": 165246,
+      "sha256": "9b146ddab1d997d5d52698f487082cd298e461d5e090d600cbcf684067784a06",
+      "file_mtime_utc": "2026-10-13T08:08:03.522750+00:00",
+      "css_viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scope": "RC 第176题多篇材料局部；材料1末段与材料2开头；保留同材料内位置。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/mock-rc-multiple-fixture-day-320.jpg",
+      "pixel_dimensions": {
+        "width": 305,
+        "height": 804
+      },
+      "bytes": 49922,
+      "sha256": "dee141ee927cd9922c533e27f7d42742ffc36d2bb99903ce94c0c6518e074391",
+      "file_mtime_utc": "2026-10-13T08:08:19.943810+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "320px 多篇材料中段；流式单列；不是完整题组页头/题目。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/mock-rc-single-fixture-day-1440-verified.jpg",
+      "pixel_dimensions": {
+        "width": 1425,
+        "height": 990
+      },
+      "bytes": 144547,
+      "sha256": "df19206e311c7c8f33fd2cfd4afaa4e357fb5dd39931877db20d4a36de0a91fa",
+      "file_mtime_utc": "2026-10-13T08:06:49.558299+00:00",
+      "css_viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scope": "RC 单篇真实组件三列：材料/题目/答题卡；已保存 3/200，原截止不重置。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {
+        "material_width_px": 474.6,
+        "question_width_px": 429.4
+      }
+    },
+    {
+      "file": "screenshots/mock-rc-single-fixture-day-1440.jpg",
+      "pixel_dimensions": {
+        "width": 1263,
+        "height": 1247
+      },
+      "bytes": 149420,
+      "sha256": "bd3492e8da0ce16134dd75fab7e490455aa88214b465aa8505de9f4acd0db3f0",
+      "file_mtime_utc": "2026-10-13T08:05:46.042579+00:00",
+      "css_viewport": {
+        "width": 1278,
+        "height": 1262
+      },
+      "scope": "早期 RC 单篇默认视口，文件名 1440 错标。",
+      "status": "excluded",
+      "replacement": "mock-rc-single-fixture-day-1440-verified.jpg",
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/mock-reading-header-fixture-day-320-verified.jpg",
+      "pixel_dimensions": {
+        "width": 305,
+        "height": 804
+      },
+      "bytes": 32808,
+      "sha256": "4c4f5a41be77f37bec60274c3ad8f0c411cf8bff932d27efc2c551a216bbfb2f",
+      "file_mtime_utc": "2026-10-13T08:27:00.167605+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "RC 页头；3 已保存，原截止显示 17:04:02，截图时剩余 37:03；计时持续推进。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/mock-results-fixture-day-320.jpg",
+      "pixel_dimensions": {
+        "width": 305,
+        "height": 804
+      },
+      "bytes": 29797,
+      "sha256": "700c2fb531ff42c88561e1ddce2448f07a5cf3e25bb1c81fda05dc907f1ea977",
+      "file_mtime_utc": "2026-10-13T08:27:42.505212+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "复测结果上段：正确 1/200、197 未答。83:15 来自合成恢复时间线，不是实际前台考试时长。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/mock-retake-saved-b-fixture-day-320.jpg",
+      "pixel_dimensions": {
+        "width": 305,
+        "height": 804
+      },
+      "bytes": 34854,
+      "sha256": "34b295884cf111f75d20186e1b1f7c7c92a70ee510547a991fc9a747f1b165ba",
+      "file_mtime_utc": "2026-10-13T08:29:31.734948+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "原复测147保存 B 的只读答案；错误项/解析仍为修订前中性 selected 配色。",
+      "status": "historical-limited",
+      "replacement": "mock-first-saved-a-fixture-day-320-fixed.jpg",
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/mock-seven-part-table-fixture-day-1440.jpg",
+      "pixel_dimensions": {
+        "width": 1425,
+        "height": 990
+      },
+      "bytes": 193906,
+      "sha256": "fc53b05a28b7296ec94ea4360dd9a7e4f38f0720ef1787d998f58376951ff4d2",
+      "file_mtime_utc": "2026-10-13T08:50:12.373573+00:00",
+      "css_viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scope": "滚动取证位置错误，未完整展示七 Part 表；排除七行完整证明。",
+      "status": "excluded",
+      "replacement": "mock-seven-part-table-fixture-day-1440x1300.jpg",
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/mock-seven-part-table-fixture-day-1440x1300.jpg",
+      "pixel_dimensions": {
+        "width": 1425,
+        "height": 1286
+      },
+      "bytes": 86964,
+      "sha256": "cdfa8c7d5b29c2321e426eae27f7c6b801be706456ed42a4805fd02a8d1a257a",
+      "file_mtime_utc": "2026-10-13T08:51:31.695828+00:00",
+      "css_viewport": {
+        "width": 1440,
+        "height": 1300
+      },
+      "scope": "完整七 Part 结果表真实视口；table y476.6、h643，全部七行在截图内。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {
+        "table_y_px": 476.6,
+        "table_height_px": 643
+      }
+    },
+    {
+      "file": "screenshots/mock-seven-part-table-fixture-day-320.jpg",
+      "pixel_dimensions": {
+        "width": 305,
+        "height": 804
+      },
+      "bytes": 23673,
+      "sha256": "893816200e89ad3bcf82a2fd65d3a901ee32dda0e32ddc42e2727e6435754897",
+      "file_mtime_utc": "2026-10-13T08:49:40.820777+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "结果表表头与前几行局部；246px 容器内 334px 宽表格可横向滚动；不能代表七行全部可见。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {
+        "table_container_width_px": 246,
+        "table_scroll_width_px": 334
+      }
+    },
+    {
+      "file": "screenshots/mock-submit-fixture-day-320.jpg",
+      "pixel_dimensions": {
+        "width": 320,
+        "height": 844
+      },
+      "bytes": 23237,
+      "sha256": "17805387fdd2430ac24720929f855b083af9f62bed46cd60018c0000ddccaa27",
+      "file_mtime_utc": "2026-10-13T08:27:17.567957+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "提交确认；3 已答+197 未答=200；确认期间计时继续。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/mock-wrong-analysis-fixture-day-320-fixed.jpg",
+      "pixel_dimensions": {
+        "width": 305,
+        "height": 804
+      },
+      "bytes": 33518,
+      "sha256": "48918089756b114eb0c996f212242cf4964bd69e349463952b032ba58ea26cf2",
+      "file_mtime_utc": "2026-10-13T08:49:28.183300+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "错误解析卡视口；危险色与“你的答案 A / 回答错误 / 正确答案 D”文字共同反馈。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/practice-exit-silk-390.jpg",
+      "pixel_dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 23186,
+      "sha256": "dd63800ed13ea7f20d3dd63a1441687410a223d5bed5a76be4843abc6508e9ab",
+      "file_mtime_utc": "2026-10-13T07:32:09.615500+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "练习退出确认弹层；取消保留练习/详情。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/practice-part6-silk-390.jpg",
+      "pixel_dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 30336,
+      "sha256": "e8cceee70ace8fe887182fee010aa1c49bac1310311ab87150a574aeae021458",
+      "file_mtime_utc": "2026-10-13T07:31:29.820173+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "实际 Part6 材料末段及作答区域；不是题组从顶部的完整材料图。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/preferences-silk-320-fixed.jpg",
+      "pixel_dimensions": {
+        "width": 320,
+        "height": 844
+      },
+      "bytes": 22602,
+      "sha256": "3fd0f8430439370c82faa7e580cde6f9853033370b4e70718431d5eb6581291b",
+      "file_mtime_utc": "2026-10-13T07:26:36.806778+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "丝之歌偏好弹层；修订后字段为实心卡面，输入字号 16px，关闭 44×44px。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {
+        "input_font_px": 16,
+        "close_size_px": [
+          44,
+          44
+        ],
+        "control_border_rgb": [
+          161,
+          126,
+          141
+        ],
+        "control_background_rgb": [
+          43,
+          32,
+          37
+        ]
+      }
+    },
+    {
+      "file": "screenshots/preferences-silk-320-verified.jpg",
+      "pixel_dimensions": {
+        "width": 320,
+        "height": 844
+      },
+      "bytes": 21643,
+      "sha256": "599e4bd78ecddb8b3d4be3eb398a0e8b86482985c6edded700402e316c2d5bf6",
+      "file_mtime_utc": "2026-10-13T07:25:06.074233+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "字段实心卡面/边框修订前历史图，不能作为当前控件对比度证据。",
+      "status": "excluded",
+      "replacement": "preferences-silk-320-fixed.jpg",
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/progress-day-390.jpg",
+      "pixel_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "bytes": 23655,
+      "sha256": "db0a3662a3919930b63a55eef125ff9d0467e6891259737bb74cde4472113b8d",
+      "file_mtime_utc": "2026-10-13T07:40:45.305290+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "进度页首段；真实隔离 QA 的 4 首答/1 启动/0 录音/0 已记分钟。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/qa-fixture-loader-1440.jpg",
+      "pixel_dimensions": {
+        "width": 1278,
+        "height": 1262
+      },
+      "bytes": 80661,
+      "sha256": "f8196057f2f6e40453b18c74b84d3c6f0dc902d0d9d29ad427d6457269291698",
+      "file_mtime_utc": "2026-10-13T08:04:40.733942+00:00",
+      "css_viewport": {
+        "width": 1278,
+        "height": 1262
+      },
+      "scope": "可见 QA 装载页；新页默认视口 1278×1262，文件名 1440 错标；仅证明隔离 seam/合成数据告知。",
+      "status": "fixture-seam-only",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41883/?examLibrary=1",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/resource-detail-day-390-fixed.jpg",
+      "pixel_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "bytes": 35052,
+      "sha256": "685e35acc299b60225f0278bbd0cd1d953c8bcf86344c0b0bca3ed73efb63e84",
+      "file_mtime_utc": "2026-10-13T07:51:21.643209+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "资料详情主视图顶部；步骤与访问说明上段；不代表底部全部来源/按钮验收。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/resource-detail-day-390.jpg",
+      "pixel_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "bytes": 35750,
+      "sha256": "698190a479335d2c41052a9d9c55944fe8a8c45dd7f662fb7d76439c590ed99d",
+      "file_mtime_utc": "2026-10-13T07:46:18.707735+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "文件标签错误，实际仍是目录首段；排除详情证明。",
+      "status": "excluded",
+      "replacement": "resource-detail-day-390-fixed.jpg",
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/resource-detail-lower-hollow-1440.jpg",
+      "pixel_dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "bytes": 87296,
+      "sha256": "4089fa1dad86d2d1346fdca718fb5e0cdc32a3a65de8d5840ceefe743b6cdb2f",
+      "file_mtime_utc": "2026-10-13T09:00:12.156519+00:00",
+      "css_viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scope": "B1–B2 被动语态资料详情桌面两列：左步骤/访问条件＋右动作，侧导航不计内容列；scrollY0。按步骤、免费访问/条款、打开材料/学完记一笔均可见；不证明手机底部。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {
+        "scroll_y_px": 0
+      }
+    },
+    {
+      "file": "screenshots/resource-detail-lower-hollow-390.jpg",
+      "pixel_dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "bytes": 87296,
+      "sha256": "4089fa1dad86d2d1346fdca718fb5e0cdc32a3a65de8d5840ceefe743b6cdb2f",
+      "file_mtime_utc": "2026-10-13T09:00:12.156519+00:00",
+      "css_viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scope": "错标手机文件；与 -1440.jpg 字节完全相同。真实为桌面内容两列，不作为 390px 底部证明。",
+      "status": "excluded",
+      "replacement": "resource-detail-lower-hollow-1440.jpg",
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/resources-day-390.jpg",
+      "pixel_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "bytes": 35696,
+      "sha256": "34798d06f3228075b6a1aac0f5829ba60ae31d1e88fe1f2f7404fda79e6c55e1",
+      "file_mtime_utc": "2026-10-13T07:41:48.608949+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "资料库目录首段与分类；真实 15 个资源。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/review-day-390-fixed.jpg",
+      "pixel_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "bytes": 35508,
+      "sha256": "962bf1d0bbe429b32673696ac8f0123af39b8e969b1e6ee78c9e86564d77c268",
+      "file_mtime_utc": "2026-10-13T07:58:56.084716+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "复习页首段；词卡/题目模块 24px 间隔，状态标签 13px；不是全部队列状态。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {
+        "module_gap_px": 24,
+        "status_font_px": 13
+      }
+    },
+    {
+      "file": "screenshots/review-day-390.jpg",
+      "pixel_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "bytes": 34810,
+      "sha256": "54518fd14a108478ea3c5868b8795c1ffbd632111cef8cc2d43b51672513ae64",
+      "file_mtime_utc": "2026-10-13T07:39:02.569933+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "词卡/题目复习缺留白及 11px 状态修订前历史图。",
+      "status": "excluded",
+      "replacement": "review-day-390-fixed.jpg",
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/search-silk-390-detail.jpg",
+      "pixel_dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 21746,
+      "sha256": "ecbdfc1e78ae65d0a90af0b27be20dfffe4d69f2d7faac9ac46335d79773739a",
+      "file_mtime_utc": "2026-10-13T07:27:49.147812+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "单词详情；释义与关联练习入口；查询结果不自动形成复习记录。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/search-silk-390-empty.jpg",
+      "pixel_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "bytes": 26180,
+      "sha256": "2524196248345aa3f03fcdb46f31270ed5a716df5f96ffa492d353364a11ac88",
+      "file_mtime_utc": "2026-10-13T07:37:46.315040+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "无结果状态；测试查询为 zzzz-no-word-qa；不是网络失败状态。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/search-silk-390-initial.jpg",
+      "pixel_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "bytes": 23644,
+      "sha256": "27c26a3cd875b80c26ecdce288403afa4fa05f58a60d2150ae7a441dca126e18",
+      "file_mtime_utc": "2026-10-13T07:26:51.337376+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "查词初始页；独立搜索主视图。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/search-silk-390-results-fixed.jpg",
+      "pixel_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "bytes": 25395,
+      "sha256": "e92a7dfecb48ba21c4aa8723adf096fa2d7fc99ab845acb22d66fbec6e08a5fa",
+      "file_mtime_utc": "2026-10-13T07:37:33.809026+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "reservation 结果列表局部，scrollY≈277；精确/相关标签回到词头同一行右侧；未包含完整搜索页头。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {
+        "scroll_y_px": 277
+      }
+    },
+    {
+      "file": "screenshots/search-silk-390-results.jpg",
+      "pixel_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "bytes": 26075,
+      "sha256": "a74875baca4d07fbea0e3c6018e03e04878fbfe484c2c46875bfa256327e167e",
+      "file_mtime_utc": "2026-10-13T07:27:40.529411+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "结果标签换行修订前历史图。",
+      "status": "excluded",
+      "replacement": "search-silk-390-results-fixed.jpg",
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/settings-silk-320-verified.jpg",
+      "pixel_dimensions": {
+        "width": 305,
+        "height": 804
+      },
+      "bytes": 28014,
+      "sha256": "e873f1739403c1f9b142de684669af000d33ececd195e0b7ab5e141450e54458",
+      "file_mtime_utc": "2026-10-13T07:24:52.979793+00:00",
+      "css_viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "scope": "320px 主题设置上段与首张主题卡；不能单图代表所有四主题完整组件状态。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/source-return-day-390.jpg",
+      "pixel_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "bytes": 42925,
+      "sha256": "7b67547821f33d4aa18ef2dc6f4f15adb0e36683a702daa3a15f28c2fa1f7687",
+      "file_mtime_utc": "2026-10-13T07:45:32.077537+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "从资料库底部查词后返回原位置的视图；这是页面底部导出入口，非资源详情。滚动值在流程记录/probe分别说明，不从图片推断。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/speaking-catalog-day-390.jpg",
+      "pixel_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "bytes": 34112,
+      "sha256": "4fca7d436f6f30754fb34bf13e006cdb0b3ff49076b7d86b28338fbd6c3e31a9",
+      "file_mtime_utc": "2026-10-13T07:59:46.259483+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "口语题型目录上段；未包含全部五类，未启用麦克风。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/speaking-information-day-390.jpg",
+      "pixel_dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 40624,
+      "sha256": "d4a95527b264c93cabbd0487277a3e8cec83c9489bf89ccac492445bcc0bfeb4",
+      "file_mtime_utc": "2026-10-13T08:00:15.361578+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "口语信息题 45s 准备/15s 回答的初始主视图；未录音。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/speaking-information-day-840.jpg",
+      "pixel_dimensions": {
+        "width": 840,
+        "height": 1000
+      },
+      "bytes": 56758,
+      "sha256": "346634a840e7536841032050af341bd914460d55e09df206883cc2a995752961",
+      "file_mtime_utc": "2026-10-13T08:00:34.558928+00:00",
+      "css_viewport": {
+        "width": 840,
+        "height": 1000
+      },
+      "scope": "840px 口语信息题初始主视图；未录音/未验证折叠设备。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/themes-game-states-hollow-1440.jpg",
+      "pixel_dimensions": {
+        "width": 1425,
+        "height": 990
+      },
+      "bytes": 95318,
+      "sha256": "eb945d2693b9763acb6766aed1a61af197db4d95829c0fcf3c52f5d9a564a6ae",
+      "file_mtime_utc": "2026-10-13T08:50:53.617442+00:00",
+      "css_viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scope": "主题页滚动 658.7px；空洞骑士与丝之歌两张完整组件状态预览。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {
+        "scroll_y_px": 658.7
+      }
+    },
+    {
+      "file": "screenshots/themes-night-1440-verified.jpg",
+      "pixel_dimensions": {
+        "width": 1425,
+        "height": 990
+      },
+      "bytes": 83340,
+      "sha256": "22ff4647744d1856959013be3112a5e52e34116fab11fa97a2eaad81d0c22f48",
+      "file_mtime_utc": "2026-10-13T08:02:14.572438+00:00",
+      "css_viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scope": "默认日间/夜间完整真实组件预览；游戏主题仅上段。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    },
+    {
+      "file": "screenshots/training-day-390.jpg",
+      "pixel_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "bytes": 28907,
+      "sha256": "b60ebb3f83d5e287ee3e35fa9c4e9a92ff18205fcfc2ee28bd7f24c7500044c3",
+      "file_mtime_utc": "2026-10-13T07:59:33.522150+00:00",
+      "css_viewport": {
+        "width": 390,
+        "height": null
+      },
+      "scope": "训练页目录；听读与口语入口。",
+      "status": "sample",
+      "replacement": null,
+      "origin": "http://127.0.0.1:41881/",
+      "capture": "普通视口",
+      "dom_metrics": {}
+    }
+  ],
+  "acceptance": "未通过：同一独立终审发现 I01 P1 与 I02–I11 十项 P2；416/34/HAP 为修订前候选，不能绑定后续整改。",
+  "candidate_checks": {
+    "scope": "09:03源码冻结候选；I01–I11整改前，不能绑定后续源码。",
+    "study": {
+      "tests": 416,
+      "pass_count": 416,
+      "fail_count": 0,
+      "log": "logs/full-study-test-owner-final.log"
+    },
+    "mjs": {
+      "tests": 34,
+      "pass_count": 34,
+      "fail_count": 0,
+      "log": "logs/mjs-tests-owner-final.log"
+    },
+    "targeted_owner": {
+      "tests": 21,
+      "pass_count": 21,
+      "fail_count": 0,
+      "scope": "作者受控 key-reconciliation 回归；包含在416中，不另加总；未关闭I01未存Blob交接",
+      "log": "logs/owner-boundary-targeted.log"
+    },
+    "typecheck": {
+      "exit_code": 0,
+      "reported_by": "Root",
+      "log": "logs/typecheck-owner-final.log"
+    },
+    "web_build": {
+      "exit_code": 0,
+      "reported_by": "Root",
+      "log": "logs/web-build-owner-final.log"
+    },
+    "mobile_build": {
+      "exit_code": 0,
+      "reported_by": "Root",
+      "log": "logs/mobile-build-owner-final.log",
+      "js_kb": 1322.97,
+      "js_gzip_kb": 404.61,
+      "css_kb": 373.4,
+      "css_gzip_kb": 60.73,
+      "chunk_warning_preserved": true
+    }
+  },
+  "workflow_observations": [
+    {
+      "source": "Root actual Chrome 390px old-source search/back flow",
+      "scope": "资料库底部 导出听读与口语记录 控件→CtrlK→来源返回及浏览器Back",
+      "restored_scroll_y_px": 5342,
+      "focus_restored": true,
+      "notes": "实际交互值；截图本身不证明滚动或焦点，不与受控probe混算。"
+    },
+    {
+      "source": "Root actual Chrome 1440px final resource detail/back flow",
+      "scope": "B1–B2 最后一行→详情→资料列表",
+      "restored_scroll_y_px": 3372,
+      "focus_restored": true,
+      "notes": "父级前导内容恢复；与旧390px搜索流程不同。"
+    },
+    {
+      "source": "Independent controlled TSX/Hook/DOM/rAF probes",
+      "scope": "Root search origin及Root+Resource list/detail，受控布局模拟",
+      "restored_scroll_y_px": 5342,
+      "focus_restored": true,
+      "notes": "受控预设5342，非实际浏览器尺寸；见reports/independent-code/probe-*-result.json。"
+    }
+  ],
+  "build_artifact": {
+    "status": "candidate-before-I01-I11-fixes",
+    "path": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-beyeqowt\\lantern-ui-v11-unsigned-local-only.hap",
+    "bytes": 44282830,
+    "sha256": "1fa43622e1c740d76a943889de69b9778d5466dc0892f0be3be7765655cccb8a",
+    "copied_to_git_docs": false,
+    "source_count": 1228,
+    "resource_byte_checks": 1071,
+    "source_manifest_sha256": "9ab3644d25288c954f3c5f7e44ddddb1378af55b57163e1bf33b16f1ea80f5d9",
+    "web_manifest_sha256": "970336a9e187baabcff25a195826e2f0d82caf621c2cc4434dd073c98ef16c0c",
+    "checked_at": "2026-10-13T09:03:26.788340+00:00",
+    "proof": "reports/simulator-readiness/build-lantern-ui-v11-beyeqowt/final-freeze-proof.json",
+    "scope": "仅绑定09:03冻结候选。限定runtime/build-input；排除docs/tests/reports，详见SOURCE_SCOPE。",
+    "signed": false,
+    "installed": false,
+    "arkweb_or_device_tested": false
+  }
+}

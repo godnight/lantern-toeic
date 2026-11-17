@@ -1,0 +1,21 @@
+中文维基词典英语查词数据（微光托业整理版）
+
+内容：中文维基词典贡献者。来源 https://zh.wiktionary.org/
+结构化提取：Tatu Ylönen / Kaikki.org / Wiktextract。
+上游导出：https://kaikki.org/zhwiktionary/英語/ 及 https://kaikki.org/zhwiktionary/英语/
+原始 dump：2026-10-01；提取：2026-10-02；本项目核查：2026-10-11。
+内容及本衍生数据许可：Creative Commons Attribution-ShareAlike 4.0 International。
+许可全文：https://creativecommons.org/licenses/by-sa/4.0/legalcode
+
+每个词条的原始来源：https://zh.wiktionary.org/wiki/{词条}
+对应贡献历史：https://zh.wiktionary.org/w/index.php?title={词条}&action=history
+应用中的词条详情提供原页面链接；其编辑历史可在原站查看。
+
+微光托业的加工：仅英语词条；规范化词头、合并大小写、去重；中文转简体；
+每词最多保留8个义项、4个音标、12个词形和1500字符词源节选。
+没有复制上游录音、例句或引文。来源版本、原始文件与输出SHA-256见仓库
+content/dictionary-metadata.json；可复现转换脚本 scripts/build-wiktionary-dictionary.py。
+
+本通用词典不是ETS官方词表，不代表托业考试覆盖；包含词形、旧义、专业义，
+亦有常用词缺失，未经过全库人工审校。原有和扩展场景词优先使用项目自编释义。
+本数据的CC BY-SA许可与项目软件MIT及原创学习文本CC BY 4.0分别适用。
