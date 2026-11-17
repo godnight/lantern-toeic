@@ -38,7 +38,7 @@ async function main(){
  await nav().getByRole('button',{name:'进度',exact:true}).click();await p.getByRole('heading',{name:'学习时间',exact:true}).waitFor();
  await p.evaluate(()=>{window.__qaHoldResume=false;window.__qaReleaseResume();});await p.waitForTimeout(200);assert.equal(await p.locator('.practice-dialog').count(),0);console.log('PASS cancelled delayed practice does not open over new page');
  await nav().getByRole('button',{name:'练习',exact:true}).click();await p.getByRole('button',{name:'阅读 · Part 5 · 继续',exact:true}).click();await p.locator('.practice-dialog .answer-feedback').waitFor();await p.waitForFunction(()=>window.__qaSnapshot?.practiceSessionId?.startsWith('practice:'));
- await p.evaluate(()=>{window.__test.background();window.__test.foreground();});await p.locator('.practice-dialog .answer-feedback').waitFor();console.log('PASS persisted practice on foreground');
+ await p.evaluate(()=>{window.__test.background();window.__test.foreground();});await p.locator('.practice-dialog .answer-feedback').waitFor();await p.locator('.practice-dialog').getByText(/首次作答/).waitFor();console.log('PASS persisted practice on foreground with original first-attempt label');
  await p.evaluate(()=>{window.__test.background();window.__test.other();window.__test.foreground();});await p.getByRole('heading',{name:'账号需要核对'}).waitFor();assert.equal(await p.locator('.practice-dialog').count(),0);console.log('PASS different owner does not restore');
  assert.deepEqual(errors,[]);await ctx.close();
  }finally{await browser.close();}
