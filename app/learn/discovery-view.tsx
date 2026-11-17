@@ -11,6 +11,7 @@ import './discovery.css';
 const categories=[['all','全部'],['video','视频'],['podcast','播客'],['article','文章']] as const;
 const kindLabels:Record<DiscoveryContentKind,string>={video:'视频',podcast:'播客',article:'文章'};
 const kindIcons={video:Video,podcast:Headphones,article:FileText};
+const programPageSources=new Set(['cgtn-roundtable','cgtn-beijing-hour','cgtn-world-today']);
 type FeedCategory='all'|DiscoveryContentKind;
 type SourceControl='cover'|'title'|'source';
 type View={scope:string;category:FeedCategory|'library';query:string;savedOnly:boolean;sourceIds?:string[]};
@@ -24,11 +25,23 @@ function categoryOf(value:DiscoveryCategory|undefined):View['category']{
 function seedSnapshot():DiscoveryFeedSnapshot{
  const seen=new Map<string,DiscoverySourceStatus>();
  for(const entry of DISCOVERY_SEED)if(!seen.has(entry.sourceId))seen.set(entry.sourceId,{id:entry.sourceId,label:entry.platform||entry.publisher,mode:'curated'});
- return {entries:DISCOVERY_SEED,sources:[...seen.values()],status:'seed',refreshedAt:null};
+ return {entries:DISCOVERY_SEED,sources:[...seen.values()],status:'seed',refreshedAt:null,lastSuccessAt:null,refresh:null};
 }
 function readSnapshot():DiscoveryFeedSnapshot{try{return readDiscoveryFeedCache();}catch{return seedSnapshot();}}
 function normalized(value:string){return value.normalize('NFKC').toLocaleLowerCase();}
 function safeCover(src:string){return /^\/images\/discovery\/[a-z0-9][a-z0-9._/-]*$/i.test(src)&&!src.split('/').includes('..');}
+function publicationTime(value:string|null|undefined){
+ if(typeof value!=='string')return null;
+ const date=new Date(value);
+ if(!Number.isFinite(date.getTime())||date.toISOString()!==value)return null;
+ return new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(date);
+}
+function successTime(value:number|null|undefined){
+ if(typeof value!=='number'||!Number.isFinite(value)||value<=0)return '尚无成功记录';
+ const date=new Date(value);
+ if(!Number.isFinite(date.getTime()))return '尚无成功记录';
+ return `最近成功：${new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(date)}`;
+}
 
 /** A curated external-link directory. Opening a source never submits study time. */
 export default function DiscoveryView({owner,canAccess,library,active=true,libraryFocused=false,initialReturn,initialReturnToken,onReturnConsumed,onLibraryActiveChange}:Props){
@@ -75,7 +88,7 @@ export default function DiscoveryView({owner,canAccess,library,active=true,libra
   void Promise.resolve().then(()=>refreshDiscoveryFeed({signal:controller.signal,canCommit:isCurrent})).then(snapshot=>{
    if(isCurrent())setFeed({scope,snapshot,pending:false});
   }).catch(()=>{
-   if(isCurrent())setFeed(previous=>previous.scope===scope?{scope,snapshot:{...previous.snapshot,status:'offline'},pending:false}:{scope,snapshot:{...seedSnapshot(),status:'offline'},pending:false});
+   if(isCurrent())setFeed(previous=>{const snapshot=previous.scope===scope?previous.snapshot:seedSnapshot();return {scope,snapshot:{...snapshot,status:'offline',refresh:{outcome:'failed',added:0,attemptedAt:Date.now()}},pending:false};});
   });
   return()=>{live=false;controller.abort();};
  },[owner,canAccess,active,allowed,refreshCount]);
@@ -86,6 +99,8 @@ export default function DiscoveryView({owner,canAccess,library,active=true,libra
  const blocked=favorites?.scope===scope&&favorites.result.status==='blocked';
  const feedState=feed.scope===scope?feed:{scope,snapshot:seedSnapshot(),pending:true};
  const snapshot=feedState.snapshot;
+ const outcome=snapshot.refresh;
+ const refreshMessage=feedState.pending?'正在刷新…':outcome?.outcome==='failed'?'刷新失败，已保留现有内容':outcome?.outcome==='partial'?`${outcome.added?`新增 ${outcome.added} 条 · `:''}部分来源更新失败`:outcome?.outcome==='updated'?`本次新增 ${outcome.added} 条`:outcome?.outcome==='unchanged'?'本次无新增':'浏览精选内容';
  useEffect(()=>{
   if(!permitted()||!current.current.active)return;
   const value=store.current?.capture(snapshot.entries);
@@ -128,7 +143,7 @@ export default function DiscoveryView({owner,canAccess,library,active=true,libra
   return saved;
  };
  const externalClick=(entry:DiscoveryItem,control:SourceControl)=>(event:MouseEvent<HTMLAnchorElement>)=>{if(!beforeExternal(entry,control))event.preventDefault();};
- const refresh=()=>{if(permitted()&&current.current.active)setRefreshCount(count=>count+1);};
+ const refresh=()=>{if(permitted()&&current.current.active&&!feedState.pending)setRefreshCount(count=>count+1);};
  const closeSources=()=>{setSourcesOpen(false);requestAnimationFrame(()=>{if(permitted()&&current.current.active)sourceButton.current?.focus({preventScroll:true});});};
  const sourceKey=(event:KeyboardEvent<HTMLDivElement>)=>{
   if(event.key==='Escape'){event.preventDefault();closeSources();return;}
@@ -148,21 +163,23 @@ export default function DiscoveryView({owner,canAccess,library,active=true,libra
   <div className="discovery-library" hidden={view.category!=='library'}>{library}</div>
   <div hidden={view.category==='library'} className="discovery-directory">
    <p className="sr-only" tabIndex={-1} ref={resultsTitle} role="status">{view.savedOnly?'我的收藏':'精选目录'} · {found.length} 条</p>
+   <div className="discovery-refresh"><div className="discovery-refresh-copy"><p className="discovery-refresh-result" role="status" aria-live="polite">{refreshMessage}</p><p className="discovery-refresh-time">{successTime(snapshot.lastSuccessAt??snapshot.refreshedAt)}</p></div><button type="button" className="discovery-refresh-button" aria-disabled={!allowed||feedState.pending} onClick={refresh}><RefreshCw size={17} aria-hidden="true"/>{outcome?.outcome==='failed'||outcome?.outcome==='partial'?'重试':'刷新'}</button></div>
    {view.savedOnly&&<p className="discovery-storage-note">收藏仅保存在此设备，不随学习记录备份导出。</p>}
    {blocked&&<p className="discovery-notice" role="alert">收藏暂时无法读取，已有记录未修改。原站目录仍可浏览。</p>}
    <div className="discovery-results">{found.map(entry=>{
     const saved=ids.includes(entry.id),KindIcon=kindIcons[entry.kind],cover=entry.cover&&safeCover(entry.cover.src)?entry.cover:null,coverFailed=failedCovers.has(entry.id);
+    const programPage=programPageSources.has(entry.sourceId);
+    const published=programPage?publicationTime(entry.publishedAt):null;
     const publisher=(!coverFailed&&cover?.credit)||entry.publisher;
     const sameSource=(name:string)=>name.trim().toLocaleLowerCase().replace(/\s+university$/u,'');
     const sourceName=entry.platform&&sameSource(entry.platform)!==sameSource(entry.publisher)&&sameSource(entry.platform)!==sameSource(publisher)?`${publisher} · ${entry.platform}`:publisher;
     return <article className={`discovery-card${cover?'':' discovery-card--no-cover'}`} key={entry.id} data-discovery-id={entry.id}>
-     {cover&&<a ref={node=>setSourceLink(entry.id,'cover',node)} data-discovery-control="cover" className={`discovery-cover-link${coverFailed?' discovery-cover-link--unavailable':''}`} href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`打开原站：${entry.title}`} onClick={externalClick(entry,'cover')}>{!coverFailed&&<img src={cover.src} alt={cover.alt} loading="lazy" onError={()=>{if(matching())setFailedCovers(previous=>new Set([...previous,entry.id]));}}/>}<span className="discovery-kind-tag"><KindIcon size={13} aria-hidden="true"/>{kindLabels[entry.kind]}</span>{entry.durationLabel&&<span className="discovery-duration">{entry.durationLabel}</span>}</a>}
-     <div className="discovery-copy"><div className="discovery-source"><span className="discovery-source-mark" aria-hidden="true">{entry.publisher.slice(0,1).toUpperCase()}</span><span className="discovery-source-name">{sourceName}</span>{(cover?entry.tags[0]:kindLabels[entry.kind])&&<span className="discovery-source-kind">{cover?entry.tags[0]:kindLabels[entry.kind]}</span>}</div><h2 lang="en"><a ref={node=>setSourceLink(entry.id,'title',node)} data-discovery-control="title" href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" onClick={externalClick(entry,'title')}>{entry.title}</a></h2>{entry.author&&<p className="discovery-author" lang="en">{entry.author}</p>}</div>
-     <div className="discovery-actions"><a ref={node=>setSourceLink(entry.id,'source',node)} data-discovery-control="source" data-discovery-source={entry.id} href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" onClick={externalClick(entry,'source')}>{entry.kind==='article'?'阅读原文':'打开原站'}<ArrowUpRight size={16} aria-hidden="true"/><span className="sr-only">：{entry.title}</span></a><button type="button" className="discovery-bookmark" data-discovery-save={entry.id} aria-label={`${saved?'取消收藏':'收藏'}：${entry.title}`} aria-pressed={saved} disabled={!allowed||!ready} onClick={()=>toggle(entry)}><Bookmark size={19} aria-hidden="true"/></button></div>
+     {cover&&<a ref={node=>setSourceLink(entry.id,'cover',node)} data-discovery-control="cover" className={`discovery-cover-link${coverFailed?' discovery-cover-link--unavailable':''}`} href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`${programPage?'打开节目页':'打开原站'}：${entry.title}`} onClick={externalClick(entry,'cover')}>{!coverFailed&&<img src={cover.src} alt={cover.alt} loading="lazy" onError={()=>{if(matching())setFailedCovers(previous=>new Set([...previous,entry.id]));}}/>}<span className="discovery-kind-tag"><KindIcon size={13} aria-hidden="true"/>{kindLabels[entry.kind]}</span>{entry.durationLabel&&<span className="discovery-duration">{entry.durationLabel}</span>}</a>}
+     <div className="discovery-copy"><div className="discovery-source"><span className="discovery-source-mark" aria-hidden="true">{entry.publisher.slice(0,1).toUpperCase()}</span><span className="discovery-source-name">{sourceName}</span>{(cover?entry.tags[0]:kindLabels[entry.kind])&&<span className="discovery-source-kind">{cover?entry.tags[0]:kindLabels[entry.kind]}</span>}</div>{published&&<p className="discovery-author">发布于 <time dateTime={entry.publishedAt!}>{published}</time></p>}<h2 lang="en"><a ref={node=>setSourceLink(entry.id,'title',node)} data-discovery-control="title" href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={programPage?`${entry.title}，打开节目页`:undefined} onClick={externalClick(entry,'title')}>{entry.title}</a></h2>{entry.author&&<p className="discovery-author" lang="en">{entry.author}</p>}{programPage&&<p className="discovery-author">到节目页按标题收听</p>}</div>
+     <div className="discovery-actions"><a ref={node=>setSourceLink(entry.id,'source',node)} data-discovery-control="source" data-discovery-source={entry.id} href={entry.sourceUrl} target="_blank" rel="noopener noreferrer" onClick={externalClick(entry,'source')}>{programPage?'打开节目页':entry.kind==='article'?'阅读原文':'打开原站'}<ArrowUpRight size={16} aria-hidden="true"/><span className="sr-only">：{entry.title}</span></a><button type="button" className="discovery-bookmark" data-discovery-save={entry.id} aria-label={`${saved?'取消收藏':'收藏'}：${entry.title}`} aria-pressed={saved} disabled={!allowed||!ready} onClick={()=>toggle(entry)}><Bookmark size={19} aria-hidden="true"/></button></div>
     </article>;
    })}</div>
    {!found.length&&<div className="discovery-empty"><p>{view.savedOnly&&!ids.length?'还没有收藏。看到喜欢的内容，点一下书签。':selectedSources.size===0?'选择一个内容来源，开始浏览。':'没有找到相关内容。换个关键词试试。'}</p>{(view.query||view.category!=='all'||view.savedOnly||view.sourceIds!==undefined)&&<button type="button" onClick={()=>change({query:'',category:'all',savedOnly:false,sourceIds:undefined})}>查看全部内容</button>}</div>}
-   {!feedState.pending&&(snapshot.status==='offline'||snapshot.status==='cached'||snapshot.status==='fresh'&&snapshot.sources.some(source=>source.mode==='offline'||source.mode==='cached'))&&<p className="discovery-feed-status" role="status">{snapshot.status==='fresh'?'部分内容暂时无法更新，已显示现有内容。':'暂时无法更新，已显示现有内容。'}<button type="button" onClick={refresh} disabled={!allowed||feedState.pending}>重试</button></p>}
    {notice&&<p className="discovery-notice discovery-toast" role="status" aria-live="polite">{notice}</p>}
   </div>
   {sourcesOpen&&<div className="discovery-sheet-backdrop" onClick={event=>{if(event.target===event.currentTarget)closeSources();}}><div className="discovery-sheet" ref={sheet} role="dialog" aria-modal="true" aria-labelledby="discovery-sheet-title" onKeyDown={sourceKey}><div className="discovery-sheet-grip" aria-hidden="true"/><div className="discovery-sheet-heading"><h2 id="discovery-sheet-title">内容来源</h2><button type="button" ref={sheetClose} className="discovery-icon-button" aria-label="关闭" onClick={closeSources}><X size={20} aria-hidden="true"/></button></div><p className="discovery-sheet-note">英文原生内容</p>{sources.map(source=><label className="discovery-source-option" key={source.id}><span className="discovery-source-mark" aria-hidden="true">{source.label.slice(0,1).toUpperCase()}</span><span>{source.label}</span><input type="checkbox" aria-label={source.label} checked={selectedSources.has(source.id)} disabled={!allowed} onChange={()=>toggleSource(source.id)}/></label>)}<button type="button" className="discovery-sheet-done" onClick={closeSources}>完成</button><button type="button" className="discovery-sheet-refresh" disabled={!allowed||feedState.pending} onClick={refresh}><RefreshCw size={16} aria-hidden="true"/>刷新来源</button></div></div>}

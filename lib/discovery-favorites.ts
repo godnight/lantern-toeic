@@ -1,7 +1,7 @@
 import { DISCOVERY_SEED, restoreSavedDiscoveryItem } from './discovery-feed';
 import type { DiscoveryItem } from './discovery-feed-contract';
 export type DiscoveryStorage=Pick<Storage,'getItem'|'setItem'>;
-type SavedRef={id:string;title:string;sourceUrl:string};
+type SavedRef={id:string;title:string;sourceUrl:string;publishedAt:string|null};
 export type DiscoveryFavoritesResult=
  |{status:'ready';ids:readonly string[];entries:readonly DiscoveryItem[]}
  |{status:'blocked';reason:'access'|'storage'|'corrupt'|'invalid-id'};
@@ -30,11 +30,11 @@ export function createDiscoveryFavoritesStore({owner,storage,canAccess,isCurrent
     if(Object.keys(value).sort().join(',')!=='ids,kind,owner,schemaVersion'||raw.length>32768)return {status:'blocked',reason:'corrupt'};
     return {status:'ready',data:{ids:[...value.ids],items:[]}};
    }
-   if(value.schemaVersion!==2||Object.keys(value).sort().join(',')!=='ids,items,kind,owner,schemaVersion'||!Array.isArray(value.items)||value.items.length>300)return {status:'blocked',reason:'corrupt'};
+   if((value.schemaVersion!==2&&value.schemaVersion!==3)||Object.keys(value).sort().join(',')!=='ids,items,kind,owner,schemaVersion'||!Array.isArray(value.items)||value.items.length>300)return {status:'blocked',reason:'corrupt'};
    const seen=new Set<string>(),items:SavedRef[]=[];
    for(const ref of value.items){
-    if(!ref||typeof ref!=='object'||Array.isArray(ref)||Object.keys(ref).sort().join(',')!=='id,sourceUrl,title'||!value.ids.includes(ref.id)||seen.has(ref.id)||!restoreSavedDiscoveryItem(ref))return {status:'blocked',reason:'corrupt'};
-    seen.add(ref.id);items.push({id:ref.id,title:ref.title,sourceUrl:ref.sourceUrl});
+    if(!ref||typeof ref!=='object'||Array.isArray(ref)||Object.keys(ref).sort().join(',')!==(value.schemaVersion===2?'id,sourceUrl,title':'id,publishedAt,sourceUrl,title')||!value.ids.includes(ref.id)||seen.has(ref.id)||(value.schemaVersion===3&&ref.publishedAt!==null&&typeof ref.publishedAt!=='string')||!restoreSavedDiscoveryItem(ref))return {status:'blocked',reason:'corrupt'};
+    seen.add(ref.id);items.push({id:ref.id,title:ref.title,sourceUrl:ref.sourceUrl,publishedAt:value.schemaVersion===2?null:ref.publishedAt});
    }
    return {status:'ready',data:{ids:[...value.ids],items}};
   }catch{return {status:'blocked',reason:'corrupt'};}
@@ -47,15 +47,15 @@ export function createDiscoveryFavoritesStore({owner,storage,canAccess,isCurrent
  };
  const save=(data:RecordData):DiscoveryFavoritesResult=>{
   if(!allowed())return {status:'blocked',reason:'access'};
-  const raw=JSON.stringify({kind:'lantern-discovery-favorites',schemaVersion:2,owner,ids:data.ids.sort(),items:data.items.sort((a,b)=>a.id.localeCompare(b.id))});
+  const raw=JSON.stringify({kind:'lantern-discovery-favorites',schemaVersion:3,owner,ids:data.ids.sort(),items:data.items.sort((a,b)=>a.id.localeCompare(b.id))});
   if(raw.length>512*1024)return {status:'blocked',reason:'storage'};
   try{storage.setItem(key,raw);}catch{return {status:'blocked',reason:'storage'};}
   if(!allowed())return {status:'blocked',reason:'access'};
   return result(data);
  };
  const refFor=(entry:DiscoveryItem):SavedRef|null=>{
-  const ref={id:entry.id,title:entry.title,sourceUrl:entry.sourceUrl};
-  return entry.sourceId==='99pi'&&entry.kind==='podcast'&&entry.language==='en'&&entry.originalLanguage==='en'&&restoreSavedDiscoveryItem(ref)?ref:null;
+  const ref={id:entry.id,title:entry.title,sourceUrl:entry.sourceUrl,publishedAt:entry.publishedAt??null};
+  return (entry.sourceId==='99pi'||entry.sourceId.startsWith('cgtn-'))&&entry.kind==='podcast'&&entry.language==='en'&&entry.originalLanguage==='en'&&restoreSavedDiscoveryItem(ref)?ref:null;
  };
  const read=():DiscoveryFavoritesResult=>{const state=load();return state.status==='ready'?result(state.data):state;};
  return {key,read,toggle(id:string,entry?:DiscoveryItem):DiscoveryFavoritesResult{
@@ -66,7 +66,7 @@ export function createDiscoveryFavoritesStore({owner,storage,canAccess,isCurrent
   else{
    if(ids.length>=300)return {status:'blocked',reason:'storage'};
    const ref=entry?refFor(entry):null;
-   if(id.startsWith('99pi-')&&!DISCOVERY_SEED.some(item=>item.id===id)&&!ref)return {status:'blocked',reason:'invalid-id'};
+   if((id.startsWith('99pi-')||id.startsWith('cgtn-'))&&!DISCOVERY_SEED.some(item=>item.id===id)&&!ref)return {status:'blocked',reason:'invalid-id'};
    ids.push(id);if(ref)items.push(ref);
   }
   return save(state.data);

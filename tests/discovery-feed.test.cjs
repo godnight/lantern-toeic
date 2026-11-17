@@ -3,18 +3,58 @@
 const test=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {createSourceLoader}=require('./helpers/actual-source-loader.cjs');
 const root=path.resolve(__dirname,'..');
-const NASA='https://www.nasa.gov/feed/', POD='https://feeds.simplecast.com/BqbsxVfO';
+const NASA='https://www.nasa.gov/feed/', POD='https://feeds.simplecast.com/BqbsxVfO', CGTN=['https://cgtn-radio-data.cgtn.com/rss/program/11','https://cgtn-radio-data.cgtn.com/rss/program/5','https://cgtn-radio-data.cgtn.com/rss/program/46'];
 const {TextEncoder}=require('node:util');
 const item=(guid,link,title,extra='')=>`<item><guid>${guid}</guid><link>${link}</link><title>${title}</title>${extra}</item>`;
 const rss=items=>`<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="urn:dc" xmlns:itunes="urn:itunes"><channel><title>Official feed</title>${items}</channel></rss>`;
 function response(xml,chunkSize=37){const bytes=new TextEncoder().encode(xml);let pos=0;return new Response(new ReadableStream({pull(c){if(pos>=bytes.length)return c.close();const end=Math.min(pos+chunkSize,bytes.length);c.enqueue(bytes.slice(pos,end));pos=end;}}),{status:200,headers:{'content-type':'application/rss+xml'}});}
 function memory(initial={}){const m=new Map(Object.entries(initial)),writes=[];return {m,writes,getItem:k=>m.get(k)??null,setItem(k,v){writes.push([k,String(v)]);m.set(k,String(v));}};}
 const sources=()=>createSourceLoader({root}).load('lib/discovery-feed.ts');
-function fakeFetch(nasa,podcast,calls=[]){return async(url,options)=>{const u=String(url);calls.push({url:u,credentials:options?.credentials,headers:options?.headers});assert.equal(options?.credentials,'omit');if(u===NASA){if(nasa instanceof Error)throw nasa;return response(nasa);}if(u===POD){if(podcast instanceof Error)throw podcast;return response(podcast);}throw Error('Unexpected network target: '+u);};}
+function fakeFetch(nasa,podcast,calls=[]){return async(url,options)=>{const u=String(url);calls.push({url:u,credentials:options?.credentials,headers:options?.headers});assert.equal(options?.credentials,'omit');if(u===NASA){if(nasa instanceof Error)throw nasa;return response(nasa);}if(u===POD){if(podcast instanceof Error)throw podcast;return response(podcast);}if(CGTN.includes(u))return response(rss('<language>en</language>'));throw Error('Unexpected network target: '+u);};}
 const NASA_ITEM=item('nasa-unique','https://www.nasa.gov/image-article/gemini-astronaut-photos-inspired-early-earth-observation-program/','Gemini Astronaut Photos Inspired Early Earth Observation Program');
 const UUID_A='beeff00d-1111-4111-8111-111111111111',UUID_B='beeff00d-2222-4222-8222-222222222222';
 const EP_A=item(UUID_A,'https://99percentinvisible.org/episode/invisible-city/','An English original episode','<description>We explore a city in English.</description>');
 const EP_B=item(UUID_B,'https://99percentinvisible.org/episode/another-city/','A new English episode','<description>Originally presented in English.</description>');
+
+test('refresh summary distinguishes actual new IDs, unchanged sources, partial and offline results',async()=>{
+ const feed=sources(),store=memory();
+ const initial=feed.readDiscoveryFeedCache(store);assert.equal(initial.refresh,null);assert.equal(initial.lastSuccessAt,null);
+ const first=await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(rss(NASA_ITEM),rss(EP_A))});
+ assert.equal(first.refresh.outcome,'partial');assert.equal(first.refresh.added,1);assert(first.refresh.attemptedAt>0);assert(first.lastSuccessAt>=first.refresh.attemptedAt);
+ assert.equal(first.entries[0].id,'99pi-'+UUID_A);assert.equal(new Set(first.entries.map(x=>x.id)).size,first.entries.length);
+ const unchanged=await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(rss(NASA_ITEM),rss(EP_A+EP_A))});
+ assert.equal(unchanged.refresh.outcome,'partial');assert.equal(unchanged.refresh.added,0);
+ const partial=await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(new Error('offline'),rss(EP_A+EP_B))});
+ assert.equal(partial.refresh.outcome,'partial');assert.equal(partial.refresh.added,1);assert.equal(partial.entries[0].id,'99pi-'+UUID_B);
+ const same=await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(rss(NASA_ITEM),rss(EP_A+EP_B))});
+ assert.equal(same.refresh.outcome,'partial');assert.equal(same.refresh.added,0);assert.equal(same.entries[0].id,'99pi-'+UUID_B,'newer entries retain priority after unchanged refresh');
+ const offline=await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(new Error('offline'),new Error('offline'))});
+ assert.equal(offline.refresh.outcome,'failed');assert.equal(offline.refresh.added,0);assert.equal(offline.lastSuccessAt,same.lastSuccessAt);assert(offline.entries.some(x=>x.id==='99pi-'+UUID_B));
+ const cached=feed.readDiscoveryFeedCache(store);assert.equal(cached.refresh,null);assert.equal(cached.lastSuccessAt,same.lastSuccessAt);assert.equal(cached.entries[0].id,'99pi-'+UUID_B);
+});
+
+test('a later completed refresh prevents an older response from replacing its source or claiming new entries',async()=>{
+ const feed=sources(),store=memory(),pending=[];
+ const delayed=(url)=>CGTN.includes(String(url))?Promise.resolve(response(rss('<language>en</language>'))):new Promise(resolve=>pending.push({url:String(url),resolve}));
+ const earlier=feed.refreshDiscoveryFeed({storage:store,fetchImpl:delayed});
+ const later=await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(rss(NASA_ITEM),rss(EP_B))});
+ assert.equal(later.refresh.added,1);
+ for(const p of pending)p.resolve(response(p.url===NASA?rss(NASA_ITEM):rss(EP_A)));
+ const older=await earlier;assert.equal(older.refresh.outcome,'partial');assert.equal(older.refresh.added,0);
+ assert(older.entries.some(x=>x.id==='99pi-'+UUID_B));assert(!older.entries.some(x=>x.id==='99pi-'+UUID_A));
+ assert(feed.readDiscoveryFeedCache(store).entries.some(x=>x.id==='99pi-'+UUID_B));
+});
+
+test('unwritable storage keeps a runtime baseline without changing protected bytes',async()=>{
+ const feed=sources(),raw=JSON.stringify({schemaVersion:999,sources:{}});let writes=0;
+ const storage={getItem:()=>raw,setItem(){writes++;throw Error('not writable');}};
+ const first=await feed.refreshDiscoveryFeed({storage,fetchImpl:fakeFetch(rss(NASA_ITEM),rss(EP_A))});
+ assert.equal(first.refresh.outcome,'partial');assert.equal(first.refresh.added,1);
+ const second=await feed.refreshDiscoveryFeed({storage,fetchImpl:fakeFetch(rss(NASA_ITEM),rss(EP_A))});
+ assert.equal(second.refresh.outcome,'partial');assert.equal(second.refresh.added,0);assert.equal(writes,0);assert.equal(storage.getItem(),raw);
+ const offline=await feed.refreshDiscoveryFeed({storage,fetchImpl:fakeFetch(new Error('offline'),new Error('offline'))});
+ assert.equal(offline.refresh.outcome,'failed');assert(offline.entries.some(x=>x.id==='99pi-'+UUID_A));
+});
 
 test('stream parser handles split UTF-8 and reads only direct item fields, not CDATA decoys',async()=>{
  const {readRssItems}=await import('../lib/discovery-rss-stream.mjs');
@@ -58,7 +98,7 @@ test('real refresh accepts reviewed NASA and a source-policy 99pi episode while 
  item('beeff00d-7777-4777-8777-777777777777','https://99percentinvisible.org/episode/no/',''));
  const nasa=rss(NASA_ITEM+item('unreviewed','https://www.nasa.gov/not-reviewed/','Unknown original language')+NASA_ITEM);
  const result=await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(nasa,podcast,calls),canCommit:()=>true});
- assert.equal(new Set(calls.map(x=>x.url)).size,2);assert.deepEqual(new Set(calls.map(x=>x.url)),new Set([NASA,POD]));assert(calls.every(x=>x.credentials==='omit'));
+ assert.equal(new Set(calls.map(x=>x.url)).size,4);assert.deepEqual(new Set(calls.map(x=>x.url)),new Set([POD,...CGTN]));assert(calls.every(x=>x.credentials==='omit'));
  assert(result.entries.some(e=>e.id==='nasa-gemini-earth-observation'));assert.equal(result.entries.filter(e=>e.id==='nasa-gemini-earth-observation').length,1);
  const fresh=result.entries.find(e=>e.title==='An English original episode');assert(fresh,'an actual unlisted episode from the reviewed program can enter after successful feed fetch');
  assert.equal(fresh.kind,'podcast');assert.equal(fresh.sourceId,'99pi');assert.equal(fresh.author,null);assert.equal(fresh.language,'en');assert.equal(fresh.originalLanguage,'en');assert(fresh.verification.basis);assert(fresh.verification.evidenceUrls.some(u=>u.includes('99percentinvisible.org')));
@@ -80,7 +120,7 @@ test('last valid source results survive offline or partial failure and corrupt/f
  const nasaSpoof=await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(rss(item('bad','https://evil.invalid/path','Counterfeit NASA')+item('missing','','No NASA link')),new Error('offline')),canCommit:()=>true});
  assert.equal(nasaSpoof.status,'cached');assert.equal(store.m.get(key),saved,'invalid NASA URL keys must not be treated as reviewed');assert(!nasaSpoof.entries.some(e=>e.title==='Counterfeit NASA'));
  const partial=await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(new Error('offline'),rss(EP_B+EP_A)),canCommit:()=>true});
- assert(partial.entries.some(e=>e.title==='A new English episode'));assert(partial.entries.some(e=>e.title==='An English original episode'));assert(partial.sources.some(s=>s.id==='nasa'&&s.mode==='cached'));assert(partial.sources.some(s=>s.id==='99pi'&&s.mode==='live'));
+ assert(partial.entries.some(e=>e.title==='A new English episode'));assert(partial.entries.some(e=>e.title==='An English original episode'));assert(partial.sources.some(s=>s.id==='nasa'&&s.mode==='curated'));assert(partial.sources.some(s=>s.id==='99pi'&&s.mode==='live'));
  for(const raw of ['{broken',JSON.stringify({schemaVersion:999,sources:{}})]){store.m.set(key,raw);store.writes.length=0;await feed.refreshDiscoveryFeed({storage:store,fetchImpl:fakeFetch(rss(NASA_ITEM),rss(EP_A)),canCommit:()=>true});assert.equal(store.m.get(key),raw);assert.equal(store.writes.length,0,'unknown/corrupt cache must remain untouched');}
 });
 
@@ -89,7 +129,7 @@ test('aborted or stale owner request cannot commit after a fetch ignores cancell
  const fetchImpl=(url,options)=>new Promise(resolve=>{pending.push({url:String(url),resolve,options});});
  const controller=new AbortController();const refreshing=feed.refreshDiscoveryFeed({storage:store,fetchImpl,signal:controller.signal,canCommit:()=>permit});
  await new Promise(resolve=>setTimeout(resolve,0));permit=false;controller.abort();
- const settled=await Promise.race([refreshing.then(()=>true,()=>true),new Promise(resolve=>setTimeout(()=>resolve(false),1000))]);assert(settled,'abort should settle even if a provider ignores its signal');
+ const settled=await Promise.race([refreshing,new Promise(resolve=>setTimeout(()=>resolve(null),1000))]);assert(settled,'abort should settle even if a provider ignores its signal');assert.equal(settled.refresh,null);
  for(const p of pending)p.resolve(response(p.url===NASA?rss(NASA_ITEM):rss(EP_A)));
  await new Promise(resolve=>setTimeout(resolve,30));assert.equal(store.writes.length,0);assert.equal(store.m.size,0);
 });

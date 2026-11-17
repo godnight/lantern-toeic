@@ -5,6 +5,8 @@ export type DiscoveryItem = Readonly<{
   id: string;
   kind: DiscoveryContentKind;
   title: string;
+  /** Original publisher's publication timestamp, when provided and valid. */
+  publishedAt?: string | null;
   author: string | null;
   publisher: string;
   platform: string;
@@ -18,11 +20,18 @@ export type DiscoveryItem = Readonly<{
   verification: Readonly<{ checkedAt: string; basis: string; evidenceUrls: readonly string[] }>;
 }>;
 export type DiscoverySourceStatus = Readonly<{ id: string; label: string; mode: DiscoverySourceMode }>;
+export type DiscoveryRefreshSummary = Readonly<{
+  outcome: 'updated' | 'unchanged' | 'partial' | 'failed';
+  added: number;
+  attemptedAt: number;
+}>;
 export type DiscoveryFeedSnapshot = Readonly<{
   entries: readonly DiscoveryItem[];
   sources: readonly DiscoverySourceStatus[];
   status: 'seed' | 'fresh' | 'cached' | 'offline';
   refreshedAt: number | null;
+  lastSuccessAt: number | null;
+  refresh: DiscoveryRefreshSummary | null;
 }>;
 export type DiscoveryFeedOptions = Readonly<{
   signal?: AbortSignal;
