@@ -25,7 +25,7 @@ function inside(root, path) {
   return part !== '' && part !== '..' && !part.startsWith(`..${sep}`) && !isAbsolute(part);
 }
 
-export function renderAuthConfiguration(config) {
+export function renderAuthConfiguration(config, template = readFileSync(join(sourceRoot, ...configurationPath.split('/')), 'utf8')) {
   if (config === null || typeof config !== 'object' || Array.isArray(config) ||
       Object.keys(config).sort().join(',') !== 'apiOrigin,schemaVersion,sessionAlias' ||
       config.schemaVersion !== 1 || typeof config.apiOrigin !== 'string' ||
@@ -37,9 +37,14 @@ export function renderAuthConfiguration(config) {
   const url = new URL(origin);
   if (url.username || url.password || url.pathname !== '/' || url.search || url.hash ||
       (url.port && Number(url.port) > 65535)) fail();
-  return `// Generated in an isolated build source. Do not commit.\n` +
-    `export const AUTH_API_ORIGIN: string = '${origin}';\n` +
-    `export const AUTH_SESSION_ALIAS: string = '${alias}';\n`;
+  if (typeof template !== 'string') fail();
+  let result = template;
+  for (const [name, value] of [['AUTH_API_ORIGIN', origin], ['AUTH_SESSION_ALIAS', alias]]) {
+    const line = new RegExp(`^export const ${name}: string = '[^'\\r\\n]*';\\r?$`, 'gm');
+    if ([...result.matchAll(line)].length !== 1) fail();
+    result = result.replace(line, `export const ${name}: string = '${value}';`);
+  }
+  return result;
 }
 
 export function prepareAuthConfiguration(configFile, stagingDirectory) {

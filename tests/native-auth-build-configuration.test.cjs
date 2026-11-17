@@ -94,6 +94,16 @@ test('unsafe config, unexpected fields and Git checkouts fail without modifying 
   assert.equal(fs.readFileSync(f.target, 'utf8'), original);
 });
 
+test('template substitution preserves additional exports and rejects ambiguous targets', async () => {
+  const { renderAuthConfiguration } = await import('../harmony/scripts/prepare-auth-configuration.mjs');
+  const current = fs.readFileSync(path.join(root, ...configRelative.split('/')), 'utf8');
+  const value = { schemaVersion: 1, apiOrigin: origin, sessionAlias: alias };
+  const extra = '\nexport const AUTH_FUTURE_SETTING: boolean = true;\n';
+  assert.ok(renderAuthConfiguration(value, current + extra).endsWith(extra));
+  assert.throws(() => renderAuthConfiguration(value, current + "\nexport const AUTH_SESSION_ALIAS: string = 'duplicate';\n"));
+  assert.throws(() => renderAuthConfiguration(value, current.replace('AUTH_SESSION_ALIAS', 'AUTH_NOT_ALIAS')));
+});
+
 test('configured Asset namespace reuses the existing session without copying its token', async () => {
   const records = new Map();
   const token = 'a'.repeat(64);
