@@ -666,6 +666,10 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
         // This branch is the existing strict v2 session proof. Preserve its wire
         // reply and project only the remaining monotonic lifetime to native media.
         const published: boolean = this.current(operation) && this.ownerLease.publishVerifiedV2(user.id, ended, validForMs, operation.ownerLeaseEpoch);
+        // A concurrent request can revoke the native lease while this request
+        // is in flight, even when that concurrent request is rejected as busy.
+        // Do not let the web layer select an owner whose lease was not issued.
+        if (!published) throw new Error('Unconfirmed');
         if (OFFLINE_OWNER_ENABLED && published && !NativeAuthHost.offlineOwnerPoisoned) {
           const proof: TrustedOwnerLease | undefined = this.ownerLease.snapshot();
           if (proof !== undefined && proof.uid === user.id) {

@@ -6,6 +6,16 @@ const A={id:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'},c
 const gatewayCookie='__cf_bm=synthetic_gateway_value; HttpOnly; SameSite=None; Secure; Path=/; Domain=.example.test; Expires=Sat, 31 Oct 2026 14:30:00 GMT';
 const productCookie='__Host-lantern-session='+token+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200';
 const clearedCookie='__Host-lantern-session=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0';
+test('a later busy session cannot cause a stale native owner proof to be returned',async()=>{
+ let release,entered;const started=new Promise(resolve=>{entered=resolve;}),pending=new Promise(resolve=>{release=resolve;});
+ const h=hostRuntime({initialToken:token,dispatch:async()=>{entered();await pending;return response(200,{user:A,capabilities:caps,session:{version:2,remainingMs:1000}});}});
+ try{
+  const first=h.invoke({version:2,id:'first_session',action:'session'});await started;
+  const second=await h.invoke({version:2,id:'second_session',action:'session'});assert.equal(second.status,503);
+  release();const result=await first;assert.equal(result.status,503);assert.equal(result.body.user,undefined);
+  assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined);
+ }finally{release();h.dispose();}
+});
 test('actual host keeps v1 exact and negotiates v2 with a fixed header and conservative uptime budget',async()=>{
  const h=hostRuntime({initialToken:token,dispatch:async(_url,options,clock)=>{clock.advance(20);return response(200,{user:A,capabilities:caps,...options.header['X-Lantern-Session-Proof']==='2'?{session:{version:2,remainingMs:1000}}:{}});}});
  try{const v1=await h.invoke({id:'legacy',action:'session'});assert.deepEqual(Object.keys(v1).sort(),['body','id','status']);assert.deepEqual(Object.keys(v1.body).sort(),['capabilities','user']);const v2=await h.invoke({version:2,id:'current',action:'session'});assert.equal(v2.version,2);assert.equal(v2.status,200);assert.equal(v2.body.session.validForMs,980);assert.equal(h.requests[0].proof,undefined);assert.equal(h.requests[1].proof,'2');assert.equal(h.saves,0);assert(!JSON.stringify(h.replies).includes(token));}finally{h.dispose();}
