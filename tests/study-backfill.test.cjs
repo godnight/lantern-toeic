@@ -55,6 +55,19 @@ test('source change or account switch during staging fails and keeps original so
   await client.cancel();await assert.rejects(backfillNativeStudy({enabled:true,storage:s,client}),/lease unavailable/);
  }finally{await client.cancel();db.close();}
 });
+test('backfill does not stage a stale event when its source changes during the IDB preparation',async()=>{
+ const s=storage(),first=event('first');putPrimary(s,A,data([first]));const {db,client}=await setup('backfill-staging-source-race');
+ const subtle=globalThis.crypto.subtle,own=Object.getOwnPropertyDescriptor(subtle,'digest'),original=subtle.digest.bind(subtle);let count=0;
+ try{
+  Object.defineProperty(subtle,'digest',{configurable:true,value:async(...args)=>{
+   if(++count===2)putPrimary(s,A,data([{...first,choice:2}]));
+   return original(...args);
+  }});
+  await assert.rejects(backfillNativeStudy({enabled:true,storage:s,client}),/study source changed/);
+  const result=await client.readStudy();assert.equal(result.pendingOperations.length,0);assert.equal(result.data.attempts.length,0);assert.equal(result.eventLinks.length,0);
+  assert.equal(JSON.parse(s.getItem('lantern-v1-'+A)).data.attempts[0].choice,2);
+ }finally{if(own)Object.defineProperty(subtle,'digest',own);else delete subtle.digest;await client.cancel();db.close();}
+});
 test('legacy acknowledged event without a link stays deferred together with its reviews',async()=>{
  const s=storage(),first=event('first'),review=event('review');putPrimary(s,A,data([first,review]));const before=[...s.raw],{db,client}=await setup('backfill-legacy-ack');try{
   const prior=await client.readStudy();prior.data.attempts.push(first);prior.uploadAcks.push({id:randomUUID(),fingerprint:'0'.repeat(64)});delete prior.eventLinks;

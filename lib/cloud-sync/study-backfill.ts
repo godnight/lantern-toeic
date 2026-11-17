@@ -6,7 +6,7 @@ import {canonicalStudyEvent,readStableStudyJournal,readStudyCheckpoints,replaySt
 // share a transaction; a changed scan must be retried before any upload.
 type StorageLike=Pick<Storage,'length'|'key'|'getItem'|'setItem'|'removeItem'>;
 type Session={owner:string;signal:AbortSignal};
-type Client={readonly session:Session|null;answer:(type:'attempt'|'checkin',event:Attempt|Checkin,session:Session,id:string,firstAttemptId?:string)=>Promise<unknown>};
+type Client={readonly session:Session|null;answer:(type:'attempt'|'checkin',event:Attempt|Checkin,session:Session,id:string,firstAttemptId?:string,sourceGuard?:()=>boolean)=>Promise<unknown>};
 type Entry={name:string;bytes:string};
 const OWNER=/^usr_[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -69,6 +69,7 @@ export async function backfillNativeStudy(options:{enabled?:boolean;storage:Stor
  for(const a of result.attempts){const v=allAttempts.get(a.id);if(v!==canonicalStudyEvent('attempt',a))throw Error('conflicting study event');}
  for(const c of result.checkins){const v=allCheckins.get(c.id);if(v!==canonicalStudyEvent('checkin',c))throw Error('conflicting study event');}
  if(!active(client,session)||!same(before,list(storage,key)))throw Error('study source changed');
+ const sourceCurrent=()=>{try{return active(client,session)&&same(before,list(storage,key));}catch{return false;}};
  const attempts=[...allAttempts.values()].map(x=>JSON.parse(x) as Attempt),checkins=[...allCheckins.values()].map(x=>JSON.parse(x) as Checkin),roots=new Map<string,Attempt[]>();
  for(const row of attempts)if(row.mode==='first'){const previous=roots.get(row.qid);if(previous)previous.push(row);else roots.set(row.qid,[row]);}
  const deferred:string[]=[],items:{type:'attempt'|'checkin';event:Attempt|Checkin;first?:string}[]=[];
@@ -78,9 +79,11 @@ export async function backfillNativeStudy(options:{enabled?:boolean;storage:Stor
  let staged=0;const unavailableRoots=new Set<string>();
  for(const item of items){
   if(!active(client,session))throw Error('account lease changed');
+  if(!sourceCurrent())throw Error('study source changed');
   if(item.type==='attempt'&&(item.event as Attempt).mode==='review'&&item.first&&unavailableRoots.has(item.first)){deferred.push(item.event.id);continue;}
   const id=await nativeStudyBackfillOperationId(owner,item.type,item.event.id);if(!active(client,session))throw Error('account lease changed');
-  try{await client.answer(item.type,item.event,session,id,item.first);staged++;}
+  if(!sourceCurrent())throw Error('study source changed');
+  try{await client.answer(item.type,item.event,session,id,item.first,sourceCurrent);staged++;}
   catch(error){if(error instanceof Error&&['event conflict','event mapping unavailable'].includes(error.message)){deferred.push(item.event.id);if(item.type==='attempt'&&(item.event as Attempt).mode==='first')unavailableRoots.add(item.event.id);continue;}throw error;}
  }
  if(!active(client,session)||!same(before,list(storage,key)))throw Error('study source changed');
