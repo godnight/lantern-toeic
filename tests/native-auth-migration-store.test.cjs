@@ -48,6 +48,7 @@ function storeHarness({ enabled = false, record, rows, fail, clock = now } = {})
   const imports = {
     '@ohos.security.asset': { __esModule: true, default: asset },
     '@kit.BasicServicesKit': {},
+    './AuthConfiguration': { AUTH_SESSION_ALIAS: 'lantern-product-auth-session-v1' },
     './AuthMigrationConfiguration': { AUTH_MIGRATION_ENABLED: enabled, AUTH_MIGRATION_OLD_ORIGIN: oldOrigin,
       AUTH_MIGRATION_NEW_ORIGIN: newOrigin },
   };

@@ -1,6 +1,7 @@
 import asset from '@ohos.security.asset';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { AUTH_MIGRATION_ENABLED, AUTH_MIGRATION_OLD_ORIGIN, AUTH_MIGRATION_NEW_ORIGIN } from './AuthMigrationConfiguration';
+import { AUTH_SESSION_ALIAS } from './AuthConfiguration';
 
 interface StoredSession {
   version: number;
@@ -39,7 +40,7 @@ function text(value: Uint8Array): string {
 
 /** Token, expiry and endpoint binding remain in OS Asset Store, never in Web storage. */
 export class AuthSessionStore {
-  private alias: Uint8Array = ascii('lantern-product-auth-session-v1');
+  private alias: Uint8Array = ascii(AUTH_SESSION_ALIAS);
   // A long-format credential hidden by a rollback must survive automatic
   // unauthenticated probes. Explicit logout may still revoke and clear it.
   private preserveDormant: boolean = false;

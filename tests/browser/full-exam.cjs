@@ -15,7 +15,13 @@ const {NATIVE_ORIGIN,NATIVE_QA_USER,installNativeAccountFixture,fulfillNativePre
 const PORT = 4175;
 const PREVIEW_ORIGIN = `http://127.0.0.1:${PORT}`;
 const ORIGIN = NATIVE_ORIGIN;
-const MOCK_DISCOVERY_FEEDS = new Set(['https://www.nasa.gov/feed/','https://feeds.simplecast.com/BqbsxVfO']);
+// Exact dynamic feeds used by discovery; every other external request stays blocked.
+const MOCK_DISCOVERY_FEEDS = new Set([
+  'https://cgtn-radio-data.cgtn.com/rss/program/11',
+  'https://cgtn-radio-data.cgtn.com/rss/program/5',
+  'https://cgtn-radio-data.cgtn.com/rss/program/46',
+  'https://feeds.simplecast.com/BqbsxVfO',
+]);
 const REPO = path.resolve(__dirname, '../..');
 let OUT;
 // MockExam keeps the verified native account in its Harmony-specific partition.

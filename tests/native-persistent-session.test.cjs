@@ -17,7 +17,7 @@ function assetHarness(initial){
   async update(_q,attrs){bytes=attrs.get(Tag.SECRET);},async remove(){removes++;bytes=undefined;}};
  const source=fs.readFileSync(path.join(__dirname,'../harmony/entry/src/main/ets/auth/AuthSessionStore.ets'),'utf8');
  const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;
- const exports={},imports={'@ohos.security.asset':{__esModule:true,default:asset},'@kit.BasicServicesKit':{},'./AuthMigrationConfiguration':{AUTH_MIGRATION_ENABLED:false}};
+ const exports={},imports={'@ohos.security.asset':{__esModule:true,default:asset},'@kit.BasicServicesKit':{},'./AuthConfiguration':{AUTH_SESSION_ALIAS:'lantern-product-auth-session-v1'},'./AuthMigrationConfiguration':{AUTH_MIGRATION_ENABLED:false}};
  vm.runInNewContext(js,{exports,require:id=>{if(!(id in imports))throw Error('unexpected import');return imports[id];},Uint8Array,Map,JSON,Number,String,Error,Date:{now:()=>now}});
  return {store:new exports.AuthSessionStore(),newStore:()=>new exports.AuthSessionStore(),advance:ms=>now+=ms,get bytes(){return bytes;},get removes(){return removes;}};
 }
