@@ -13,6 +13,13 @@ test('workspace resume hints accept only same-owner whitelisted pages and bounde
  assert.equal(nativeWorkspaceResume(A.id,'account',0,null,false),null);assert.equal(nativeWorkspaceResume(A.id,'train',-1,null,false),null);
  assert.equal(nativeWorkspaceResume(A.id,'train',0,'../bad',false),null);assert.equal(nativeWorkspaceResume(A.id,'train',0,null,true),null);
 });
+test('previous vocabulary hint requires the same active session and a saved immediate predecessor',()=>{
+ const {nativeWorkspaceResume,resumeForOwner,validVocabularyPrevious}=require('./helpers/actual-source-loader.cjs').createSourceLoader({root}).load('lib/native-workspace-resume.ts');
+ const hint={sessionId:'vocab:one',stepId:'step:one'},session={id:'vocab:one',status:'active',cursor:1,queue:[{id:'step:one',receipt:{commandId:'saved'}},{id:'step:two'}]};
+ const snapshot=nativeWorkspaceResume(A.id,'vocabulary',40,null,false,hint);assert(snapshot);assert.equal(resumeForOwner(snapshot,'usr_bbbbbbbb-2222-4222-8222-222222222222'),null);assert(validVocabularyPrevious(hint,session));
+ assert.equal(nativeWorkspaceResume(A.id,'train',0,null,false,hint),null);assert.equal(nativeWorkspaceResume(A.id,'vocabulary',0,null,false,{...hint,stepId:'../bad'}),null);
+ for(const bad of [{...session,id:'vocab:other'},{...session,status:'completed'},{...session,cursor:0},{...session,cursor:2},{...session,queue:[{id:'step:one'}]},{...session,queue:[{id:'step:one',receipt:{},correctionPending:true}]}])assert.equal(validVocabularyPrevious(hint,bad),false);
+});
 
 // Runs the actual root component with controlled React scheduling and external
 // controller/lifecycle ports. No authentication or SDK result is fabricated in
