@@ -91,6 +91,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
   private static retryAt: number = 0;
   private static coldVersion: number = 0;
   private static coldPoisoned: boolean = false;
+  private static coldHosts: NativeAuthHost[] = [];
   private cold: ColdFlight | undefined = undefined;
   private seen: string[] = [];
   private network: http.HttpRequest | undefined = undefined;
@@ -120,6 +121,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
       const localEnabled: boolean = OFFLINE_OWNER_ENABLED || VOLATILE_OWNER_ENABLED;
       this.controller.registerJavaScriptProxy(this, 'LanternAuthHost', localEnabled ? ['request', 'isLocalActive'] : ['request'], [], localEnabled ? LOCAL_PROXY_PERMISSION : PROXY_PERMISSION);
       this.attached = true;
+      if (COLD_START_PREFETCH_ENABLED && !NativeAuthHost.coldHosts.includes(this)) NativeAuthHost.coldHosts.push(this);
       return true;
     } catch {
       this.attached = false;
@@ -346,6 +348,7 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
     this.invalidate();
     this.disposed = true;
     this.attached = false;
+    if (COLD_START_PREFETCH_ENABLED) NativeAuthHost.coldHosts = NativeAuthHost.coldHosts.filter((host: NativeAuthHost) => host !== this);
     try { this.controller.deleteJavaScriptRegister('LanternAuthHost'); } catch { /* Already detached. */ }
   }
 
@@ -356,7 +359,16 @@ export class NativeAuthHost implements SyncAuthGate, NativeTransitionEvidence {
     try { frame = this.controller.getLastJavascriptProxyCallingFrameUrl(); } catch { return; }
     if (!trustedFrame(frame) || !this.live(epoch)) return;
     const input: AuthRequest | undefined = parseAuthRequest(raw, OFFLINE_OWNER_ENABLED || VOLATILE_OWNER_ENABLED);
-    if (input === undefined || ['register', 'login', 'logout', 'phone-login', 'phone-bind', 'huawei-login', 'huawei-bind'].includes(input.action)) this.invalidateColdStart();
+    const identityRequest: boolean = input !== undefined && ['register', 'login', 'logout', 'phone-login', 'phone-bind', 'huawei-login', 'huawei-bind'].includes(input.action);
+    if (COLD_START_PREFETCH_ENABLED && (input === undefined || identityRequest)) {
+      // A different Host can own a lease while the process-wide auth slot is
+      // busy. Revoke all of them synchronously on account-change intent.
+      for (const host of NativeAuthHost.coldHosts) {
+        host.ownerLease.revoke();
+        if (OFFLINE_OWNER_ENABLED || VOLATILE_OWNER_ENABLED) host.revokeLocal();
+      }
+    }
+    if (input === undefined || identityRequest) this.invalidateColdStart();
     if (input === undefined) { this.ownerLease.revoke(); if (VOLATILE_OWNER_ENABLED) { VolatileOwnerFence.clear(); this.revokeLocal(); } return; }
     // Discovery has no identity effect. In particular, reading it immediately
     // after a verified cold-start session must not disable native media access.

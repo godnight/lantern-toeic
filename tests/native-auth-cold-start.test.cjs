@@ -69,6 +69,18 @@ test('a peer account action invalidates session consumption while Asset is being
   assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined);
  }finally{read.resolve(token);peer?.dispose();h.dispose();}
 });
+test('a peer logout revokes published owner while offline-proof persistence is pending',async()=>{
+ const save=deferred();const entered=deferred();const fence={saveVerified:async()=>{entered.resolve();return save.promise;},markPending:async()=>{}};
+ const h=hostRuntime({coldPrefetch:true,offlineFence:fence,initialToken:token,dispatch:proof});let peer;
+ try{
+  h.host.beginColdStartCandidate(()=>true);await h.settle();const waiting=h.invoke(session('persisting'));
+  await entered.promise;assert.equal(h.host.trustedOwnerProvider().snapshot().uid,user.id);
+  peer=h.newPeer();peer.request(JSON.stringify({id:'peer_logout',action:'logout'}));await h.settle();
+  assert.equal(h.replies.find(r=>r.id==='peer_logout').status,503);
+  assert.equal(h.host.trustedOwnerProvider().snapshot(),undefined);
+  save.resolve(true);await h.settle();assert.equal(h.replies.some(r=>r.id==='persisting'&&r.status===200),false);
+ }finally{save.resolve(true);peer?.dispose();h.dispose();}
+});
 test('a non-app calling frame cannot consume a candidate or receive an owner',async()=>{
  const h=hostRuntime({coldPrefetch:true,initialToken:token,dispatch:proof});
  try{
