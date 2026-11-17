@@ -7,6 +7,7 @@ import { randomBytes } from 'node:crypto';
 
 const sourceRoot = realpathSync(resolve(dirname(fileURLToPath(import.meta.url)), '../..'));
 const configurationPath = 'harmony/entry/src/main/ets/auth/AuthConfiguration.ets';
+const storePath = 'harmony/entry/src/main/ets/auth/AuthSessionStore.ets';
 
 function fail() { throw new Error('Invalid or unsafe account build configuration'); }
 
@@ -55,6 +56,9 @@ export function prepareAuthConfiguration(configFile, stagingDirectory) {
       inside(sourceRoot, stage) || inside(sourceRoot, configPath)) fail();
   const target = join(stage, ...configurationPath.split('/'));
   if (!lstatSync(target).isFile() || !inside(stage, realpathSync(target))) fail();
+  const store = join(stage, ...storePath.split('/'));
+  if (!lstatSync(store).isFile() || !inside(stage, realpathSync(store)) ||
+      readFileSync(store, 'utf8') !== readFileSync(join(sourceRoot, ...storePath.split('/')), 'utf8')) fail();
   const expected = readFileSync(join(sourceRoot, ...configurationPath.split('/')), 'utf8');
   if (readFileSync(target, 'utf8') !== expected) fail();
   const config = JSON.parse(readFileSync(configPath, 'utf8'));

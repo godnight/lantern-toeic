@@ -27,6 +27,7 @@ function fixture(t) {
   const target = path.join(stage, ...configRelative.split('/'));
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.copyFileSync(path.join(root, ...configRelative.split('/')), target);
+  fs.copyFileSync(storePath, path.join(path.dirname(target), 'AuthSessionStore.ets'));
   const config = path.join(dir, 'private-input.json');
   fs.writeFileSync(config, JSON.stringify({ schemaVersion: 1, apiOrigin: origin, sessionAlias: alias }));
   return { dir, stage, target, config };
@@ -90,6 +91,18 @@ test('unsafe config, unexpected fields and Git checkouts fail without modifying 
   }
   fs.writeFileSync(f.config, JSON.stringify({ schemaVersion: 1, apiOrigin: origin, sessionAlias: alias }));
   fs.writeFileSync(path.join(f.stage, '.git'), 'gitdir: synthetic');
+  assert.notEqual(run(f.config, f.stage).status, 0);
+  assert.equal(fs.readFileSync(f.target, 'utf8'), original);
+});
+
+test('missing or unreviewed staged Asset store cannot silently use a different namespace', t => {
+  const f = fixture(t);
+  const original = fs.readFileSync(f.target, 'utf8');
+  const stagedStore = path.join(path.dirname(f.target), 'AuthSessionStore.ets');
+  fs.writeFileSync(stagedStore, fs.readFileSync(storePath, 'utf8').replace('ascii(AUTH_SESSION_ALIAS)', "ascii('old-synthetic-alias')"));
+  assert.notEqual(run(f.config, f.stage).status, 0);
+  assert.equal(fs.readFileSync(f.target, 'utf8'), original);
+  fs.unlinkSync(stagedStore);
   assert.notEqual(run(f.config, f.stage).status, 0);
   assert.equal(fs.readFileSync(f.target, 'utf8'), original);
 });
