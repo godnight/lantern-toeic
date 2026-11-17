@@ -225,7 +225,7 @@ async function freshPage(width){
    return route.fulfill({status:local.status,headers:{'content-type':local.headers.get('content-type')||'application/octet-stream'},body:Buffer.from(await local.arrayBuffer())});
   }
   // Controlled empty feeds avoid relying on external network during layout checks.
-  if(['https://cgtn-radio-data.cgtn.com/rss/program/11','https://cgtn-radio-data.cgtn.com/rss/program/5','https://cgtn-radio-data.cgtn.com/rss/program/46','https://feeds.simplecast.com/BqbsxVfO'].includes(url.href))return route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/rss+xml'},body:'<rss><channel><language>en</language></channel></rss>'});
+  if(route.request().method()==='GET'&&['https://cgtn-radio-data.cgtn.com/rss/program/11','https://cgtn-radio-data.cgtn.com/rss/program/5','https://cgtn-radio-data.cgtn.com/rss/program/46','https://feeds.simplecast.com/BqbsxVfO'].includes(url.href))return route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/rss+xml'},body:'<rss><channel><language>en</language></channel></rss>'});
   if((url.protocol==='http:'||url.protocol==='https:')&&url.origin!==ORIGIN){report.blockedExternal.push(url.origin+url.pathname);return route.abort('blockedbyclient');}
   if(MODE==='web'&&['/api/auth/session','/api/study','/api/vocabulary'].includes(url.pathname)){
    const api=url.pathname==='/api/auth/session'?'session':url.pathname.slice(5),row={width,method:request.method(),api};mockCalls.push(row);
