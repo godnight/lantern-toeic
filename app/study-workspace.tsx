@@ -15,7 +15,7 @@ import {useVocabularyWorkflow} from '@/lib/use-vocabulary-workflow';
 import {usePracticeWorkflow} from '@/lib/use-practice-workflow';
 import {practiceUnits,selectPractice} from '@/lib/practice-selection';
 import {createStudyBackup,StudyBackupDateError} from '@/lib/study-backup';
-import {registerNativeBack} from '@/lib/native-host';
+import {isNativeForeground,registerNativeBack} from '@/lib/native-host';
 import {EMPTY_DATA,createId,expandQuestionGroups,PARTS,dayKey,daysUntil,dayOffset,getWeek,firstAttempts,reviewSchedule,chooseQuestions,dailyPlan,type Profile,type Question,type Speaking,type Recording,type Theme} from '@/lib/study-model';
 import {QUESTIONS as questions,LISTENING_COLLECTION_QUESTIONS,LISTENING50_STATS,PRACTICE_QUESTION_CATALOGS,QUESTION_CATALOG_STATS} from '@/lib/question-catalog';
 import sData from '@/content/speaking.json';
@@ -103,22 +103,40 @@ export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable
  const [resourceFocus,setResourceFocus]=useState(false);
  const [practiceLookup,setPracticeLookup]=useState<{term:string;token:string;focus:HTMLElement|null;origin:'practice'|'vocabulary';scroll:number}|null>(null);const lookupRef=useRef(practiceLookup);lookupRef.current=practiceLookup;const consumedLookupPop=useRef(false),lookupReturnRef=useRef<typeof practiceLookup>(null);
  const [searchFrom,setSearchFrom]=useState('today');const [vocabFocus,setVocabFocus]=useState(false);const [checkinError,setCheckinError]=useState('');
+ const resumeIntent=useRef(0),resumeCaptureBlocked=useRef(false),resumePublish=useRef<(()=>void)|null>(null),[resumeRevision,setResumeRevision]=useState(0);
+ // Clear the previously committed hint before React processes any new user
+ // action. If the app backgrounds in the same turn, no stale view is restored.
+ useLayoutEffect(()=>{
+  if(!nativeMode||!onResumeSnapshot)return;
+  const interrupt=()=>{resumeIntent.current++;resumeCaptureBlocked.current=true;if(pendingNativeResume.current){pendingNativeResume.current=null;setResumeRevision(value=>value+1);}if(accountAccess())onResumeSnapshot(null);};
+  const afterGesture=()=>{const intent=resumeIntent.current;requestAnimationFrame(()=>{if(intent===resumeIntent.current&&accountAccess()&&isNativeForeground()&&document.visibilityState!=='hidden'){resumeCaptureBlocked.current=false;resumePublish.current?.();}});};
+  let scrollGesture=false;
+  const pointerDown=(event:PointerEvent)=>{const target=event.target;scrollGesture=target instanceof Element&&!target.closest('button,a,input,select,textarea,[role="button"],[role="dialog"]');interrupt();};
+  const pointerUp=()=>{if(scrollGesture)afterGesture();scrollGesture=false;};
+  const blankClick=(event:MouseEvent)=>{const target=event.target;if(target===document.body||target instanceof HTMLElement&&target.id==='workspace-main')afterGesture();};
+  document.addEventListener('pointerdown',pointerDown,true);for(const type of ['click','keydown','input','submit'])document.addEventListener(type,interrupt,true);
+  document.addEventListener('pointerup',pointerUp,true);document.addEventListener('click',blankClick,true);
+  window.addEventListener('popstate',interrupt,true);
+  return()=>{document.removeEventListener('pointerdown',pointerDown,true);for(const type of ['click','keydown','input','submit'])document.removeEventListener(type,interrupt,true);document.removeEventListener('pointerup',pointerUp,true);document.removeEventListener('click',blankClick,true);window.removeEventListener('popstate',interrupt,true);};
+ },[nativeMode,onResumeSnapshot,accountAccess]);
+ useLayoutEffect(()=>{resumeCaptureBlocked.current=false;},[nav,practiceWorkflow.session,practiceWorkflow.ready,mockOpen,speaking,recordingPlay,practiceLookup,practiceSettlementId,planRoute,themeOpen,installOpen,checkinOpen,vocabFocus,resourceFocus]);
  const resumeWorkflow=useRef(practiceWorkflow);resumeWorkflow.current=practiceWorkflow;
  useEffect(()=>{
   const saved=pendingNativeResume.current;if(!saved||!ready||!practiceWorkflow.ready||!accountAccess())return;
   if(saved.practiceSessionId){
-   if(!resumeWorkflow.current.sessions.some(item=>item.id===saved.practiceSessionId&&item.status==='active')){pendingNativeResume.current=null;onResumeSnapshot?.(null);return;}
-   let live=true;void resumeWorkflow.current.resume(saved.practiceSessionId).then(result=>{if(!live||!accountAccess())return;pendingNativeResume.current=null;if(['restored','replayed'].includes(result.status))requestAnimationFrame(()=>{if(accountAccess())window.scrollTo({top:saved.scroll});});else onResumeSnapshot?.(null);});
+   if(!resumeWorkflow.current.sessions.some(item=>item.id===saved.practiceSessionId&&item.status==='active')){pendingNativeResume.current=null;setResumeRevision(value=>value+1);onResumeSnapshot?.(null);return;}
+   let live=true;const intent=resumeIntent.current;const wanted=()=>live&&accountAccess()&&resumeIntent.current===intent&&pendingNativeResume.current===saved;
+   void resumeWorkflow.current.resumeGuarded(saved.practiceSessionId,wanted).then(result=>{if(!wanted())return;pendingNativeResume.current=null;setResumeRevision(value=>value+1);if(['restored','replayed'].includes(result.status))requestAnimationFrame(()=>{if(live&&accountAccess()&&resumeIntent.current===intent)window.scrollTo({top:saved.scroll});});else onResumeSnapshot?.(null);});
    return()=>{live=false;};
   }
-  pendingNativeResume.current=null;requestAnimationFrame(()=>{if(accountAccess())window.scrollTo({top:saved.scroll});});
+  let live=true;const intent=resumeIntent.current;pendingNativeResume.current=null;setResumeRevision(value=>value+1);requestAnimationFrame(()=>{if(live&&resumeIntent.current===intent&&accountAccess()&&isNativeForeground())window.scrollTo({top:saved.scroll});});return()=>{live=false;};
  },[ready,practiceWorkflow.ready,accountAccess]);
- useEffect(()=>{
+ useLayoutEffect(()=>{
   if(!nativeMode||!onResumeSnapshot||!accountAccess()||pendingNativeResume.current||!ready||!practiceWorkflow.ready)return;
-  const excluded=mockOpen||!!speaking||!!recordingPlay||!!practiceLookup||!!practiceSettlementId||!!planRoute||themeOpen||installOpen||checkinOpen||vocabFocus||resourceFocus;
-  const publish=()=>{if(!accountAccess())return;const id=queue&&practiceWorkflow.session?.status==='active'?practiceWorkflow.session.id:null;onResumeSnapshot(nativeWorkspaceResume(owner,nav,window.scrollY,id,excluded));};
-  publish();window.addEventListener('scroll',publish,{passive:true});return()=>window.removeEventListener('scroll',publish);
- },[nativeMode,onResumeSnapshot,owner,nav,queue,practiceWorkflow.session,practiceWorkflow.ready,ready,accountAccess,mockOpen,speaking,recordingPlay,practiceLookup,practiceSettlementId,planRoute,themeOpen,installOpen,checkinOpen,vocabFocus,resourceFocus]);
+  const excluded=practiceWorkflow.busy||mockOpen||!!speaking||!!recordingPlay||!!practiceLookup||!!practiceSettlementId||!!planRoute||themeOpen||installOpen||checkinOpen||vocabFocus||resourceFocus;
+  const publish=()=>{if(!accountAccess()||resumeCaptureBlocked.current)return;const id=queue&&practiceWorkflow.session?.status==='active'?practiceWorkflow.session.id:null;onResumeSnapshot(nativeWorkspaceResume(owner,nav,window.scrollY,id,excluded));};
+  resumePublish.current=publish;publish();window.addEventListener('scroll',publish,{passive:true});return()=>{window.removeEventListener('scroll',publish);if(resumePublish.current===publish)resumePublish.current=null;};
+ },[nativeMode,onResumeSnapshot,owner,nav,queue,practiceWorkflow.session,practiceWorkflow.ready,practiceWorkflow.busy,ready,accountAccess,mockOpen,speaking,recordingPlay,practiceLookup,practiceSettlementId,planRoute,themeOpen,installOpen,checkinOpen,vocabFocus,resourceFocus,resumeRevision]);
  const recordingAbort=useRef<AbortController|null>(null);
  const recordingRequest=useRef(0);const recordingScope=useRef({owner,nav,tab:trainingTab,alive:true});recordingScope.current={owner,nav,tab:trainingTab,alive:true};
  useEffect(()=>{recordingScope.current.alive=true;return()=>{recordingScope.current.alive=false;recordingRequest.current++;recordingAbort.current?.abort();recordingAbort.current=null;};},[]);
@@ -139,7 +157,7 @@ export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable
  useLayoutEffect(()=>{
   const state={...(window.history.state||{})};
   for(const field of ['lanternWorkspaceView','lanternWorkspaceFrom','lanternVocabularyView','lanternPracticeView','lanternPracticeLookup'])delete state[field];
-  window.history.replaceState({...state,lanternWorkspaceView:'today'},'');
+  window.history.replaceState({...state,lanternWorkspaceView:pendingNativeResume.current?.nav??'today'},'');
  },[]);
  useEffect(()=>{const previous=window.history.scrollRestoration;if(previous===undefined)return;window.history.scrollRestoration='manual';return()=>{window.history.scrollRestoration=previous;};},[]);
  useEffect(()=>registerNativeBack(()=>{

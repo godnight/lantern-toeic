@@ -1,0 +1,44 @@
+'use strict';
+// Actual workspace/IDB in Chromium with a synthetic native identity bridge.
+// This does not exercise ArkWeb, real credentials, TLS or a physical device.
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const {build}=require('esbuild'),{chromium}=require('playwright');
+const root=path.resolve(__dirname,'../..'),origin='https://lantern.local';
+const A={id:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'},B={id:'usr_bbbbbbbb-2222-4222-8222-222222222222',username:'synthetic_b'};
+const mime=f=>({'.json':'application/json','.js':'application/javascript','.css':'text/css','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml'}[path.extname(f)]||'application/octet-stream');
+async function main(){
+ const built=await build({stdin:{resolveDir:root,sourcefile:'resume-fixture.jsx',loader:'jsx',contents:"import React from 'react';import{createRoot}from'react-dom/client';import NativeAccountRoot from './mobile/src/NativeAccountRoot';import{installHarmonyHost}from './lib/native-host';installHarmonyHost();createRoot(document.getElementById('root')).render(<NativeAccountRoot/>);"},bundle:true,write:false,format:'iife',platform:'browser',target:'es2022',jsx:'automatic',alias:{'@':root},loader:{'.css':'empty'},define:{'process.env.NODE_ENV':'"production"'},plugins:[{name:'enable-fixture',setup(b){b.onLoad({filter:/NativeAccountRoot\.tsx$/},args=>{const input=fs.readFileSync(args.path,'utf8'),output=input.replace('const MEMORY_RESUME_ENABLED=false;','const MEMORY_RESUME_ENABLED=true;').replace('savedWorkspace.current=snapshot;','{savedWorkspace.current=snapshot;(window as any).__qaSnapshot=snapshot;}');assert.notEqual(input,output);return {contents:output,loader:'tsx',resolveDir:path.dirname(args.path)};});b.onLoad({filter:/[\\/]practice-workflow\.ts$/},args=>{const input=fs.readFileSync(args.path,'utf8'),output=input.replace('async resume(id:string):Promise<PracticeResult>{try{',"async resume(id:string):Promise<PracticeResult>{if((window as any).__qaHoldResume)await new Promise<void>(r=>{(window as any).__qaReleaseResume=r;});try{");assert.notEqual(input,output);return {contents:output,loader:'ts',resolveDir:path.dirname(args.path)};});}}],logLevel:'silent'});
+ const html='<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="root"></div><script>'+built.outputFiles[0].text+'</script></body></html>';
+ const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',args:['--mute-audio']});
+ try{const ctx=await browser.newContext({viewport:{width:390,height:844},timezoneId:'Asia/Shanghai'});await ctx.route('**/*',async r=>{const u=new URL(r.request().url());if(u.origin!==origin)return r.abort();if(u.pathname==='/')return r.fulfill({contentType:'text/html',body:html});const file=path.resolve(root,'public','.'+u.pathname);return file.startsWith(path.join(root,'public')+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?r.fulfill({contentType:mime(file),body:fs.readFileSync(file)}):r.abort();});
+ const p=await ctx.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await p.addInitScript(({A,B})=>{
+  let owner=A,localOwner=A,remote='ok',generation=0,active=false,held=null;
+  const caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false};window.__sessionProofs=0;
+  const seed=u=>localStorage.setItem('lantern-v1-'+u.id,JSON.stringify({data:{schemaVersion:2,profile:{name:u.username,lrGoal:650,speakingGoal:130,examDate:'2026-12-20',dailyMinutes:25,timezone:'Asia/Shanghai',theme:'paper',weeklyTarget:4,onboarded:true},attempts:[],checkins:[],recordings:[],questionMarks:[],resourceTasks:[]}}));seed(A);seed(B);
+  window.__test={background(){active=false;window.__LANTERN_HARMONY__.onAppState(false);},foreground(){window.__LANTERN_HARMONY__.onAppState(true);},offline(){remote='offline';},online(){remote='ok';},other(){owner=B;remote='ok';},hold(){remote='hold';},release(){remote='ok';held?.();held=null;}};
+  window.LanternAuthHost={isLocalActive(raw){const x=JSON.parse(raw);return active&&x.uid===localOwner.id&&x.generation===generation;},request(raw){const x=JSON.parse(raw),reply=(status,body)=>queueMicrotask(()=>window.__lanternAuthReceive?.({id:x.id,status,body,...x.version?{version:x.version}:{}}));
+   if(x.action==='providers')return reply(200,{huaweiLogin:false,huaweiBinding:false});
+   if(x.action==='local-session'){active=true;generation++;return reply(200,{user:localOwner,local:{scope:'local-study-only',generation,resumeOnly:true,validForMs:3600000}});}
+   if(x.action==='session'){const send=()=>{if(remote==='offline')reply(503,{code:'native-auth-unavailable'});else{window.__sessionProofs++;reply(200,{user:owner,capabilities:caps,session:{validForMs:3600000}});}};if(remote==='hold')held=send;else send();return;}
+   return reply(503,{code:'native-auth-unavailable'});
+  }};
+ },{A,B});
+ await p.goto(origin);p.setDefaultTimeout(20000);await p.getByRole('heading',{name:'今日学习',exact:true}).waitFor();
+ const nav=()=>p.getByRole('navigation').last();await nav().getByRole('button',{name:'单词',exact:true}).click();await p.getByText('尚未设置单词安排',{exact:true}).waitFor();
+ await p.evaluate(()=>{window.__test.offline();window.__test.background();window.__test.foreground();});await nav().getByRole('button',{name:'单词',exact:true}).waitFor();await p.getByText('尚未设置单词安排',{exact:true}).waitFor();assert.equal(await p.getByRole('heading',{name:'今日学习',exact:true}).count(),0);console.log('PASS vocabulary page on foreground');
+ await p.waitForFunction(()=>window.__qaSnapshot?.nav==='vocabulary');await p.evaluate(async()=>{document.body.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));window.scrollTo(0,200);document.body.dispatchEvent(new PointerEvent('pointerup',{bubbles:true}));await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));});assert.equal((await p.evaluate(()=>window.__qaSnapshot))?.nav,'vocabulary');console.log('PASS scroll gesture recaptures current page');
+ await nav().getByRole('button',{name:'进度',exact:true}).click();await p.getByRole('heading',{name:'学习时间',exact:true}).waitFor();await p.evaluate(()=>history.back());await p.getByText('尚未设置单词安排',{exact:true}).waitFor();console.log('PASS restored page is in navigation history');
+ await p.evaluate(()=>{window.__test.online();window.dispatchEvent(new Event('online'));});await p.waitForFunction(()=>window.__sessionProofs>=2);console.log('PASS local owner rechecks online');
+ await nav().getByRole('button',{name:'练习',exact:true}).click();await p.getByRole('button',{name:'阅读 · Part 5 · 开始',exact:true}).click();const dialog=p.locator('.practice-dialog');await dialog.waitFor();await dialog.getByRole('radio').first().click();await dialog.getByRole('button',{name:'确认答案',exact:true}).click();await dialog.locator('.answer-feedback').waitFor();
+ assert.match((await p.evaluate(()=>window.__qaSnapshot))?.practiceSessionId||'',/^practice:/);
+ await p.evaluate(()=>{window.__qaHoldResume=true;window.__test.background();window.__test.foreground();});await p.waitForFunction(()=>typeof window.__qaReleaseResume==='function');
+ await nav().getByRole('button',{name:'进度',exact:true}).click();await p.getByRole('heading',{name:'学习时间',exact:true}).waitFor();
+ await p.evaluate(()=>{window.__qaHoldResume=false;window.__qaReleaseResume();});await p.waitForTimeout(200);assert.equal(await p.locator('.practice-dialog').count(),0);console.log('PASS cancelled delayed practice does not open over new page');
+ await nav().getByRole('button',{name:'练习',exact:true}).click();await p.getByRole('button',{name:'阅读 · Part 5 · 继续',exact:true}).click();await p.locator('.practice-dialog .answer-feedback').waitFor();await p.waitForFunction(()=>window.__qaSnapshot?.practiceSessionId?.startsWith('practice:'));
+ await p.evaluate(()=>{window.__test.background();window.__test.foreground();});await p.locator('.practice-dialog .answer-feedback').waitFor();console.log('PASS persisted practice on foreground');
+ await p.evaluate(()=>{window.__test.background();window.__test.other();window.__test.foreground();});await p.getByRole('heading',{name:'账号需要核对'}).waitFor();assert.equal(await p.locator('.practice-dialog').count(),0);console.log('PASS different owner does not restore');
+ assert.deepEqual(errors,[]);await ctx.close();
+ }finally{await browser.close();}
+}
+main().catch(error=>{console.error(error);process.exitCode=1;});
