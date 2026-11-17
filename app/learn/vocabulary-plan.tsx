@@ -230,7 +230,7 @@ export function TodayVocabularyTask({workflow,onOpen,onOpenStudy,onPlanOverview,
   </section>;
 }
 
-export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlocked=false,onFinish,resumePrevious,onPreviousChange}:{workflow:Workflow;theme:Theme;onExampleLookup?:ExampleLookup;overlayBlocked?:boolean;onFinish?:()=>void;resumePrevious?:NativeVocabularyPrevious|null;onPreviousChange?:(value:NativeVocabularyPrevious|null)=>void}){
+export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlocked=false,onFinish,resumePrevious,onPreviousChange,onResumeBusy}:{workflow:Workflow;theme:Theme;onExampleLookup?:ExampleLookup;overlayBlocked?:boolean;onFinish?:()=>void;resumePrevious?:NativeVocabularyPrevious|null;onPreviousChange?:(value:NativeVocabularyPrevious|null)=>void;onResumeBusy?:(token:symbol,busy:boolean)=>void}){
   const session=workflow.activeSession;
   const [previousStep,setPreviousStep]=useState<string|null>(()=>validVocabularyPrevious(resumePrevious,session)?resumePrevious.stepId:null);
   const viewingPrevious=!!session&&session.status==='active'&&session.cursor>0&&session.queue[session.cursor-1]?.id===previousStep;
@@ -243,6 +243,10 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   const targetKey=JSON.stringify([workflow.scopeKey,session?.id??null,step?.id??null]);
   const currentTarget=useRef(targetKey),attempt=useRef(0);currentTarget.current=targetKey;
   const pending=useRef(false),scope=useRef(workflow.scopeKey),overlayActive=useRef(overlayBlocked);scope.current=workflow.scopeKey;overlayActive.current=overlayBlocked;
+  const activeResumeTokens=useRef(new Set<symbol>()),resumeBusyCallback=useRef(onResumeBusy);resumeBusyCallback.current=onResumeBusy;
+  const startResumeBusy=()=>{const token=Symbol('vocabulary-operation');activeResumeTokens.current.add(token);resumeBusyCallback.current?.(token,true);return token;};
+  const endResumeBusy=(token:symbol)=>{if(activeResumeTokens.current.delete(token))resumeBusyCallback.current?.(token,false);};
+  useEffect(()=>()=>{for(const token of activeResumeTokens.current)resumeBusyCallback.current?.(token,false);activeResumeTokens.current.clear();},[]);
   useEffect(()=>{++attempt.current;setMessage('');setSelected(null);setBusy(false);pending.current=false;},[targetKey]);
   useEffect(()=>{
     const wordKey=step?JSON.stringify([workflow.scopeKey,step.id]):null;
@@ -280,23 +284,23 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
     if(rating&&fixedRating&&fixedRating!==rating)return;
     const key=workflow.scopeKey,request=++attempt.current,target=targetKey;
     const isCurrent=()=>scope.current===key&&currentTarget.current===target&&attempt.current===request;
-    pending.current=true;setBusy(true);setMessage('');
+    const resumeToken=startResumeBusy();pending.current=true;setBusy(true);setMessage('');
     if(rating)setSelected(rating);
     try{
       const result=rating?await workflow.submitRating(rating):await workflow.nextStep();
       if(isCurrent())setMessage(resultMessage(result,''));
     }catch(error){if(isCurrent())setMessage(error instanceof Error?error.message:'反馈尚未保存，请重试原操作。');}
-    finally{if(isCurrent()){pending.current=false;setBusy(false);}}
+    finally{endResumeBusy(resumeToken);if(isCurrent()){pending.current=false;setBusy(false);}}
   };
   const correct=async()=>{
     if(blocked||pending.current||!session||!step?.receipt||step.receipt.rawRating!=='known'||step.correctedToForgotten)return;
     const key=workflow.scopeKey,request=++attempt.current,target=targetKey;
     const isCurrent=()=>scope.current===key&&currentTarget.current===target&&attempt.current===request;
     const fixed={sessionId:session.id,stepId:step.id,commandId:step.receipt.commandId,reviewId:step.receipt.legacyEventId};
-    pending.current=true;setBusy(true);setMessage('');
+    const resumeToken=startResumeBusy();pending.current=true;setBusy(true);setMessage('');
     try{const result=await workflow.correctRating(fixed);if(isCurrent()){setMessage(resultMessage(result,''));if(successful(result)&&!overlayActive.current)contentRoot.current?.focus({preventScroll:true});}}
     catch(error){if(isCurrent())setMessage(error instanceof Error?error.message:'改判尚未确认，请重试。');}
-    finally{if(isCurrent()){pending.current=false;setBusy(false);}}
+    finally{endResumeBusy(resumeToken);if(isCurrent()){pending.current=false;setBusy(false);}}
   };
   if(!session)return null;
   if(session.status==='completed')return <section className="phase2-word-finished panel" aria-label="词组完成">
@@ -347,7 +351,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   </section>;
 }
 
-export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=false,onOpenSearch,onCancel,onEditPlan,entryView='study',resumePrevious,onPreviousChange}:{workflow:Workflow;theme:Theme;onExampleLookup?:ExampleLookup;overlayBlocked?:boolean;onOpenSearch?:()=>void;onCancel?:()=>void;onEditPlan?:()=>void;entryView?:'plan'|'study';resumePrevious?:NativeVocabularyPrevious|null;onPreviousChange?:(value:NativeVocabularyPrevious|null)=>void}){
+export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=false,onOpenSearch,onCancel,onEditPlan,entryView='study',resumePrevious,onPreviousChange,onResumeBusy}:{workflow:Workflow;theme:Theme;onExampleLookup?:ExampleLookup;overlayBlocked?:boolean;onOpenSearch?:()=>void;onCancel?:()=>void;onEditPlan?:()=>void;entryView?:'plan'|'study';resumePrevious?:NativeVocabularyPrevious|null;onPreviousChange?:(value:NativeVocabularyPrevious|null)=>void;onResumeBusy?:(token:symbol,busy:boolean)=>void}){
   const projection=workflow.projection,plan=projection?.plan;
   const [editing,setEditing]=useState(false);
   const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[completedHidden,setCompletedHidden]=useState('');
@@ -424,7 +428,7 @@ export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=fa
     {workflow.ready&&!workflow.error&&projection&&<>
       {(editing||!plan)&&(onEditPlan?<section className="panel v041-vocabulary-setup"><h2>尚未设置单词安排</h2><button type="button" className="button primary" disabled={blocked} onClick={edit}>制定单词计划</button></section>:<VocabularyPlanEditor workflow={workflow} onLeave={()=>{if(plan)setEditing(false);else onCancel?.();}} onSaved={()=>setEditing(false)}/>)}
       {!editing&&plan&&<>
-        {showSession?<VocabularyStudyCard workflow={workflow} theme={theme} onExampleLookup={onExampleLookup} overlayBlocked={overlayBlocked||busy} resumePrevious={resumePrevious} onPreviousChange={onPreviousChange} onFinish={()=>setCompletedHidden(workflow.activeSession?.id||'')}/>:<TodayVocabularyTask workflow={workflow} disabled={blocked} onOpen={openPlan} onOpenStudy={openStudy} compact/>}
+        {showSession?<VocabularyStudyCard workflow={workflow} theme={theme} onExampleLookup={onExampleLookup} overlayBlocked={overlayBlocked||busy} resumePrevious={resumePrevious} onPreviousChange={onPreviousChange} onResumeBusy={onResumeBusy} onFinish={()=>setCompletedHidden(workflow.activeSession?.id||'')}/>:<TodayVocabularyTask workflow={workflow} disabled={blocked} onOpen={openPlan} onOpenStudy={openStudy} compact/>}
         <section className="v041-current-plan panel" aria-label="当前单词计划"><div className="phase2-vocab-heading"><h2>{planName(plan.bookId)}</h2><button type="button" className="text-button" disabled={blocked} onClick={edit}><Settings2 size={16}/>调整</button></div><p>每天 {plan.dailyNew} 个新词 · 每周 {plan.weekdays.length} 天</p><progress aria-label="总目标覆盖进度" value={Math.min(projection.counts.learned,plan.goal)} max={Math.max(1,plan.goal)}/><p>已学 {projection.counts.learned} / {plan.goal}</p>{savedEstimate&&<small>{savedEstimate.title}</small>}
           <details className="v041-plan-details"><summary>查看安排</summary>
         {selected&&<section className="phase2-plan-calendar panel" aria-label="单词计划日历">
