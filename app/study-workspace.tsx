@@ -121,7 +121,7 @@ export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable
   window.addEventListener('popstate',interrupt,true);
   return()=>{document.removeEventListener('pointerdown',pointerDown,true);for(const type of ['click','keydown','input','submit'])document.removeEventListener(type,interrupt,true);document.removeEventListener('pointerup',pointerUp,true);document.removeEventListener('pointercancel',pointerCancel,true);document.removeEventListener('click',blankClick,true);window.removeEventListener('popstate',interrupt,true);};
  },[nativeMode,onResumeSnapshot,accountAccess]);
- useLayoutEffect(()=>{resumeCaptureBlocked.current=false;},[nav,practiceWorkflow.session,practiceWorkflow.ready,mockOpen,speaking,recordingPlay,practiceLookup,practiceSettlementId,planRoute,themeOpen,installOpen,checkinOpen,vocabFocus,resourceFocus]);
+ useLayoutEffect(()=>{resumeCaptureBlocked.current=false;},[nav,practiceWorkflow.session,practiceWorkflow.ready,vocabularyWorkflow.activeSession,mockOpen,speaking,recordingPlay,practiceLookup,practiceSettlementId,planRoute,themeOpen,installOpen,checkinOpen,vocabFocus,resourceFocus]);
  const resumeWorkflow=useRef(practiceWorkflow);resumeWorkflow.current=practiceWorkflow;
  useEffect(()=>{
   const saved=pendingNativeResume.current;if(!saved||!ready||!practiceWorkflow.ready||!accountAccess())return;
@@ -138,7 +138,7 @@ export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable
   const excluded=practiceWorkflow.busy||mockOpen||!!speaking||!!recordingPlay||!!practiceLookup||!!practiceSettlementId||!!planRoute||themeOpen||installOpen||checkinOpen||vocabFocus||resourceFocus;
   const publish=()=>{if(!accountAccess()||resumeCaptureBlocked.current)return;const id=queue&&practiceWorkflow.session?.status==='active'?practiceWorkflow.session.id:null;onResumeSnapshot(nativeWorkspaceResume(owner,nav,window.scrollY,id,excluded));};
   resumePublish.current=publish;publish();window.addEventListener('scroll',publish,{passive:true});return()=>{window.removeEventListener('scroll',publish);if(resumePublish.current===publish)resumePublish.current=null;};
- },[nativeMode,onResumeSnapshot,owner,nav,queue,practiceWorkflow.session,practiceWorkflow.ready,practiceWorkflow.busy,ready,accountAccess,mockOpen,speaking,recordingPlay,practiceLookup,practiceSettlementId,planRoute,themeOpen,installOpen,checkinOpen,vocabFocus,resourceFocus,resumeRevision]);
+ },[nativeMode,onResumeSnapshot,owner,nav,queue,practiceWorkflow.session,practiceWorkflow.ready,practiceWorkflow.busy,vocabularyWorkflow.activeSession,ready,accountAccess,mockOpen,speaking,recordingPlay,practiceLookup,practiceSettlementId,planRoute,themeOpen,installOpen,checkinOpen,vocabFocus,resourceFocus,resumeRevision]);
  const recordingAbort=useRef<AbortController|null>(null);
  const recordingRequest=useRef(0);const recordingScope=useRef({owner,nav,tab:trainingTab,alive:true});recordingScope.current={owner,nav,tab:trainingTab,alive:true};
  useEffect(()=>{recordingScope.current.alive=true;return()=>{recordingScope.current.alive=false;recordingRequest.current++;recordingAbort.current?.abort();recordingAbort.current=null;};},[]);
