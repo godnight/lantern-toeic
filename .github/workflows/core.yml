@@ -103,7 +103,7 @@ jobs:
       - name: Verify built HTML and UI component contracts
         if: steps.scope.outputs.full == 'true'
         run: node --test tests/*.test.mjs
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         if: steps.scope.outputs.full == 'true'
         with:
           python-version: '3.12'
