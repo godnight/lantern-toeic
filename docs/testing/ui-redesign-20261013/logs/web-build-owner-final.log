@@ -1,0 +1,53 @@
+
+> lantern-toeic@0.3.3 build
+> node scripts/build-verified.mjs
+
+
+  vinext build  (Vite 8.0.16)
+
+(node:75772) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[1/5] analyze client references...
+[2K
+transforming...鉁?270 modules transformed.
+rendering chunks...
+鉁?built in 2.06s
+[2/5] analyze server references...
+[2K
+transforming...鉁?241 modules transformed.
+rendering chunks...
+鉁?built in 226ms
+[3/5] build rsc environment...
+[2K
+transforming...鉁?276 modules transformed.
+rendering chunks...
+computing gzip size...
+鉁?built in 623ms
+[4/5] build client environment...
+[2K
+transforming...鉁?2024 modules transformed.
+rendering chunks...
+computing gzip size...
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+鉁?built in 582ms
+[5/5] build ssr environment...
+[2K
+transforming...鉁?247 modules transformed.
+rendering chunks...
+computing gzip size...
+鉁?built in 249ms
+[0m
+  Route (app)
+  鈹?茠 /                
+  鈹?位 /api/exam-library
+  鈹?位 /api/recordings  
+  鈹?位 /api/study       
+  鈹?位 /api/vocabulary  
+
+  位 API  茠 Dynamic
+  Build complete. Run `vinext start` to start the production server.
+

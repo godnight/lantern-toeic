@@ -1,0 +1,22 @@
+{
+  "status": "user-visual-acceptance-not-approved-merge-and-deploy-paused",
+  "implementationFiles": 39,
+  "implementationHashes": "all match",
+  "hapSha256": "d10202ec9ffc908e15199d8917cc270214d36b351161d90403a786faa604f573",
+  "sourceIndependentReview": "closed within reviewed scope",
+  "indexedScreenshots": 69,
+  "classification": {
+    "sample": 49,
+    "excluded": 16,
+    "historical-limited": 2,
+    "fixture-seam-only": 2
+  },
+  "copiedEvidence": 216,
+  "allEvidenceHashesMatch": true,
+  "missingPrimaryDocLinks": [],
+  "previewUrl": "http://127.0.0.1:41881/",
+  "productionSourceChangedIn404Attempt": false,
+  "404PathAndImpact": "unresolved; exact supported-tool/log limits documented",
+  "userVisualAcceptance": "not approved; independent technical closure does not imply user visual approval",
+  "implementationAndHapPreserved": "all existing implementation hashes and HAP hash still match"
+}

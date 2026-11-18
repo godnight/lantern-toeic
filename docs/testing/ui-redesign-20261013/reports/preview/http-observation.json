@@ -1,0 +1,11 @@
+{
+  "url": "http://127.0.0.1:41881/",
+  "statusCode": 200,
+  "contentType": [
+    "text/html"
+  ],
+  "bytes": 590,
+  "checkedAt": "2026-10-13T10:34:20.8189310Z",
+  "serverSession": 38309,
+  "scope": "Local QA preview only; not deployed production or native UI"
+}

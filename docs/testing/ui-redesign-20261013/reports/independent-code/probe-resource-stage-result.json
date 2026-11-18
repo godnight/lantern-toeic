@@ -1,0 +1,64 @@
+{
+  "timestamp": "2026-10-13T07:58:07.060Z",
+  "observedFiles": {
+    "lib/study-model.ts": "0b966bace5f62b987c87c6500995ee15f5768839dba53bd39d8207bf197237f6",
+    "app/study-app.tsx": "93b168201089b7f905310b7a2b9980d320aa12a1e128d98d5b18bb0eb4aac755",
+    "content/resources-v2.ts": "bd9f76aaefa33058b8189d3e5690fea1ec26146bef1aeef60681318da53747a9",
+    "app/learn/resource-library.tsx": "39324004d008520828f69bb39d0fcc81f9edc90bc89d782bfe198247c91af5e4"
+  },
+  "result": "passed",
+  "searchScope": {
+    "hidden": true,
+    "nativeYielded": true,
+    "detailStillMounted": true
+  },
+  "listReturn": {
+    "scroll": 5342,
+    "focus": "bc-new-team-member",
+    "filter": "listening"
+  },
+  "pendingRestorationCancelled": true,
+  "clamps": [
+    {
+      "wanted": 0,
+      "max": 8000,
+      "actual": 0
+    },
+    {
+      "wanted": 0,
+      "max": 8000,
+      "actual": 0
+    },
+    {
+      "wanted": 0,
+      "max": 1000,
+      "actual": 0
+    },
+    {
+      "wanted": 120,
+      "max": 1000,
+      "actual": 120
+    },
+    {
+      "wanted": 120,
+      "max": 1000,
+      "actual": 120
+    },
+    {
+      "wanted": 5342,
+      "max": 8000,
+      "actual": 5342
+    },
+    {
+      "wanted": 0,
+      "max": 8000,
+      "actual": 0
+    },
+    {
+      "wanted": 0,
+      "max": 1000,
+      "actual": 0
+    }
+  ],
+  "limits": "Actual Root+Resource TSX; Hook/refs/history/rAF and 1000/8000px layout clamp are controlled. Does not measure actual DOM/CSS/Chrome or device. No learning record writes."
+}

@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-11-01",
+  "scope": "Official metadata and original-site links only; no media/thumbnail/transcript downloaded, embedded, hosted, excerpted or sent to AI.",
+  "entries": [
+    {
+      "id": "nasa-kennedy-rice-1962",
+      "sourceUrl": "https://ntrs.nasa.gov/citations/19940010921",
+      "mode": "external",
+      "evidenceUrls": [
+        "https://ntrs.nasa.gov/citations/19940010921",
+        "https://www.nasa.gov/nasa-brand-center/images-and-media/"
+      ],
+      "capabilities": {
+        "embed": false,
+        "host": false,
+        "excerpt": false,
+        "cover": false,
+        "subtitles": false,
+        "audio": false,
+        "ai": false
+      },
+      "availability": {
+        "platforms": "原站网页；App仅打开外部来源",
+        "regions": "未验证地区限制",
+        "network": "not-verified",
+        "note": "实际播放、鸿蒙及无 VPN 可达性未验证。"
+      },
+      "notes": "Original official page metadata checked. Only independent editorial directory text and a full source-page link are included; no original image, logo or long text reproduced."
+    },
+    {
+      "id": "stanford-jobs-2005",
+      "sourceUrl": "https://news.stanford.edu/stories/2005/06/youve-got-find-love-jobs-says",
+      "mode": "external",
+      "evidenceUrls": [
+        "https://news.stanford.edu/stories/2005/06/youve-got-find-love-jobs-says",
+        "https://www.stanford.edu/terms"
+      ],
+      "capabilities": {
+        "embed": false,
+        "host": false,
+        "excerpt": false,
+        "cover": false,
+        "subtitles": false,
+        "audio": false,
+        "ai": false
+      },
+      "availability": {
+        "platforms": "原站网页；App仅打开外部来源",
+        "regions": "未验证地区限制",
+        "network": "not-verified",
+        "note": "实际播放、鸿蒙及无 VPN 可达性未验证。"
+      },
+      "notes": "Original official page metadata checked. Only independent editorial directory text and a full source-page link are included; no original image, logo or long text reproduced."
+    },
+    {
+      "id": "blender-tears-of-steel",
+      "sourceUrl": "https://www.youtube.com/watch?v=R6MlUcmOul8",
+      "mode": "external",
+      "evidenceUrls": [
+        "https://www.youtube.com/watch?v=R6MlUcmOul8",
+        "https://mango.blender.org/about/",
+        "https://creativecommons.org/licenses/by/3.0/"
+      ],
+      "capabilities": {
+        "embed": false,
+        "host": false,
+        "excerpt": false,
+        "cover": false,
+        "subtitles": false,
+        "audio": false,
+        "ai": false
+      },
+      "availability": {
+        "platforms": "原站网页；App仅打开外部来源",
+        "regions": "未验证地区限制",
+        "network": "not-verified",
+        "note": "实际播放、鸿蒙及无 VPN 可达性未验证。"
+      },
+      "notes": "The Mango site fetch returned HTTP 402. Its official search index and the verified Blender channel description cross-check the title, maker, English language, approximate length and CC BY 3.0. No media obtained."
+    }
+  ],
+  "held": [
+    {
+      "id": "ted-julian-treasure-speaking",
+      "title": "How to speak so that people want to listen",
+      "author": "Julian Treasure",
+      "sourceUrl": "https://www.ted.com/talks/julian_treasure_how_to_speak_so_that_people_want_to_listen",
+      "status": "HOLD",
+      "reason": "TED usage policy has separate permission conditions for curriculum, commercial and some organizational hyperlink uses. Personal noncommercial terms are not assumed to authorize this app. Excluded from the runtime catalog.",
+      "evidenceUrls": [
+        "https://www.ted.com/about/our-organization/our-policies-terms/ted-talks-usage-policy",
+        "https://www.ted.com/about/our-organization/our-policies-terms/ted-com-terms-of-use"
+      ]
+    }
+  ]
+}

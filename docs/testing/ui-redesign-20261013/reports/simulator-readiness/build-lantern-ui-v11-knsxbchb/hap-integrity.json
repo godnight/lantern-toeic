@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "hap": "entry-default-unsigned.hap",
+  "bytes": 44292998,
+  "sha256": "d10202ec9ffc908e15199d8917cc270214d36b351161d90403a786faa604f573",
+  "bundleName": "com.lantern.toeic",
+  "versionName": "0.3.3",
+  "buildMode": "debug",
+  "compileSdkType": "HarmonyOS",
+  "compileSdkVersion": "26.0.0.105",
+  "minAPIVersion": 50000012,
+  "targetAPIVersion": 50000012,
+  "nativeBytecodePresent": true,
+  "verifiedWebAssets": 1071,
+  "webManifestSha256": "1f98b5d366ffddecbd78fe7c0a0cdfd0cb187bb1b149d1f35cac8588ae7d1d3c",
+  "signatureVerified": false,
+  "deviceTested": false,
+  "note": "Package integrity only; signing, installation and offline device behavior require separate verification."
+}

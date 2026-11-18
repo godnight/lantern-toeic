@@ -1,0 +1,11 @@
+{
+  "startedAtUtc": "2026-10-13T09:18:47.4489559Z",
+  "instance": "LanternUIQA4d5098e7",
+  "target": "127.0.0.1:15551",
+  "bundle": "com.lantern.toeic",
+  "ability": "EntryAbility",
+  "module": "entry",
+  "launchExit": 0,
+  "debugFlags": false,
+  "UIInputUsed": false
+}

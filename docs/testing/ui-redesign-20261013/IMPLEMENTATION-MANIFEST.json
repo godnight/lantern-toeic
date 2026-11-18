@@ -1,0 +1,266 @@
+{
+  "branch": "feat/ui-redesign-v11",
+  "head": "12317b26b85a71888760b0cc18242d00a843ac74",
+  "status": "user visual acceptance not approved; merge/deploy paused; local source/HAP/screenshots/reviews preserved; previous independent technical closure remains limited to its reviewed scope",
+  "studyTests": 474,
+  "mjsTests": 34,
+  "typecheck": "passed",
+  "webBuild": "passed",
+  "mobileBuild": "passed",
+  "logs": [
+    "logs/full-study-test-final-recheck.log",
+    "logs/mjs-tests-final-recheck.log",
+    "logs/typecheck-final-recheck.log",
+    "logs/web-build-final-recheck.log",
+    "logs/mobile-build-final-recheck.log"
+  ],
+  "hap": {
+    "path": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-knsxbchb\\lantern-ui-v11-unsigned-local-only.hap",
+    "bytes": 44292998,
+    "sha256": "d10202ec9ffc908e15199d8917cc270214d36b351161d90403a786faa604f573",
+    "resources": 1071,
+    "buildInputs": 1229,
+    "signed": false,
+    "installed": true,
+    "installationScope": "only newly isolated owned emulator LanternUIQA4d5098e7 / HDC 127.0.0.1:15551, preserve-data upgrade",
+    "startAndColdStart": "passed",
+    "bundle": "com.lantern.toeic",
+    "versionName": "0.3.3",
+    "versionCode": 20009,
+    "minApi": 12,
+    "targetApi": 12
+  },
+  "remainingLimits": [
+    "native UI API unavailable",
+    "two masked child-resource 404 paths unresolved",
+    "normal OS file picker",
+    "real microphone and OS IME",
+    "native Back/background",
+    "200% zoom and screenreader",
+    "Pura X Max real-device acceptance"
+  ],
+  "modifiedOrNewImplementationFiles": [
+    {
+      "path": "app/layout.tsx",
+      "bytes": 705,
+      "sha256": "ea0f88ba39bc525f6df19495bbd575257f970100a238231e23d3d1c392fd7606"
+    },
+    {
+      "path": "app/learn/exam-collection.tsx",
+      "bytes": 3439,
+      "sha256": "5c616451e5f84ff6a4b3f8aec4849bdf84b187ee935c5d57420f7463209e776e"
+    },
+    {
+      "path": "app/learn/exam-library.tsx",
+      "bytes": 7057,
+      "sha256": "c90de4736bd4bbea55354ca7575dca0e1f83f345eb0105b96580b17bfb0347ea"
+    },
+    {
+      "path": "app/learn/mock-exam.css",
+      "bytes": 27399,
+      "sha256": "5f20d9f86a99bafcadb724b1b69c727865ffbc940fecec7f295f8c3065d7fa71"
+    },
+    {
+      "path": "app/learn/mock-exam.tsx",
+      "bytes": 61651,
+      "sha256": "0da5319e2134f2c33f8c9bcc8391227a4ef219ee8c4091d65fc55a02a212b980"
+    },
+    {
+      "path": "app/learn/practice.tsx",
+      "bytes": 13675,
+      "sha256": "e2036fc10cd8301b4e82434c2947edde315e57d3039770fece0e689ca3234af4"
+    },
+    {
+      "path": "app/learn/resource-library.tsx",
+      "bytes": 8276,
+      "sha256": "39324004d008520828f69bb39d0fcc81f9edc90bc89d782bfe198247c91af5e4"
+    },
+    {
+      "path": "app/learn/resource-redesign.css",
+      "bytes": 8118,
+      "sha256": "865c1352e534c0d252539d00dd6d52711c80fa8db201a376e286dbe319007cd3"
+    },
+    {
+      "path": "app/learn/speaking-redesign.css",
+      "bytes": 11831,
+      "sha256": "a0358592240df22c4f8f6f628f7963a965f458382c90146e72dcc4d115998ba0"
+    },
+    {
+      "path": "app/learn/speaking.tsx",
+      "bytes": 26075,
+      "sha256": "1ae6532a0c71355d50cb842cf963bb91515dac0ea2ab4ff695a38c056294c732"
+    },
+    {
+      "path": "app/learn/ui-theme.css",
+      "bytes": 11029,
+      "sha256": "8a225f358ba23e8c621ee962a0c6fdb0703d0b2cd4e5d9332b58a401c4956030"
+    },
+    {
+      "path": "app/learn/ui-theme.tsx",
+      "bytes": 3814,
+      "sha256": "e90abc729611ebb14895717324f2f24bc10fd9628112334ec619f485bb7b300e"
+    },
+    {
+      "path": "app/learn/vocabulary-library.tsx",
+      "bytes": 35363,
+      "sha256": "ea863d2fb439b722273f1943e9dbcfeaf569a5dc828f679abb494cdc7209669e"
+    },
+    {
+      "path": "app/learn/vocabulary-redesign.css",
+      "bytes": 13292,
+      "sha256": "23c16bc64609d3db79537ae90da1da002d92c524b83cb856e47d8dbf93780809"
+    },
+    {
+      "path": "app/learn/workspace-shell.tsx",
+      "bytes": 3815,
+      "sha256": "19527bd4bc9627910f2aec130c5dd4fefcd99ca73d6f2a460211af9e4e088232"
+    },
+    {
+      "path": "app/redesign.css",
+      "bytes": 4112,
+      "sha256": "14949cba6ba6eaad3352a61e3c490e40481de4ddc3c7a44612c3c5f58bcd8d82"
+    },
+    {
+      "path": "app/study-app.tsx",
+      "bytes": 47939,
+      "sha256": "cdcf87ed21b67f21bef81ce11583a1b3063fd34111af8815f194d45614c7ce3b"
+    },
+    {
+      "path": "app/workspace-redesign.css",
+      "bytes": 22892,
+      "sha256": "2037084ea95b4c5912618c601390d900912f843533514278f23e2ef48d5a720b"
+    },
+    {
+      "path": "components/ui/dialog.tsx",
+      "bytes": 4463,
+      "sha256": "e8b4f740f919d0f85b9cef85251c82b24f6b98fac71d76a6b73bba1c6488f996"
+    },
+    {
+      "path": "lib/speaking-recovery.ts",
+      "bytes": 1179,
+      "sha256": "3bd29745773e038c3d92f6fedfeb965c35904c60c0f73723ead5aaf61fe1ecb6"
+    },
+    {
+      "path": "lib/study-model.ts",
+      "bytes": 13351,
+      "sha256": "0b966bace5f62b987c87c6500995ee15f5768839dba53bd39d8207bf197237f6"
+    },
+    {
+      "path": "lib/ui-theme.ts",
+      "bytes": 3568,
+      "sha256": "83fcbe6b53bf084f18dba68a4047ed92a20257033ec0fbaedc7515de9c10bf4a"
+    },
+    {
+      "path": "lib/use-study.ts",
+      "bytes": 21422,
+      "sha256": "9677c7f25ccaee91f1861799740aab5db9dadd7960f59f148a5889140400e161"
+    },
+    {
+      "path": "mobile/src/main.tsx",
+      "bytes": 557,
+      "sha256": "498ff7a2cb619604725e68ae551abcb5403f3cf4966d3b92527dcef5f2617f13"
+    },
+    {
+      "path": "package.json",
+      "bytes": 3852,
+      "sha256": "49d8518628291cac17eb40bb5f541baa8b871d73e7301458632805a6f2ce5525"
+    },
+    {
+      "path": "tests/dictionary-ui.test.cjs",
+      "bytes": 10408,
+      "sha256": "20435b78a8fd851b41780685471b2b1b608b3df8225dc3447e3eb6056a507bc7"
+    },
+    {
+      "path": "tests/dictionary.test.cjs",
+      "bytes": 15309,
+      "sha256": "7e592e6df31b79be49f25dfb2b3c71b21a5b87dae753cc581d491f5f61c59b74"
+    },
+    {
+      "path": "tests/exam-ui.test.cjs",
+      "bytes": 22742,
+      "sha256": "7f7fb687d31e7711ddfc85ca568ede3d6f63bee97e74fa7e78eec0819840bf59"
+    },
+    {
+      "path": "tests/native-lifecycle.test.cjs",
+      "bytes": 16103,
+      "sha256": "dfce431a333537d31eb288adac727f29667bdb84985c56fa9cefa797be81f9ab"
+    },
+    {
+      "path": "tests/rendered-html.test.mjs",
+      "bytes": 1504,
+      "sha256": "2db8b81b8785fbb575e28b8f6296d7a32594fdb75de1b455de7220052601df85"
+    },
+    {
+      "path": "tests/repo-review-regressions.test.cjs",
+      "bytes": 35949,
+      "sha256": "10557bd55f6dd5f0eb1becef41003010ceadbe48ab5ae4bd508dbcfd1ef985ca"
+    },
+    {
+      "path": "tests/theme-persistence.test.cjs",
+      "bytes": 14567,
+      "sha256": "b03db303f5dcf7b9e6cdc6ef2905e60c095ede89576d5740f028a30f80ebedc2"
+    },
+    {
+      "path": "tests/ui-redesign-exam.test.cjs",
+      "bytes": 39503,
+      "sha256": "e47b8c9612fdfc02e8e4d290fc3c1fcef98e50612346a92623b7eabb5010850a"
+    },
+    {
+      "path": "tests/ui-redesign-hook-contract.test.cjs",
+      "bytes": 7400,
+      "sha256": "b992de0754ea78776dce94794053432c8eea2c7a33f3e93561e7b932725e5e94"
+    },
+    {
+      "path": "tests/ui-redesign-owner-shell.test.cjs",
+      "bytes": 12806,
+      "sha256": "e18bbdeed4e9db924df08cc60bd64ceec45c70a21f96c2957fcacddb759f89e1"
+    },
+    {
+      "path": "tests/ui-redesign-practice.test.cjs",
+      "bytes": 30797,
+      "sha256": "39507d01dceb3e8b15e9b310862f6c63e35e8765433ee613eb22efe84d30bcff"
+    },
+    {
+      "path": "tests/ui-redesign-resources.test.cjs",
+      "bytes": 8305,
+      "sha256": "40ab07ccea8caba18d1567ca27598bb4163d61428d5f5b1b8afd2f5d54ff2f51"
+    },
+    {
+      "path": "tests/ui-redesign-search.test.cjs",
+      "bytes": 38986,
+      "sha256": "7554debeff840e92cdaa0168ccc2d5144036ca6629f2e7188d10bfdb9c2398e7"
+    },
+    {
+      "path": "tests/ui-redesign-speaking.test.cjs",
+      "bytes": 39580,
+      "sha256": "5d47c79e0909531e7d84340606761ab6bb9bef590f99e5bb1cbd195b32d79571"
+    }
+  ],
+  "scope": "Changed/new implementation/test files only; excludes historical design/architecture docs and learner storage. No push/merge/publish/upload/phone install/data migration.",
+  "independentFinalReview": {
+    "path": "../../design/ui-redesign-20261013/reviews/IMPLEMENTATION-INDEPENDENT-FINAL-RECHECK.md",
+    "sha256": "304f2ae7981a5e3d47c7758830c2dff122fa4cddc48ac6b3e38b0f1b775227ed",
+    "outcome": "passed within final source/controlled-regression scope; not full native/data/media/accessibility acceptance"
+  },
+  "userVisualAcceptance": {
+    "outcome": "not approved",
+    "feedback": "我看了下你这版本的设计，完全没有空洞骑士的元素了。先别合入了",
+    "recordedUtc": "2026-10-13T16:44:28.902128+00:00",
+    "record": "../../design/ui-redesign-20261013/USER-VISUAL-HOLD.md",
+    "neutralThemes": "day/night remain free of IP elements",
+    "ipThemes": "Hollow Knight/Silksong character, scene and world recognition require renewed discussion",
+    "merge": "paused",
+    "deploy": "paused",
+    "newImplementationOrReviewStarted": false
+  },
+  "pendingWordPlanRequirement": {
+    "status": "recorded only; waiting for user reference preference; no drafting or implementation",
+    "record": "../../design/ui-redesign-20261013/PENDING-WORD-PLAN-REQUIREMENT.md",
+    "sha256": "e1e9526f3b1e4632d5e515b0364b8ff69d46a3e2ca7df4cc98a7a46d582e9940",
+    "libraryId": "libfile_a8f02167a7588191ba8f605fbd80701b",
+    "actualImageViewedByThisWorkline": false,
+    "mustMaterializeAndViewBeforeFormalDesign": true,
+    "exampleNumbersAreNotRequirements": true,
+    "productionAndMergeDeploy": "paused"
+  }
+}

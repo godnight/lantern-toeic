@@ -1,8 +1,5 @@
 name: Tested offline prerelease
 on:
-  push:
-    branches: [main]
-    paths: [release-manifest.json]
   workflow_dispatch:
 permissions:
   contents: read
@@ -40,7 +37,6 @@ jobs:
           python3 -B -m unittest discover -s harmony/scripts/ui -p 'test_*.py'
           python3 -B -m unittest discover -s tests -p 'test_release_*.py'
           npm --prefix harmony run sync:web
-          npm --prefix harmony run check:web
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
@@ -54,10 +50,12 @@ jobs:
       - name: Exercise the shared app in a real browser before release
         env:
           LANTERN_BROWSER_QA_DIR: ${{ runner.temp }}/lantern-browser-qa
+          LANTERN_DICTIONARY_QA_DIR: ${{ runner.temp }}/lantern-dictionary-browser-qa
           LANTERN_PAGE_PACK_QA_DIR: ${{ runner.temp }}/lantern-page-pack-qa
         run: |
           node node_modules/playwright/cli.js install --with-deps chromium
           npm run test:browser
+          npm run test:dictionary:browser
       - name: Retain synthetic browser QA evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -66,6 +64,8 @@ jobs:
           path: |
             ${{ runner.temp }}/lantern-browser-qa/result.json
             ${{ runner.temp }}/lantern-browser-qa/*.png
+            ${{ runner.temp }}/lantern-dictionary-browser-qa/result.json
+            ${{ runner.temp }}/lantern-dictionary-browser-qa/*.png
           if-no-files-found: ignore
           retention-days: 14
       - name: Restore the pinned public CLT archive

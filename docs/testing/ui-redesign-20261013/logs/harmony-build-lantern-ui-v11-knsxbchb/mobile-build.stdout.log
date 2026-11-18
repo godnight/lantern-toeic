@@ -1,0 +1,9 @@
+vite v8.0.16 building client environment for production...
+[2Ktransforming...✓ 1987 modules transformed.
+rendering chunks...
+computing gzip size...
+mobile/dist/index.html                     0.42 kB │ gzip:   0.31 kB
+mobile/dist/assets/index-Cd6QOvGF.css    371.84 kB │ gzip:  60.53 kB
+mobile/dist/assets/index-DRUJ_l4J.js   1,332.78 kB │ gzip: 407.77 kB
+
+✓ built in 1.04s

@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "buildId": "mainline-20076-20261117-r2-87da3fdedb3a",
+  "sourceInputsSha256": "87da3fdedb3ac025463b44329d68870524835d3549e3530bf762534d1f9a7474",
+  "inputCount": 14225,
+  "excludedSelf": "public/build-identity.json",
+  "versionName": "0.4.7",
+  "versionCode": 20076
+}

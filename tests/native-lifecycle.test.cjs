@@ -10,13 +10,19 @@ const ts = require(root + '/node_modules/typescript');
 // Exercise the shipped TypeScript and TSX together. The mocks below model browser
 // events and React hook slots; they do not copy the native or recording logic.
 function load(file, imports = {}, globals = {}) {
+ imports={...require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root),...imports};
+  const dependencies=require('./helpers/actual-source-loader.cjs').createSourceLoader({root,imports,globals,permitLearningAccess:true});
   const exports = {};
   const code = ts.transpileModule(fs.readFileSync(path.join(root, file), 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX }
   }).outputText;
   vm.runInNewContext(code, {
     exports, require(name) {
-      if (!(name in imports)) throw new Error('Unexpected import: ' + name);
+      if (name === '@/lib/pcm-recorder') return {createRecordingCapture:stream=>new globals.MediaRecorder(stream),captureDuration:(_rec,seconds)=>seconds,captureWarning:()=>''};
+    if (name === '@/lib/recording-capture-diagnostics') return {createRecordingCaptureTrace:()=>()=>{}};
+      if (name === '@/lib/recording-media-diagnostics') return {recordingMediaTrace(){}};
+      if (name === '@/lib/use-dialog-viewport') return load('lib/use-dialog-viewport.ts', {react: imports.react}, globals);
+      if (!(name in imports)) return dependencies.resolve(name,file);
       return imports[name];
     }, Date, Intl, Map, Set, Blob, URL, crypto: { randomUUID }, ...globals
   }, { filename: file });
@@ -58,6 +64,7 @@ function findButton(tree, label) {
     const node = nodes.shift();
     if (!node) continue;
     if (Array.isArray(node)) { nodes.push(...node); continue; }
+    if (node.type === 'Dialog' && node.props.open === false) continue;
     if (node.type === 'button' && textOf(node).includes(label)) return node;
     nodes.push(node.props?.children);
   }
@@ -116,13 +123,13 @@ function speakingHarness({ manualPermissions = false } = {}) {
     if (!manualPermissions) request.resolve(request.stream);
     return request.promise;
   } } };
-  Object.assign(host.window, { MediaRecorder: Recorder, confirm() { confirmCalls++; return confirmation; } });
+  Object.assign(host.window, { MediaRecorder: Recorder, AudioContext: Recorder, confirm() { confirmCalls++; return confirmation; } });
   const jsx = (type, props) => ({ type, props });
   const stub = new Proxy({}, { get: (_, name) => String(name) });
-  const Room = load('app/learn/speaking.tsx', {
+  const Room = load('app/learn/speaking.tsx', {'@/lib/lesson-audio':{stopLessonAudio(){}},
     '@/lib/study-model': load('lib/study-model.ts',{}),
     react, 'react/jsx-runtime': { jsx, jsxs: jsx, Fragment: 'fragment' }, 'lucide-react': stub,
-    '@/components/ui/dialog': stub, '@/components/ui/checkbox': stub, './practice': stub,
+    '@/components/ui/dialog': stub, '@/components/ui/checkbox': stub, './practice': stub, './recording-player':{RecordingPlayer:'audio'},
     '@/lib/native-host': host.native,
     sonner: { toast: Object.assign(() => {}, { error() {}, success() {} }) }
   }, { ...host.globals, navigator, Date: ClockDate, MediaRecorder: Recorder, setInterval: () => 1, clearInterval() {} });
@@ -225,25 +232,40 @@ test('native back waits for stop events and successful saving before closing the
   assert.equal(h.closed, 1, 'A saved clip allows normal dismissal');
 });
 
-test('failed recording save stays open when discard confirmation is declined', async t => {
-  const h = speakingHarness(); t.after(() => h.cleanup());
-  await startRecording(h);
-  h.click('结束录音');
-  const saving = h.deliverStop();
-  h.saves[0].reject(new Error('IndexedDB storage unavailable')); await saving;
-  assert.equal(h.button('再说一次').props.disabled, true, 'An unsaved clip cannot be overwritten by a new recording');
-  h.setConfirmation(false); h.back();
-  assert.equal(h.confirmCalls, 1);
-  assert.equal(h.closed, 0, 'Declining discard must preserve the failed recording and retry path');
-  const retry = h.click('重试保存');
-  assert.equal(h.saves.length, 2);
-  assert.equal(h.saves[1].meta.id, h.saves[0].meta.id);
-  assert.equal(h.saves[1].blob, h.saves[0].blob, 'Retry must retain the original audio');
-  h.saves[1].resolve(); await retry;
-  assert.equal(h.button('再说一次').props.disabled, false, 'A saved clip allows recording again');
-  h.back();
-  assert.equal(h.closed, 1);
-  assert.equal(h.confirmCalls, 1, 'Successful retry removes the discard confirmation');
+// The same discard-decline contract now uses the shipped risk dialog instead
+// of window.confirm. Only open dialogs participate in control discovery.
+function visibleDiscard(tree) {
+  const queue=[tree];
+  while(queue.length){const node=queue.shift();if(!node)continue;if(Array.isArray(node)){queue.push(...node);continue;}
+    if(node.type==='Dialog'&&node.props.open===false)continue;
+    if(node.type==='Dialog'&&node.props.open&&textOf(node).includes('放弃这段未保存录音？'))return node;
+    queue.push(node.props?.children);
+  }
+}
+test('failed recording save stays open when discard confirmation is declined',async t=>{
+  const h=speakingHarness();t.after(()=>h.cleanup());await startRecording(h);h.advance(3000);
+  h.click('结束录音');const saving=h.deliverStop();h.saves[0].reject(new Error('IndexedDB storage unavailable'));await saving;
+  const first=h.saves[0],firstTree=h.render();
+  assert.equal(h.button('再说一次').props.disabled,true,'An unsaved clip cannot be overwritten by a new recording');
+  assert.equal(h.button('记录收获').props.disabled,true,'Failed save cannot create a learning checkin');
+  h.back();assert.ok(visibleDiscard(h.render()),'Native Back opens the real custom discard confirmation');
+  assert.equal(h.confirmCalls,0,'The app must not fall back to window.confirm');
+  assert.equal(h.closed,0);h.click('留在这里');
+  assert.equal(visibleDiscard(h.render()),undefined,'Declining closes only the risk dialog');
+  assert.equal(h.closed,0,'Declining discard preserves the failed recording and retry path');
+  // A second Back cancels this overlay before the room; no Blob is lost.
+  h.back();assert.ok(visibleDiscard(h.render()));h.back();
+  assert.equal(visibleDiscard(h.render()),undefined);assert.equal(h.closed,0);
+  const retry=h.click('重试保存');assert.equal(h.saves.length,2);
+  assert.equal(h.saves[1].meta.id,first.meta.id);
+  assert.equal(h.saves[1].meta.createdAt,first.meta.createdAt,'Retry preserves the original practice timestamp');
+  assert.equal(h.saves[1].meta.duration,3);
+  assert.equal(h.saves[1].blob,first.blob,'Retry retains the original audio object');
+  h.saves[1].resolve();await retry;
+  assert.equal(h.button('再说一次').props.disabled,false,'A saved clip allows recording again');
+  assert.equal(h.button('记录收获').props.disabled,false);
+  assert.equal(visibleDiscard(h.render()),undefined,'Successful retry removes the discard confirmation');
+  h.back();assert.equal(h.closed,1);assert.equal(h.confirmCalls,0);
 });
 
 test('native back cancels preparation and releases the microphone before a later dismissal', async t => {

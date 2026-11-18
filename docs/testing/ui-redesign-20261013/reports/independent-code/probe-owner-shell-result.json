@@ -1,0 +1,52 @@
+{
+  "timestamp": "2026-10-13T08:48:17.521Z",
+  "observedFiles": {
+    "lib/study-model.ts": "0b966bace5f62b987c87c6500995ee15f5768839dba53bd39d8207bf197237f6",
+    "app/study-app.tsx": "60257409a413bb46df38b14a814224360c81b2c299baae5dfcfa2351bb7190ac",
+    "app/learn/workspace-shell.tsx": "19527bd4bc9627910f2aec130c5dd4fefcd99ca73d6f2a460211af9e4e088232"
+  },
+  "result": "passed",
+  "results": {
+    "readable": {
+      "ready": true,
+      "recordsReadable": true,
+      "sync": "local",
+      "snapshotName": "PRIVATE Alice Owner A",
+      "shellName": "PRIVATE Alice Owner A",
+      "reviewCount": 1,
+      "theme": "silk",
+      "visiblePrivateName": true
+    },
+    "switching": {
+      "ready": true,
+      "recordsReadable": false,
+      "sync": "local",
+      "snapshotName": "PRIVATE Alice Owner A",
+      "shellName": "记录暂不可读",
+      "reviewCount": 0,
+      "theme": "paper",
+      "visiblePrivateName": false
+    },
+    "failed": {
+      "ready": true,
+      "recordsReadable": false,
+      "sync": "blocked",
+      "snapshotName": "学习者",
+      "shellName": "记录暂不可读",
+      "reviewCount": 0,
+      "theme": "paper",
+      "visiblePrivateName": false
+    },
+    "loading": {
+      "ready": false,
+      "recordsReadable": false,
+      "sync": "local",
+      "snapshotName": "PRIVATE Alice Owner A",
+      "shellName": "正在读取记录",
+      "reviewCount": 0,
+      "theme": "paper",
+      "visiblePrivateName": false
+    }
+  },
+  "limits": "Actual hook with future-schema Bob failure and actual Root/Shell pre-effect projections; no real ReactDOM paint or learner storage. Loading case is an explicit blocked projection; first switched render is produced by actual hook. No review badge is rendered for blocked projection; zero is a withheld prop, not proof of zero stored records."
+}

@@ -1,0 +1,1000 @@
+[
+  {
+    "id": "v040-b03-p1-01",
+    "part": 1,
+    "title": "站台候车",
+    "prompt": "Look at the photograph. Choose the best description.",
+    "options": [
+      "A traveler is sitting on a bench beside a suitcase.",
+      "A traveler is pulling a suitcase up some stairs.",
+      "Several travelers are boarding a train.",
+      "A traveler is opening an umbrella."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：仅图稿如此，缺图不能终判；B：图稿无楼梯，待成图确认；C：图稿无登车人群，待成图确认；D：图稿无伞，待成图确认。",
+    "evidence": "IMAGE BRIEF ONLY: seated traveler beside closed suitcase; no stairs, crowd or umbrella.",
+    "skill": "照片：状态",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "audioText": "A. A traveler is sitting on a bench beside a suitcase. B. A traveler is pulling a suitcase up some stairs. C. Several travelers are boarding a train. D. A traveler is opening an umbrella.",
+    "transcript": "A. A traveler is sitting on a bench beside a suitcase. B. A traveler is pulling a suitcase up some stairs. C. Several travelers are boarding a train. D. A traveler is opening an umbrella."
+  },
+  {
+    "id": "v040-b03-p2-01",
+    "part": 2,
+    "title": "费用承担",
+    "prompt": "Who will pay for the replacement parts?",
+    "options": [
+      "The warranty covers them.",
+      "They arrived yesterday.",
+      "Beside the repair counter."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：保修承担费用，回应付款方；B：回答时间；C：回答位置。",
+    "evidence": "The warranty covers them.",
+    "skill": "问答：意图与承接",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "audioText": "Who will pay for the replacement parts? A. The warranty covers them. B. They arrived yesterday. C. Beside the repair counter.",
+    "transcript": "Who will pay for the replacement parts? A. The warranty covers them. B. They arrived yesterday. C. Beside the repair counter."
+  },
+  {
+    "id": "v040-b03-p2-02",
+    "part": 2,
+    "title": "时间安排",
+    "prompt": "Is the inspection on Tuesday or Wednesday?",
+    "options": [
+      "The inspector is very experienced.",
+      "Wednesday, according to the latest notice.",
+      "On the second floor."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：说经验，不选日期；B：明确选星期三；C：回答楼层。",
+    "evidence": "Wednesday, according to the latest notice.",
+    "skill": "问答：意图与承接",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "audioText": "Is the inspection on Tuesday or Wednesday? A. The inspector is very experienced. B. Wednesday, according to the latest notice. C. On the second floor.",
+    "transcript": "Is the inspection on Tuesday or Wednesday? A. The inspector is very experienced. B. Wednesday, according to the latest notice. C. On the second floor."
+  },
+  {
+    "id": "v040-b03-p2-03",
+    "part": 2,
+    "title": "提出建议",
+    "prompt": "Why don't we send the samples by express delivery?",
+    "options": [
+      "The sender wrote in blue ink.",
+      "No, the samples are on a shelf.",
+      "Good idea; the client needs them urgently."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：sender同词关联未回应建议；B：位置不能回应运输建议；C：接受建议并说明紧急性。",
+    "evidence": "Good idea; the client needs them urgently.",
+    "skill": "问答：意图与承接",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "audioText": "Why don't we send the samples by express delivery? A. The sender wrote in blue ink. B. No, the samples are on a shelf. C. Good idea; the client needs them urgently.",
+    "transcript": "Why don't we send the samples by express delivery? A. The sender wrote in blue ink. B. No, the samples are on a shelf. C. Good idea; the client needs them urgently."
+  },
+  {
+    "id": "v040-b03-p2-04",
+    "part": 2,
+    "title": "登录困难",
+    "prompt": "I can't log in to the booking system.",
+    "options": [
+      "Try resetting your password.",
+      "The booking was for two nights.",
+      "A new log arrived this morning."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：建议重置密码，直接承接困难；B：住宿时长不解决登录；C：木料log不回应登录。",
+    "evidence": "Try resetting your password.",
+    "skill": "问答：意图与承接",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "audioText": "I can't log in to the booking system. A. Try resetting your password. B. The booking was for two nights. C. A new log arrived this morning.",
+    "transcript": "I can't log in to the booking system. A. Try resetting your password. B. The booking was for two nights. C. A new log arrived this morning."
+  },
+  {
+    "id": "v040-b03-p2-05",
+    "part": 2,
+    "title": "存放许可",
+    "prompt": "Can we store these boxes here overnight?",
+    "options": [
+      "Only if the fire exit stays clear.",
+      "At nine this morning.",
+      "The boxes are made of cardboard."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：有条件许可，不能堵消防出口；B：时间不回应许可；C：材质不回应许可。",
+    "evidence": "Only if the fire exit stays clear.",
+    "skill": "问答：意图与承接",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "audioText": "Can we store these boxes here overnight? A. Only if the fire exit stays clear. B. At nine this morning. C. The boxes are made of cardboard.",
+    "transcript": "Can we store these boxes here overnight? A. Only if the fire exit stays clear. B. At nine this morning. C. The boxes are made of cardboard."
+  },
+  {
+    "id": "v040-b03-p2-06",
+    "part": 2,
+    "title": "获取指南",
+    "prompt": "Where can I get a copy of the installation guide?",
+    "options": [
+      "The installer left at noon.",
+      "There's a download link in your confirmation email.",
+      "Yes, I copied the address."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：安装员离开时间非获取方式；B：指出下载途径；C：复制地址非指南位置。",
+    "evidence": "There's a download link in your confirmation email.",
+    "skill": "问答：意图与承接",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "audioText": "Where can I get a copy of the installation guide? A. The installer left at noon. B. There's a download link in your confirmation email. C. Yes, I copied the address.",
+    "transcript": "Where can I get a copy of the installation guide? A. The installer left at noon. B. There's a download link in your confirmation email. C. Yes, I copied the address."
+  },
+  {
+    "id": "v040-b03-p3-01",
+    "part": 3,
+    "title": "订单变化",
+    "prompt": "What change is needed?",
+    "options": [
+      "A later delivery time.",
+      "A larger meal order.",
+      "A different venue.",
+      "A lower price."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：未改时间；B：人数20增至24，餐数增加；C：未改地点；D：未要求降价。",
+    "evidence": "twenty-four people, not twenty",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-catering",
+    "transcript": "A: The guests have confirmed. We need lunch for twenty-four people, not twenty.\nB: I can increase the order, but the caterer needs the final number by ten this morning.\nA: It is only nine fifteen. Could you call now and ask for four more vegetarian meals?\nB: Certainly. I will also ask them to label the vegetarian boxes clearly.",
+    "audioText": "A: The guests have confirmed. We need lunch for twenty-four people, not twenty.\nB: I can increase the order, but the caterer needs the final number by ten this morning.\nA: It is only nine fifteen. Could you call now and ask for four more vegetarian meals?\nB: Certainly. I will also ask them to label the vegetarian boxes clearly."
+  },
+  {
+    "id": "v040-b03-p3-02",
+    "part": 3,
+    "title": "确认截止",
+    "prompt": "By what time is the final number needed?",
+    "options": [
+      "Nine fifteen.",
+      "Nine thirty.",
+      "Ten.",
+      "Noon."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：当前时间；B：未提及；C：最迟十点；D：未提及。",
+    "evidence": "by ten this morning",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-catering",
+    "transcript": "A: The guests have confirmed. We need lunch for twenty-four people, not twenty.\nB: I can increase the order, but the caterer needs the final number by ten this morning.\nA: It is only nine fifteen. Could you call now and ask for four more vegetarian meals?\nB: Certainly. I will also ask them to label the vegetarian boxes clearly.",
+    "audioText": "A: The guests have confirmed. We need lunch for twenty-four people, not twenty.\nB: I can increase the order, but the caterer needs the final number by ten this morning.\nA: It is only nine fifteen. Could you call now and ask for four more vegetarian meals?\nB: Certainly. I will also ask them to label the vegetarian boxes clearly."
+  },
+  {
+    "id": "v040-b03-p3-03",
+    "part": 3,
+    "title": "额外要求",
+    "prompt": "What additional request will the second speaker make?",
+    "options": [
+      "Label the vegetarian meals.",
+      "Remove all labels.",
+      "Send an invoice next month.",
+      "Serve food on plates."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：明确标素餐盒；B：与原文相反；C：未提发票；D：未要求摆盘。",
+    "evidence": "label the vegetarian boxes clearly",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-catering",
+    "transcript": "A: The guests have confirmed. We need lunch for twenty-four people, not twenty.\nB: I can increase the order, but the caterer needs the final number by ten this morning.\nA: It is only nine fifteen. Could you call now and ask for four more vegetarian meals?\nB: Certainly. I will also ask them to label the vegetarian boxes clearly.",
+    "audioText": "A: The guests have confirmed. We need lunch for twenty-four people, not twenty.\nB: I can increase the order, but the caterer needs the final number by ten this morning.\nA: It is only nine fifteen. Could you call now and ask for four more vegetarian meals?\nB: Certainly. I will also ask them to label the vegetarian boxes clearly."
+  },
+  {
+    "id": "v040-b03-p3-04",
+    "part": 3,
+    "title": "故障",
+    "prompt": "What problem is reported?",
+    "options": [
+      "A broken screen.",
+      "A missing charger.",
+      "An incorrect bill.",
+      "A network connection failure."
+    ],
+    "correctIndex": 3,
+    "explanation": "A：未提；B：未提；C：未质疑账单；D：无法连接无线网。",
+    "evidence": "will not connect to the wireless network",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-tablet",
+    "transcript": "Customer: This rental tablet will not connect to the wireless network in Room Four.\nClerk: Other guests there are connected. Have you tried restarting it?\nCustomer: Yes, twice. My presentation begins in fifteen minutes.\nClerk: Then I will exchange it for a tested tablet now. Your rental charge will stay the same.",
+    "audioText": "Customer: This rental tablet will not connect to the wireless network in Room Four.\nClerk: Other guests there are connected. Have you tried restarting it?\nCustomer: Yes, twice. My presentation begins in fifteen minutes.\nClerk: Then I will exchange it for a tested tablet now. Your rental charge will stay the same."
+  },
+  {
+    "id": "v040-b03-p3-05",
+    "part": 3,
+    "title": "说话意图",
+    "prompt": "Why does the customer mention a presentation?",
+    "options": [
+      "To request a larger room.",
+      "To explain why a quick solution is needed.",
+      "To train the clerk.",
+      "To cancel the event."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：未要求换房；B：15分钟后演示，需尽快解决；C：未提供培训；D：未取消。",
+    "evidence": "My presentation begins in fifteen minutes.",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-tablet",
+    "transcript": "Customer: This rental tablet will not connect to the wireless network in Room Four.\nClerk: Other guests there are connected. Have you tried restarting it?\nCustomer: Yes, twice. My presentation begins in fifteen minutes.\nClerk: Then I will exchange it for a tested tablet now. Your rental charge will stay the same.",
+    "audioText": "Customer: This rental tablet will not connect to the wireless network in Room Four.\nClerk: Other guests there are connected. Have you tried restarting it?\nCustomer: Yes, twice. My presentation begins in fifteen minutes.\nClerk: Then I will exchange it for a tested tablet now. Your rental charge will stay the same."
+  },
+  {
+    "id": "v040-b03-p3-06",
+    "part": 3,
+    "title": "处理",
+    "prompt": "What will the clerk do?",
+    "options": [
+      "Restart the same tablet again.",
+      "Charge for another rental period.",
+      "Provide another tablet at the same charge.",
+      "Disconnect other guests."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：决定更换；B：费用不变；C：更换且不加费；D：未要求他人断网。",
+    "evidence": "exchange it for a tested tablet now. Your rental charge will stay the same.",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-tablet",
+    "transcript": "Customer: This rental tablet will not connect to the wireless network in Room Four.\nClerk: Other guests there are connected. Have you tried restarting it?\nCustomer: Yes, twice. My presentation begins in fifteen minutes.\nClerk: Then I will exchange it for a tested tablet now. Your rental charge will stay the same.",
+    "audioText": "Customer: This rental tablet will not connect to the wireless network in Room Four.\nClerk: Other guests there are connected. Have you tried restarting it?\nCustomer: Yes, twice. My presentation begins in fifteen minutes.\nClerk: Then I will exchange it for a tested tablet now. Your rental charge will stay the same."
+  },
+  {
+    "id": "v040-b03-p3-07",
+    "part": 3,
+    "title": "临时方案",
+    "prompt": "Why are temporary panels needed?",
+    "options": [
+      "The door is too narrow.",
+      "The training room is being painted.",
+      "The new panels arrive after opening day.",
+      "Visitors requested different colors."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：已确认过得去；B：未提刷漆；C：周四开幕而周五才到；D：未提颜色要求。",
+    "evidence": "arrive on Friday, but the exhibit opens on Thursday",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-panels",
+    "transcript": "Lena: Our new display panels will arrive on Friday, but the exhibit opens on Thursday.\nOmar: I can borrow three panels from the training room for opening day.\nJules: Will they fit through the gallery door?\nOmar: Yes. I measured them yesterday.\nLena: Jules, please update the setup checklist to show the temporary panels.\nJules: I will do that before the team meeting.",
+    "audioText": "Lena: Our new display panels will arrive on Friday, but the exhibit opens on Thursday.\nOmar: I can borrow three panels from the training room for opening day.\nJules: Will they fit through the gallery door?\nOmar: Yes. I measured them yesterday.\nLena: Jules, please update the setup checklist to show the temporary panels.\nJules: I will do that before the team meeting."
+  },
+  {
+    "id": "v040-b03-p3-08",
+    "part": 3,
+    "title": "数量",
+    "prompt": "How many panels can be borrowed?",
+    "options": [
+      "Three.",
+      "Four.",
+      "Five.",
+      "Six."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：明确三块；B：不是四块；C：不是五块；D：未提六块。",
+    "evidence": "borrow three panels",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-panels",
+    "transcript": "Lena: Our new display panels will arrive on Friday, but the exhibit opens on Thursday.\nOmar: I can borrow three panels from the training room for opening day.\nJules: Will they fit through the gallery door?\nOmar: Yes. I measured them yesterday.\nLena: Jules, please update the setup checklist to show the temporary panels.\nJules: I will do that before the team meeting.",
+    "audioText": "Lena: Our new display panels will arrive on Friday, but the exhibit opens on Thursday.\nOmar: I can borrow three panels from the training room for opening day.\nJules: Will they fit through the gallery door?\nOmar: Yes. I measured them yesterday.\nLena: Jules, please update the setup checklist to show the temporary panels.\nJules: I will do that before the team meeting."
+  },
+  {
+    "id": "v040-b03-p3-09",
+    "part": 3,
+    "title": "分工",
+    "prompt": "What is Jules asked to do?",
+    "options": [
+      "Measure the panels.",
+      "Update the setup checklist.",
+      "Call the manufacturer.",
+      "Reschedule the meeting."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：Omar已测量；B：明确更新清单；C：未要求；D：会前完成不是改会期。",
+    "evidence": "Jules, please update the setup checklist",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-panels",
+    "transcript": "Lena: Our new display panels will arrive on Friday, but the exhibit opens on Thursday.\nOmar: I can borrow three panels from the training room for opening day.\nJules: Will they fit through the gallery door?\nOmar: Yes. I measured them yesterday.\nLena: Jules, please update the setup checklist to show the temporary panels.\nJules: I will do that before the team meeting.",
+    "audioText": "Lena: Our new display panels will arrive on Friday, but the exhibit opens on Thursday.\nOmar: I can borrow three panels from the training room for opening day.\nJules: Will they fit through the gallery door?\nOmar: Yes. I measured them yesterday.\nLena: Jules, please update the setup checklist to show the temporary panels.\nJules: I will do that before the team meeting."
+  },
+  {
+    "id": "v040-b03-p4-01",
+    "part": 4,
+    "title": "公告变化",
+    "prompt": "What change is announced?",
+    "options": [
+      "A lower ticket price.",
+      "A different departure pier.",
+      "A later departure time.",
+      "A canceled service."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：未降价；B：二改五码头；C：明确时间不变；D：未取消。",
+    "evidence": "Pier Five today instead of Pier Two",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-ferry",
+    "transcript": "Attention, passengers for East Bay. The eleven o'clock ferry will depart from Pier Five today instead of Pier Two because maintenance work is taking place at Pier Two. The departure time has not changed. Follow the blue signs from the ticket office to Pier Five, a walk of about eight minutes. Passengers requiring assistance should speak to a staff member at the ticket office. Boarding will close five minutes before departure.",
+    "audioText": "Attention, passengers for East Bay. The eleven o'clock ferry will depart from Pier Five today instead of Pier Two because maintenance work is taking place at Pier Two. The departure time has not changed. Follow the blue signs from the ticket office to Pier Five, a walk of about eight minutes. Passengers requiring assistance should speak to a staff member at the ticket office. Boarding will close five minutes before departure."
+  },
+  {
+    "id": "v040-b03-p4-02",
+    "part": 4,
+    "title": "原因",
+    "prompt": "Why is the usual pier unavailable?",
+    "options": [
+      "A celebration.",
+      "Its distance from the office.",
+      "Maintenance work.",
+      "A lack of ticket machines."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：未提；B：不是原因；C：明确维修；D：未提机器不足。",
+    "evidence": "maintenance work is taking place at Pier Two",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-ferry",
+    "transcript": "Attention, passengers for East Bay. The eleven o'clock ferry will depart from Pier Five today instead of Pier Two because maintenance work is taking place at Pier Two. The departure time has not changed. Follow the blue signs from the ticket office to Pier Five, a walk of about eight minutes. Passengers requiring assistance should speak to a staff member at the ticket office. Boarding will close five minutes before departure.",
+    "audioText": "Attention, passengers for East Bay. The eleven o'clock ferry will depart from Pier Five today instead of Pier Two because maintenance work is taking place at Pier Two. The departure time has not changed. Follow the blue signs from the ticket office to Pier Five, a walk of about eight minutes. Passengers requiring assistance should speak to a staff member at the ticket office. Boarding will close five minutes before departure."
+  },
+  {
+    "id": "v040-b03-p4-03",
+    "part": 4,
+    "title": "求助",
+    "prompt": "Where should passengers request assistance?",
+    "options": [
+      "At the ticket office.",
+      "On board the ferry.",
+      "At Pier Two only.",
+      "At city hall."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：明确售票处工作人员；B：未要求上船后；C：维修处非指定地点；D：未提市政厅。",
+    "evidence": "speak to a staff member at the ticket office",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-ferry",
+    "transcript": "Attention, passengers for East Bay. The eleven o'clock ferry will depart from Pier Five today instead of Pier Two because maintenance work is taking place at Pier Two. The departure time has not changed. Follow the blue signs from the ticket office to Pier Five, a walk of about eight minutes. Passengers requiring assistance should speak to a staff member at the ticket office. Boarding will close five minutes before departure.",
+    "audioText": "Attention, passengers for East Bay. The eleven o'clock ferry will depart from Pier Five today instead of Pier Two because maintenance work is taking place at Pier Two. The departure time has not changed. Follow the blue signs from the ticket office to Pier Five, a walk of about eight minutes. Passengers requiring assistance should speak to a staff member at the ticket office. Boarding will close five minutes before departure."
+  },
+  {
+    "id": "v040-b03-p4-04",
+    "part": 4,
+    "title": "目的",
+    "prompt": "Why is Priya calling?",
+    "options": [
+      "To confirm a book order.",
+      "To offer a job immediately.",
+      "To change an address.",
+      "To arrange an interview."
+    ],
+    "correctIndex": 3,
+    "explanation": "A：非订单；B：面试不等于录用；C：非改地址；D：明确面试邀请。",
+    "evidence": "invite you to an interview",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-interview",
+    "transcript": "Hello, this is Priya from Meadow Books calling about your application. We would like to invite you to an interview next Thursday at three in the afternoon. The interview will take place at our warehouse office, not at the shop where you submitted your application. Please bring photo identification. You do not need another résumé; we have your electronic copy. Please call me by tomorrow afternoon to confirm whether you can attend.",
+    "audioText": "Hello, this is Priya from Meadow Books calling about your application. We would like to invite you to an interview next Thursday at three in the afternoon. The interview will take place at our warehouse office, not at the shop where you submitted your application. Please bring photo identification. You do not need another résumé; we have your electronic copy. Please call me by tomorrow afternoon to confirm whether you can attend."
+  },
+  {
+    "id": "v040-b03-p4-05",
+    "part": 4,
+    "title": "地点",
+    "prompt": "Where will the interview take place?",
+    "options": [
+      "At the shop.",
+      "At the warehouse office.",
+      "At the applicant's home.",
+      "At a library."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：明确不是书店；B：仓库办公室；C：未提；D：未提。",
+    "evidence": "at our warehouse office, not at the shop",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-interview",
+    "transcript": "Hello, this is Priya from Meadow Books calling about your application. We would like to invite you to an interview next Thursday at three in the afternoon. The interview will take place at our warehouse office, not at the shop where you submitted your application. Please bring photo identification. You do not need another résumé; we have your electronic copy. Please call me by tomorrow afternoon to confirm whether you can attend.",
+    "audioText": "Hello, this is Priya from Meadow Books calling about your application. We would like to invite you to an interview next Thursday at three in the afternoon. The interview will take place at our warehouse office, not at the shop where you submitted your application. Please bring photo identification. You do not need another résumé; we have your electronic copy. Please call me by tomorrow afternoon to confirm whether you can attend."
+  },
+  {
+    "id": "v040-b03-p4-06",
+    "part": 4,
+    "title": "携带物",
+    "prompt": "What should the applicant bring?",
+    "options": [
+      "A printed résumé.",
+      "A purchase receipt.",
+      "Photo identification.",
+      "A uniform."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：明确不需要；B：未要求；C：明确要求；D：未要求。",
+    "evidence": "Please bring photo identification.",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-interview",
+    "transcript": "Hello, this is Priya from Meadow Books calling about your application. We would like to invite you to an interview next Thursday at three in the afternoon. The interview will take place at our warehouse office, not at the shop where you submitted your application. Please bring photo identification. You do not need another résumé; we have your electronic copy. Please call me by tomorrow afternoon to confirm whether you can attend.",
+    "audioText": "Hello, this is Priya from Meadow Books calling about your application. We would like to invite you to an interview next Thursday at three in the afternoon. The interview will take place at our warehouse office, not at the shop where you submitted your application. Please bring photo identification. You do not need another résumé; we have your electronic copy. Please call me by tomorrow afternoon to confirm whether you can attend."
+  },
+  {
+    "id": "v040-b03-p4-07",
+    "part": 4,
+    "title": "顺序",
+    "prompt": "What will participants do first in the workshop?",
+    "options": [
+      "Watch an indoor demonstration.",
+      "Buy tools.",
+      "Plant flowers on the roof.",
+      "Take a group photograph."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：明确先室内演示；B：工具由主办方提供；C：屋顶活动在后；D：未安排合照。",
+    "evidence": "start with a short indoor demonstration",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-rooftop",
+    "transcript": "Welcome to the Green Roof workshop. Please leave large bags in the lockers next to the classroom. We will start with a short indoor demonstration and then visit the rooftop garden. Everyone must wear the closed-toe shoes listed in your confirmation email. If you are wearing unsuitable shoes, you can attend the indoor session, but you cannot join the rooftop visit. Our staff will provide gloves and all gardening tools. Photography is permitted, but please ask before including other participants in your pictures.",
+    "audioText": "Welcome to the Green Roof workshop. Please leave large bags in the lockers next to the classroom. We will start with a short indoor demonstration and then visit the rooftop garden. Everyone must wear the closed-toe shoes listed in your confirmation email. If you are wearing unsuitable shoes, you can attend the indoor session, but you cannot join the rooftop visit. Our staff will provide gloves and all gardening tools. Photography is permitted, but please ask before including other participants in your pictures."
+  },
+  {
+    "id": "v040-b03-p4-08",
+    "part": 4,
+    "title": "条件",
+    "prompt": "Who cannot join the rooftop visit?",
+    "options": [
+      "People without cameras.",
+      "People with notebooks.",
+      "People without their own gloves.",
+      "People wearing unsuitable shoes."
+    ],
+    "correctIndex": 3,
+    "explanation": "A：不要求相机；B：未限制；C：会提供手套；D：明确鞋不合适不得参加。",
+    "evidence": "wearing unsuitable shoes ... cannot join the rooftop visit",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-rooftop",
+    "transcript": "Welcome to the Green Roof workshop. Please leave large bags in the lockers next to the classroom. We will start with a short indoor demonstration and then visit the rooftop garden. Everyone must wear the closed-toe shoes listed in your confirmation email. If you are wearing unsuitable shoes, you can attend the indoor session, but you cannot join the rooftop visit. Our staff will provide gloves and all gardening tools. Photography is permitted, but please ask before including other participants in your pictures.",
+    "audioText": "Welcome to the Green Roof workshop. Please leave large bags in the lockers next to the classroom. We will start with a short indoor demonstration and then visit the rooftop garden. Everyone must wear the closed-toe shoes listed in your confirmation email. If you are wearing unsuitable shoes, you can attend the indoor session, but you cannot join the rooftop visit. Our staff will provide gloves and all gardening tools. Photography is permitted, but please ask before including other participants in your pictures."
+  },
+  {
+    "id": "v040-b03-p4-09",
+    "part": 4,
+    "title": "提供物",
+    "prompt": "What will staff supply?",
+    "options": [
+      "Shoes.",
+      "Gloves and tools.",
+      "Cameras.",
+      "Lunch vouchers."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：须自备鞋；B：明确提供；C：未提供；D：未提供。",
+    "evidence": "provide gloves and all gardening tools",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-rooftop",
+    "transcript": "Welcome to the Green Roof workshop. Please leave large bags in the lockers next to the classroom. We will start with a short indoor demonstration and then visit the rooftop garden. Everyone must wear the closed-toe shoes listed in your confirmation email. If you are wearing unsuitable shoes, you can attend the indoor session, but you cannot join the rooftop visit. Our staff will provide gloves and all gardening tools. Photography is permitted, but please ask before including other participants in your pictures.",
+    "audioText": "Welcome to the Green Roof workshop. Please leave large bags in the lockers next to the classroom. We will start with a short indoor demonstration and then visit the rooftop garden. Everyone must wear the closed-toe shoes listed in your confirmation email. If you are wearing unsuitable shoes, you can attend the indoor session, but you cannot join the rooftop visit. Our staff will provide gloves and all gardening tools. Photography is permitted, but please ask before including other participants in your pictures."
+  },
+  {
+    "id": "v040-b03-p5-01",
+    "part": 5,
+    "title": "不可数名词比较",
+    "prompt": "The new packing method uses _____ cardboard than the old one.",
+    "options": [
+      "fewer",
+      "few",
+      "less",
+      "many"
+    ],
+    "correctIndex": 2,
+    "explanation": "A：修饰可数复数；B：修饰可数复数且不构成比较；C：cardboard不可数，用less比较；D：可数复数量词不合此处。",
+    "evidence": "uses less cardboard than the old one",
+    "skill": "不可数名词比较",
+    "difficulty": "基础",
+    "vocabulary": []
+  },
+  {
+    "id": "v040-b03-p5-02",
+    "part": 5,
+    "title": "条件限制",
+    "prompt": "Visitors may enter the laboratory only _____ they are accompanied by a staff member.",
+    "options": [
+      "if",
+      "despite",
+      "during",
+      "unless"
+    ],
+    "correctIndex": 0,
+    "explanation": "A：only if引导必要条件；B：不能直接接该完整从句；C：不能直接接该完整从句；D：only unless不是此处自然表达。",
+    "evidence": "only if they are accompanied by a staff member",
+    "skill": "条件限制",
+    "difficulty": "基础",
+    "vocabulary": []
+  },
+  {
+    "id": "v040-b03-p5-03",
+    "part": 5,
+    "title": "现在完成时",
+    "prompt": "Our office _____ in this building since 2022.",
+    "options": [
+      "operating",
+      "operate",
+      "was operate",
+      "has operated"
+    ],
+    "correctIndex": 3,
+    "explanation": "A：分词不能独立作谓语；B：单数主语不匹配，且需持续至今；C：was后不能如此接原形；D：since起点提示持续至今。",
+    "evidence": "has operated in this building since 2022",
+    "skill": "现在完成时",
+    "difficulty": "基础",
+    "vocabulary": []
+  },
+  {
+    "id": "v040-b03-p5-04",
+    "part": 5,
+    "title": "复数限定词",
+    "prompt": "Please place _____ damaged items in the separate return bin.",
+    "options": [
+      "this",
+      "these",
+      "that",
+      "it"
+    ],
+    "correctIndex": 1,
+    "explanation": "A：单数限定词不修饰items；B：these与复数items一致；C：单数限定词不修饰items；D：it不能在这里作限定词。",
+    "evidence": "these damaged items",
+    "skill": "复数限定词",
+    "difficulty": "基础",
+    "vocabulary": []
+  },
+  {
+    "id": "v040-b03-p5-05",
+    "part": 5,
+    "title": "目的不定式",
+    "prompt": "The café extended its opening hours _____ customers who work late.",
+    "options": [
+      "accommodated",
+      "accommodation",
+      "to accommodate",
+      "accommodates"
+    ],
+    "correctIndex": 2,
+    "explanation": "A：过去分词不能表这里的目的；B：名词不能直接作目的状语；C：to不定式说明延长营业目的；D：谓语形式不能直接接在此处。",
+    "evidence": "extended its opening hours to accommodate customers",
+    "skill": "目的不定式",
+    "difficulty": "基础",
+    "vocabulary": []
+  },
+  {
+    "id": "v040-b03-p5-06",
+    "part": 5,
+    "title": "售后词汇",
+    "prompt": "Please keep the original packaging in case the item needs to be _____.",
+    "options": [
+      "returned",
+      "retired",
+      "recruited",
+      "reminded"
+    ],
+    "correctIndex": 0,
+    "explanation": "A：包装保留用于商品退回；B：退休或退出使用不是此售后语境；C：招募人员，不适合商品；D：提醒不适合商品。",
+    "evidence": "packaging ... item needs to be returned",
+    "skill": "售后词汇",
+    "difficulty": "基础",
+    "vocabulary": []
+  },
+  {
+    "id": "v040-b03-p5-07",
+    "part": 5,
+    "title": "介词后动名词",
+    "prompt": "Thank you for _____ us about the incorrect address.",
+    "options": [
+      "inform",
+      "informed",
+      "informs",
+      "informing"
+    ],
+    "correctIndex": 3,
+    "explanation": "A：for后不能接原形；B：不是所需动作名词形式；C：第三人称谓语不合；D：介词后用动名词。",
+    "evidence": "Thank you for informing us",
+    "skill": "介词后动名词",
+    "difficulty": "基础",
+    "vocabulary": []
+  },
+  {
+    "id": "v040-b03-p6-01",
+    "part": 6,
+    "title": "退货流程·空1",
+    "prompt": "Which option best completes blank [1]?",
+    "options": [
+      "record",
+      "records",
+      "recorded",
+      "recording"
+    ],
+    "correctIndex": 0,
+    "explanation": "A：与will check并列，用原形；B：第三人称形式不受will支配；C：过去式不合将来并列结构；D：分词不与check平行。",
+    "evidence": "will check each package and record its condition",
+    "skill": "篇章衔接与语法",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-returns",
+    "passage": "To: Delivery staff\nSubject: New return procedure\n\nStarting next month, returned items must be taken to Desk C rather than the main loading area. A staff member at Desk C will check each package and [1] its condition. Please attach the original order number to every return. [2]\n\nPackages without an order number may take [3] than usual to process because their purchase records must be located manually. If the printed label is missing, write the number clearly on a separate sheet and place it inside the package. Please follow these instructions to keep the return process [4].\nReturns Team"
+  },
+  {
+    "id": "v040-b03-p6-02",
+    "part": 6,
+    "title": "退货流程·空2",
+    "prompt": "Which option best completes blank [2]?",
+    "options": [
+      "Desk C will stop accepting all returned items.",
+      "The loading area must still be used for every return.",
+      "This helps staff match the item to the correct purchase record.",
+      "Order numbers should be removed before delivery."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：与新流程接收退件相反；B：与改交C台相反；C：This承接订单号，关联后文查记录；D：与附订单号要求相反。",
+    "evidence": "attach the original order number / purchase records",
+    "skill": "篇章衔接与语法",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-returns",
+    "passage": "To: Delivery staff\nSubject: New return procedure\n\nStarting next month, returned items must be taken to Desk C rather than the main loading area. A staff member at Desk C will check each package and [1] its condition. Please attach the original order number to every return. [2]\n\nPackages without an order number may take [3] than usual to process because their purchase records must be located manually. If the printed label is missing, write the number clearly on a separate sheet and place it inside the package. Please follow these instructions to keep the return process [4].\nReturns Team"
+  },
+  {
+    "id": "v040-b03-p6-03",
+    "part": 6,
+    "title": "退货流程·空3",
+    "prompt": "Which option best completes blank [3]?",
+    "options": [
+      "long",
+      "longest",
+      "length",
+      "longer"
+    ],
+    "correctIndex": 3,
+    "explanation": "A：than usual明确要求比较级，long原级不合结构；B：最高级longest不能构成此处than比较；C：length是名词，不合此处耗时比较结构；D：longer与than usual搭配，表示比通常处理更久。",
+    "evidence": "take longer than usual to process because ... located manually",
+    "skill": "篇章衔接与语法",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-returns",
+    "passage": "To: Delivery staff\nSubject: New return procedure\n\nStarting next month, returned items must be taken to Desk C rather than the main loading area. A staff member at Desk C will check each package and [1] its condition. Please attach the original order number to every return. [2]\n\nPackages without an order number may take [3] than usual to process because their purchase records must be located manually. If the printed label is missing, write the number clearly on a separate sheet and place it inside the package. Please follow these instructions to keep the return process [4].\nReturns Team"
+  },
+  {
+    "id": "v040-b03-p6-04",
+    "part": 6,
+    "title": "退货流程·空4",
+    "prompt": "Which option best completes blank [4]?",
+    "options": [
+      "efficiently",
+      "efficiency",
+      "efficient",
+      "efficiencies"
+    ],
+    "correctIndex": 2,
+    "explanation": "A：副词不能作此处宾语补足语；B：名词不表所需状态；C：keep加宾语加形容词，表示保持高效；D：复数名词不适合此结构。",
+    "evidence": "keep the return process efficient",
+    "skill": "篇章衔接与语法",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-returns",
+    "passage": "To: Delivery staff\nSubject: New return procedure\n\nStarting next month, returned items must be taken to Desk C rather than the main loading area. A staff member at Desk C will check each package and [1] its condition. Please attach the original order number to every return. [2]\n\nPackages without an order number may take [3] than usual to process because their purchase records must be located manually. If the printed label is missing, write the number clearly on a separate sheet and place it inside the package. Please follow these instructions to keep the return process [4].\nReturns Team"
+  },
+  {
+    "id": "v040-b03-p7-01",
+    "part": 7,
+    "title": "付款方式",
+    "prompt": "How can a renter pay for a locker?",
+    "options": [
+      "With cash only.",
+      "With a card.",
+      "With a train voucher.",
+      "By mailing a check."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：明确仅刷卡；B：明确card only；C：未接受；D：未接受。",
+    "evidence": "Payment is by card only.",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-lockers",
+    "passage": "RIVERDALE STATION — LOCKER NOTICE\n\nSmall lockers cost $4 per day; large lockers cost $7 per day. Payment is by card only. Each rental ends at midnight, regardless of the start time. Items left overnight will be moved to the staffed storage office beside Platform 1. An additional $5 handling charge will apply.\n\nKeep the printed access code: station staff cannot open a locker without confirming the renter's identity. Bicycles and flammable materials are not permitted. The storage office is open from 7 a.m. to 9 p.m. For assistance outside these hours, use the intercom next to the locker payment screen."
+  },
+  {
+    "id": "v040-b03-p7-02",
+    "part": 7,
+    "title": "租用结束",
+    "prompt": "When does a rental beginning at 6 p.m. end?",
+    "options": [
+      "At 6 p.m. the next day.",
+      "At 9 p.m. the same day.",
+      "At midnight that night.",
+      "At 7 a.m. the next morning."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：不是滚动24小时；B：21点为存物处关门；C：任何起租时间均午夜结束；D：7点为存物处开门。",
+    "evidence": "Each rental ends at midnight, regardless of the start time.",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-lockers",
+    "passage": "RIVERDALE STATION — LOCKER NOTICE\n\nSmall lockers cost $4 per day; large lockers cost $7 per day. Payment is by card only. Each rental ends at midnight, regardless of the start time. Items left overnight will be moved to the staffed storage office beside Platform 1. An additional $5 handling charge will apply.\n\nKeep the printed access code: station staff cannot open a locker without confirming the renter's identity. Bicycles and flammable materials are not permitted. The storage office is open from 7 a.m. to 9 p.m. For assistance outside these hours, use the intercom next to the locker payment screen."
+  },
+  {
+    "id": "v040-b03-p7-03",
+    "part": 7,
+    "title": "附加费",
+    "prompt": "What causes an additional $5 charge?",
+    "options": [
+      "Renting a large locker.",
+      "Paying by card.",
+      "Using the intercom.",
+      "Leaving items overnight."
+    ],
+    "correctIndex": 3,
+    "explanation": "A：大柜7美元不是处理费；B：未收刷卡费；C：未收对讲费；D：过夜移存收5美元。",
+    "evidence": "Items left overnight ... additional $5 handling charge",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-lockers",
+    "passage": "RIVERDALE STATION — LOCKER NOTICE\n\nSmall lockers cost $4 per day; large lockers cost $7 per day. Payment is by card only. Each rental ends at midnight, regardless of the start time. Items left overnight will be moved to the staffed storage office beside Platform 1. An additional $5 handling charge will apply.\n\nKeep the printed access code: station staff cannot open a locker without confirming the renter's identity. Bicycles and flammable materials are not permitted. The storage office is open from 7 a.m. to 9 p.m. For assistance outside these hours, use the intercom next to the locker payment screen."
+  },
+  {
+    "id": "v040-b03-p7-04",
+    "part": 7,
+    "title": "夜间帮助",
+    "prompt": "How should a renter seek help at 10 p.m.?",
+    "options": [
+      "Use the intercom beside the payment screen.",
+      "Enter the staffed storage office.",
+      "Wait at the ticket gate.",
+      "Call the bicycle rental desk."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：21点后用对讲机；B：22点已不营业；C：未指引此处；D：未提此台。",
+    "evidence": "outside these hours, use the intercom",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-lockers",
+    "passage": "RIVERDALE STATION — LOCKER NOTICE\n\nSmall lockers cost $4 per day; large lockers cost $7 per day. Payment is by card only. Each rental ends at midnight, regardless of the start time. Items left overnight will be moved to the staffed storage office beside Platform 1. An additional $5 handling charge will apply.\n\nKeep the printed access code: station staff cannot open a locker without confirming the renter's identity. Bicycles and flammable materials are not permitted. The storage office is open from 7 a.m. to 9 p.m. For assistance outside these hours, use the intercom next to the locker payment screen."
+  },
+  {
+    "id": "v040-b03-p7-05",
+    "part": 7,
+    "title": "款式",
+    "prompt": "Why does Helen choose the standard arrangement?",
+    "options": [
+      "It contains only white flowers.",
+      "It can be delivered on Monday.",
+      "It is more suitable for small tables.",
+      "It has twenty stems."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：要黄色非白；B：周五自取非周一配送；C：小桌适合标准小款；D：20枝属会议款。",
+    "evidence": "each reception table is quite small",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-flowers",
+    "passage": "DOCUMENT 1 — BLOOM DESK PRICE LIST\nStandard arrangement: $35, ten stems, small vase included.\nConference arrangement: $60, twenty stems, wide vase included.\nLocal delivery: $8 per order. Collection from our shop: free.\nChanges to quantities must reach us by noon two days before collection.\n\nDOCUMENT 2 — EMAIL\nTo: Bloom Desk\nFrom: Helen Moss\nSubject: Friday collection\n\nPlease prepare three standard arrangements for collection on Friday. I originally considered the conference size, but each reception table is quite small. I will collect everything myself. Please use yellow flowers rather than white ones, and label the boxes for the west reception area. We will return the reusable transport boxes on Monday.\nHelen"
+  },
+  {
+    "id": "v040-b03-p7-06",
+    "part": 7,
+    "title": "金额",
+    "prompt": "How much will Helen pay for the three arrangements?",
+    "options": [
+      "$105.",
+      "$113.",
+      "$180.",
+      "$188."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：3×35=105，自取免费；B：误加8美元配送；C：误按会议款60计算；D：误按会议款且加配送。",
+    "evidence": "Standard arrangement: $35 / three standard arrangements / collect everything myself",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-flowers",
+    "passage": "DOCUMENT 1 — BLOOM DESK PRICE LIST\nStandard arrangement: $35, ten stems, small vase included.\nConference arrangement: $60, twenty stems, wide vase included.\nLocal delivery: $8 per order. Collection from our shop: free.\nChanges to quantities must reach us by noon two days before collection.\n\nDOCUMENT 2 — EMAIL\nTo: Bloom Desk\nFrom: Helen Moss\nSubject: Friday collection\n\nPlease prepare three standard arrangements for collection on Friday. I originally considered the conference size, but each reception table is quite small. I will collect everything myself. Please use yellow flowers rather than white ones, and label the boxes for the west reception area. We will return the reusable transport boxes on Monday.\nHelen"
+  },
+  {
+    "id": "v040-b03-p7-07",
+    "part": 7,
+    "title": "更改时限",
+    "prompt": "By when must Helen request a quantity change for Friday collection?",
+    "options": [
+      "Friday at noon.",
+      "Wednesday at noon.",
+      "Monday evening.",
+      "Thursday at midnight."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：不满足提前两天；B：周五前两天周三，不晚于中午；C：周一为还箱日；D：不足提前两天。",
+    "evidence": "by noon two days before collection / collection on Friday",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-flowers",
+    "passage": "DOCUMENT 1 — BLOOM DESK PRICE LIST\nStandard arrangement: $35, ten stems, small vase included.\nConference arrangement: $60, twenty stems, wide vase included.\nLocal delivery: $8 per order. Collection from our shop: free.\nChanges to quantities must reach us by noon two days before collection.\n\nDOCUMENT 2 — EMAIL\nTo: Bloom Desk\nFrom: Helen Moss\nSubject: Friday collection\n\nPlease prepare three standard arrangements for collection on Friday. I originally considered the conference size, but each reception table is quite small. I will collect everything myself. Please use yellow flowers rather than white ones, and label the boxes for the west reception area. We will return the reusable transport boxes on Monday.\nHelen"
+  },
+  {
+    "id": "v040-b03-p7-08",
+    "part": 7,
+    "title": "标签",
+    "prompt": "What label does Helen request?",
+    "options": [
+      "Conference room.",
+      "White flowers.",
+      "Monday delivery.",
+      "West reception area."
+    ],
+    "correctIndex": 3,
+    "explanation": "A：未要求；B：不是要求的标签；C：周一是还箱不是配送；D：明确西接待区。",
+    "evidence": "label the boxes for the west reception area",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-flowers",
+    "passage": "DOCUMENT 1 — BLOOM DESK PRICE LIST\nStandard arrangement: $35, ten stems, small vase included.\nConference arrangement: $60, twenty stems, wide vase included.\nLocal delivery: $8 per order. Collection from our shop: free.\nChanges to quantities must reach us by noon two days before collection.\n\nDOCUMENT 2 — EMAIL\nTo: Bloom Desk\nFrom: Helen Moss\nSubject: Friday collection\n\nPlease prepare three standard arrangements for collection on Friday. I originally considered the conference size, but each reception table is quite small. I will collect everything myself. Please use yellow flowers rather than white ones, and label the boxes for the west reception area. We will return the reusable transport boxes on Monday.\nHelen"
+  },
+  {
+    "id": "v040-b03-p7-09",
+    "part": 7,
+    "title": "周一行动",
+    "prompt": "What does Helen plan to do on Monday?",
+    "options": [
+      "Collect more flowers.",
+      "Return the transport boxes.",
+      "Pay a delivery fee.",
+      "Move the tables."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：未安排；B：明确还箱；C：未选配送；D：未安排。",
+    "evidence": "return the reusable transport boxes on Monday",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-flowers",
+    "passage": "DOCUMENT 1 — BLOOM DESK PRICE LIST\nStandard arrangement: $35, ten stems, small vase included.\nConference arrangement: $60, twenty stems, wide vase included.\nLocal delivery: $8 per order. Collection from our shop: free.\nChanges to quantities must reach us by noon two days before collection.\n\nDOCUMENT 2 — EMAIL\nTo: Bloom Desk\nFrom: Helen Moss\nSubject: Friday collection\n\nPlease prepare three standard arrangements for collection on Friday. I originally considered the conference size, but each reception table is quite small. I will collect everything myself. Please use yellow flowers rather than white ones, and label the boxes for the west reception area. We will return the reusable transport boxes on Monday.\nHelen"
+  },
+  {
+    "id": "v040-b03-p7-10",
+    "part": 7,
+    "title": "最终地点",
+    "prompt": "Where should Jordan attend?",
+    "options": [
+      "Room 8 at West Center.",
+      "Room 3 at West Center.",
+      "Room 3 at North Center.",
+      "Room 8 at North Center."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：旧址失效；B：中心错误；C：最新邮件指定；D：房号错误。",
+    "evidence": "move your workshop to Room 3 at North Center",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-training",
+    "passage": "DOCUMENT 1 — WORKSHOP ANNOUNCEMENT\nMaple Training: Spreadsheet Basics\nMay 18, 9 a.m.–noon; Room 8, West Center. Fee: $45 per person.\nBring a laptop with spreadsheet software installed. Loan laptops are available only if requested at registration. Printed notes are included. Registration closes May 10.\n\nDOCUMENT 2 — REGISTRATION CONFIRMATION\nParticipant: Jordan Lee\nRegistered: May 8\nCourse: Spreadsheet Basics, May 18\nPayment received: $45\nLoan laptop requested: Yes\n\nDOCUMENT 3 — EMAIL, MAY 16\nTo: Jordan Lee\nFrom: Maple Training\n\nRepairs at West Center require us to move your workshop to Room 3 at North Center. The date and time are unchanged. Your requested laptop will be waiting at the registration desk in the new location. Please arrive fifteen minutes early to collect it. You do not need to pay again. Reply to this message if you need directions to North Center."
+  },
+  {
+    "id": "v040-b03-p7-11",
+    "part": 7,
+    "title": "到达时刻",
+    "prompt": "When should Jordan arrive to collect the laptop?",
+    "options": [
+      "8:45 a.m.",
+      "9:00 a.m.",
+      "9:15 a.m.",
+      "11:45 a.m."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：9点开始提前15分钟；B：无提前量；C：晚15分钟；D：接近结束非开始。",
+    "evidence": "9 a.m.–noon / arrive fifteen minutes early",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-training",
+    "passage": "DOCUMENT 1 — WORKSHOP ANNOUNCEMENT\nMaple Training: Spreadsheet Basics\nMay 18, 9 a.m.–noon; Room 8, West Center. Fee: $45 per person.\nBring a laptop with spreadsheet software installed. Loan laptops are available only if requested at registration. Printed notes are included. Registration closes May 10.\n\nDOCUMENT 2 — REGISTRATION CONFIRMATION\nParticipant: Jordan Lee\nRegistered: May 8\nCourse: Spreadsheet Basics, May 18\nPayment received: $45\nLoan laptop requested: Yes\n\nDOCUMENT 3 — EMAIL, MAY 16\nTo: Jordan Lee\nFrom: Maple Training\n\nRepairs at West Center require us to move your workshop to Room 3 at North Center. The date and time are unchanged. Your requested laptop will be waiting at the registration desk in the new location. Please arrive fifteen minutes early to collect it. You do not need to pay again. Reply to this message if you need directions to North Center."
+  },
+  {
+    "id": "v040-b03-p7-12",
+    "part": 7,
+    "title": "借机资格",
+    "prompt": "Why will a laptop be available for Jordan?",
+    "options": [
+      "Every visitor receives a free computer.",
+      "Jordan requested one during registration.",
+      "Jordan paid an extra rental fee.",
+      "The course was canceled."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：只提供申请借用者非赠送；B：确认单Yes符合规则；C：无额外租费证据；D：课程未取消。",
+    "evidence": "only if requested at registration / Loan laptop requested: Yes",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-training",
+    "passage": "DOCUMENT 1 — WORKSHOP ANNOUNCEMENT\nMaple Training: Spreadsheet Basics\nMay 18, 9 a.m.–noon; Room 8, West Center. Fee: $45 per person.\nBring a laptop with spreadsheet software installed. Loan laptops are available only if requested at registration. Printed notes are included. Registration closes May 10.\n\nDOCUMENT 2 — REGISTRATION CONFIRMATION\nParticipant: Jordan Lee\nRegistered: May 8\nCourse: Spreadsheet Basics, May 18\nPayment received: $45\nLoan laptop requested: Yes\n\nDOCUMENT 3 — EMAIL, MAY 16\nTo: Jordan Lee\nFrom: Maple Training\n\nRepairs at West Center require us to move your workshop to Room 3 at North Center. The date and time are unchanged. Your requested laptop will be waiting at the registration desk in the new location. Please arrive fifteen minutes early to collect it. You do not need to pay again. Reply to this message if you need directions to North Center."
+  },
+  {
+    "id": "v040-b03-p7-13",
+    "part": 7,
+    "title": "变更原因",
+    "prompt": "Why was the workshop moved?",
+    "options": [
+      "The instructor changed the date.",
+      "Too many people registered.",
+      "The fee increased.",
+      "The original venue needs repairs."
+    ],
+    "correctIndex": 3,
+    "explanation": "A：日期不变；B：未说人数超额；C：费用未增；D：明确维修。",
+    "evidence": "Repairs at West Center require us to move your workshop",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-training",
+    "passage": "DOCUMENT 1 — WORKSHOP ANNOUNCEMENT\nMaple Training: Spreadsheet Basics\nMay 18, 9 a.m.–noon; Room 8, West Center. Fee: $45 per person.\nBring a laptop with spreadsheet software installed. Loan laptops are available only if requested at registration. Printed notes are included. Registration closes May 10.\n\nDOCUMENT 2 — REGISTRATION CONFIRMATION\nParticipant: Jordan Lee\nRegistered: May 8\nCourse: Spreadsheet Basics, May 18\nPayment received: $45\nLoan laptop requested: Yes\n\nDOCUMENT 3 — EMAIL, MAY 16\nTo: Jordan Lee\nFrom: Maple Training\n\nRepairs at West Center require us to move your workshop to Room 3 at North Center. The date and time are unchanged. Your requested laptop will be waiting at the registration desk in the new location. Please arrive fifteen minutes early to collect it. You do not need to pay again. Reply to this message if you need directions to North Center."
+  },
+  {
+    "id": "v040-b03-p7-14",
+    "part": 7,
+    "title": "路线",
+    "prompt": "What should Jordan do to obtain directions?",
+    "options": [
+      "Visit West Center first.",
+      "Register again.",
+      "Reply to the email.",
+      "Pay another $45."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：无须先去旧址；B：无须重报；C：明确回复邮件；D：明确不用再付。",
+    "evidence": "Reply to this message if you need directions",
+    "skill": "语境理解",
+    "difficulty": "基础",
+    "vocabulary": [],
+    "groupId": "b03-training",
+    "passage": "DOCUMENT 1 — WORKSHOP ANNOUNCEMENT\nMaple Training: Spreadsheet Basics\nMay 18, 9 a.m.–noon; Room 8, West Center. Fee: $45 per person.\nBring a laptop with spreadsheet software installed. Loan laptops are available only if requested at registration. Printed notes are included. Registration closes May 10.\n\nDOCUMENT 2 — REGISTRATION CONFIRMATION\nParticipant: Jordan Lee\nRegistered: May 8\nCourse: Spreadsheet Basics, May 18\nPayment received: $45\nLoan laptop requested: Yes\n\nDOCUMENT 3 — EMAIL, MAY 16\nTo: Jordan Lee\nFrom: Maple Training\n\nRepairs at West Center require us to move your workshop to Room 3 at North Center. The date and time are unchanged. Your requested laptop will be waiting at the registration desk in the new location. Please arrive fifteen minutes early to collect it. You do not need to pay again. Reply to this message if you need directions to North Center."
+  }
+]

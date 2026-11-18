@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "name": "qa-reading-and-submitted-backup.json",
+      "bytes": 647907,
+      "sha256": "41512b04b6335b4e8a14a6d2c806f799f6695dbf3efa6e3723e476769b18e94c",
+      "checked": true
+    },
+    {
+      "name": "qa-submitted-only-backup.json",
+      "bytes": 646864,
+      "sha256": "d67f36116602bbf0aac492cbaed5efc367bcd9d55ba71389c313c5258fc9ca34",
+      "checked": true
+    },
+    {
+      "name": "qa-package-only.json",
+      "bytes": 630069,
+      "sha256": "7786471f983e304b9600e61ba7bca38c225bb94065b26c16251aca2afd97da11",
+      "checked": true
+    }
+  ],
+  "png": {
+    "width": 32,
+    "height": 24,
+    "bytes": 103,
+    "chunks": [
+      "IHDR",
+      "IDAT",
+      "IEND"
+    ],
+    "crcAndPixelsDecoded": true,
+    "decoder": "not required; CRC+zlib+scanline pixel decode passed"
+  },
+  "wav": {
+    "channels": 1,
+    "sampleWidthBytes": 2,
+    "sampleRateHz": 8000,
+    "frames": 160000,
+    "durationSeconds": 20.0,
+    "decodedPcmAllSilence": true,
+    "bytes": 320044
+  },
+  "validationSources": [
+    {
+      "path": "lib/exam-model.ts",
+      "sha256": "0dada551e8f989e643751ddc8a4d310f2d2501f3067aa351cd186d3a49c78b0e"
+    },
+    {
+      "path": "lib/exam-storage.ts",
+      "sha256": "f0c2436625993d5172eea5f8fcf3dfdc669cb311e16413e5781b3f18f26983ba"
+    },
+    {
+      "path": "tests/fixtures/synthetic-exam.cjs",
+      "sha256": "de6a783edde385b6b422402327452c18710fb242111e3c085f13e849d32da9dc"
+    }
+  ],
+  "limits": "Media structure/decode only. Silence is not TOEIC listening content. No browser/ArkWeb/audio playback/device/microphone acceptance is implied."
+}

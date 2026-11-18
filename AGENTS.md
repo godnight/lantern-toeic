@@ -1,8 +1,8 @@
 # LANTERN项目协作
 
-先读取README.md、docs/PROJECT_STATUS.md和docs/TEAM.md，再接续当前阶段。用户目标、考期与预算是可编辑配置，不写死在学习算法中。
+先读取docs/PROJECT_STATUS.md与docs/RELEASE_POLICY.md，再按任务读取README、相关代码和必要角色；不默认遍历历史快照。用户目标、考期与预算是可编辑配置，不写死在学习算法中。
 
-Codex新环境接续时同时读取docs/CODEX_HANDOFF.md，先核对其中未合并PR和接续分支，避免仅检出旧main而遗漏工作。初始化执行`bash scripts/codex-setup.sh`，只安装根目录锁定依赖并检查类型、内容、素材和行为；构建与平台工具链要求见交接文档。合并后的GitHub main为后续基线，按任务分支和PR提交。
+Codex新环境接续时同时读取docs/CODEX_HANDOFF.md，先核对其中未合并PR和接续分支，避免仅检出旧main而遗漏工作。依赖缺失或锁文件变化时才安装根目录依赖；scripts/codex-setup.sh保留作新环境/全量验证入口，不在每轮小修改自动运行。局部改动按RELEASE_POLICY做定向检查；构建与平台工具链要求见交接文档。合并后的GitHub main为后续基线，按任务分支和PR提交。
 
 活跃客户端为Web/PWA与HarmonyOS；`mobile/src`和`mobile/vite.config.ts`暂作为鸿蒙内置网页的共享构建入口，只使用根目录依赖。Android/iOS工程、工作流和Capacitor依赖已删除，历史只在Git提交中保留；除非用户明确恢复支持，不重新引入。保持Web/PWA与鸿蒙共享React业务和学习模型。使用现有Sites运行时、D1/R2绑定及迁移，遵守当前环境的Sites所有者规则。不要绕过身份或将凭据写进源码。仅集成负责人修改当前Sites checkout；独立子代理产出内容/素材或只读审查。
 
@@ -13,3 +13,5 @@ Codex新环境接续时同时读取docs/CODEX_HANDOFF.md，先核对其中未合
 原创题库与外链资料分开，图片、音频、文本分别记录来源和许可。默认没有ETS或游戏资源再分发授权。题库与文案改动使用当前官方题型。
 
 交付前执行与风险有关的验证，更新项目状态；清楚区分源码已写、构建通过、部署成功、设备验收。不要声称固定子代理进程会永远运行。
+
+分级规则是当前工程默认：小改敏捷发布、大版本完整回归；同一制品共用一次构建/核验结果，最终HAP只签名及官方验签一次。签名材料、密码不入仓；不重签工具/SDK。未知高风险扩大检查时说明实际原因，不新增多层封件。

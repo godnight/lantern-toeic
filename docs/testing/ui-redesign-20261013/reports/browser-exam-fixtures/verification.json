@@ -1,0 +1,221 @@
+{
+  "generatedAt": "2026-10-13T07:54:02.945Z",
+  "ownerId": "harmony-local-device",
+  "packageKey": "qa-ui-redesign-20261013@1",
+  "fingerprint": "sha256:1ba25455e79363f2e5bc63d7961ac4031264b4c7dd471314001c1234b2a6b07b",
+  "readingDeadline": "2026-10-13T09:04:02.945Z",
+  "initialReadingRemainingSeconds": 4200,
+  "files": [
+    {
+      "name": "qa-reading-and-submitted-backup.json",
+      "bytes": 647907,
+      "sha256": "41512b04b6335b4e8a14a6d2c806f799f6695dbf3efa6e3723e476769b18e94c",
+      "verification": {
+        "imported": {
+          "packagesAdded": 1,
+          "attemptsAdded": 2
+        },
+        "packages": 1,
+        "attempts": 2,
+        "statuses": [
+          {
+            "id": "qa-ui-reading-retake-20261013",
+            "status": "reading",
+            "ordinal": 2,
+            "answers": 3,
+            "activeQuestion": 147
+          },
+          {
+            "id": "qa-ui-submitted-first-20261013",
+            "status": "submitted",
+            "ordinal": 1,
+            "answers": 3,
+            "activeQuestion": 176,
+            "result": {
+              "correct": 2,
+              "total": 200,
+              "unanswered": 197,
+              "listeningCorrect": 1,
+              "readingCorrect": 1,
+              "elapsedMs": 3000000,
+              "ordinal": 1,
+              "firstAttempt": true,
+              "parts": [
+                {
+                  "part": 1,
+                  "total": 6,
+                  "correct": 1,
+                  "unanswered": 5,
+                  "accuracy": 0.16666666666666666,
+                  "timeMs": 2700000
+                },
+                {
+                  "part": 2,
+                  "total": 25,
+                  "correct": 0,
+                  "unanswered": 25,
+                  "accuracy": 0,
+                  "timeMs": 0
+                },
+                {
+                  "part": 3,
+                  "total": 39,
+                  "correct": 0,
+                  "unanswered": 39,
+                  "accuracy": 0,
+                  "timeMs": 0
+                },
+                {
+                  "part": 4,
+                  "total": 30,
+                  "correct": 0,
+                  "unanswered": 30,
+                  "accuracy": 0,
+                  "timeMs": 0
+                },
+                {
+                  "part": 5,
+                  "total": 30,
+                  "correct": 0,
+                  "unanswered": 30,
+                  "accuracy": 0,
+                  "timeMs": 10000
+                },
+                {
+                  "part": 6,
+                  "total": 16,
+                  "correct": 0,
+                  "unanswered": 16,
+                  "accuracy": 0,
+                  "timeMs": 0
+                },
+                {
+                  "part": 7,
+                  "total": 54,
+                  "correct": 1,
+                  "unanswered": 52,
+                  "accuracy": 0.018518518518518517,
+                  "timeMs": 290000
+                }
+              ],
+              "interruptions": [],
+              "clockRollback": false,
+              "integrity": "no-recorded-interruption"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "qa-submitted-only-backup.json",
+      "bytes": 646864,
+      "sha256": "d67f36116602bbf0aac492cbaed5efc367bcd9d55ba71389c313c5258fc9ca34",
+      "verification": {
+        "imported": {
+          "packagesAdded": 1,
+          "attemptsAdded": 1
+        },
+        "packages": 1,
+        "attempts": 1,
+        "statuses": [
+          {
+            "id": "qa-ui-submitted-first-20261013",
+            "status": "submitted",
+            "ordinal": 1,
+            "answers": 3,
+            "activeQuestion": 176,
+            "result": {
+              "correct": 2,
+              "total": 200,
+              "unanswered": 197,
+              "listeningCorrect": 1,
+              "readingCorrect": 1,
+              "elapsedMs": 3000000,
+              "ordinal": 1,
+              "firstAttempt": true,
+              "parts": [
+                {
+                  "part": 1,
+                  "total": 6,
+                  "correct": 1,
+                  "unanswered": 5,
+                  "accuracy": 0.16666666666666666,
+                  "timeMs": 2700000
+                },
+                {
+                  "part": 2,
+                  "total": 25,
+                  "correct": 0,
+                  "unanswered": 25,
+                  "accuracy": 0,
+                  "timeMs": 0
+                },
+                {
+                  "part": 3,
+                  "total": 39,
+                  "correct": 0,
+                  "unanswered": 39,
+                  "accuracy": 0,
+                  "timeMs": 0
+                },
+                {
+                  "part": 4,
+                  "total": 30,
+                  "correct": 0,
+                  "unanswered": 30,
+                  "accuracy": 0,
+                  "timeMs": 0
+                },
+                {
+                  "part": 5,
+                  "total": 30,
+                  "correct": 0,
+                  "unanswered": 30,
+                  "accuracy": 0,
+                  "timeMs": 10000
+                },
+                {
+                  "part": 6,
+                  "total": 16,
+                  "correct": 0,
+                  "unanswered": 16,
+                  "accuracy": 0,
+                  "timeMs": 0
+                },
+                {
+                  "part": 7,
+                  "total": 54,
+                  "correct": 1,
+                  "unanswered": 52,
+                  "accuracy": 0.018518518518518517,
+                  "timeMs": 290000
+                }
+              ],
+              "interruptions": [],
+              "clockRollback": false,
+              "integrity": "no-recorded-interruption"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "qa-package-only.json",
+      "bytes": 630069,
+      "sha256": "7786471f983e304b9600e61ba7bca38c225bb94065b26c16251aca2afd97da11",
+      "verification": {
+        "parsed": true,
+        "questions": 200,
+        "png": "32 × 24 RGB PNG, zlib/CRC encoded",
+        "audio": "20-second mono 8000Hz 16-bit PCM silence WAV"
+      }
+    }
+  ],
+  "limits": [
+    "Synthetic structural fixture only; not official or usable study content.",
+    "Reading time continues from the original deadline; regenerate into a new empty QA origin if expired.",
+    "Restore only into the isolated QA localhost native-mode origin. Do not restore into a real user account, device database, or private package collection.",
+    "Silence audio verifies metadata/decode structure only, never full listening material or microphone behavior.",
+    "Generation and round-trip used fresh in-memory fake-indexeddb factories; no browser, server, real DB, or API accessed."
+  ]
+}

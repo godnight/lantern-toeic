@@ -59,6 +59,10 @@ function item(overrides={}) {
   };
 }
 const directory = 'file://docs/storage/Download/com.lantern.toeic';
+test('WAV recording downloads require the exact local name and audio MIME',async()=>{
+ const h=fixture(),valid=item({name:'speaking-recording.wav',mime:'audio/wav'});h.delegate.before(valid);assert.equal(h.pickers.length,1);h.pickers[0]([directory]);await tick();assert.ok(valid.started.endsWith('.wav'));h.manager.invalidate();
+ for(const overrides of [{name:'speaking-recording.wav',mime:'audio/webm'},{name:'other.wav',mime:'audio/wav'},{name:'../speaking-recording.wav',mime:'audio/wav'}]){const bad=item(overrides);h.delegate.before(bad);assert.equal(bad.cancelled,1);}assert.equal(h.pickers.length,1);
+});
 
 test('attachment failure is contained and a later valid attachment can export', async () => {
   const h = fixture({attach:false});

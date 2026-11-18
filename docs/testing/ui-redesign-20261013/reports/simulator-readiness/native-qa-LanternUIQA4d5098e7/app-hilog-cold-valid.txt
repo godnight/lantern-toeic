@@ -1,0 +1,1009 @@
+10-13 17:24:24.992  8051  8051 I A04500/chromium: [../../ohos_nweb/src/ndk/arkweb_native_object.cc:136] NativeArkWeb BindWebTagToWebInstance webTag:arkweb:0
+10-13 17:24:24.992  8051  8051 D A04500/chromium: [nweb_impl.cc:6799] fail to find a valid nweb with id:-1 Tag:arkweb:0
+10-13 17:24:25.004  8051  8051 I A04500/chromium: [hitrace_adapter_impl.cpp:115] hitrace enableflags: 0
+10-13 17:24:25.004  8051  8051 I A04500/chromium: [nweb_impl.cc:1545] CreateNWeb NWebId: 1, size 1*1, enhance surface 0
+10-13 17:24:25.004  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:1752] NWebImpl::kLoadUrlReportIntervalMs: 0
+10-13 17:24:25.004  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:1756] NWebImpl::is_delegated_enabled_: 0
+10-13 17:24:25.004  8051  8051 I A04500/chromium: [nweb_output_handler.cc:106] NWeb size change from 0*0 to 1*1, nweb id = 0
+10-13 17:24:25.004  8051  8051 D A04500/chromium: [window_adapter_impl.cpp:55] NativeWindowSetBufferGeometry 1 * 1
+10-13 17:24:25.004  8051  8051 W A04500/chromium: [nweb_output_handler.cc:138] resize for emulator early failed, result = 40001000
+10-13 17:24:25.005  8051  8051 I A04500/chromium: [nweb_impl.cc:1269] Get device info, it is emulator.
+10-13 17:24:25.005  8051  8051 D A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:1033] GetVirtualPixelRatio ratio:3.500000
+10-13 17:24:25.006  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:1339] dir data|cache isSeparation : true
+10-13 17:24:25.006  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:1343] dir data|cache isMigration : 0
+10-13 17:24:25.006  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:1368] const.boot.oemmode: 
+10-13 17:24:25.006  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:1382] oemmode is not rd or ohos-command-line does not exist.
+10-13 17:24:25.009  8051  8051 I A04500/chromium: [nweb_advanced_security.cc:71] get advanced sec val 0
+10-13 17:24:25.009  8051  8051 D A04500/chromium: [window_adapter_impl.cpp:34] CreateNativeWindowFromSurface
+10-13 17:24:25.010  8051  8051 D A04500/chromium: [window_adapter_impl.cpp:55] NativeWindowSetBufferGeometry 1 * 1
+10-13 17:24:25.010  8051  8051 I A04500/chromium: [nweb_impl.cc:2069] Init web engine, native window opt for emulator in init, result = 0
+10-13 17:24:25.010  8051  8051 D A04500/chromium: [nweb_impl.cc:2082] nweb create_info.init_args.is_popup: 0
+10-13 17:24:25.010  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:877] NWebDelegate::is_delegated_enabled_: 0
+10-13 17:24:25.011  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:918] HasBackgroundColorWithInit, background color = -1
+10-13 17:24:25.011  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:122] update web preferences failed, browser is null
+10-13 17:24:25.011  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:897] DrapDrop InitAppTempDir --ohos-temp-dir=/data/storage/el2/base/haps/entry/temp
+10-13 17:24:25.012  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:1010] NWebDelegate::Init incognito_mode:0[shared]
+10-13 17:24:25.012  8051  8051 E A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:2573] NWebDelegate::InitializeCef, is_initialized:0
+10-13 17:24:25.012  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_application.cc:358] NWebApplication::RunAfterContextInitialized, set complete_callback_
+10-13 17:24:25.012  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_application.cc:95] NWebApplication::InitializeCef, is_initialized:0
+10-13 17:24:25.012  8051  8051 I A04500/cef: [../../cef/libcef/browser/context.cc:408] CefContext::Initialize
+10-13 17:24:25.012  8051  8051 I A04500/chromium: [../../content/app/content_main_runner_impl.cc:870] ContentMainRunnerImpl::Initialize::kTraceConfigSharedMemoryDescriptor is registered.
+10-13 17:24:25.012  8051  8051 E A04500/chromium: [../../base/i18n/icu_util.cc:193] /data/storage/el1/bundle/nweb/entry/resources/rawfile/icudtl.dat not exists.
+10-13 17:24:25.012  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/base/i18n/icu_util_ohos.h:56] icu data file length: 10822192
+10-13 17:24:25.012  8051  8051 D A04500/chromium: [../../base/i18n/icu_util.cc:342] InitializeIcuTimeZone in OHOS ARKWEB.
+10-13 17:24:25.012  8051  8051 I A04500/chromium: [date_time_format_adapter_impl.cpp:127] stop time_zone listen.
+10-13 17:24:25.012  8051  8051 E A04500/chromium: [date_time_format_adapter_impl.cpp:130] stop listen fail. Please RegTimezoneEvent first.
+10-13 17:24:25.012  8051  8051 W A04500/cef: [../../cef/libcef/common/resource_util.cc:89] Please customize CefSettings.root_cache_path for your application. Use of the default value may lead to unintended process singleton behavior.
+10-13 17:24:25.013  8051  8051 E A04500/chromium: [../../third_party/crashpad/crashpad/util/file/filesystem_posix.cc:63] mkdir : No such file or directory (2)
+10-13 17:24:25.013  8051  8051 I A04500/cef: [../../cef/libcef/common/crash_reporting.cc:209] Crash reporting enabled for process: browser
+10-13 17:24:25.013  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/policy/browser_policy_handler.cc:95] InitPolicyFromFile policy_file_path_: /data/storage/el2/base/files/__arkweb/BrowserEnterprisePolicy.json
+10-13 17:24:25.013  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/policy/browser_policy_handler.cc:107] InitPolicyFromFile initial policy: {}
+10-13 17:24:25.014  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/components/prefs/migration_filter.cc:77] enter FilterOnLoad
+10-13 17:24:25.014  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/components/prefs/migration_filter.cc:136] MigrationFinished(0)
+10-13 17:24:25.014  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/components/prefs/migration_filter.cc:86] exit FilterOnLoad, already success
+10-13 17:24:25.014  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/policy/browser_policy_handler.cc:123] BrowserPolicyHandler policy bundle gotten
+10-13 17:24:25.014  8051  8051 D A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/cloud_control_config/nweb_safe_browsing_cloud_control_config.cc:91] [cloud control] NWebSafeBrowsingCloudControlConfig constructor called
+10-13 17:24:25.014  8051  8051 D A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/cloud_control_config/nweb_safe_browsing_cloud_control_config.cc:345] [cloud control] RegisterConfig type:2
+10-13 17:24:25.014  8051  8051 W A04500/chromium: [../../components/metrics/metrics_service_accessor.cc:33] Metrics Reporting is force enabled, data will be sent to servers. Should not be used for tests.
+10-13 17:24:25.015  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/base/resource/resource_bundle_for_include.cc:165] GetLocaleFilePath pakLocale:zh-CN
+10-13 17:24:25.015  8051  8051 I A04500/chromium: [../../components/memory_system/memory_system.cc:245] gwp-asan is off for this process, enable_type = renderer, process_type = 
+10-13 17:24:25.015  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/base/data_pack_for_include.cc:191] DataPack::LoadFromPath resources/rawfile/arkweb_100_percent.pak, data file length: 1110111
+10-13 17:24:25.016  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/base/data_pack_for_include.cc:191] DataPack::LoadFromPath resources/rawfile/arkweb_200_percent.pak, data file length: 1578262
+10-13 17:24:25.016  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/base/resource/resource_bundle_for_include.cc:165] GetLocaleFilePath pakLocale:zh-CN
+10-13 17:24:25.016  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/base/resource/resource_bundle_for_include.cc:165] GetLocaleFilePath pakLocale:zh-CN
+10-13 17:24:25.016  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/base/data_pack_for_include.cc:191] DataPack::LoadFromPath resources/rawfile/locales/zh-CN.pak, data file length: 570434
+10-13 17:24:25.016  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/base/data_pack_for_include.cc:191] DataPack::LoadFromPath resources/rawfile/resources.pak, data file length: 14056928
+10-13 17:24:25.017  8051  8051 W A04500/chromium: [../../services/tracing/public/cpp/trace_startup_config.cc:327] TraceStartupConfig::EnableFromConfigFile::trace_config_file: /data/storage/el1/bundle/arkwebcore/libs/ohos-trace-config.json
+10-13 17:24:25.017  8051  8051 W A04500/chromium: [../../services/tracing/public/cpp/trace_startup_config.cc:330] The trace config file does not exist.
+10-13 17:24:25.017  8051 11517 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/policy/browser_policy_handler.cc:176] BrowserPolicyHandler add new observer
+10-13 17:24:25.017  8051 11517 I A04500/chromium: [../../arkweb/chromium_ext/components/policy/core/common/policy_loader_ohos.cc:45] Recv browser policy change event and reload policy.
+10-13 17:24:25.017  8051 11517 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/policy/browser_policy_handler.cc:123] BrowserPolicyHandler policy bundle gotten
+10-13 17:24:25.021  8051  8051 E A04500/chromium: [net_connect_adapter_impl.cpp:71] dlopen failed
+10-13 17:24:25.021  8051  8051 E A04500/chromium: [net_connect_adapter_impl.cpp:394] register NetConnCallback failed, ret = 201.
+10-13 17:24:25.021  8051  8051 E A04500/chromium: [../../arkweb/chromium_ext/net/base/network_change_notifier_passive_for_include.cc:321] register ohos net connect callback failed.
+10-13 17:24:25.022  8051  8051 E A04500/chromium: [net_connect_adapter_impl.cpp:186] get all nets failed, ret = 201.
+10-13 17:24:25.022  8051  8051 I A04500/chromium: [../../chrome/browser/shutdown_signal_handlers_posix.cc:170] InstallShutdownSignalHandlers g_pipe_pid:8051
+10-13 17:24:25.028  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/net/proxy_resolution/proxy_config_service_ohos.cc:485] netproxy NetProxyEventCallback() start listen
+10-13 17:24:25.029  8051  8051 W A04500/chromium: [../../components/metrics/metrics_service_accessor.cc:33] Metrics Reporting is force enabled, data will be sent to servers. Should not be used for tests.
+10-13 17:24:25.030  8051  8051 W A04500/chromium: [../../components/metrics/metrics_service_accessor.cc:33] Metrics Reporting is force enabled, data will be sent to servers. Should not be used for tests.
+10-13 17:24:25.031  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/ozone/platform/headless/headless_screen_ohos.cc:330] HeadlessScreenOhos::FetchDisplays::default_id: 0
+10-13 17:24:25.031  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/ozone/platform/headless/headless_screen_ohos.cc:336] HeadlessScreenOhos::FetchDisplays::primary_id: 0
+10-13 17:24:25.032  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/ozone/platform/headless/headless_screen_ohos.cc:365] HeadlessScreenOhos::FetchDisplays::display_list: 0
+10-13 17:24:25.032  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.032  8051  8051 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.032  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.032  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.032  8051  8051 E A04500/chromium: [../../content/browser/child_process_security_policy_impl.cc:2626] Invalid isolated origin: 
+10-13 17:24:25.032  8051  8051 E A04500/chromium: [../../content/browser/child_process_security_policy_impl.cc:2626] Invalid isolated origin: 
+10-13 17:24:25.032  8051  8051 I A04500/chromium: [../../ohos_nweb/browser/performance_manager/mechanisms/background_task_holder.cc:80] BackgroundTaskHolder::backgroundStateChangeCallbackAdapter_ is registered.
+10-13 17:24:25.032  8051  8051 I A04500/chromium: [../../ohos_nweb/browser/performance_manager/policies/background_task_policy.cc:84] [BGTASKPOLICY] OnPassedToGraph
+10-13 17:24:25.033  8051  8051 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.033  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.033  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.033  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.034  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.034  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:65] vulkan drdc enabled 1
+10-13 17:24:25.034  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.035  8051  8051 I A04500/chromium: [../../chrome/common/media/cdm_registration.cc:175] [DRM]AddSoftwareSecureWidevine
+10-13 17:24:25.035  8051  8051 I A04500/chromium: [../../chrome/common/media/cdm_registration.cc:327] [DRM]AddWiseplay
+10-13 17:24:25.035  8051  8051 I A04500/chromium: [../../chrome/common/media/cdm_registration.cc:319] [DRM]AddSoftwareSecureWiseplay
+10-13 17:24:25.035  8051  8051 I A04500/chromium: [../../chrome/browser/chrome_browser_main.cc:1412] PreMainMessageLoopRun start
+10-13 17:24:25.035  8051  8051 W A04500/chromium: [../../components/metrics/metrics_service_accessor.cc:33] Metrics Reporting is force enabled, data will be sent to servers. Should not be used for tests.
+10-13 17:24:25.035  8051 11518 I A04500/chromium: [../../content/browser/renderer_host/media/media_stream_manager.cc:1604] MSM::InitializeMaybeAsync([hash=9a29d538998f29bc])
+10-13 17:24:25.035  8051 11518 I A04500/chromium: [../../content/browser/renderer_host/media/media_stream_manager.cc:1604] MDM::MediaDevicesManager()
+10-13 17:24:25.035  8051 11518 I A04500/chromium: [../../content/browser/renderer_host/media/media_stream_manager.cc:1604] MSM::MediaStreamManager([hash=9a29d538998f29bc])
+10-13 17:24:25.037  8051 11533 I A04500/chromium: [../../net/nqe/event_creator.cc:105] event_message: network qualicy changed http_rtt_ms -1 transport_rtt_ms -1 downstream_throughput_kbps -1 effective_connection_type Offline
+10-13 17:24:25.037  8051 11533 I A04500/chromium: [../../arkweb/ohos_nweb_ex/overrides/chromium/net/nqe/network_quality_estimator_nweb_ex.cc:35] [WebNetwork] NetworkQualityEstimator NQE:0ms,0ms,0kbps,Offline
+10-13 17:24:25.037  8051 11533 I A04500/chromium: [../../arkweb/ohos_nweb_ex/overrides/chromium/net/nqe/network_quality_estimator_nweb_ex.cc:35] [WebNetwork] NetworkQualityEstimator NQE:0ms,0ms,0kbps,Offline
+10-13 17:24:25.037  8051 11533 I A04500/chromium: [../../arkweb/ohos_nweb_ex/overrides/chromium/net/nqe/network_quality_estimator_nweb_ex.cc:35] [WebNetwork] NetworkQualityEstimator NQE:0ms,0ms,0kbps,Offline
+10-13 17:24:25.037  8051 11533 I A04500/chromium: [../../arkweb/ohos_nweb_ex/overrides/chromium/net/nqe/network_quality_estimator_nweb_ex.cc:35] [WebNetwork] NetworkQualityEstimator NQE:0ms,0ms,0kbps,Offline
+10-13 17:24:25.037  8051 11533 I A04500/chromium: [../../arkweb/chromium_ext/services/network/arkweb_network_service_ext.cc:162] Register network context and set network timeout 0 second(s)
+10-13 17:24:25.037  8051 11533 I A04500/chromium: [../../arkweb/chromium_ext/services/network/prp_preload/src/page_res_parallel_preload_mgr_impl.cc:54] PRPPreload.GetPRParallelPreloadModeInner only support arm64, NONE
+10-13 17:24:25.037  8051 11533 I A04500/chromium: [../../arkweb/chromium_ext/services/network/arkweb_network_service_ext.cc:179] [WebNetwork] SetConnectTimeout timeout:30s
+10-13 17:24:25.038  8051  8051 W A04500/chromium: [../../arkweb/chromium_ext/components/keyed_service/core/keyed_service_base_factory_for_include.cc:32] WARNING: read file empty: /data/storage/el1/bundle/arkwebcore/etc/disabled_services.json
+10-13 17:24:25.038  8051  8051 W A04500/chromium: [../../arkweb/chromium_ext/components/keyed_service/core/keyed_service_base_factory_for_include.cc:32] WARNING: read file empty: /data/storage/el1/bundle/arkwebcore/etc/disabled_services.json
+10-13 17:24:25.040  8051  8051 I A04500/chromium: [../../chrome/browser/profiles/profile_impl.cc:500] ProfileImpl SetBrowserProfileType kRegular, context : 59285760
+10-13 17:24:25.040  8051  8051 I A04500/chromium: [../../components/profile_metrics/browser_profile_type.cc:43] SetBrowserProfileType called, context : 59285760 type : 0
+10-13 17:24:25.048  8051  8051 I A04500/chromium: [../../chrome/browser/extensions/extension_util.cc:355] registry webstore config to prefs
+10-13 17:24:25.048  8051  8051 I A04500/chromium: [../../chrome/browser/prefs/browser_prefs.cc:1829] [DRM]RegisterProfilePrefs
+10-13 17:24:25.049  8051  8051 W A04500/chromium: [../../chrome/browser/signin/account_consistency_mode_manager.cc:74] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+10-13 17:24:25.051  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/net_service/cookie_manager_impl_ext.cc:569] CefCookieManagerImplExt::SetNetWorkCookieManager cookie_manager_remote
+10-13 17:24:25.052  8051 11536 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/net_service/cookie_manager_impl_ext.cc:545] CefCookieManagerImplExt::SetNetWorkCookieManagerRemoteAsync
+10-13 17:24:25.052  8051 11536 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/net_service/cookie_manager_impl_ext.cc:523] CefCookieManagerImplExt::SetNetWorkCookieManagerRemoteComplete
+10-13 17:24:25.052  8051 11533 D A04500/chromium: [../../arkweb/chromium_ext/services/network/prp_preload/src/page_res_parallel_preload_mgr_impl.cc:66] PRPPreload.PRParallelPreloadMgrImpl::Init NOT ENABLE
+10-13 17:24:25.055  8051  8051 I A04500/chromium: [../../ohos_nweb_ex/core/arkweb/nweb_extension_proxy_delegate_impl.cc:45] NWebExtensionProxyDelegateImpl::NotifyProxyInfo
+10-13 17:24:25.055  8051  8051 I A04500/chromium: [../../ohos_nweb_ex/core/arkweb/nweb_extension_proxy_delegate_impl.cc:46] callback member callback_ is nullptr
+10-13 17:24:25.059  8051  8051 W A04500/chromium: [../../components/metrics/metrics_service_accessor.cc:33] Metrics Reporting is force enabled, data will be sent to servers. Should not be used for tests.
+10-13 17:24:25.059  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/chrome/chrome_content_browser_client_cef_for_include_after.cc:239] Set http cache max size to 20MB for small capacity device.
+10-13 17:24:25.063  8051 11533 I A04500/chromium: [../../arkweb/chromium_ext/services/network/arkweb_network_service_ext.cc:162] Register network context and set network timeout 30 second(s)
+10-13 17:24:25.068  8051  8051 I A04500/chromium: [../../chrome/browser/policy/cloud/user_fm_registration_token_uploader.cc:74] ArkWeb GCM is disabled, skipping invalidation service initialization.
+10-13 17:24:25.069  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/extensions/browser/extension_registry_info_manager.cc:550] ExtensionRegistryInfoManager::init
+10-13 17:24:25.069  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/extensions/browser/extension_util_ext.cc:48] load webstore config from prefs
+10-13 17:24:25.069  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/extensions/common/extension_urls_ext.cc:69] webstore config is the same and does not need to be updated
+10-13 17:24:25.069  8051  8051 I A04500/chromium: [../../chrome/browser/extensions/component_loader.cc:443] name is 14281,description is 1199
+10-13 17:24:25.070  8051  8051 D A04500/chromium: [../../chrome/browser/extensions/component_loader.cc:540] pdf in advanced security mode: 0
+10-13 17:24:25.070  8051  8051 I A04500/chromium: [../../extensions/browser/extension_registrar.cc:179] add extension ahfgeienlihckogmohjhadlkjgocpleb
+10-13 17:24:25.070  8051  8051 I A04500/chromium: [../../extensions/browser/task_queue_util.cc:98] extension is not service worker-based
+10-13 17:24:25.070  8051  8051 D A04500/chromium: [../../chrome/browser/extensions/menu_manager.cc:976] MenuManager::OnExtensionLoaded
+10-13 17:24:25.070  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/extensions/browser/extension_registry_info_manager.cc:732] ExtensionRegistryInfoManager::Loaded
+10-13 17:24:25.070  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/chrome/browser/notifications/notification_platform_bridge_ohos.cc:350] NotificationPlatformBridgeOhos::Close: id=app.background.crashed.ahfgeienlihckogmohjhadlkjgocpleb
+10-13 17:24:25.070  8051  8051 I A04500/chromium: [../../ohos_nweb_ex/core/arkweb/nweb_web_notification_delegate_impl.cc:77] callback member callback_ is nullptr
+10-13 17:24:25.070  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/extensions/browser/extension_registry_info_manager.cc:755] ExtensionLoaded ahfgeienlihckogmohjhadlkjgocpleb
+10-13 17:24:25.070  8051  8051 I A04500/chromium: [../../ohos_nweb_ex/core/arkweb/nweb_extension_manager_delegate_impl.cc:197] NWebExtensionManagerDelegateImpl::OnExtensionStateChangedCallBack
+10-13 17:24:25.070  8051  8051 I A04500/chromium: [../../ohos_nweb_ex/core/arkweb/nweb_extension_manager_delegate_impl.cc:199] callback member callback_ is nullptr
+10-13 17:24:25.071  8051  8051 E A04500/chromium: [../../extensions/common/url_pattern_set.cc:305] Invalid url pattern: arkweb://resources/*
+10-13 17:24:25.071  8051  8051 E A04500/chromium: [../../extensions/common/url_pattern_set.cc:305] Invalid url pattern: arkweb://resources/*
+10-13 17:24:25.071  8051  8051 I A04500/chromium: [../../extensions/browser/extension_registrar.cc:179] add extension mhjfbmdgcfjbbpaeojofohoefgiehjai
+10-13 17:24:25.071  8051  8051 I A04500/chromium: [../../extensions/browser/task_queue_util.cc:98] extension is not service worker-based
+10-13 17:24:25.071  8051  8051 D A04500/chromium: [../../chrome/browser/extensions/menu_manager.cc:976] MenuManager::OnExtensionLoaded
+10-13 17:24:25.071  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/extensions/browser/extension_registry_info_manager.cc:732] ExtensionRegistryInfoManager::Loaded
+10-13 17:24:25.071  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/chrome/browser/notifications/notification_platform_bridge_ohos.cc:350] NotificationPlatformBridgeOhos::Close: id=app.background.crashed.mhjfbmdgcfjbbpaeojofohoefgiehjai
+10-13 17:24:25.071  8051  8051 I A04500/chromium: [../../ohos_nweb_ex/core/arkweb/nweb_web_notification_delegate_impl.cc:77] callback member callback_ is nullptr
+10-13 17:24:25.071  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/extensions/browser/extension_registry_info_manager.cc:755] ExtensionLoaded mhjfbmdgcfjbbpaeojofohoefgiehjai
+10-13 17:24:25.071  8051  8051 I A04500/chromium: [../../ohos_nweb_ex/core/arkweb/nweb_extension_manager_delegate_impl.cc:197] NWebExtensionManagerDelegateImpl::OnExtensionStateChangedCallBack
+10-13 17:24:25.071  8051  8051 I A04500/chromium: [../../ohos_nweb_ex/core/arkweb/nweb_extension_manager_delegate_impl.cc:199] callback member callback_ is nullptr
+10-13 17:24:25.073  8051 11533 I A04500/chromium: [../../arkweb/chromium_ext/services/network/arkweb_network_service_ext.cc:162] Register network context and set network timeout 30 second(s)
+10-13 17:24:25.074  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/useragent/ua_push_config.cc:172] [UAPushLog]start ReadConfigInfoFromPrefs
+10-13 17:24:25.074  8051  8051 E A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/useragent/ua_push_config.cc:181] [UAPushLog]user_pref_value for PrefService: user_agent.push_config is not a dictionary or is not exit
+10-13 17:24:25.074  8051  8051 E A04500/chromium: [../../ohos_nweb_ex/overrides/cef/libcef/browser/alloy/alloy_browser_engine_global_config.cc:192] No value for PrefService: nweb_ex.browser_engine_global_config_info
+10-13 17:24:25.074  8051  8051 D A04500/chromium: [../../ohos_nweb_ex/overrides/cef/libcef/browser/alloy/alloy_browser_engine_global_config.cc:96] Update cloud control data after browser context init, file_path , version 0
+10-13 17:24:25.074  8051  8051 E A04500/chromium: [../../ohos_nweb_ex/overrides/cef/libcef/browser/alloy/alloy_browser_engine_global_config.cc:105] Can not upate browser engine global config for version is zero
+10-13 17:24:25.074  8051  8051 I A04500/cef: [../../cef/libcef/browser/request_context_impl.cc:289] CefRequestContextImpl::ExecuteWhenBrowserContextInitialized, not on ui
+10-13 17:24:25.074  8051  8051 I A04500/chromium: [../../chrome/browser/profiles/off_the_record_profile_impl.cc:201] OffTheRecordProfileImpl SetBrowserProfileType, context : 56977152 ComputeOffTheRecordProfileType : 4
+10-13 17:24:25.074  8051  8051 I A04500/chromium: [../../components/profile_metrics/browser_profile_type.cc:43] SetBrowserProfileType called, context : 56977152 type : 4
+10-13 17:24:25.075  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/net_service/cookie_manager_impl_ext.cc:569] CefCookieManagerImplExt::SetNetWorkCookieManager cookie_manager_remote
+10-13 17:24:25.075  8051 11543 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/net_service/cookie_manager_impl_ext.cc:545] CefCookieManagerImplExt::SetNetWorkCookieManagerRemoteAsync
+10-13 17:24:25.075  8051 11543 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/net_service/cookie_manager_impl_ext.cc:523] CefCookieManagerImplExt::SetNetWorkCookieManagerRemoteComplete
+10-13 17:24:25.075  8051 11533 D A04500/chromium: [../../arkweb/chromium_ext/services/network/prp_preload/src/page_res_parallel_preload_mgr_impl.cc:66] PRPPreload.PRParallelPreloadMgrImpl::Init NOT ENABLE
+10-13 17:24:25.080  8051  8051 W A04500/chromium: [../../components/metrics/metrics_service_accessor.cc:33] Metrics Reporting is force enabled, data will be sent to servers. Should not be used for tests.
+10-13 17:24:25.080  8051 11533 I A04500/chromium: [../../arkweb/chromium_ext/services/network/arkweb_network_service_ext.cc:162] Register network context and set network timeout 30 second(s)
+10-13 17:24:25.081  8051  8051 E A04500/chromium: [../../ohos_nweb_ex/overrides/cef/libcef/browser/alloy/alloy_browser_engine_global_config.cc:192] No value for PrefService: nweb_ex.browser_engine_global_config_info
+10-13 17:24:25.081  8051  8051 I A04500/cef: [../../cef/libcef/browser/request_context_impl.cc:289] CefRequestContextImpl::ExecuteWhenBrowserContextInitialized, not on ui
+10-13 17:24:25.081  8051 11533 I A04500/chromium: [../../net/proxy_resolution/configured_proxy_resolution_service.cc:1633] ohos_network OnInitProxyResolverComplete config changes without automatic settings to use Direct
+10-13 17:24:25.081  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/chrome/browser/browser_process_impl_ext.cc:60] adblock path: /data/storage/el2/base/files/__arkweb
+10-13 17:24:25.081  8051  8051 I A04500/cef: [../../cef/libcef/browser/context.cc:558] CefContext::OnContextInitialized
+10-13 17:24:25.081  8051  8051 I A04500/cef: [../../cef/libcef/browser/request_context_impl.cc:289] CefRequestContextImpl::ExecuteWhenBrowserContextInitialized, not on ui
+10-13 17:24:25.081  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_application.cc:198] NWebApplication::OnContextInitialized, begin
+10-13 17:24:25.081  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_application.cc:202] NWebApplication::OnContextInitialized, into callback
+10-13 17:24:25.081  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:4246] NWebDelegate::OnContextInitializeComplete
+10-13 17:24:25.081  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_application.cc:377] NWebApplication::CreateBrowser
+10-13 17:24:25.081  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_application.cc:419] NWebApplication::CreateBrowser, 2
+10-13 17:24:25.081  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/content/browser/web_contents/web_contents_impl_utils.cc:42] WebContentsImplUtils::is_delegated_enabled_: 0
+10-13 17:24:25.081  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/content/browser/renderer_host/arkweb_render_process_host_impl_utils.cc:196] RenderProcessHostImpl::GetProcessCount count: 0, process_count_to_ignore:0
+10-13 17:24:25.081  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/content/browser/renderer_host/arkweb_render_process_host_impl_utils.cc:196] RenderProcessHostImpl::GetProcessCount count: 0, process_count_to_ignore:0
+10-13 17:24:25.081  8051  8051 I A04500/chromium: [../../content/browser/renderer_host/render_process_host_impl.cc:5429] Request to create a new rendering process, current count: 0 Max: 1
+10-13 17:24:25.082  8051  8051 I A04500/chromium: [../../ohos_nweb/browser/performance_manager/policies/background_task_policy.cc:93] [BGTASKPOLICY] OnPageNodeAdded
+10-13 17:24:25.082  8051  8051 I A04500/chromium: [../../ohos_nweb/browser/performance_manager/policies/background_task_policy.cc:193] BackgroundTaskPolicy::MaybeChangeBackgroundTask  page_node hash=cc75a5f1d1decf73 visible_page_num_: 1 media_playing_num_: 0 audio_state_num_: 0 is_request_background_task_: 0
+10-13 17:24:25.082  8051  8051 I A04500/chromium: [../../ohos_nweb/browser/performance_manager/policies/background_task_policy.cc:226] [BGTASKPOLICY] no change return
+10-13 17:24:25.082  8051  8051 I A04500/cef: [../../cef/libcef/browser/alloy/alloy_browser_host_impl.cc:196] AlloyBrowserHostImpl::CreateInternal, begin
+10-13 17:24:25.086  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/osr/arkweb_web_contents_view_osr_ext.cc:42] CefWebContentsViewOSR::WebContentsCreated
+10-13 17:24:25.086  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1090] NWebHandlerDelegate::OnFrameCreated
+10-13 17:24:25.086  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1120] NWebHandlerDelegate::OnFrameCreated childId:3_1, parentId:
+10-13 17:24:25.086  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1075] NWebHandlerDelegate::OnMainFrameChanged
+10-13 17:24:25.086  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:122] update web preferences failed, browser is null
+10-13 17:24:25.086  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/alloy_browser_host_impl_utils.cc:275] SafeBrowsing enabled, creating safe browsing tab helper
+10-13 17:24:25.086  8051  8051 W A04500/chromium: [../../arkweb/chromium_ext/ui/base/pointer/pointer_device_ohos.cc:138] cannot find the MultiModal's path
+10-13 17:24:25.087  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1258] NWebHandlerDelegate::OnAfterCreated IsPopup 0
+10-13 17:24:25.087  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1465] NWebHandlerDelegate::OnAfterCreated, reader_mode_enabled_: 0 custom_reader_mode_enabled_: 0
+10-13 17:24:25.087  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/content/browser/web_contents/web_contents_impl_ext.cc:1433] WebContentsImplExt::EnableReaderMode: 0
+10-13 17:24:25.087  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/content/browser/web_contents/web_contents_impl_ext.cc:1444] WebContentsImplExt::EnableCustomReaderMode: 0
+10-13 17:24:25.087  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/gpu/ipc/common/nweb_native_window_tracker.cc:32] Add native window id = 1
+10-13 17:24:25.087  8051  8051 I A04500/cef: [../../cef/libcef/browser/request_context_impl.cc:289] CefRequestContextImpl::ExecuteWhenBrowserContextInitialized, not on ui
+10-13 17:24:25.087  8051  8051 D A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/nweb_delegate_huawei.cc:40] Register handler for custom scheme: hwweb
+10-13 17:24:25.087  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_application.cc:226] NWebApplication::WarmupSpareRender, start
+10-13 17:24:25.087  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_application.cc:229] NWebApplication::WarmupSpareRender: warmup spare render process is not enabled
+10-13 17:24:25.087  8051  8051 I A04500/cef: [../../cef/libcef/browser/request_context_impl.cc:289] CefRequestContextImpl::ExecuteWhenBrowserContextInitialized, not on ui
+10-13 17:24:25.087  8051  8051 I A04500/cef: [../../cef/libcef/browser/request_context_impl.cc:289] CefRequestContextImpl::ExecuteWhenBrowserContextInitialized, not on ui
+10-13 17:24:25.087  8051  8051 D A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/nweb_delegate_huawei.cc:40] Register handler for custom scheme: hwweb
+10-13 17:24:25.087  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_file_writer_cleaner.cc:83] GetDeletePendingFiles.
+10-13 17:24:25.087  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_file_writer_cleaner.cc:92] GetDeletePendingFiles get pending_files end.
+10-13 17:24:25.087  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_file_writer_cleaner.cc:97] DeleteDownloadTempDir.
+10-13 17:24:25.087  8051  8051 I A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/custom_crashpad_handler.cc:224] Start ReportCrashpadFiles .... crashpad_target_location is /data/storage/el2/base/crashpad
+10-13 17:24:25.087  8051  8051 W A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/custom_crashpad_handler.cc:229] return ReportCrashpadFiles fail cause brower has no start crashpad_target_location is /data/storage/el2/base/crashpad
+10-13 17:24:25.088  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/ark_web_frame_host_impl.cc:80] UpdatePixelRatio in browser CefFrameHostImpl start, ratio:3.5
+10-13 17:24:25.088  8051  8051 D A04500/chromium: [nweb_impl.cc:2098] nweb create_info.incognito_mode: 0
+10-13 17:24:25.088  8051  8051 I A04500/chromium: [nweb_impl.cc:1986] GetVirtualPixelRatio ratio: 3.500000
+10-13 17:24:25.089  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/base/resource/resource_bundle_for_include.cc:165] GetLocaleFilePath pakLocale:zh-CN
+10-13 17:24:25.089  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/arkweb_browser_host_ext.cc:2052] UpdateLocale origin locale:zh-, update locale:zh-CN
+10-13 17:24:25.089  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/base/resource/resource_bundle_for_include.cc:165] GetLocaleFilePath pakLocale:zh-CN
+10-13 17:24:25.089  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/base/resource/resource_bundle_for_include.cc:165] GetLocaleFilePath pakLocale:zh-CN
+10-13 17:24:25.089  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/base/data_pack_for_include.cc:191] DataPack::LoadFromPath resources/rawfile/locales/zh-CN.pak, data file length: 570434
+10-13 17:24:25.089  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:2159] NWebImpl::InitWebEngine, isReady:1
+10-13 17:24:25.089  8051 11517 I A04500/chromium: [ohos_web_snapshot_data_base.cpp:145] blankless OhosWebSnapshotDataBase create rdb store
+10-13 17:24:25.089  8051  8051 I A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/cloud_control_config/ua_push_config/nweb_safe_browsing_ua_push_config.cc:49] NWebSafeBrowsingUAPushConfig::EnableUAPushConfig, enable
+10-13 17:24:25.089  8051  8051 D A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/cloud_control_config/nweb_safe_browsing_cloud_control_config.cc:345] [cloud control] RegisterConfig type:3
+10-13 17:24:25.089  8051  8051 E A04500/chromium: [nweb_impl.cc:1560] CreateNWeb NWebId: 1 successfully
+10-13 17:24:25.089  8051  8051 D A04500/chromium: [ohos_web_nweb_stats_adapter_impl.cpp:58] nweb_stats get instance
+10-13 17:24:25.101  8051 11517 I A04500/chromium: [ohos_web_snapshot_data_base.cpp:112] blankless GetOrOpen rdb version:5, current version:5
+10-13 17:24:25.101  8051 11517 I A04500/chromium: [ohos_web_snapshot_data_base.cpp:350] blankless RegisterDataBaseCallback success
+10-13 17:24:25.101  8051 11517 D A04500/chromium: [nweb_impl.cc:2153] BlanklessDataController instance init
+10-13 17:24:25.103  8051 11528 I A04500/chromium: [../../arkweb/chromium_ext/ui/gl/init/gl_factory_ohos.cc:166] create offscreen glsurface by surfacelessEGL.
+10-13 17:24:25.109  8051  8051 I A04500/chromium: [ohos_web_nweb_stats_adapter_impl.cpp:141] nweb_stats rdb already exists
+10-13 17:24:25.109  8051  8051 I A04500/chromium: [ohos_web_nweb_stats_adapter_impl.cpp:204] nweb_stats query max_instance_count=1
+10-13 17:24:25.109  8051  8051 I A04500/chromium: [ohos_web_nweb_stats_adapter_impl.cpp:204] nweb_stats query max_instance_count_timestamp=1791883127
+10-13 17:24:25.109  8051  8051 D A04500/chromium: [ohos_web_nweb_stats_adapter_impl.cpp:255] nweb_stats reset interval=604800 seconds
+10-13 17:24:25.109  8051  8051 I A04500/chromium: [ohos_web_nweb_stats_adapter_impl.cpp:290] nweb_stats valid: count=1 ts=1791883127
+10-13 17:24:25.110  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:1632] InitializeWebEngine: begin to init arkweb engine,version is 7.0.0.105
+10-13 17:24:25.110  8051  8051 I A04500/chromium: [nweb_impl.cc:1269] Get device info, it is emulator.
+10-13 17:24:25.110  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:1339] dir data|cache isSeparation : true
+10-13 17:24:25.110  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:1343] dir data|cache isMigration : 0
+10-13 17:24:25.110  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:1368] const.boot.oemmode: 
+10-13 17:24:25.110  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:1382] oemmode is not rd or ohos-command-line does not exist.
+10-13 17:24:25.110  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_application.cc:95] NWebApplication::InitializeCef, is_initialized:1
+10-13 17:24:25.110  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_application.cc:99] has initialized cef.
+10-13 17:24:25.110  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:1685] InitInvisibleThrottle strategy=1 timeout=5000 ratio=10
+10-13 17:24:25.110  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:1692] [WebNetwork] NWebImpl::InitializeWebEngine end
+10-13 17:24:25.110  8051  8051 I A04500/chromium: [nweb_cookie_manager_impl.cc:95] NWebCookieManagerImpl NWebCookieManagerImpl, and LazyInit: 0
+10-13 17:24:25.110  8051  8051 I A04500/chromium: [nweb_impl.cc:1599] cef already initialized, skip icu init.
+10-13 17:24:25.110  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:812] RegisterNWebHandler
+10-13 17:24:25.110  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:822] RegisterNWebAgentHandler
+10-13 17:24:25.110  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/alloy_browser_host_impl_ext.cc:448] SetWakeLockHandler enter, callback =1
+10-13 17:24:25.110  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/service/device/wake_lock/power_save_blocker/nweb_screen_lock_tracker.cc:149] nweb screen add screen windowId:100000, id:0
+10-13 17:24:25.111  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:592] Put JavaScript Enabled:1
+10-13 17:24:25.112  8051  8051 I A04500/chromium: [../../ohos_nweb/src/ndk/arkweb_native_object.cc:136] NativeArkWeb BindWebTagToWebInstance webTag:arkweb:0
+10-13 17:24:25.112  8051  8051 W A04500/chromium: [../../ohos_nweb/src/ndk/arkweb_native_object.cc:67] NativeArkWeb valid callback is nullptr
+10-13 17:24:25.112  8051  8051 I A04500/chromium: [nweb_impl.cc:7388] [WebDownloadManager] put download callback.
+10-13 17:24:25.112  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_download_handler_delegate.cc:94] RegisterWebDownloadDelegateListener
+10-13 17:24:25.112  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/arkweb_context_ext.cc:77] set global download_handler
+10-13 17:24:25.112  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_inputmethod_handler.cc:1672] NWebInputMethodHandler::SetWindowIdForIME windowId: 28
+10-13 17:24:25.112  8051  8051 D A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:8835] NWebImpl::SetVisibility nwebid:1, visible:0
+10-13 17:24:25.112  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/content/browser/web_contents/web_contents_impl_ext.cc:1581] WebContentsImplExt::SetPageVisibility, is_page_visible_:0
+10-13 17:24:25.112  8051  8051 W A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/alloy_browser_host_impl_ext.cc:1848] AlloyBrowserHostImplExt::ReportWindowStatus render_process is not ready yet.
+10-13 17:24:25.112  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/render_process_state_handler.cc:160] RenderProcessStateHandler::PushNwebForNotInitRender: nweb_id: 1, is_to_background: 0, rph_unique_id: 3, render_process_id: 0
+10-13 17:24:25.113  8051  8051 I A04500/chromium: [nweb_impl.cc:2313] NWebImpl::SetDrawMode 0, nweb_id = 1
+10-13 17:24:25.113  8051  8051 I A04500/chromium: [nweb_impl.cc:2339] NWebImpl::SetFitContentMode 0, nweb_id = 1
+10-13 17:24:25.114  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:4458] NWebDelegate::SetForceEnableZoom 0
+10-13 17:24:25.114  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:9017] NWebImpl::SetWebAutoLayoutConfig.
+10-13 17:24:25.114  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_autolayout.cc:47] NwebAutolayout::NwebAutolayout config empty: 1
+10-13 17:24:25.115  8051  8051 W A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_autolayout.cc:116] Failed to read Config.json from /sys_prod/etc/web/WebAutoLayoutConfig.json
+10-13 17:24:25.115  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_autolayout.h:145] [LoadWebAutoLayoutConfigFromCCM] took 0.069 ms.
+10-13 17:24:25.115  8051  8051 D A04500/chromium: [window_adapter_impl.cpp:34] CreateNativeWindowFromSurface
+10-13 17:24:25.115  8051  8051 D A04500/chromium: [window_adapter_impl.cpp:55] NativeWindowSetBufferGeometry 1 * 1
+10-13 17:24:25.115  8051  8051 I A04500/chromium: [nweb_impl.cc:8176] popup window opt for emulator in init, result = 0
+10-13 17:24:25.115  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/gpu/ipc/common/nweb_native_window_tracker.cc:32] Add native window id = 2
+10-13 17:24:25.115  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:8376] NWebImpl::RegisterNativeJavaScriptProxy arkMessager
+10-13 17:24:25.115  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/javascript/oh_gin_javascript_bridge_dispatcher_host.cc:574] OhGinJavascriptBridgeDispatcherHost::RemoveNamedObject:Map is empty!
+10-13 17:24:25.115  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/javascript/oh_gin_javascript_bridge_dispatcher_host.cc:215] OhGinJavascriptBridgeDispatcherHost::ParseJson: permission string is empty
+10-13 17:24:25.115  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/javascript/oh_gin_javascript_bridge_dispatcher_host.cc:215] OhGinJavascriptBridgeDispatcherHost::ParseJson: permission string is empty
+10-13 17:24:25.115  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:8376] NWebImpl::RegisterNativeJavaScriptProxy ArkWebContentChangeDetector
+10-13 17:24:25.115  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/javascript/oh_gin_javascript_bridge_dispatcher_host.cc:586] OhGinJavascriptBridgeDispatcherHost::RemoveNamedObjectInternal target object name: ArkWebContentChangeDetector
+10-13 17:24:25.115  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/javascript/oh_gin_javascript_bridge_dispatcher_host.cc:586] OhGinJavascriptBridgeDispatcherHost::RemoveNamedObjectInternal target object name: ArkWebContentChangeDetector
+10-13 17:24:25.115  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/javascript/oh_gin_javascript_bridge_dispatcher_host.cc:215] OhGinJavascriptBridgeDispatcherHost::ParseJson: permission string is empty
+10-13 17:24:25.115  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/javascript/oh_gin_javascript_bridge_dispatcher_host.cc:215] OhGinJavascriptBridgeDispatcherHost::ParseJson: permission string is empty
+10-13 17:24:25.115  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:8376] NWebImpl::RegisterNativeJavaScriptProxy _arkWebDomTree
+10-13 17:24:25.115  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/javascript/oh_gin_javascript_bridge_dispatcher_host.cc:586] OhGinJavascriptBridgeDispatcherHost::RemoveNamedObjectInternal target object name: _arkWebDomTree
+10-13 17:24:25.115  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/javascript/oh_gin_javascript_bridge_dispatcher_host.cc:586] OhGinJavascriptBridgeDispatcherHost::RemoveNamedObjectInternal target object name: _arkWebDomTree
+10-13 17:24:25.115  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/javascript/oh_gin_javascript_bridge_dispatcher_host.cc:215] OhGinJavascriptBridgeDispatcherHost::ParseJson: permission string is empty
+10-13 17:24:25.115  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/javascript/oh_gin_javascript_bridge_dispatcher_host.cc:215] OhGinJavascriptBridgeDispatcherHost::ParseJson: permission string is empty
+10-13 17:24:25.115  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:2219] NWebDelegate::PutBackgroundColor color: 4294967295
+10-13 17:24:25.116  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:592] Put JavaScript Enabled:1
+10-13 17:24:25.116  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:146] NWebPreferenceDelegate::SetBypassVsyncCondition condition:0
+10-13 17:24:25.116  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/arkweb_browser_host_ext.cc:1580] ArkWebBrowserHostExtImpl::SetBypassVsyncCondition condition:0
+10-13 17:24:25.116  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:722] set zoomControlAccess:1 zoom_control_access_:1
+10-13 17:24:25.116  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:579] NWebPreferenceDelegate::PutDarkSchemeEnabled nweb_id: 1, darkScheme: 0
+10-13 17:24:25.117  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:568] NWebPreferenceDelegate::PutForceDarkModeEnabled nweb_id: 1, forceDark: 0
+10-13 17:24:25.117  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:568] NWebPreferenceDelegate::PutForceDarkModeEnabled nweb_id: 1, forceDark: 0
+10-13 17:24:25.118  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_engine_impl.cc:125] SetWebDebuggingAccess(0), g_web_debugging_enabled[0], g_web_debugging_port[0]
+10-13 17:24:25.118  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:779] Put Pinch Smooth Mode:0
+10-13 17:24:25.119  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:1323] NWebPreferenceDelegate::PutOverlayScrollbarEnabled enable:0
+10-13 17:24:25.119  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/base/feature_list_utils.cc:37] set Scrollbar:0 state:2
+10-13 17:24:25.119  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/base/feature_list_utils.cc:56] scroll add feature: OverlayScrollbar state:2
+10-13 17:24:25.119  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/base/feature_list_utils.cc:56] scroll add feature: ForceScrollbar state:2
+10-13 17:24:25.119  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:2243] NWebDelegate::PutOptimizeParserBudgetEnabled
+10-13 17:24:25.119  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:1561] NWebPreferenceDelegate::PutWebMediaAVSessionEnabled enable:1
+10-13 17:24:25.119  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/content/browser/media/session/media_session_impl_for_include.cc:133] media avsession MediaSessionImpl::PutWebMediaAVSessionEnabled enable is: 1
+10-13 17:24:25.119  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:1572] NWebPreferenceDelegate::PutWebMediaAVSessionEnabled cast_enabled_:1
+10-13 17:24:25.119  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:1583] NWebPreferenceDelegate::PutWebMediaNetworkProxyEnabled enable:0
+10-13 17:24:25.120  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:532] set DRAG in preference: 1
+10-13 17:24:25.120  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:2219] NWebDelegate::PutBackgroundColor color: 4294967295
+10-13 17:24:25.120  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:532] set DRAG in preference: 1
+10-13 17:24:25.120  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.120  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:532] set DRAG in preference: 1
+10-13 17:24:25.120  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:65] vulkan drdc enabled 1
+10-13 17:24:25.120  8051 11528 I A04500/chromium: [../../arkweb/chromium_ext/ui/gl/init/gl_factory_ohos.cc:166] create offscreen glsurface by surfacelessEGL.
+10-13 17:24:25.120  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.120  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:6464] SetSurfaceDensity: 3.5
+10-13 17:24:25.121  8051 11548 I A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:55] start init curent_task_runner_
+10-13 17:24:25.121  8051  8051 D A04500/chromium: [nweb_impl.cc:4284] NWebImpl::OnRenderToForeground
+10-13 17:24:25.121  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:2297] NWebDelegate::OnWindowShow, nweb id = 1
+10-13 17:24:25.121  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/alloy_browser_host_impl_ext.cc:1697] AlloyBrowserHostImplExt::OnWindowShow
+10-13 17:24:25.121  8051  8051 W A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/alloy_browser_host_impl_utils.cc:194] AlloyBrowserHostImplUtils::GetRenderProcessId render_process is not ready yet.
+10-13 17:24:25.121  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/render_process_state_handler.cc:42] RenderProcessStateHandler::UpdateRenderProcessState: render process has not init, nweb_id: 1 is_to_background: 0
+10-13 17:24:25.121  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/alloy_browser_host_impl_ext.cc:1880] AlloyBrowserHostImplExt::SetVisible nweb_id: 1, visible 1
+10-13 17:24:25.122  8051 11528 I A04500/chromium: [../../arkweb/chromium_ext/gpu/ipc/service/gpu_hang_adapter.cc:95] GpuHangAdapter::GpuHangAdapter gpu_main
+10-13 17:24:25.122  8051 11528 I A04500/chromium: [../../arkweb/chromium_ext/gpu/ipc/service/gpu_hang_adapter.cc:106] gpu_main init hang_watcher
+10-13 17:24:25.125  8051  8051 D A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:8835] NWebImpl::SetVisibility nwebid:1, visible:1
+10-13 17:24:25.125  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/content/browser/web_contents/web_contents_impl_ext.cc:1581] WebContentsImplExt::SetPageVisibility, is_page_visible_:1
+10-13 17:24:25.127  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/events/devices/arkweb_device_data_manager_utils.cc:146] DeviceDataManager add mouse device id: 0
+10-13 17:24:25.127  8051  8051 W A04500/chromium: [../../arkweb/chromium_ext/ui/base/pointer/pointer_device_ohos.cc:138] cannot find the MultiModal's path
+10-13 17:24:25.127  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/events/devices/arkweb_device_data_manager_utils.cc:159] DeviceDataManager add touchpad device id: 1
+10-13 17:24:25.127  8051  8051 W A04500/chromium: [../../arkweb/chromium_ext/ui/base/pointer/pointer_device_ohos.cc:138] cannot find the MultiModal's path
+10-13 17:24:25.127  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/events/devices/arkweb_device_data_manager_utils.cc:134] DeviceDataManager add keyboard device id: 7
+10-13 17:24:25.127  8051  8051 W A04500/chromium: [../../arkweb/chromium_ext/ui/base/pointer/pointer_device_ohos.cc:138] cannot find the MultiModal's path
+10-13 17:24:25.127  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/events/devices/arkweb_device_data_manager_utils.cc:134] DeviceDataManager add keyboard device id: 8
+10-13 17:24:25.127  8051  8051 W A04500/chromium: [../../arkweb/chromium_ext/ui/base/pointer/pointer_device_ohos.cc:138] cannot find the MultiModal's path
+10-13 17:24:25.127  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/ui/events/devices/arkweb_device_data_manager_utils.cc:146] DeviceDataManager add mouse device id: 9
+10-13 17:24:25.127  8051  8051 W A04500/chromium: [../../arkweb/chromium_ext/ui/base/pointer/pointer_device_ohos.cc:138] cannot find the MultiModal's path
+10-13 17:24:25.131  8051  8051 W A04500/chromium: [../../arkweb/chromium_ext/ui/base/pointer/pointer_device_ohos.cc:138] cannot find the MultiModal's path
+10-13 17:24:25.131  8051  8051 E A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_application.cc:250] There is no web inited callback to run.
+10-13 17:24:25.131  8051  8051 I A04500/chromium: [../../ohos_nweb/src/nweb_file_writer_cleaner.cc:78] OnBackgroundTaskFinished.
+10-13 17:24:25.131  8051  8051 W A04500/chromium: [../../arkweb/chromium_ext/content/browser/media/session/media_session_ohos.cc:125] MediaSessionInfoChanged media avsession before Prepare return for type invalid
+10-13 17:24:25.131  8051  8051 I A04500/chromium: [battery_mgr_client_adapter_impl.cpp:110] Reg Battery Event
+10-13 17:24:25.131  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/service/device/battery/battery_status_manager_ohos.cc:138] start listening battery change
+10-13 17:24:25.131  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/service/device/battery/battery_status_manager_ohos.cc:47] start listen
+10-13 17:24:25.131  8051  8051 I A04500/chromium: [battery_mgr_client_adapter_impl.cpp:116] start battery listen
+10-13 17:24:25.132  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/service/device/battery/battery_status_manager_ohos.cc:58] fisrt request battery info
+10-13 17:24:25.132  8051  8051 I A04500/chromium: [battery_mgr_client_adapter_impl.cpp:184] request batteryInfo
+10-13 17:24:25.133  8051  8051 E A04500/chromium: [../../arkweb/chromium_ext/content/browser/media/session/media_session_ohos.cc:194] MediaSessionImagesChangedmedia avsession av_metadata_ or avsession_adapter_ or metadata is null return
+10-13 17:24:25.133  8051  8051 W A04500/chromium: [../../arkweb/chromium_ext/content/browser/media/session/media_session_ohos.cc:213] MediaSessionPositionChanged media avsession avsession_adapter_ or position or av_position_ null
+10-13 17:24:25.135  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:532] set DRAG in preference: 1
+10-13 17:24:25.136  8051  8051 I A04500/chromium: [nweb_output_handler.cc:106] NWeb size change from 1*1 to 1256*2526, nweb id = 1
+10-13 17:24:25.136  8051  8051 D A04500/chromium: [window_adapter_impl.cpp:55] NativeWindowSetBufferGeometry 1256 * 2526
+10-13 17:24:25.136  8051  8051 I A04500/chromium: [nweb_output_handler.cc:136] need to resize for emulator early firstly, result = 0
+10-13 17:24:25.136  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:1830] [WebNavigation] LoadUrl url:ht**s://lan***
+10-13 17:24:25.136  8051  8051 W A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/permission/alloy_permission_manager.cc:467] GetPermissionStatus, requesting_origin is not in camera permission map
+10-13 17:24:25.136  8051  8051 W A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/permission/alloy_permission_manager.cc:460] GetPermissionStatus, requesting_origin is not in microphone permission map
+10-13 17:24:25.136  8051 11533 D A04500/chromium: [../../arkweb/chromium_ext/services/network/prp_preload/src/page_res_parallel_preload_mgr_impl.cc:90] PRPPreload.PRParallelPreloadMgrImpl::StartPage, is_inited = 0, current page num = 0, web_handle_valid = 0, use_no_cache = 0
+10-13 17:24:25.137  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_application.cc:258] NWebApplication::OnBeforeChildProcessLaunch
+10-13 17:24:25.137  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_application.cc:294] hap package is not decompresssed
+10-13 17:24:25.139  8051  8051 I A04500/cef: [../../cef/libcef/browser/osr/render_widget_host_view_osr.cc:268] evictUnlockFrameEnabled: 0 featureSwitch:1
+10-13 17:24:25.139  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/osr/arkweb_render_widget_host_view_osr_utils.cc:87] compositor construct, widget = 1
+10-13 17:24:25.139  8051  8051 I A04500/chromium: [../../content/browser/renderer_host/render_view_host_impl.cc:433] [RenderPipeline] CreateRenderView: routing_id=1, proxy_route_id=-2, process_pid=0
+10-13 17:24:25.139  8051 11551 I A04500/chromium: [../../arkweb/chromium_ext/gpu/ipc/service/gpu_hang_adapter.cc:95] GpuHangAdapter::GpuHangAdapter compositor_gpu
+10-13 17:24:25.139  8051 11551 I A04500/chromium: [../../arkweb/chromium_ext/gpu/ipc/service/gpu_hang_adapter.cc:98] compositor_gpu init hang_watcher
+10-13 17:24:25.139  8051 11549 I A04500/chromium: [../../media/capture/video/create_video_capture_device_factory.cc:108] CreateVideoCaptureDeviceFactory
+10-13 17:24:25.140  8051  8051 I A04500/chromium: [../../content/browser/renderer_host/render_view_host_impl.cc:792] [RenderPipeline] RenderViewCreated: main_frame_routing_id=1, has_local_main_frame=1
+10-13 17:24:25.140  8051  8051 I A04500/chromium: [../../content/browser/renderer_host/render_frame_host_impl.cc:4617] [RenderPipeline] RenderFrameCreated: routing_id=1, is_main_frame=1, frame_tree_node_id=1
+10-13 17:24:25.140  8051 11518 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/res_reporter.cc:47] ResReporter:[LoadLibrary]dlopen libframe_ui_intf.so failed!
+10-13 17:24:25.140  8051 11518 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/res_reporter.cc:33] ResReporter:[Init] dlopen libframe_ui_intf.so failed!
+10-13 17:24:25.140  8051  8051 I A04500/chromium: [../../content/browser/web_contents/web_contents_impl.cc:8981] [RenderPipeline] WebContentsImpl::RenderFrameCreated: routing_id=1, is_main_frame=1
+10-13 17:24:25.140  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/osr/arkweb_render_widget_host_view_osr_utils.cc:223] CefRenderWidgetHostViewOSR::ShowWithVisibility compositor
+10-13 17:24:25.140  8051  8051 I A04500/cef: [../../cef/libcef/browser/osr/render_widget_host_view_osr.cc:534] CefRenderWidgetHostViewOSR::ShowWithVisibility AttachToCompositor
+10-13 17:24:25.140  8051  8051 I A04500/chromium: [../../components/viz/client/frame_eviction_manager.cc:196] FrameEvictionManager::FrameEvictionManager, max_number_of_saved_frames_: 10
+10-13 17:24:25.140  8051  8051 D A04500/chromium: [../../content/browser/renderer_host/navigation_request.cc:2686] No matching Prerendered host found.
+10-13 17:24:25.140  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/content/browser/renderer_host/navigation_request_for_include.cc:17] [WebNavigation] NavigationRequestBeginNavigation isBrowserInitiated:1 isServerRedirect:0 isIncognito:0 navigationId:1 navigationToken:8DFE423E8199C008FDFE3B90A5075034 url:ht**s://lan***
+10-13 17:24:25.140  8051  8051 I A04500/chromium: [../../content/browser/web_contents/web_contents_impl.cc:7553] [RenderPipeline] DidStartNavigation: is_main_frame=1, is_same_document=0, is_renderer_initiated=0
+10-13 17:24:25.141  8051  8051 I A04500/chromium: [../../cef/ohos_cef_ext/libcef/browser/page_load_metrics/arkweb_page_load_metrics_observer.cc:116] [WebLoadTracker] PageStart navigationId:1 startedInForeground:1 currentCommittedUrl:
+10-13 17:24:25.141  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/alloy_browser_ua_config.cc:103] MatchUserAgent arkweb's default ua, host:lan***, user_agent:Mozilla/5.0 (Phone; OpenHarmony 7.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36  ArkWeb/7.0.0.105 Mobile
+10-13 17:24:25.141  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/useragent/arkweb_useragent_utils.cc:94] MatchUserAgentFromWebContents match_type_no_nweb_ex is 4 user_agent_no_nweb_ex is Mozilla/5.0 (Phone; OpenHarmony 7.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36  ArkWeb/7.0.0.105 Mobile match_type_nweb_ex is 4 user_agent_nweb_ex is Mozilla/5.0 (Phone; OpenHarmony 7.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36  ArkWeb/7.0.0.105 Mobile
+10-13 17:24:25.141  8051  8051 I A04500/chromium: [../../ohos_nweb_ex/overrides/cef/libcef/browser/alloy/alloy_browser_ua_config.cc:536] MatchViewportWidth [ViewportWidth] arkweb's default viewport width
+10-13 17:24:25.141  8051  8051 I A04500/chromium: [../../cef/ohos_cef_ext/libcef/browser/useragent/arkweb_useragent_utils.cc:178] [WebNavigation] MatchUserAgentForStartNav matchType:4 override:0 userGesture:0 mainFrame:1 fromBFCache:0 isReload:0 url:ht**s://lan***
+10-13 17:24:25.154  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:5911] begin to handle safe browsing detection,nweb id is 1,detect mode is 0,detect switch is 0
+10-13 17:24:25.154  8051  8051 D A04500/chromium: [../../components/subresource_filter/content/shared/browser/activation_state_computing_navigation_throttle.cc:75] [AdBlock] NotifyPageActivationWithRuleset activation_level:kDryRun
+10-13 17:24:25.154  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/components/subresource_filter/content/browser/arkweb_content_subresource_filter_throttle_manager_ext.cc:181] [Adblock] navigation url: ***
+10-13 17:24:25.154  8051  8051 D A04500/chromium: [../../components/subresource_filter/content/shared/browser/activation_state_computing_navigation_throttle.cc:75] [AdBlock] NotifyPageActivationWithRuleset activation_level:kEnabled
+10-13 17:24:25.154  8051 11552 I A04500/chromium: [../../arkweb/chromium_ext/base/feature_list_utils.cc:67] scrollbar modify features
+10-13 17:24:25.154  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/chrome/browser/chrome_content_browser_client_for_include.cc:195] [AdBlock] Start to get adblock switch from UI
+10-13 17:24:25.154  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1623] [adblock] TrigAdBlockEnabledForSiteFromUi url = ***
+10-13 17:24:25.154  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/content/browser/web_contents/web_contents_impl_ext.cc:364] [AdBlock] trigger adblock switch with rule list
+10-13 17:24:25.154  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/content/browser/web_contents/web_contents_impl_ext.cc:435] [Adblock] set adblock switch for site, frame tree node id:1  adblock switch from UI: 0
+10-13 17:24:25.154  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/content/browser/renderer_host/render_frame_host_impl_for_include.cc:224] [AdBlock] UpdateAdBlockEnabledToRender: state unchanged, skip
+10-13 17:24:25.154  8051  8051 D A04500/chromium: [../../ohos_nweb_ex/core/arkweb/nweb_extension_tabs_delegate_impl.cc:394] NWebExtensionTabDelegateImpl::GetTab
+10-13 17:24:25.154  8051  8051 E A04500/chromium: [../../ohos_nweb_ex/core/arkweb/nweb_extension_tabs_delegate_impl.cc:396] NWebExtensionTabDelegateImpl callback_ on_get_tab_v2 is nullptr
+10-13 17:24:25.154  8051 11529 I A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:31] InvisibleRenderingThrottler Config init with params - invisible_timeout_ms=5000, invisible_ratio=10
+10-13 17:24:25.154  8051 11529 I A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:291] InvisibleRenderingThrottler initialized
+10-13 17:24:25.154  8051 11529 I A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:300] Throttle evaluation timer started (1s interval)
+10-13 17:24:25.154  8051 11529 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:200] DynamicFrameRateDecision::SetLTPOStrategy 3
+10-13 17:24:25.154  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:274] SetWebComponentVisibleImpl nweb_id=1 visible=0
+10-13 17:24:25.154  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:210] SetLTPOStrategyImpl 3
+10-13 17:24:25.154  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:237] visible web component size is: 1
+10-13 17:24:25.154  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:243] SetFrameRateLinkerEnable 0
+10-13 17:24:25.154  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:274] SetWebComponentVisibleImpl nweb_id=1 visible=1
+10-13 17:24:25.154  8051 11552 I A04500/chromium: [../../arkweb/chromium_ext/content/browser/arkweb_child_process_launcher_helper_utils.cc:82] Initiate a request to AMS to create a child process, child type: renderer
+10-13 17:24:25.154  8051 11528 I A04500/chromium: [../../arkweb/chromium_ext/gpu/ipc/service/heif_decoder_service.cc:24] [HeifSupport] HeifDecoderService created
+10-13 17:24:25.156  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:2329] NWebHandlerDelegate::OnBeforeBrowse
+10-13 17:24:25.156  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:2360] [WebNavigation] OnLoadIntercept result:0 requestMethod:GET userGesture:0 mainFrame:1 isServerRedirect:0 url:ht**s://lan***
+10-13 17:24:25.157  8051  8051 D A04500/chromium: [nweb_impl.cc:7680] OnSafeInsetsChange nweb_id:1 0,0,0,0
+10-13 17:24:25.157  8051  8051 D A04500/chromium: [nweb_impl.cc:7680] OnSafeInsetsChange nweb_id:1 0,0,0,0
+10-13 17:24:25.158  8051  8051 E A04500/chromium: [net_connect_adapter_impl.cpp:430] get default net failed, ret = 201.
+10-13 17:24:25.158  8051  8051 D A04500/chromium: [../../ohos_nweb/src/nweb_impl.cc:8688] blankless net not available
+10-13 17:24:25.159  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/content/browser/renderer_host/navigation_request_utils.cc:103] PRPPreload.NavigationRequest::OnGetIsolation, canceled
+10-13 17:24:25.159  8051  8051 I A04500/chromium: [../../ohos_nweb_ex/core/arkweb/nweb_extension_manager_delegate_impl.cc:164] NWebExtensionManagerDelegateImpl::OnExtensionInitLoadEndCallBack
+10-13 17:24:25.159  8051  8051 I A04500/chromium: [../../ohos_nweb_ex/core/arkweb/nweb_extension_manager_delegate_impl.cc:166] callback member callback_ is nullptr
+10-13 17:24:25.159  8051 11536 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/net_service/cookie_manager_impl_ext.cc:1203] CefCookieManagerImpl::LoadCookiesOnAsyncThread
+10-13 17:24:25.162  8051 11519 E A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/nweb_safe_browsing_detection_handler.cc:149] failed to open sa client lib file libsafe_browsing_client.z.so
+10-13 17:24:25.162  8051 11519 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/arkweb_browser_host_ext.cc:3958] code is -1,policy is -1,mapping type is UNPROCESS,is_content_check is 0
+10-13 17:24:25.163  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/cookie_helper.cc:139] ContinueWithLoadedCookies, cookie size is 0
+10-13 17:24:25.163  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/arkweb_browser_host_ext.cc:3958] code is -1,policy is -1,mapping type is UNPROCESS,is_content_check is 0
+10-13 17:24:25.163  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/ohos_safe_browsing/ohos_safe_browsing_tab_helper.cc:149] SafeBrowsing SA detection with policy: -1, code: -1, type: UNPROCESS
+10-13 17:24:25.164  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:81] intercept NWebResourceHandler::Open
+10-13 17:24:25.165  8051 11518 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:326] intercept NWEB_STRING_TYPE response_length=424
+10-13 17:24:25.165  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=-2 status_code=200 status_text=OK mime_type=text/html charset=utf-8 content_length=424
+10-13 17:24:25.165  8051 11552 D A04500/chromium: [../../arkweb/chromium_ext/content/browser/arkweb_child_process_launcher_helper_utils.cc:109] report render process create event success, render pid: 11554, process type = renderer
+10-13 17:24:25.165  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:548] intercept StreamReaderURLLoader::ContinueWithResponseHeaders request_id_=-2, request_.is_sync_mode=0
+10-13 17:24:25.165  8051 11526 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.165  8051 11526 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.168  8051  8051 I A04500/chromium: [../../content/browser/loader/navigation_url_loader_impl.cc:1569] [WebNavigation] OnReceiveResponse isDownload:0 mustDownload:0 knownMimeType:1 mimeType:text/html url:ht**s://lan***
+10-13 17:24:25.169  8051  8051 I A04500/chromium: [../../content/browser/renderer_host/navigation_request.cc:5012] [WebNavigation] SelectFrameHostForOnResponseStarted navigationId:0 routingId:1 rfhSelectedReason: url:ht**s://lan***
+10-13 17:24:25.169  8051  8051 I A04500/chromium: [../../components/page_load_metrics/browser/page_load_tracker.cc:569] [WebLoadTracker] WillProcessNavigationResponse navigationId:1 currentNavigationId:1
+10-13 17:24:25.169  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/components/subresource_filter/content/browser/profile_interaction_manager_for_include.cc:28] [Adblock] OnPageActivationComputed url : ***
+10-13 17:24:25.169  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/components/subresource_filter/content/browser/profile_interaction_manager_for_include.cc:50] [Adblock] OnPageActivationComputed url11 : ***kEnabled
+10-13 17:24:25.169  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/components/subresource_filter/content/browser/arkweb_content_subresource_filter_throttle_manager_ext.cc:148] [Adblock] navigation url : ***
+10-13 17:24:25.169  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/components/subresource_filter/content/browser/profile_interaction_manager_for_include.cc:28] [Adblock] OnPageActivationComputed url : ***
+10-13 17:24:25.169  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/components/subresource_filter/content/browser/profile_interaction_manager_for_include.cc:50] [Adblock] OnPageActivationComputed url11 : ***kEnabled
+10-13 17:24:25.169  8051  8051 I A04500/chromium: [../../content/browser/renderer_host/render_process_host_impl.cc:6033] [RenderPipeline] OnProcessLaunched: pid=11554, GetID()=3
+10-13 17:24:25.169  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/content/browser/renderer_host/arkweb_render_process_host_impl_ext.cc:117] RenderProcessHost: 11554 Wait 6-second to monitoring channel connection status.
+10-13 17:24:25.170  8051  8051 D A04500/chromium: [../../components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.cc:195] [Adblock] ready to commit in frame navigation, url : ***, activation_level:kDisabled
+10-13 17:24:25.170  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/content/browser/renderer_host/navigation_request_utils.cc:129] [Adblock] CommitNavigation url : ***
+10-13 17:24:25.170  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/content/browser/renderer_host/navigation_request_utils.cc:139] [Adblock] SetAdblockEnabledStatus propagate to renderer: 0
+10-13 17:24:25.170  8051  8051 I A04500/chromium: [../../arkweb/ohos_nweb_ex/overrides/chromium/content/browser/renderer_host/render_frame_host_impl_nweb_ex.cc:30] [WebNavigation] CommitNavigation routingId:1 isFirstNavigation:1 isIncognito:0 isSameDocument:0 navigationId:0 navigationToken:8DFE423E8199C008FDFE3B90A5075034 url:ht**s://lan***
+10-13 17:24:25.170  8051 11528 D A04500/chromium: [../../gpu/command_buffer/service/feature_info.cc:228] workaround prefer_draw_to_copy property: 1
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CPU_WRITE_ONLY (2048)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (16777216)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (33554432)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_READ (2)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_READ (4)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_WRITE (8)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_MIPMAP (1024)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_WRITE (262144)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CPU_UPLOAD (268435456)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_GLES2_READ (1)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_READ (2)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_READ (4)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_WRITE (8)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_READ (32)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE (64)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE (256)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU (8192)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE (65536)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (131072)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_WRITE (262144)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (524288)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CPU_UPLOAD (268435456)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_GLES2_READ (1)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_READ (2)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_READ (4)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_WRITE (8)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_READ (32)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE (256)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX (512)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU (8192)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE (65536)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (131072)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_WRITE (262144)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (524288)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_GLES2_READ (1)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_READ (2)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_READ (4)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_WRITE (8)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_SCANOUT (16)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_READ (32)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE (64)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_VIDEO_DECODE (128)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE (256)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU (8192)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE (65536)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (131072)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_WRITE (262144)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (524288)
+10-13 17:24:25.192  8051 11528 I A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/ohos_native_buffer_image_backing_factory.cc:190] OHOSNativeBufferImageBackingFactory::is_delegated_enabled_: 0
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_GLES2_READ (1)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_READ (2)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_READ (4)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_WRITE (8)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_SCANOUT (16)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_READ (32)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE (64)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_VIDEO_DECODE (128)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE (256)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CPU_WRITE_ONLY (2048)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU (8192)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE (65536)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (131072)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_WRITE (262144)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (524288)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (1048576)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (4194304)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (16777216)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (33554432)
+10-13 17:24:25.192  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CPU_UPLOAD (268435456)
+10-13 17:24:25.193  8051 11528 I A04500/chromium: [../../arkweb/chromium_ext/gpu/ipc/service/heif_decoder_service.cc:24] [HeifSupport] HeifDecoderService created
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CPU_WRITE_ONLY (2048)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (16777216)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (33554432)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_READ (2)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_READ (4)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_WRITE (8)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_MIPMAP (1024)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_WRITE (262144)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CPU_UPLOAD (268435456)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_GLES2_READ (1)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_READ (2)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_READ (4)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_WRITE (8)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_READ (32)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE (64)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE (256)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU (8192)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE (65536)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (131072)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_WRITE (262144)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (524288)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CPU_UPLOAD (268435456)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_GLES2_READ (1)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_READ (2)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_READ (4)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_WRITE (8)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_READ (32)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE (256)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX (512)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU (8192)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE (65536)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (131072)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_WRITE (262144)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (524288)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_GLES2_READ (1)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_READ (2)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_READ (4)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_WRITE (8)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_SCANOUT (16)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_READ (32)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE (64)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_VIDEO_DECODE (128)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE (256)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU (8192)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE (65536)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (131072)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_WRITE (262144)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (524288)
+10-13 17:24:25.193  8051 11528 I A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/ohos_native_buffer_image_backing_factory.cc:190] OHOSNativeBufferImageBackingFactory::is_delegated_enabled_: 0
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_GLES2_READ (1)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_READ (2)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_READ (4)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_WRITE (8)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_SCANOUT (16)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_READ (32)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE (64)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_VIDEO_DECODE (128)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE (256)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CPU_WRITE_ONLY (2048)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU (8192)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE (65536)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (131072)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_WRITE (262144)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (524288)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (1048576)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (4194304)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (16777216)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (33554432)
+10-13 17:24:25.193  8051 11528 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CPU_UPLOAD (268435456)
+10-13 17:24:25.194  8051 11551 I A04500/chromium: [../../arkweb/chromium_ext/ui/gl/init/gl_factory_ohos.cc:166] create offscreen glsurface by surfacelessEGL.
+10-13 17:24:25.245  8051 11551 D A04500/chromium: [../../gpu/command_buffer/service/feature_info.cc:228] workaround prefer_draw_to_copy property: 1
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CPU_WRITE_ONLY (2048)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (16777216)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (33554432)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_READ (2)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_READ (4)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_WRITE (8)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_MIPMAP (1024)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_WRITE (262144)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CPU_UPLOAD (268435456)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_GLES2_READ (1)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_READ (2)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_READ (4)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_WRITE (8)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_READ (32)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE (64)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE (256)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU (8192)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE (65536)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (131072)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_WRITE (262144)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (524288)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CPU_UPLOAD (268435456)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_GLES2_READ (1)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_READ (2)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_READ (4)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_WRITE (8)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_READ (32)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE (256)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX (512)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU (8192)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE (65536)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (131072)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_WRITE (262144)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (524288)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_GLES2_READ (1)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_READ (2)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_READ (4)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_WRITE (8)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_SCANOUT (16)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_READ (32)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE (64)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_VIDEO_DECODE (128)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE (256)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU (8192)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE (65536)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (131072)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_WRITE (262144)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (524288)
+10-13 17:24:25.255  8051 11551 I A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/ohos_native_buffer_image_backing_factory.cc:190] OHOSNativeBufferImageBackingFactory::is_delegated_enabled_: 0
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_GLES2_READ (1)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_READ (2)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_READ (4)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_DISPLAY_WRITE (8)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_SCANOUT (16)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_READ (32)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE (64)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_VIDEO_DECODE (128)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE (256)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CPU_WRITE_ONLY (2048)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU (8192)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE (65536)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (131072)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_RASTER_WRITE (262144)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (524288)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (1048576)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (4194304)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (16777216)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: Unknown Usage (33554432)
+10-13 17:24:25.255  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/command_buffer/service/shared_image/shared_image_util.cc:73] PrintSharedImageUsageInfo HWIMGDEC - Supported SharedImageBackingFactory with usage: SHARED_IMAGE_USAGE_CPU_UPLOAD (268435456)
+10-13 17:24:25.255  8051 11551 I A04500/chromium: [../../arkweb/chromium_ext/ui/gl/gl_surface_egl_ohos.cc:44] CreateNativeViewGLSurfaceEGLOhos:: normal surface, widgetid = 1
+10-13 17:24:25.255  8051 11551 I A04500/chromium: [../../arkweb/chromium_ext/ui/gl/gl_surface_egl_ohos.cc:52] emulator CreateNativeViewGLSurfaceEGLOhos delay 100ms
+10-13 17:24:25.310  8051 11518 I A04500/chromium: [../../arkweb/chromium_ext/content/browser/renderer_host/arkweb_render_process_host_impl_utils.cc:673] TEST0324 ReportKeyThread pid = 11554, tid = 11562, role = 0
+10-13 17:24:25.310  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/content/browser/renderer_host/arkweb_render_process_host_impl_ext.cc:144] RenderProcessHost: 11554 cancel channel connected check task
+10-13 17:24:25.310  8051  8051 I A04500/chromium: [../../content/browser/renderer_host/render_process_host_impl.cc:4267] [RenderPipeline] RenderProcessReady (from channel connected): pid=11554, GetID()=3
+10-13 17:24:25.310  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/content/browser/renderer_host/arkweb_render_process_host_impl_utils.cc:571] [themefont] flag file occurs error
+10-13 17:24:25.310  8051  8051 W A04500/chromium: [../../arkweb/chromium_ext/content/browser/renderer_host/arkweb_render_process_host_impl_ext.cc:336] [Distiller] param reader_mode_config_data is null
+10-13 17:24:25.310  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/alloy_browser_host_impl_ext.cc:1794] AlloyBrowserHostImplExt::RenderViewReady:nweb_id: 1
+10-13 17:24:25.310  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/render_process_state_handler.cc:127] RenderProcessStateHandler::InitRenderProcessState: render_id: 11554 nweb_id: 1
+10-13 17:24:25.310  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/render_process_state_handler.cc:88] RenderProcessStateHandler::UpdateRenderProcessState: add new render: 11554 nweb_id: 1 state: 0
+10-13 17:24:25.310  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/render_process_state_handler.cc:100] RenderProcessStateHandler::UpdateRenderProcessState: ReportRenderProcessStatus render_id: 11554 report_background_state: 0
+10-13 17:24:25.311  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/render_process_state_handler.cc:115] UpdateRenderProcessState: delete from init list:  nweb_id: 1 state: 0
+10-13 17:24:25.311  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/render_process_state_handler.cc:133] RenderProcessStateHandler::InitRenderProcessState: size: 0
+10-13 17:24:25.311  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/alloy_browser_host_impl_ext.cc:1841] AlloyBrowserHostImplExt::ReportWindowStatus: Nweb: 1, window: 28, pid: 11554 ,rph_unique_id: 3
+10-13 17:24:25.311  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/alloy/render_process_state_handler.cc:183] RenderProcessStateHandler::BaseNweb: nweb_id: 1, is_to_background: 0, rph_unique_id: 3, render_process_id: 11554
+10-13 17:24:25.312  8051 11519 D A04500/chromium: [../../arkweb/chromium_ext/content/browser/font_unique_name_lookup/arkweb_custom_font_manager.cc:119] all custom font size 0
+10-13 17:24:25.313  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/service/device/time_zone_monitor/time_zone_monitor_ohos.cc:150] TimeZoneMonitor Create.
+10-13 17:24:25.313  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/service/device/time_zone_monitor/time_zone_monitor_ohos.cc:59] TimeZoneMonitorOhosImpl create.
+10-13 17:24:25.313  8051  8051 I A04500/chromium: [date_time_format_adapter_impl.cpp:57] Reg Timezone Event.
+10-13 17:24:25.313  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/service/device/time_zone_monitor/time_zone_monitor_ohos.cc:83] Start listen timezone.
+10-13 17:24:25.313  8051  8051 I A04500/chromium: [date_time_format_adapter_impl.cpp:87] start time_zone listen.
+10-13 17:24:25.314  8051  8051 I A04500/chromium: [../../services/device/sysprop_render_observer/sysprop_render_observer_ohos.cc:101] SysPropRenderObserverOhosImpl start to listen system parameter.
+10-13 17:24:25.316  8051 11518 I A04500/chromium: [../../arkweb/chromium_ext/content/browser/renderer_host/arkweb_render_process_host_impl_utils.cc:673] TEST0324 ReportKeyThread pid = 11554, tid = 11563, role = 2
+10-13 17:24:25.330  8051  8051 I A04500/chromium: [../../arkweb/ohos_nweb_ex/overrides/chromium/content/browser/renderer_host/render_frame_host_impl_nweb_ex.cc:53] [WebNavigation] DidCommitNavigation routingId:1 isSameDocument:0 navigationId:0 commitNavigationToken:DAB07E7753B334455D449943206FA089 navigationToken:DAB07E7753B334455D449943206FA089 url:ht**s://lan***
+10-13 17:24:25.330  8051 11533 D A04500/chromium: [../../arkweb/chromium_ext/services/network/prp_preload/src/page_res_parallel_preload_mgr_impl.cc:90] PRPPreload.PRParallelPreloadMgrImpl::StartPage, is_inited = 0, current page num = 0, web_handle_valid = 0, use_no_cache = 0
+10-13 17:24:25.330  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:2062] [WebNavigation] NavigationEntryCommitted type:1 mainFrame:1 sameDocument:0 didReplaceEntry:1 url:ht**s://lan***
+10-13 17:24:25.330  8051  8051 D A04500/chromium: [native_ability_runtime_adapter_impl.cpp:31] NativeAbilityRuntimeAdapterImpl NotifyPageChanged success.
+10-13 17:24:25.330  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/arkweb_browser_contents_delegate_ext.cc:456] NotifyPageChanged success. url: ht**s://lan*** length: 22 window_id: 28
+10-13 17:24:25.330  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/ohos_safe_browsing/ohos_sb_client.cc:92] SafeBrowsing NavigationEntryCommitted ShowBlockingPage
+10-13 17:24:25.330  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/ohos_safe_browsing/ohos_sb_client.cc:153] SafeBrowsing ShowBlockingPage, hw_code: -1, policy: -1, block_type: 5
+10-13 17:24:25.330  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/ohos_safe_browsing/ohos_sb_client.cc:153] SafeBrowsing ShowBlockingPage, hw_code: -1, policy: -1, block_type: 5
+10-13 17:24:25.330  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:2036] NWebHandlerDelegate::OnSafeBrowsingCheckFinish
+10-13 17:24:25.330  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:6556] NWebHandlerDelegate::OnSafeBrowsingCheckDetail
+10-13 17:24:25.331  8051  8051 I A04500/chromium: [../../content/browser/web_contents/web_contents_impl.cc:7693] [RenderPipeline] DidFinishNavigation: has_committed=1, is_error_page=0, is_main_frame=1, is_same_document=0, net_error=0
+10-13 17:24:25.331  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/content/browser/media/media_web_contents_observer_for_include.cc:701] DidFinishNavigation, enter
+10-13 17:24:25.331  8051  8051 I A04500/chromium: [../../cef/ohos_cef_ext/libcef/browser/page_load_metrics/arkweb_page_load_metrics_observer.cc:206] [WebLoadTracker] PageCommit navigationId:1 currentNavigationId:1
+10-13 17:24:25.331  8051  8051 I A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/autofill/oh_autofill_manager.cc:623] Reset
+10-13 17:24:25.332  8051  8051 D A04500/chromium: [../../ohos_nweb_ex/core/arkweb/nweb_extension_bookmarks_delegate_impl.cc:109] NWebExtensionBookmarksDelegateImpl::OnSearch
+10-13 17:24:25.332  8051  8051 I A04500/chromium: [../../ohos_nweb_ex/core/arkweb/nweb_extension_bookmarks_delegate_impl.cc:110] callback member callback_ is nullptr
+10-13 17:24:25.332  8051  8051 E A04500/chromium: [../../arkweb/chromium_ext/chrome/browser/extensions/api/declarative_content/declarative_content_is_bookmarked_condition_delegate.cc:161] RequestIsBookmarked failed to search url in bookmarks
+10-13 17:24:25.332  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1859] [WebNavigation] OnPageBegin transitionType:33554433 url:ht**s://lan***
+10-13 17:24:25.332  8051  8051 W A04500/chromium: [../../ohos_nweb/src/ndk/arkweb_native_object.cc:76] NativeArkWeb load start callback is nullptr
+10-13 17:24:25.332  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:5504] NWebHandlerDelegate::OnLoadStarted, nweb_id: 1
+10-13 17:24:25.332  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:5526] [WebNavigation] OnLoadStarted url:ht**s://lan***
+10-13 17:24:25.332  8051  8051 I A04500/cef: [../../cef/libcef/browser/browser_contents_delegate.cc:735] load type = 1
+10-13 17:24:25.332  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:2265] NWebHandlerDelegate::OnRefreshAccessedHistory, intercepted url: ***, isReload = 0, isMainFrame = 1
+10-13 17:24:25.333  8051  8051 I A04500/chromium: [media_avsession_adapter_impl.cpp:474] UpdateMetaData return updated: 1
+10-13 17:24:25.335  8051 11536 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/net_service/cookie_manager_impl_ext.cc:1203] CefCookieManagerImpl::LoadCookiesOnAsyncThread
+10-13 17:24:25.336  8051 11536 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/net_service/cookie_manager_impl_ext.cc:1203] CefCookieManagerImpl::LoadCookiesOnAsyncThread
+10-13 17:24:25.336  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/cookie_helper.cc:139] ContinueWithLoadedCookies, cookie size is 0
+10-13 17:24:25.336  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/cookie_helper.cc:139] ContinueWithLoadedCookies, cookie size is 0
+10-13 17:24:25.336  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:81] intercept NWebResourceHandler::Open
+10-13 17:24:25.336  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:81] intercept NWebResourceHandler::Open
+10-13 17:24:25.340  8051 11538 I A04500/chromium: [../../arkweb/chromium_ext/media/mojo/services/gpu_mojo_media_client_ohos.cc:69] GetPlatformSupportedVideoDecoderConfigs
+10-13 17:24:25.348  8051 11518 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:326] intercept NWEB_STRING_TYPE response_length=1322975
+10-13 17:24:25.348  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=697190 status_code=200 status_text=OK mime_type=application/javascript charset=utf-8 content_length=1322975
+10-13 17:24:25.348  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:548] intercept StreamReaderURLLoader::ContinueWithResponseHeaders request_id_=697190, request_.is_sync_mode=0
+10-13 17:24:25.349  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.349  8051 11518 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:326] intercept NWEB_STRING_TYPE response_length=371486
+10-13 17:24:25.349  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=697191 status_code=200 status_text=OK mime_type=text/css charset=utf-8 content_length=371486
+10-13 17:24:25.349  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:548] intercept StreamReaderURLLoader::ContinueWithResponseHeaders request_id_=697191, request_.is_sync_mode=0
+10-13 17:24:25.349  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.349  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.349  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/content/browser/display_cutout/display_cutout_host_ohos.cc:81] SetCurrentRenderFrameHost value:2
+10-13 17:24:25.349  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.349  8051 11527 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.349  8051 11527 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.349  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.349  8051  8051 I A04500/chromium: [media_avsession_adapter_impl.cpp:474] UpdateMetaData return updated: 1
+10-13 17:24:25.349  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.349  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.349  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.349  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.349  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.350  8051 11526 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.350  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.350  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.350  8051 11526 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.350  8051 11526 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.350  8051 11526 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.350  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.350  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.350  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.351  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.351  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.351  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.351  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.352  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.352  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.352  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.352  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.355  8051 11551 D A04500/chromium: [../../arkweb/chromium_ext/gpu/ipc/common/nweb_native_window_tracker.cc:61] GetNativeWindowGet for native_window id = 1
+10-13 17:24:25.356  8051 11551 I A04500/chromium: [../../arkweb/chromium_ext/ui/gl/gl_surface_egl_ohos.cc:73] NativeViewGLSurfaceEGLOhos add window ref.
+10-13 17:24:25.356  8051 11551 I A04500/chromium: [../../ui/gl/gl_surface.cc:235] gl_surface, InitializeGLSurface
+10-13 17:24:25.358  8051 11551 I A04500/chromium: [../../ui/gl/gl_surface_egl.cc:484] supports_post_sub_buffer = 0
+10-13 17:24:25.367  8051 11548 I A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:90] ExternalBeginFrameSourceOHOS constructor!!!
+10-13 17:24:25.367  8051 11548 I A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:62] VSyncUserData constructor!!!
+10-13 17:24:25.367  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.367  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.367  8051 11548 I A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/root_compositor_frame_sink_impl_ext.cc:65] rootCompositorFrameSinkImpl::SetDrawMode
+10-13 17:24:25.367  8051 11548 I A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/display/arkweb_display_utils.cc:238] SetDrawMode mode=0
+10-13 17:24:25.367  8051 11548 I A04500/chromium: [../../components/viz/service/display/direct_renderer.h:182] SetIsSyncDrawMode 0
+10-13 17:24:25.370  8051 11548 I A04500/chromium: [../../components/viz/service/display/display.cc:473] Display::Resize, current size: 0x0, new size: 1256x2526
+10-13 17:24:25.370  8051 11548 I A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/display/arkweb_display_utils.cc:334] Display::Resize newSize = 1256x2526
+10-13 17:24:25.370  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/display/arkweb_display_utils.cc:354] Display::Resize,current_surface_size is :0x0
+10-13 17:24:25.370  8051 11548 I A04500/chromium: [../../components/viz/service/display/direct_renderer.cc:176] DirectRenderer::SetVisible status change, visible_ = 1
+10-13 17:24:25.370  8051 11548 I A04500/chromium: [../../components/viz/service/frame_sinks/frame_sink_manager_impl.cc:324] CreateCompositorFrameSink, frame_sink_id info: FrameSinkId(3, 3)
+10-13 17:24:25.370  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:169] SetVsyncEnabled 1, vsync_cnt_: 1
+10-13 17:24:25.370  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:243] SetFrameRateLinkerEnable 1
+10-13 17:24:25.385  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.385  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.385  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.385  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.387  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/cc/mojo_embedder/async_layer_tree_frame_sink_utils.cc:79] web render log: first call SubmitCompositorFrame, local_surface_id = LocalSurfaceId(1, 1, 2A6A...)
+10-13 17:24:25.398  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.398  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.398  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.398  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.400  8051  8051 I A04500/chromium: [../../content/browser/web_contents/web_contents_impl.cc:8452] [RenderPipeline] DOMContentLoaded: routing_id=1
+10-13 17:24:25.400  8051  8051 D A04500/chromium: [../../arkweb/chromium_ext/content/browser/renderer_host/render_frame_host_impl_for_include.cc:565] RenderFrameHostImpl::OnDocumentEndReady frameInfo id:3_1 ,parentId:
+10-13 17:24:25.400  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:6531] NWebHandlerDelegate::OnDocumentEndReady id:3_1 ,parentId:
+10-13 17:24:25.401  8051  8051 W A04500/chromium: [../../components/password_manager/core/browser/password_manager.cc:1449] [PasswordSave] AutomaticSave prompt is not available
+10-13 17:24:25.401  8051  8051 W A04500/chromium: [../../components/password_manager/core/browser/password_manager.cc:1505] [PasswordSave] Automatic save prompt is not available.
+10-13 17:24:25.401  8051  8051 I A04500/chromium: [../../content/browser/web_contents/web_contents_impl.cc:8463] [RenderPipeline] OnDidFinishLoad: routing_id=1, is_main_frame=1
+10-13 17:24:25.401  8051  8051 I A04500/chromium: [../../arkweb/chromium_ext/components/subresource_filter/content/browser/arkweb_content_subresource_filter_throttle_manager_ext.cc:129] [AdBlock] subresource map.size():0
+10-13 17:24:25.401  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1883] NWebHandlerDelegate::OnLoadEnd
+10-13 17:24:25.401  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1900] [WebNavigation] OnPageEnd httpStatusCode:200 url:ht**s://lan***
+10-13 17:24:25.401  8051  8051 W A04500/chromium: [../../ohos_nweb/src/ndk/arkweb_native_object.cc:85] NativeArkWeb load end callback is nullptr
+10-13 17:24:25.401  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1921] NWebHandlerDelegate::OnLoadEnd url=ht**s://lan*** http_status_code=200
+10-13 17:24:25.401  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_autolayout.cc:526]  AutoLayout Feature disabled. The app is not on the whitelist.
+10-13 17:24:25.401  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_autolayout.h:145] [NwebAutolayout::CheckWebContainer] took 0.002 ms.
+10-13 17:24:25.401  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:5535] NWebHandlerDelegate::OnLoadFinished, nweb_id: 1
+10-13 17:24:25.401  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:5543] [WebNavigation] OnLoadFinished url:ht**s://lan***
+10-13 17:24:25.401  8051  8051 W A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/arkweb_icon_helper_ext.cc:148] No icon sizes available for URL: ***
+10-13 17:24:25.405  8051  8051 I A04500/chromium: [media_avsession_adapter_impl.cpp:474] UpdateMetaData return updated: 0
+10-13 17:24:25.405  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:2884] NWebDelegate::get url
+10-13 17:24:25.405  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:2884] NWebDelegate::get url
+10-13 17:24:25.405  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:2884] NWebDelegate::get url
+10-13 17:24:25.405  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/arkweb_browser_host_ext.cc:2950] ExecuteJavaScriptExt with callback enter
+10-13 17:24:25.405  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/arkweb_browser_host_ext.cc:2952] ExecuteJavaScriptExt with callback
+10-13 17:24:25.405  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:2884] NWebDelegate::get url
+10-13 17:24:25.413  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.413  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.413  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.413  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.414  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:6464] SetSurfaceDensity: 3.5
+10-13 17:24:25.415  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:532] set DRAG in preference: 1
+10-13 17:24:25.431  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.431  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.431  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.431  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.448  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.448  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.448  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.448  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.448  8051 11548 I A04500/chromium: [../../components/viz/service/display/surface_aggregator.cc:1135] SurfaceAggregator::EmitDefaultBackgroundColorQuad, background_color: 4294967295
+10-13 17:24:25.448  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.448  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.448  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.448  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.448  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.448  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.448  8051 11551 I A04500/chromium: [../../arkweb/chromium_ext/ui/gl/gl_surface_egl_ohos.cc:195] NativeViewGLSurfaceEGLOhos::SetNativeInnerWeb is 0
+10-13 17:24:25.448  8051 11551 I A04500/chromium: [../../arkweb/chromium_ext/ui/gl/gl_surface_egl_ohos.cc:203] NativeViewGLSurfaceEGLOhos::SetBypassVsyncCondition is 0
+10-13 17:24:25.448  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.448  8051 11551 D A04500/chromium: [window_adapter_impl.cpp:55] NativeWindowSetBufferGeometry 1256 * 2526
+10-13 17:24:25.454  8051 11536 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/net_service/cookie_manager_impl_ext.cc:1203] CefCookieManagerImpl::LoadCookiesOnAsyncThread
+10-13 17:24:25.454  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/cookie_helper.cc:139] ContinueWithLoadedCookies, cookie size is 0
+10-13 17:24:25.455  8051  8051 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/arkweb_browser_host_ext.cc:2783] javascript result callback enter
+10-13 17:24:25.455  8051  8051 D A04500/chromium: [../../services/device/res_sched_report/res_sched_report.cc:91] ResSchedReportImpl start to report gesture id from mojom
+10-13 17:24:25.455  8051 11536 D A04500/cef: [../../cef/ohos_cef_ext/libcef/browser/net_service/cookie_manager_impl_ext.cc:1203] CefCookieManagerImpl::LoadCookiesOnAsyncThread
+10-13 17:24:25.455  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:81] intercept NWebResourceHandler::Open
+10-13 17:24:25.455  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/cookie_helper.cc:139] ContinueWithLoadedCookies, cookie size is 0
+10-13 17:24:25.456  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:2884] NWebDelegate::get url
+10-13 17:24:25.456  8051 11518 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:326] intercept NWEB_STRING_TYPE response_length=26
+10-13 17:24:25.456  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=697195 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26
+10-13 17:24:25.458  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:548] intercept StreamReaderURLLoader::ContinueWithResponseHeaders request_id_=697195, request_.is_sync_mode=0
+10-13 17:24:25.459  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.459  8051 11526 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:81] intercept NWebResourceHandler::Open
+10-13 17:24:25.459  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.461  8051 11551 I A04500/chromium: [../../ui/gl/gl_surface_egl.cc:484] supports_post_sub_buffer = 0
+10-13 17:24:25.461  8051 11518 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:326] intercept NWEB_STRING_TYPE response_length=26
+10-13 17:24:25.461  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:666] intercept StreamReaderURLLoader::HeadersComplete request_id_=697197 status_code=404 status_text=Not Found mime_type=text/plain charset=utf-8 content_length=26
+10-13 17:24:25.461  8051 11518 D A04500/cef: [../../cef/libcef/browser/net_service/stream_reader_url_loader.cc:548] intercept StreamReaderURLLoader::ContinueWithResponseHeaders request_id_=697197, request_.is_sync_mode=0
+10-13 17:24:25.461  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.461  8051 11519 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_resource_handler.cc:281] intercept NWebResourceHandler::Read, responseDataType:0
+10-13 17:24:25.462  8051  8051 I A04500/cef: [../../cef/libcef/browser/browser_contents_delegate.cc:698] invokeVisualStateCallback success: 1
+10-13 17:24:25.462  8051  8051 I A04500/chromium: [../../cef/ohos_cef_ext/libcef/browser/arkweb_browser_contents_delegate_ext.cc:226] ArkWebBrowserContentsDelegateExt::OldPageNoLongerRendered
+10-13 17:24:25.462  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1935] NWebHandlerDelegate::OnPageVisible
+10-13 17:24:25.462  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:3353] OnScaleInited scale: 100
+10-13 17:24:25.465  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.465  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.465  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.465  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.465  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_delegate.cc:6464] SetSurfaceDensity: 3.5
+10-13 17:24:25.466  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_preference_delegate.cc:532] set DRAG in preference: 1
+10-13 17:24:25.474  8051 11551 I A04500/chromium: [../../arkweb/chromium_ext/ui/gl/gl_surface_egl_ohos.cc:87] web render log: first call SwapBuffers, size = 1256x2526
+10-13 17:24:25.481  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.481  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.481  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.481  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.485  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.485  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.485  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.485  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.485  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.485  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.485  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.494  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.498  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.498  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.498  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.498  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.499  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.513  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.514  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.515  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.515  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.515  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.515  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.522  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.526  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.532  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.532  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.532  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.532  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.533  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.534  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.539  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.542  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.547  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.548  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.549  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.549  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.549  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.549  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.554  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.557  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.565  8051 11528 D A04500/chromium: [../../gpu/command_buffer/service/shared_image/shared_image_factory.cc:604] CreateSharedImagePixels[EGLImageBacking] with pixels size=98x98 usage=DisplayRead format=RGBA_8888
+10-13 17:24:25.565  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.565  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.565  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.565  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.566  8051 11528 D A04500/chromium: [../../gpu/command_buffer/service/shared_image/shared_image_factory.cc:604] CreateSharedImagePixels[EGLImageBacking] with pixels size=98x98 usage=DisplayRead format=RGBA_8888
+10-13 17:24:25.567  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.569  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.577  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.581  8051 11528 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.583  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.583  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.583  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.583  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.585  8051  8051 I A04500/chromium: [../../cef/ohos_cef_ext/libcef/browser/page_load_metrics/arkweb_page_load_metrics_observer.cc:431] [WebLoadTracker] PageDomContentLoadedEventStart navigationId:1
+10-13 17:24:25.585  8051  8051 I A04500/chromium: [../../cef/ohos_cef_ext/libcef/browser/page_load_metrics/arkweb_page_load_metrics_observer.cc:471] [WebLoadTracker] PageLoadEventEnd navigationId:1 domInteractive:210 domContentLoadedEvent:262-262 loadEvent:264-264
+10-13 17:24:25.589  8051  8051 D A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/cloud_control_config/nweb_safe_browsing_cloud_control_config.cc:329] [cloud control] StartInitializationTask start.
+10-13 17:24:25.589  8051 11519 E A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/nweb_safe_browsing_detection_handler.cc:149] failed to open sa client lib file libsafe_browsing_client.z.so
+10-13 17:24:25.589  8051 11519 E A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/cloud_control_config/nweb_safe_browsing_cloud_control_config.cc:154] [cloud control] g_getConfigFilePathByTypeFunc is nullptr
+10-13 17:24:25.589  8051 11519 I A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/cloud_control_config/nweb_safe_browsing_cloud_control_config.cc:202] [cloud control] changed_config_list_cache is not exist:/changed_config_list_cache
+10-13 17:24:25.589  8051 11519 E A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/cloud_control_config/nweb_safe_browsing_cloud_control_config.cc:154] [cloud control] g_getConfigFilePathByTypeFunc is nullptr
+10-13 17:24:25.589  8051 11519 E A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/cloud_control_config/nweb_safe_browsing_cloud_control_config.cc:154] [cloud control] g_getConfigFilePathByTypeFunc is nullptr
+10-13 17:24:25.589  8051 11519 E A04500/chromium: [../../ohos_nweb_ex/overrides/ohos_nweb/src/cef_delegate/cloud_control_config/nweb_safe_browsing_cloud_control_config.cc:377] [cloud control] CheckCloudControlConfigUpdate:checkCloudControlConfigUpdateFunc is nullptr.
+10-13 17:24:25.590  8051 11551 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.591  8051 11551 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:25.600  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.600  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.600  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.600  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.616  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.616  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.616  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.616  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.621  8051 11551 W A04500/chromium: [../../arkweb/chromium_ext/ui/gl/gl_surface_egl_ohos.cc:100] web render log: eglSwapBuffers cost time = 23ms
+10-13 17:24:25.621  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.621  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.621  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.621  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.621  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.621  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.621  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:25.633  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.633  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.633  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.633  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.650  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:169] SetVsyncEnabled 0, vsync_cnt_: 0
+10-13 17:24:25.650  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:243] SetFrameRateLinkerEnable 0
+10-13 17:24:25.774  8051  8051 D A04500/chromium: [../../components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.cc:353] Web Load Performance LCP: 485
+10-13 17:24:25.774  8051  8051 I A04500/chromium: [../../cef/ohos_cef_ext/libcef/browser/page_load_metrics/arkweb_page_load_metrics_observer.cc:262] [WebLoadTracker] PageFirstContentfulPaintInPage navigationId:1 FCP:485ms
+10-13 17:24:25.774  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1944] NWebHandlerDelegate::OnFirstContentfulPaint
+10-13 17:24:25.774  8051  8051 D A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1945] Web Load Performance FCP: 485
+10-13 17:24:25.963  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:169] SetVsyncEnabled 1, vsync_cnt_: 1
+10-13 17:24:25.963  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:243] SetFrameRateLinkerEnable 1
+10-13 17:24:25.971  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.971  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.971  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.971  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:25.987  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:25.987  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:25.987  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:25.987  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:26.004  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:26.004  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:26.004  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:26.004  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:26.021  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:26.021  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:26.021  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:26.021  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:26.039  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:26.039  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:26.039  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:26.039  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:26.040  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:26.040  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:26.040  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:26.040  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:26.040  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:26.040  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:26.040  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:26.041  8051 11551 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:26.041  8051 11551 I A04500/chromium: [../../ui/gl/gl_features.cc:156] hmz1106, kDefaultPassthroughCommandDecoder, DISABLE
+10-13 17:24:26.054  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:26.054  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:26.054  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:26.054  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:26.056  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:26.056  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:26.056  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:26.056  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:26.056  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:26.056  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:26.056  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:26.073  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:26.073  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:26.073  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:26.073  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:26.088  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:26.088  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:26.088  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:26.088  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:26.105  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:169] SetVsyncEnabled 0, vsync_cnt_: 0
+10-13 17:24:26.105  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:243] SetFrameRateLinkerEnable 0
+10-13 17:24:26.156  8051  8051 D A04500/chromium: [../../components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.cc:353] Web Load Performance LCP: 485
+10-13 17:24:26.156  8051  8051 I A04500/chromium: [../../cef/ohos_cef_ext/libcef/browser/page_load_metrics/arkweb_page_load_metrics_observer.cc:306] [WebLoadTracker] PageFirstMeaningfulPaintInMainFrameDocument navigationId:1 FMP:485ms
+10-13 17:24:26.156  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_handler_delegate.cc:1954] NWebHandlerDelegate::OnFirstMeaningfulPaint
+10-13 17:24:27.625  8051  8051 I A04500/chromium: [../../ohos_nweb/src/cef_delegate/nweb_render_handler.cc:1769] NWebRenderHandler::OnFirstScreenPaint duration: 485 navigationStartTime: 1791883465136 firstScreenPaintTime: 1791883465621
+10-13 17:24:29.159  8051 11517 E A04500/chromium: [../../net/dns/address_info.cc:235] get address info failed, out_os_error is: -3 host: ***
+10-13 17:24:29.331  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:169] SetVsyncEnabled 1, vsync_cnt_: 1
+10-13 17:24:29.331  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:243] SetFrameRateLinkerEnable 1
+10-13 17:24:29.344  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:29.344  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:29.344  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:29.344  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:29.344  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:29.344  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:29.344  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:29.344  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:29.344  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:29.344  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:29.344  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/gpu/config/gpu_finch_features_ext.cc:33] vulkan switch config is: 0, cmd is: false
+10-13 17:24:29.359  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:173] ExternalBeginFrameSourceOHOS::OnVSyncImpl vsync_period_: 16857840,cur_vsync: 60
+10-13 17:24:29.359  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/invisible_rendering_throttler.cc:74] ThrottleRatio: nweb_id 1 is not INVISIBLE_THROTTLED
+10-13 17:24:29.359  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/components/viz/service/frame_sinks/external_begin_frame_source_ohos.cc:213] InvisibleThrottle already:0,ratio:1
+10-13 17:24:29.359  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/d_vsync/src/d_vsync_controller.cc:66] DVsyncController::GetIsFling: 0
+10-13 17:24:29.376  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:169] SetVsyncEnabled 0, vsync_cnt_: 0
+10-13 17:24:29.376  8051 11548 D A04500/chromium: [../../arkweb/chromium_ext/base/ohos/ltpo/src/dynamic_frame_rate_decision.cc:243] SetFrameRateLinkerEnable 0
+10-13 17:25:25.036  8051  8051 W A04500/chromium: [../../ui/base/resource/resource_bundle.cc:1312] Unable to find resource: 39931
+10-13 17:25:25.037  8051  8051 E A04500/chromium: [../../ohos_nweb/src/sysevent/event_reporter.cc:621] release version!
+10-13 17:25:25.404  8051  8051 I A04500/chromium: [../../chrome/browser/extensions/updater/extension_updater.cc:483] Starting update check 0
+10-13 17:25:25.404  8051  8051 I A04500/chromium: [../../chrome/browser/extensions/updater/extension_updater.cc:1115] Finished update check 0

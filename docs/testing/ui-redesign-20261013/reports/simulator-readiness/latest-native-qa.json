@@ -1,0 +1,12 @@
+{
+  "name": "LanternUIQA4d5098e7",
+  "stage": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-native-qa-jbv3rhze",
+  "instancePath": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\lantern-ui-native-qa-jbv3rhze\\instances",
+  "imageRoot": "C:\\Users\\Administrator\\AppData\\Local\\Huawei\\Sdk",
+  "hdcPort": 15551,
+  "evidence": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\native-qa-LanternUIQA4d5098e7",
+  "createdAt": "2026-10-13T09:10:00.162876+00:00",
+  "target": "127.0.0.1:15551",
+  "oldInstancesOperated": false,
+  "securitySettingsChanged": false
+}

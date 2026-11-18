@@ -1,0 +1,8 @@
+(node:74488) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PROBE RECORDING_MUTABLE_BLOB: same-owner/same-ID replacement returns 200; D1 metadata remains duration 2; R2 bytes replaced by duration-9 request.
+PROBE RECORDING_FALSE_ACK: other-owner/same-ID POST returns 200 with 0 owned D1 rows and an unreferenced owner-scoped R2 object. No cross-owner read demonstrated.
+PROBE FIRST_RACE: two actual-route POSTs with concurrent empty-history reads produce 2 first rows for one owner/question. Current firstAttempts helper separately deduplicates by qid.
+PROBE DATE_CONTRACT: actual API accepts profile.examDate and checkin.date 2026-02-31 (200); strict study backup parser rejects both. Normal date-input route was not demonstrated to emit this value.
+PROBE MALFORMED_SNAPSHOT: malformed snapshot JSON becomes ready/local EMPTY_DATA; a new checkin overwrites original malformed bytes. No corruption lock or raw quarantine.
+All 5 synthetic evidence groups confirmed. No production DB/R2/browser/device touched.

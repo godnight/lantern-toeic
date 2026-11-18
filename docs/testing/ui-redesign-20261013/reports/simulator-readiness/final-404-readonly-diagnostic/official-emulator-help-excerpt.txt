@@ -1,0 +1,56 @@
+These are common Emulator commands used in various situations: 
+Emulator [-start <name> [-instancePath <path> -imageRoot <path> -bootMode <mode> -noWindow]] 
+         [-create <name> -deviceType <type> -osVersion <version> [-instancePath <path> -imageRoot <path>
+            -screenProfile <model> -screen <config> -storage <size> -memory <size> -hotBoot <true/false>]]
+         [-delete <name> [-instancePath <path> -force]] 
+         [-imageList [-deviceType <type> -downloaded <true/false> -http_proxy <url>]]
+         [-install -deviceType <type> -osVersion <version> [-imageRoot <path> -http_proxy <url> -force]] 
+         [-uninstall -deviceType <type> -osVersion <version> [-imageRoot <path> -force]] 
+         [-logZip <name> -logPath <path>] 
+         [-stop <name>] 
+         [-version] 
+         [-list [-details]] 
+         [-screenProfileList [-deviceType <type> -details -update -http_proxy <url>]] 
+         [-license [accept]] 
+         [-config [-instancePath <path> -imageRoot <path> -http_proxy <url>]] 
+         [-unset <instancePath/imageRoot/http_proxy>] 
+         [-instance <name> [-shake|-foldedState <foldstate>|-rotation <left/right>|-power|-volume <up/down>|
+            -screenshot [-screenshotPath <path>]|-battery <level>|-batteryStatus <status>|
+            -gps -latitude <latitude>/-longitude <longitude>/-altitude <altitude>/-city <city>/-bearing <bearing>|
+            -outdoorRunning|-outdoorCycling|-drivingNavigation|-sensor -light <light>/-steps <steps>/
+            -heartrate <heartrate>|-uiLayout [-i] [-a]|
+            -click <widgetId|toX toY>|-slide "<widgetId> <direction|toX toY>|<x1 y1 x2 y2>"|
+            |-fill "<widgetId> <text>"]]
+
+-license:              Display all license agreements, use "accept" to auto-accept
+-start/-hvd:           Start the emulator (HarmonyOS software service agreement must be accepted)
+-noWindow:             Start the emulator without GUI window
+-stop:                 Stop the emulator
+-instancePath/-path:   Emulator instance directory
+-imageRoot:            Emulator image root directory
+-list:                 List all emulator instances
+-version:              Show emulator version
+-hdcPort:              Specify hdc port (10000~16555)
+-logZip:               Collect the emulator logs
+-logPath:              Directory for collected logs
+-create:               Create a new emulator instance
+-delete:               Delete the specified emulator instance
+-deviceType:           Specify emulator device type
+-osVersion:            Specify HarmonyOS image version
+-screenProfile:        Specify screen profile model
+-screen:               Specify screen configuration
+-storage:              Virtual storage size in GBs (2~1023, default: 6)
+-memory:               Virtual memory size in GBs (2~32, default: 4)
+-hotBoot:              Enable or disable emulator Quick Boot feature
+-details:              Display detailed information
+-imageList:            List available emulator images
+-screenProfileList:    List all device types and models that support custom screen profiles
+-downloaded:           List downloaded emulator image versions
+-install:              Download emulator image for specified [deviceType] and [osVersion]
+-uninstall:            Remove emulator image for specified [deviceType] and [osVersion]
+-config:               Set default config (instancePath, imageRoot, http_proxy)
+-unset:                Remove default config
+-http_proxy:           Network proxy configuration
+-force:                Skip interaction and forcibly execute the command
+-bootMode:             Boot mode:coldboot(boot with data) reset(boot with data reset) snapshot(quick boot)
+-instance:             Specify an instance for scenario simulation

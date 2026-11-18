@@ -1,0 +1,14 @@
+{
+  "checkedAtUtc": "2026-10-13T09:14:04.6790469Z",
+  "instance": "LanternUIQA4d5098e7",
+  "target": "127.0.0.1:15551",
+  "candidateHap": "D:\\zzl\\托业学习\\vocab-work\\ui-redesign-implementation-20261013\\simulator-readiness\\build-lantern-ui-v11-beyeqowt\\lantern-ui-v11-unsigned-local-only.hap",
+  "candidateSha256": "1fa43622e1c740d76a943889de69b9778d5466dc0892f0be3be7765655cccb8a",
+  "candidateIsFinalSource": false,
+  "command": "hdc -t explicit-new-QA-target install exact-historical-HAP",
+  "replaceExisting": false,
+  "grantPermissions": false,
+  "signatureBypass": false,
+  "exitCode": 0,
+  "approvalRequested": false
+}

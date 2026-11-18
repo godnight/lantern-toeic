@@ -11,10 +11,11 @@ const categoryLabel=(category:string)=>category==='official-past-paper'?'实际�
 export default function ExamCollection({checkins,onRecord}:{checkins:Checkin[];onRecord:(r:{id:string;title:string;minutes:number})=>void}){
  const [filter,setFilter]=useState('past');
  const entries=catalogue.filter(r=>filter==='all'||(filter==='past'&&r.category==='official-past-paper')||(filter==='pdf'&&!!r.downloadUrl)||(filter==='sample'&&r.category==='official-sample')||(filter==='prep'&&r.category==='official-preparation'));
- return <section className="learning-library exam-collection">
-  <div className="section-heading resource-heading"><div><p className="eyebrow">OFFICIAL EXAM COLLECTION</p><h2>真题与官方考试资料</h2></div><span>{catalogue.length} 个官方入口</span></div>
+ return <section className="learning-library exam-collection" aria-label="官方考试资料">
+  <div className="section-heading resource-heading"><div><p className="eyebrow">官方考试资料</p><h2>真题选题与备考资料</h2></div><span>{catalogue.length} 个官方入口</span></div>
   <p className="library-lead">实际考题目前为韩国官方公开的选题视频。PDF 区提供官方样题和手册；本集合没有标称完整历年试卷的下载包。</p>
   <Tabs value={filter} onValueChange={setFilter}><TabsList className="resource-tabs">{filters.map(([id,label])=><TabsTrigger key={id} value={id}>{label}</TabsTrigger>)}</TabsList></Tabs>
+  {!entries.length&&<div className="mock-cloud-empty" role="status"><h3>这个范围暂时没有资料</h3><p>试试其他分类，原有学习记录保持。</p></div>}
   <div className="resource-catalog">{entries.map(r=>{
    const id='exam-'+r.id;const visits=checkins.filter(c=>c.note.includes(`[资源:${id}]`));
    return <article className="resource-card" key={r.id}>
