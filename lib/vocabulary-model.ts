@@ -1,5 +1,6 @@
 import {createId} from './study-model';
 import {canonicalHash,canonicalJson} from './domain-command';
+import {VOCABULARY_MARK_CAPTURE_KEY_PREFIX} from './cloud-sync/vocabulary-capture';
 export {createId as vocabularyId} from './study-model';
 export type Word = {id:string;word:string;pos:string;meaning:string;category:string;example:string;translation:string;collocation:string;phonetics?:string[];senses?:{pos:string;meaning:string}[];etymology?:string;forms?:string[];source?:'wiktionary'|'lantern-expansion'};
 export const CATEGORIES:Record<string,string>={office:'办公事务',people:'招聘与人事',meetings:'会议与培训',finance:'财务与账单',sales:'销售与客户',logistics:'采购与物流',travel:'出差与交通',hospitality:'酒店与餐饮',technology:'技术与通信',facilities:'场地与维护',health:'健康与福利',services:'社区与生活服务',questions:'题内词汇'};
@@ -58,9 +59,10 @@ export function readVocabulary(storage:StorageLike,key:string):VocabularyEvent[]
  for(let i=0;i<storage.length;i++){const name=storage.key(i);if(name?.startsWith(key)){const raw=storage.getItem(name);if(raw!==null)events=mergeVocabularyEvents(events,parseVocabularyBackup(JSON.parse(raw)).events);}}
  return events;
 }
-export function writeVocabulary(storage:StorageLike,key:string,incoming:VocabularyEvent[]) {
+export function writeVocabulary(storage:StorageLike,key:string,incoming:VocabularyEvent[],options?:{captureNewMark?:boolean}) {
+ if(options?.captureNewMark && (!key.startsWith('lantern-vocab-v1:owner:') || incoming.length!==1 || incoming[0]?.type!=='mark'))throw Error('仅支持捕获账号下新建的词汇标记');
  const old=readVocabulary(storage,key);const merged=mergeVocabularyEvents(old,parseVocabularyBackup(vocabularyBackup(incoming)).events);
  const known=new Set(old.map(e=>e.id));const added=merged.filter(e=>!known.has(e.id));
- if(added.length)storage.setItem(key+createId(),JSON.stringify(vocabularyBackup(added)));
+ if(added.length)storage.setItem(key+(options?.captureNewMark?VOCABULARY_MARK_CAPTURE_KEY_PREFIX:'')+createId(),JSON.stringify(vocabularyBackup(added)));
  return merged;
 }

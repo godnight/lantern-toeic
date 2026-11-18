@@ -94,7 +94,15 @@ jobs:
         run: node --test tests/web-natural-media-proxy.test.cjs tests/web-hosted-prune.test.cjs
       - name: Verify account identity, native Huawei authorization and owner isolation
         if: steps.scope.outputs.full == 'true'
-        run: npm run test:auth
+        run: |
+          npm run test:auth
+          node --test tests/phone-client.test.cjs tests/phone-d1-runtime.test.cjs tests/phone-flow-runtime.test.cjs
+      - name: Verify native sync bridge and account gate
+        if: steps.scope.outputs.full == 'true'
+        run: node --test tests/native-sync-auth-gate.test.cjs tests/native-sync-bridge.test.cjs tests/native-sync-registration.test.cjs tests/native-sync-lifecycle-port.test.cjs tests/cloud-sync-page.test.cjs tests/cloud-sync-native-lifecycle.test.cjs tests/native-account-sync-pump.test.cjs tests/study-backfill.test.cjs tests/study-source-upload-guard.test.cjs tests/native-vocabulary-source.test.cjs tests/native-vocabulary-source-import.test.cjs tests/native-vocabulary-queue-index.test.cjs tests/native-vocabulary-conflict.test.cjs tests/synthetic-vocabulary-preflight.test.mjs
+      - name: Verify cloud service safety candidates
+        if: steps.scope.outputs.full == 'true'
+        run: node --test server/cloud-candidate/*.test.mjs
       - name: Verify bounded build cleanup
         if: steps.scope.outputs.full == 'true'
         run: node --test tests/build-timeout.test.cjs
@@ -147,11 +155,16 @@ jobs:
       - name: Run real-browser mock-exam, dictionary and theme regressions
         if: steps.scope.outputs.full == 'true'
         env:
+          LANTERN_AUTH_QA_DIR: ${{ runner.temp }}/lantern-auth-browser-qa
+          LANTERN_ACCOUNT_UI_OUT: ${{ runner.temp }}/lantern-account-ui-qa
           LANTERN_BROWSER_QA_DIR: ${{ runner.temp }}/lantern-browser-qa
           LANTERN_DICTIONARY_QA_DIR: ${{ runner.temp }}/lantern-dictionary-browser-qa
           LANTERN_THEME_QA_DIR: ${{ runner.temp }}/lantern-theme-browser-qa
           LANTERN_PAGE_PACK_QA_DIR: ${{ runner.temp }}/lantern-page-pack-qa
         run: |
+          node tests/browser/auth-choice.cjs
+          node tests/browser/account-ui.cjs
+          node tests/browser/account-ui.cjs --shared
           npm run test:browser
           npm run test:dictionary:browser
           npm run test:themes:browser
@@ -162,6 +175,9 @@ jobs:
         with:
           name: browser-qa-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
+            ${{ runner.temp }}/lantern-auth-browser-qa/*.png
+            ${{ runner.temp }}/lantern-account-ui-qa/report.json
+            ${{ runner.temp }}/lantern-account-ui-qa/*.png
             ${{ runner.temp }}/lantern-browser-qa/result.json
             ${{ runner.temp }}/lantern-browser-qa/*.png
             ${{ runner.temp }}/lantern-dictionary-browser-qa/result.json

@@ -61,6 +61,7 @@ export default {async fetch(request,env){
  if(route==='/register')return credentialAction(request,'register',env);
  if(route==='/password-login')return credentialAction(request,'login',env);
  if(route==='/session')return sessionAction(request,'read',env);
+ if(route==='/logout')return sessionAction(request,'logout',env);
  if(route==='/study')return request.method==='POST'?studyPost(request):studyGet(request);
  if(route==='/api/auth/phone/bind')return productionBind(request);
  if(route==='/api/auth/phone/login')return productionLogin(request);
@@ -73,14 +74,14 @@ test('real local workerd D1 phone proof/binding/session transactions preserve st
  for(const input of Object.keys(built.metafile.inputs)){
   if(input.startsWith('<')||input.startsWith('no-ambient-identity:'))continue;
   const file=path.isAbsolute(input)?input:path.resolve(input);
-  if(!fs.existsSync(file)||file.includes(path.sep+'node_modules'+path.sep))continue;
+  if(!fs.existsSync(file)||file.split(/[\\/]/).includes('node_modules'))continue;
   const raw=fs.readFileSync(file);sourcePins.set(file,{path:file,bytes:raw.length,sha256:crypto.createHash('sha256').update(raw).digest('hex')});
  }
  const mf=new Miniflare({name:'phone-d1-synthetic-only',modules:true,script:built.outputFiles[0].text,compatibilityDate:'2026-05-15',compatibilityFlags:['nodejs_compat'],cf:false,host:'127.0.0.1',port:0,d1Databases:{DB:'phone-d1-synthetic-only'},d1Persist:false,cachePersist:false,kvPersist:false,r2Persist:false,durableObjectsPersist:false,bindings:{LANTERN_AUTH_ENABLED:'true',LANTERN_AUTH_ORIGIN:origin,LANTERN_PHONE_FAKE:'true'},log:new Log(LogLevel.ERROR),outboundService:()=>new Response('External network denied',{status:502})});
  t.after(async()=>{await mf.dispose();t.diagnostic('Local synthetic workerd D1 disposed; cleanup awaited');});
  const db=await mf.getD1Database('DB');
  const migrationFiles=fs.readdirSync(path.join(site,'drizzle')).filter(name=>/^\d+.*\.sql$/.test(name)).sort().map(name=>path.join(site,'drizzle',name));
- if(productOnly){assert.equal(migrationFiles.length,9,'Final product has exactly the nine approved migrations');assert.equal(migrationFiles.some(file=>path.basename(file)==='0007_phone_auth.sql'),true,'Final product owns the actual phone proof migration');assert.equal(migrationFiles.some(file=>path.basename(file)==='0008_phone_challenges.sql'),true,'Final product owns the actual phone challenge migration');}
+ if(productOnly){assert.equal(migrationFiles.length,10,'Final product has exactly the ten approved migrations');assert.equal(migrationFiles.some(file=>path.basename(file)==='0007_phone_auth.sql'),true,'Final product owns the actual phone proof migration');assert.equal(migrationFiles.some(file=>path.basename(file)==='0008_phone_challenges.sql'),true,'Final product owns the actual phone challenge migration');assert.equal(migrationFiles.some(file=>path.basename(file)==='0009_huawei_auth.sql'),true,'Final product owns the Huawei migration');}
  else{assert.equal(migrationFiles.some(file=>path.basename(file).startsWith('0007_')),false,'0007 must still be unoccupied in the source site');migrationFiles.push(path.join(candidate,'drizzle/0007_phone_auth.sql'));}
  for(const file of migrationFiles){const raw=fs.readFileSync(file);sourcePins.set(file,{path:file,bytes:raw.length,sha256:crypto.createHash('sha256').update(raw).digest('hex')});const statements=raw.toString('utf8').split('--> statement-breakpoint').map(value=>value.trim()).filter(Boolean);await db.batch(statements.map(sql=>db.prepare(sql)));}
  // Miniflare dispatchFetch accepts one init object, unlike Node Request. Keep
@@ -136,14 +137,22 @@ test('real local workerd D1 phone proof/binding/session transactions preserve st
   assert.equal((await phone('login',await issue('login',null,{phone:PHONE_B}),undefined,{phone:PHONE_B})).status,400);
   assert.deepEqual(await state(),before);
  });
- await t.test('phone login reuses A stable user/data and original session rotation policy; B remains isolated',async()=>{
+ await t.test('phone login keeps A on another device and rotates the presented B session',async()=>{
   const response=await phone('login',await issue('login'),bob.cookie);assert.equal(response.status,200,await response.clone().text());phoneCookie=cookie(response);assert.equal((await response.json()).user.id,alice.id);
-  assert.equal((await send('/session',undefined,alice.cookie)).status,401);assert.equal((await send('/session',undefined,bob.cookie)).status,401);
+  assert.equal((await send('/session',undefined,alice.cookie)).status,200);assert.equal((await send('/session',undefined,bob.cookie)).status,401);
   const own=await (await send('/study',undefined,phoneCookie)).json();assert.equal(own.owner,alice.id);assert.equal(own.profile.name,'Synthetic A private profile');assert.deepEqual(own.checkins.map(row=>row.id),[checkinId]);
   const relog=await send('/password-login',{username:'phone_bob',password});assert.equal(relog.status,200);bob.cookie=cookie(relog);
   const other=await (await send('/study',undefined,bob.cookie,{'x-oai-user-id':alice.id})).json();assert.equal(other.owner,bob.id);assert.equal(other.hasProfile,false);assert.deepEqual(other.checkins,[]);
   assert.equal((await db.prepare('SELECT COUNT(*) AS count FROM auth_users').first()).count,2);
   assert.equal(JSON.parse((await db.prepare("SELECT body FROM profiles WHERE user_id='guest'").first()).body).name,'Synthetic retained guest');
+ });
+ await t.test('independent phone device rotates and logs out only its own session',async()=>{
+  const login=await phone('login',await issue('login'),undefined);assert.equal(login.status,200);const first=cookie(login);assert.equal((await login.json()).user.id,alice.id);
+  assert.equal((await send('/session',undefined,alice.cookie)).status,200);assert.equal((await send('/session',undefined,phoneCookie)).status,200);
+  const relog=await phone('login',await issue('login'),first);assert.equal(relog.status,200);const second=cookie(relog);
+  assert.equal((await send('/session',undefined,first)).status,401);assert.equal((await send('/session',undefined,second)).status,200);
+  assert.equal((await send('/logout',{},second)).status,200);assert.equal((await send('/session',undefined,second)).status,401);
+  assert.equal((await send('/session',undefined,phoneCookie)).status,200);assert.equal((await send('/session',undefined,alice.cookie)).status,200);
  });
  await t.test('concurrent proof reuse commits once; replay cannot revoke the winner or another browser session',async()=>{
   const token=await issue('login');const before=await state();const responses=await Promise.all([phone('login',token,phoneCookie),phone('login',token,phoneCookie)]);
@@ -186,7 +195,7 @@ test('real local workerd D1 phone proof/binding/session transactions preserve st
   }
  });
  for(const pin of sourcePins.values())assert.equal(crypto.createHash('sha256').update(fs.readFileSync(pin.path)).digest('hex'),pin.sha256,'Source stayed stable during runtime test: '+pin.path);
- if(productOnly)for(const pin of sourcePins.values())assert.equal(pin.path.startsWith(site+path.sep),true,'Product-only mode never loads a candidate overlay');
+ if(productOnly)for(const pin of sourcePins.values())assert.equal(pin.path.toLowerCase().startsWith((site+path.sep).toLowerCase()),true,'Product-only mode never loads a candidate overlay: '+pin.path);
  fs.writeFileSync(pinOutput,JSON.stringify({pins:[...sourcePins.values()],scope:'Actual local test bundle inputs plus migrations; node_modules not copied',productOnly,syntheticOnly:true,realLocalWorkerdD1:true,online:false,realProvider:false,device:false},null,2)+'\n');
  t.diagnostic('Runtime source pins: '+pinOutput+'; productOnly='+productOnly);
  t.diagnostic('Real local workerd + D1, original scrypt/cookie/session policy, actual Study API, additive phone migration. Test-only random issuer and fault branches exist only in this ephemeral test Worker; production factory remains null. No real data, provider, SMS, TLS key, remote service, device or deployment.');

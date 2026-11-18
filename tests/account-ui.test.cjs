@@ -15,7 +15,7 @@ test('field failures identify the first invalid field without changing credentia
  assert.deepEqual({...identity.validateProductCredentials(' Learner ',' '.repeat(15),' '.repeat(15)).credentials},{username:'learner',password:' '.repeat(15)});
 });
 test('anonymous form has one title, short action and rules in account explanation',()=>{
- const html=renderToStaticMarkup(React.createElement(AccountPanel,{...props,state:ready}));assert.equal((html.match(/<h1/g)||[]).length,1);assert(!html.includes('<h2'));assert.match(html,/>注册<\/button>/);assert.match(html,/<details><summary>账号说明<\/summary>/);assert(!html.includes('安全返回'));assert(!html.includes('注册并核对账号'));
+ const html=renderToStaticMarkup(React.createElement(AccountPanel,{...props,state:ready}));assert.equal((html.match(/<h1/g)||[]).length,1);assert(!html.includes('<h2'));assert.match(html,/>注册<\/button>/);assert.match(html,/<details><summary>账号说明<\/summary>/);assert(html.includes('登录有效期为12小时；可在多个设备登录。账号核对需要联网，本机学习记录不会自动随账号迁移。'));assert(!html.includes('另一设备登录会使旧会话失效'));assert(!html.includes('安全返回'));assert(!html.includes('注册并核对账号'));
 });
 test('unknown notice protects data without internal terminology or a success claim',()=>{
  const state={status:'blocked',message:'账号操作结果尚未确认，本机分区已锁定。请显式联网重新核对；不会自动重发。'};

@@ -1,12 +1,13 @@
 import {createHash, randomBytes, randomUUID} from 'node:crypto';
-import {hashPassword, verifyPassword, normalizeUsername, validatePassword, PasswordHashBusyError} from './password-credential';
+import {withPasswordHashSlot, normalizeUsername, validatePassword, PasswordHashBusyError} from './password-credential';
 
-export type AuthEnvironment = {DB?:D1Database; LANTERN_AUTH_ENABLED?:string; LANTERN_AUTH_ORIGIN?:string;
+export type AuthEnvironment = {DB?:D1Database; LANTERN_AUTH_ENABLED?:string; LANTERN_AUTH_ORIGIN?:string; LANTERN_PERSISTENT_SESSION_ENABLED?:string;
  LANTERN_HUAWEI_CLIENT_ID?:string; LANTERN_HUAWEI_CLIENT_SECRET?:string};
 import type {ProductIdentity} from './product-identity';
 export type {ProductIdentity} from './product-identity';
 const COOKIE='__Host-lantern-session';
 const SESSION_SECONDS=12*60*60;
+export const PERSISTENT_SESSION_SECONDS=30*24*60*60;
 const MAX_BODY_BYTES=2048;
 const capabilities={passwordLogin:true,phoneLogin:false,passwordRecovery:false} as const;
 const digest=(value:string)=>createHash('sha256').update(value).digest('hex');
@@ -36,15 +37,22 @@ export function sessionToken(headers:Headers):string|null {
 function cookie(value:string,seconds:number){return `${COOKIE}=${value}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${seconds}`;}
 /** Shared server-only session policy; phone auth must use the same issuer. */
 export const PRODUCT_SESSION_SECONDS=SESSION_SECONDS;
+// A capability hint is not client authentication. It may select a fixed
+// operator-approved policy only after the ordinary credential flow succeeds.
+export function productSessionSeconds(headers:Headers,env?:AuthEnvironment):number {
+ return env?.LANTERN_PERSISTENT_SESSION_ENABLED==='true'&&headers.get('X-Lantern-Session-Policy')==='persistent-v1'
+  ?PERSISTENT_SESSION_SECONDS:SESSION_SECONDS;
+}
 export function productSessionTokenHash(headers:Headers):string|null {
  const token=sessionToken(headers);return token?digest(token):null;
 }
-export function createProductSessionMaterial(headers:Headers){
+export function createProductSessionMaterial(headers:Headers,env?:AuthEnvironment){
  const token=randomBytes(32).toString('hex');
- return {token,tokenHash:digest(token),oldTokenHash:productSessionTokenHash(headers)??''};
+ return {token,tokenHash:digest(token),oldTokenHash:productSessionTokenHash(headers)??'',seconds:productSessionSeconds(headers,env)};
 }
-export function productSessionResponse(user:ProductIdentity,token:string):Response {
- const response=authJson({user,capabilities});response.headers.set('Set-Cookie',cookie(token,SESSION_SECONDS));return response;
+export function productSessionResponse(user:ProductIdentity,token:string,seconds:number=SESSION_SECONDS):Response {
+ if(seconds!==SESSION_SECONDS&&seconds!==PERSISTENT_SESSION_SECONDS)throw Error('Invalid session policy');
+ const response=authJson({user,capabilities});response.headers.set('Set-Cookie',cookie(token,seconds));return response;
 }
 
 /** Caller gets a DB-verified stable product ID, never an editable owner or phone. */
@@ -113,34 +121,37 @@ export async function credentialAction(request:Request,action:'login'|'register'
   const input=await readCredentials(request);
   const normalized=normalizeUsername(input?.username);
   if(!input||!normalized.ok||!validatePassword(input.password).ok)return action==='login'?loginFailed():registrationFailed();
-  // Malformed input never spends the shared expensive-hash budget or creates buckets.
+  // A request rejected by the no-queue KDF guard must not consume a shared
+  // admission budget. Hold the same slot through admission and its KDF.
+  return await withPasswordHashSlot(async hasher=>{
   const limited=await throttle(config.db,action,normalized.username);if(limited)return limited;
   const password=input.password as string,username=normalized.username,now=Date.now();
-  const {token,tokenHash,oldTokenHash:oldHash}=createProductSessionMaterial(request.headers);
+  const {token,tokenHash,oldTokenHash:oldHash,seconds}=createProductSessionMaterial(request.headers,env);
   if(action==='register'){
-   const user={id:'usr_'+randomUUID(),username},passwordHash=await hashPassword(password);
+   const user={id:'usr_'+randomUUID(),username},passwordHash=await hasher.hashPassword(password);
    // A duplicate normalized username creates no credential, session or old-session deletion.
    const result=await config.db.batch([
     config.db.prepare('INSERT INTO auth_users(id,username,created_at) VALUES(?,?,?) ON CONFLICT(username) DO NOTHING').bind(user.id,username,now),
     config.db.prepare('INSERT INTO auth_password_credentials(user_id,password_hash) SELECT id,? FROM auth_users WHERE id=?').bind(passwordHash,user.id),
-    config.db.prepare('DELETE FROM auth_sessions WHERE (user_id=? OR token_hash=?) AND EXISTS(SELECT 1 FROM auth_users WHERE id=?)').bind(user.id,oldHash,user.id),
-    config.db.prepare('INSERT INTO auth_sessions(token_hash,user_id,created_at,expires_at) SELECT ?,id,?,? FROM auth_users WHERE id=?').bind(tokenHash,now,now+SESSION_SECONDS*1000,user.id),
+    config.db.prepare('DELETE FROM auth_sessions WHERE token_hash=? AND EXISTS(SELECT 1 FROM auth_users WHERE id=?)').bind(oldHash,user.id),
+    config.db.prepare('INSERT INTO auth_sessions(token_hash,user_id,created_at,expires_at) SELECT ?,id,?,? FROM auth_users WHERE id=?').bind(tokenHash,now,now+seconds*1000,user.id),
     config.db.prepare('DELETE FROM auth_sessions WHERE expires_at<=?').bind(now)
    ]);
    if(!result[0].meta.changes)return registrationFailed();
-   return productSessionResponse(user,token);
+   return productSessionResponse(user,token,seconds);
   }
   const stored=await config.db.prepare(`SELECT u.id,u.username,c.password_hash FROM auth_users u
    JOIN auth_password_credentials c ON c.user_id=u.id WHERE u.username=?`).bind(username).first<ProductIdentity&{password_hash:string}>();
   // An unknown username still pays the same scrypt work; no fixed usable password.
-  const valid=stored?await verifyPassword(password,stored.password_hash):(await hashPassword(password),false);
+  const valid=stored?await hasher.verifyPassword(password,stored.password_hash):(await hasher.hashPassword(password),false);
   if(!stored||!valid)return loginFailed();
   await config.db.batch([
-   config.db.prepare('DELETE FROM auth_sessions WHERE user_id=? OR token_hash=?').bind(stored.id,oldHash),
-   config.db.prepare('INSERT INTO auth_sessions(token_hash,user_id,created_at,expires_at) VALUES(?,?,?,?)').bind(tokenHash,stored.id,now,now+SESSION_SECONDS*1000),
+   config.db.prepare('DELETE FROM auth_sessions WHERE token_hash=?').bind(oldHash),
+   config.db.prepare('INSERT INTO auth_sessions(token_hash,user_id,created_at,expires_at) VALUES(?,?,?,?)').bind(tokenHash,stored.id,now,now+seconds*1000),
    config.db.prepare('DELETE FROM auth_sessions WHERE expires_at<=?').bind(now)
   ]);
-  return productSessionResponse({id:stored.id,username:stored.username},token);
+  return productSessionResponse({id:stored.id,username:stored.username},token,seconds);
+  });
  }catch(error){
   if(error instanceof PasswordHashBusyError){
    const response=authJson({code:'auth-busy',error:'账号验证繁忙，请稍后重试'},429);
@@ -159,8 +170,9 @@ export async function sessionAction(request:Request,action:'read'|'logout',env:A
    if(request.headers.get('X-Lantern-Session-Proof')==='2'){
     const token=sessionToken(request.headers);
     const row=token?await config.db.prepare(`SELECT u.id,u.username,s.expires_at AS expiresAt FROM auth_sessions s JOIN auth_users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>?`).bind(digest(token),Date.now()).first<ProductIdentity&{expiresAt:number}>():null;
-    const remainingMs=row?Math.floor(row.expiresAt-Date.now()):0;
-    if(!row||!/^usr_[0-9a-f-]{36}$/.test(row.id)||!Number.isSafeInteger(remainingMs)||remainingMs<=0||remainingMs>SESSION_SECONDS*1000)return denied();
+    const actualRemainingMs=row?Math.floor(row.expiresAt-Date.now()):0;
+    if(!row||!/^usr_[0-9a-f-]{36}$/.test(row.id)||!Number.isSafeInteger(row.expiresAt)||!Number.isSafeInteger(actualRemainingMs)||actualRemainingMs<=0||actualRemainingMs>PERSISTENT_SESSION_SECONDS*1000)return denied();
+    const remainingMs=Math.min(SESSION_SECONDS*1000,actualRemainingMs);
     const response=authJson({user:{id:row.id,username:row.username},capabilities,session:{version:2,remainingMs}});
     response.headers.set('Vary','Cookie, X-Lantern-Session-Proof');return response;
    }
@@ -168,7 +180,7 @@ export async function sessionAction(request:Request,action:'read'|'logout',env:A
   }
   const token=sessionToken(request.headers);
   // No fallback identity; database failure never reports a successful revocation.
-  if(token)await config.db.prepare('DELETE FROM auth_sessions WHERE user_id=(SELECT user_id FROM auth_sessions WHERE token_hash=?)').bind(digest(token)).run();
+  if(token)await config.db.prepare('DELETE FROM auth_sessions WHERE token_hash=?').bind(digest(token)).run();
   const response=authJson({ok:true});response.headers.set('Set-Cookie',cookie('',0));return response;
  }catch{return unavailable();}
 }

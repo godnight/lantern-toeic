@@ -1,0 +1,110 @@
+import {mergeVocabularyEvents,parseVocabularyBackup,validVocabularyEvent,vocabularyKey,vocabularyReviewHash,type VocabularyEvent} from '../vocabulary-model';
+
+// Read-only inventory of the actual owner-scoped localStorage format. This is
+// not a production sync entry point: IDB enqueue/ack and localStorage have no
+// shared transaction. A caller must establish an account lifecycle and a
+// recovery protocol before using this snapshot to publish or apply data.
+type StorageLike=Pick<Storage,'length'|'key'|'getItem'>;
+type Lease={readonly owner:string;readonly signal:AbortSignal;readonly isCurrent:()=>boolean};
+type SourceChunk=Readonly<{name:string;bytes:string}>;
+export type NativeVocabularySource=Readonly<{
+ owner:string;chunks:readonly SourceChunk[];events:readonly VocabularyEvent[];
+ deferredCorrectionIds:readonly string[];
+}>;
+
+const OWNER=/^usr_[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function changed():Error&{code:string}{const error=Error('vocabulary source changed') as Error&{code:string};error.code='NATIVE_TRANSIENT';return error;}
+const FIELDS={review:['id','wordId','createdAt','type','grade'],mark:['id','wordId','createdAt','type','starred','revision'],'review-correction':['id','wordId','createdAt','type','reviewId','reviewHash','grade']} as const;
+const plain=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
+const exact=(v:Record<string,unknown>,keys:readonly string[])=>Object.keys(v).sort().join('\0')===[...keys].sort().join('\0');
+function active(lease:Lease,owner:string):boolean{
+ try{return !!lease&&lease.owner===owner&&OWNER.test(owner)&&!!lease.signal&&!lease.signal.aborted&&typeof lease.isCurrent==='function'&&lease.isCurrent()===true;}catch{return false;}
+}
+function names(storage:StorageLike,prefix:string):string[]{
+ if(!storage||!Number.isSafeInteger(storage.length)||storage.length<0||storage.length>100000)throw Error('vocabulary source unavailable');
+ const result:string[]=[];for(let i=0;i<storage.length;i++){const key=storage.key(i);if(key?.startsWith(prefix))result.push(key);}
+ result.sort();if(new Set(result).size!==result.length)throw changed();return result;
+}
+const same=(a:readonly string[],b:readonly string[])=>a.length===b.length&&a.every((x,i)=>x===b[i]);
+
+/** Capture all durable owner chunks, including ordinary review and correction
+ * chunks, without reading guest/other-owner values or mutating the source. */
+export function captureNativeVocabularySource(storage:StorageLike,lease:Lease):NativeVocabularySource{
+ const owner=lease?.owner;if(!owner||!active(lease,owner))throw Error('account lease unavailable');
+ const prefix=vocabularyKey(owner),keys=names(storage,prefix),chunks:SourceChunk[]=[],all:VocabularyEvent[]=[];let total=0;
+ for(const name of keys){
+  if(!active(lease,owner))throw Error('account lease changed');
+  const bytes=storage.getItem(name);if(bytes===null)throw changed();
+  total+=new TextEncoder().encode(bytes).length;if(total>32*1024*1024)throw Error('vocabulary source too large');
+  let value:unknown;try{value=JSON.parse(bytes);}catch{throw Error('invalid vocabulary source');}
+  if(!plain(value)||!exact(value,['kind','schemaVersion','events'])||!Array.isArray(value.events))throw Error('unknown vocabulary source');
+  for(const raw of value.events){
+   if(!plain(raw)||typeof raw.type!=='string'||!Object.hasOwn(FIELDS,raw.type)||!exact(raw,FIELDS[raw.type as keyof typeof FIELDS])||!validVocabularyEvent(raw))throw Error('unknown vocabulary event');
+  }
+  let parsed:VocabularyEvent[];try{parsed=parseVocabularyBackup(value).events;}catch{throw Error('invalid vocabulary source');}
+  if(all.length+parsed.length>100000)throw Error('too many vocabulary events');
+  all.push(...parsed);chunks.push(Object.freeze({name,bytes}));
+ }
+ if(!active(lease,owner))throw Error('account lease changed');
+ if(!same(keys,names(storage,prefix))||chunks.some(chunk=>storage.getItem(chunk.name)!==chunk.bytes))throw changed();
+ if(!active(lease,owner))throw Error('account lease changed');
+ let events:VocabularyEvent[];try{events=mergeVocabularyEvents([],all);}catch{throw Error('conflicting vocabulary events');}
+ const byId=new Map(events.map(event=>[event.id,event])),deferred:string[]=[];
+ for(const event of events){
+  if(event.type!=='review-correction')continue;
+  const original=byId.get(event.reviewId);
+  if(!original){deferred.push(event.id);continue;}
+  if(original.type!=='review'||original.grade!=='remembered'||original.wordId!==event.wordId||Date.parse(event.createdAt)<Date.parse(original.createdAt)||vocabularyReviewHash(original)!==event.reviewHash)throw Error('conflicting vocabulary correction');
+ }
+ // Original reviews must be queued before their corrections regardless of key
+ // enumeration order. Unresolved corrections remain in the source for retry.
+ const withheld=new Set(deferred);
+ events=events.filter(event=>!withheld.has(event.id)).sort((a,b)=>Number(a.type==='review-correction')-Number(b.type==='review-correction'));
+ return Object.freeze({owner,chunks:Object.freeze(chunks),events:Object.freeze(events.map(event=>Object.freeze({...event}))),deferredCorrectionIds:Object.freeze(deferred.sort())});
+}
+
+function requireCurrent(storage:StorageLike,lease:Lease,source:NativeVocabularySource):true{
+ if(!active(lease,source.owner))throw Error('account lease revoked');
+ if(!same(source.chunks.map(chunk=>chunk.name),names(storage,vocabularyKey(source.owner))))throw changed();
+ for(const chunk of source.chunks)if(storage.getItem(chunk.name)!==chunk.bytes)throw changed();
+ if(!active(lease,source.owner))throw Error('account lease revoked');return true;
+}
+/** A recheck detects changes, but is NOT an atomic localStorage/IDB commit. */
+export function nativeVocabularySourceIsCurrent(storage:StorageLike,lease:Lease,source:NativeVocabularySource):boolean{
+ try{return requireCurrent(storage,lease,source);}catch{return false;}
+}
+
+type ImportSession={readonly owner:string;readonly signal:AbortSignal};
+type ImportClient={readonly session:ImportSession|null;
+ importVocabularySource:(event:VocabularyEvent,session:ImportSession,sourceGuard:()=>boolean)=>Promise<unknown>};
+type ImportResult=Readonly<{accepted:number;conflictingEventIds:readonly string[];deferredCorrectionIds:readonly string[];isCurrent:()=>boolean}>;
+
+/** Re-scan the actual append-only local source and enqueue each event with its
+ * original ID. The queue must check the guard synchronously in its IDB write
+ * transaction. A process death after any successful enqueue is safe to retry:
+ * the source remains intact and the queue rejects changed same-ID payloads.
+ *
+ * This is still a candidate: the recheck cannot lock another document's
+ * localStorage transaction or make localStorage and IDB atomic, and the full
+ * snapshot guard can be expensive for large histories. It must not be wired
+ * into the product until its writer/lifecycle fence and recovery are proven. */
+export async function importNativeVocabularySource(storage:StorageLike,client:ImportClient):Promise<ImportResult>{
+ const session=client?.session;
+ if(!session||typeof client.importVocabularySource!=='function'||!session.signal||session.signal.aborted)throw Error('account lease unavailable');
+ const lease:Lease={owner:session.owner,signal:session.signal,isCurrent:()=>client.session===session&&!session.signal.aborted};
+ const snapshot=captureNativeVocabularySource(storage,lease),conflicts:string[]=[],blocked=new Set<string>(),deferred=[...snapshot.deferredCorrectionIds];let accepted=0;
+ const current=()=>requireCurrent(storage,lease,snapshot);
+ for(const event of snapshot.events){
+  current();
+  if(event.type==='review-correction'&&blocked.has(event.reviewId)){deferred.push(event.id);continue;}
+  try{await client.importVocabularySource(event,session,current);accepted++;}
+  catch(error){
+   current();
+   if(!error||typeof error!=='object'||!('code' in error)||error.code!=='NATIVE_EVENT_CONFLICT')throw error;
+   conflicts.push(event.id);blocked.add(event.id);
+  }
+  current();
+ }
+ current();
+ return Object.freeze({accepted,conflictingEventIds:Object.freeze(conflicts.sort()),deferredCorrectionIds:Object.freeze(deferred.sort()),isCurrent:current});
+}

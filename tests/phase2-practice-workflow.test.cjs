@@ -9,6 +9,7 @@ function load(file,imports={},globals={}){
 const canonical=load('lib/domain-command.ts'),storage=load('lib/learning-domain-repository.ts',{'./domain-command':canonical}),model=load('lib/study-model.ts');
 const training=load('lib/practice-training.ts',{'./domain-command':canonical});
 const workflow=load('lib/practice-workflow.ts',{'./domain-command':canonical,'./learning-domain-repository':storage,'./study-model':model,'./practice-training':training});
+const nativeStudy=load('lib/native-study-m2a.ts');
 const plain=value=>JSON.parse(JSON.stringify(value));
 const question=(id,extra={})=>({id,part:1,title:id,prompt:'Choose one.',options:['A','B','C','D'],correctIndex:0,explanation:'Because A.',evidence:'A',skill:'detail',difficulty:'basic',...extra});
 const questions=[question('a'),question('b'),question('c',{part:3,groupId:'talk'}),question('d',{part:3,groupId:'talk'})];
@@ -41,6 +42,22 @@ test('submission reveals only after durable legacy confirmation; next is a separ
  const before=await session(value,id),result=await value.submit(id,0,17,0);assert.equal(result.status,'applied');
  const after=await session(value,id);assert.equal(after.cursor,0);assert.equal(after.steps[0].status,'applied');assert.equal(after.steps[0].attempt.mode,'review');assert.equal(after.steps[0].attempt.id,before.steps[0].attemptId);assert.equal(facts.attempts.size,1);
  assert.equal((await value.next(id,0)).status,'applied');value.close();const restarted=await setup({factory,facts});assert.equal((await session(restarted.value,id)).cursor,1);assert.equal((await restarted.value.resume(id)).status,'restored');restarted.value.close();
+});
+test('downloading a different server mode preserves the original fact and an active practice can continue',async()=>{
+ const owner='usr_00000000-0000-4000-8000-000000000001',lease={owner,signal:new AbortController().signal,isCurrent:()=>true};
+ const {value,facts}=await setup({scope:{kind:'web-owner',ownerId:owner}}),id=await start(value,[questions[0],questions[1]]);
+ try{
+  assert.equal((await value.submit(id,0,17,0)).status,'applied');
+  const local=plain([...facts.attempts.values()][0]);assert.equal(local.mode,'first');
+  const data=plain(model.EMPTY_DATA);data.attempts=[local];
+  const snapshot={version:1,stateVersion:0,owner,data,download:{checkpoint:null,continuation:null,pendingProfiles:[]},pendingOperations:[],uploadAcks:[]};
+  const page={syncProtocol:'native-m2a-v1',schemaVersion:2,owner,hasProfile:false,profilePolicy:'preserve-local-when-absent',changes:[{kind:'attempt',id:local.id,data:{...local,mode:'review'}}],nextCursor:null,checkpoint:'n1.'+'A'.repeat(2086)};
+  const request={owner,stateVersion:0,checkpoint:null,continuation:null};
+  const projected=nativeStudy.projectNativeStudyPage(snapshot,page,request,lease);
+  facts.attempts.set(local.id,plain(projected.data.attempts[0]));
+  assert.equal((await session(value,id)).steps[0].status,'applied');
+  assert.equal((await value.next(id,0)).status,'applied');
+ }finally{value.close();}
 });
 test('a failed legacy write keeps original choice, seconds and timestamp pending across a restart',async()=>{
  const {value,facts,factory}=await setup(),id=await start(value);facts.state.attemptMode='fail';

@@ -136,6 +136,21 @@ test('verification and hashing share the same slot and rejection leaves it reusa
   assert.equal(await credential.verifyPassword(syntheticPassword, await credential.hashPassword(syntheticPassword)), true);
 });
 
+test('a reserved admission slot cannot be reused, escape its callback, or release while its KDF is running', async () => {
+  let escaped, pending;
+  const operation = credential.withPasswordHashSlot(async hasher => {
+    escaped = hasher;
+    pending = hasher.hashPassword(syntheticPassword);
+    await assert.rejects(hasher.hashPassword(syntheticPassword), /slot is no longer available/);
+    return 'done';
+  });
+  await assert.rejects(credential.hashPassword(syntheticPassword), error => error instanceof credential.PasswordHashBusyError);
+  assert.equal(await operation, 'done');
+  assert.match(await pending, /^\$lantern\$scrypt\$/);
+  await assert.rejects(escaped.hashPassword(syntheticPassword), /slot is no longer available/);
+  assert.equal(await credential.verifyPassword(syntheticPassword, await credential.hashPassword(syntheticPassword)), true);
+});
+
 test('+86 phone v1 canonicalizes only the supported ASCII formats', () => {
   const canonical = '+8610000000000'; // Synthetic format fixture, never sent to a provider.
   for (const value of ['10000000000', '100 0000 0000', '100-0000-0000', '+8610000000000',

@@ -6,6 +6,10 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { NativeDownloads } from '../NativeDownloads';
 import { NativeAuthHost } from '../auth/NativeAuthHost';
 import { SpeakingMediaHost } from '../media/SpeakingMediaHost';
+import { NativeSyncHost } from '../sync/NativeSyncHost';
+import { NativeStudySyncHost } from '../sync/NativeStudySyncHost';
+import { NativeLifecycleObserver } from '../sync/NativeLifecycleObserver';
+import { NATIVE_CLOUD_SYNC_ENABLED } from '../sync/SyncConfiguration';
 
 // This is an intercepted local origin. No server or certificate is required.
 const APP_ORIGIN: string = 'https://lantern.local';
@@ -517,9 +521,15 @@ struct Index {
   private downloads: NativeDownloads | undefined = undefined;
   private authHost: NativeAuthHost | undefined = undefined;
   private speakingMedia: SpeakingMediaHost | undefined = undefined;
+  private syncHost: NativeSyncHost | undefined = undefined;
+  private studySyncHost: NativeStudySyncHost | undefined = undefined;
+  private syncLifecycleObserver: NativeLifecycleObserver | undefined = undefined;
   private attached: boolean = false;
   private alive: boolean = false;
   private documentGeneration: number = 0;
+  private coldStartDocument: string = '';
+  private coldStartForegroundSeen: boolean = false;
+  private coldStartAbandoned: boolean = false;
   private lifecycleGeneration: number = 0;
   private bridgeSequence: number = 0;
   private bridgeRetryTimer: number = -1;
@@ -536,6 +546,12 @@ struct Index {
   }
 
   aboutToDisappear(): void {
+    this.syncHost?.dispose();
+    this.syncHost = undefined;
+    this.studySyncHost?.dispose();
+    this.studySyncHost = undefined;
+    this.syncLifecycleObserver?.dispose();
+    this.syncLifecycleObserver = undefined;
     this.speakingMedia?.dispose();
     this.speakingMedia = undefined;
     this.authHost?.dispose();
@@ -588,6 +604,8 @@ struct Index {
   }
 
   private invalidateBridge(): void {
+    this.syncHost?.invalidate();
+    this.studySyncHost?.invalidate();
     this.speakingMedia?.invalidate();
     this.bridgeReady = false;
     this.bridgeSequence++;
@@ -598,7 +616,12 @@ struct Index {
   }
 
   private onForegroundChanged(): void {
+    if (this.foreground) {
+      if (this.coldStartForegroundSeen) this.coldStartAbandoned = true;
+      this.coldStartForegroundSeen = true;
+    } else if (this.coldStartForegroundSeen) this.coldStartAbandoned = true;
     this.authHost?.onForegroundChanged(this.foreground);
+    if (this.foreground && !this.coldStartAbandoned) this.beginColdStartCandidate();
     // @Watch runs synchronously. Even a background/foreground round trip
     // invalidates every earlier permission and Back callback.
     this.lifecycleGeneration++;
@@ -665,11 +688,21 @@ struct Index {
     }, 100);
   }
 
-  private pageBegin(): void {
+  private beginColdStartCandidate(): void {
+    if (this.coldStartAbandoned || this.documentGeneration !== 1 || this.pageReady ||
+      (this.coldStartDocument !== APP_ORIGIN && this.coldStartDocument !== APP_URL)) return;
+    const document: number = this.documentGeneration;
+    this.authHost?.beginColdStartCandidate((): boolean =>
+      this.alive && this.foreground && this.attached && this.documentGeneration === document);
+  }
+
+  private pageBegin(url: string): void {
     this.authHost?.invalidate();
     this.downloads?.invalidate();
     this.documentGeneration++;
     this.pageReady = false;
+    this.coldStartDocument = this.documentGeneration === 1 ? url : '';
+    this.beginColdStartCandidate();
     this.invalidateBridge();
     this.cancelBack();
     this.denyPendingMicrophone();
@@ -977,13 +1010,41 @@ struct Index {
         .mediaPlayGestureAccess(true)
         .onControllerAttached(() => {
           this.attached = true;
+          this.syncHost?.dispose();
+          this.syncHost = undefined;
+          this.studySyncHost?.dispose();
+          this.studySyncHost = undefined;
+          this.syncLifecycleObserver?.dispose();
+          this.syncLifecycleObserver = undefined;
           this.speakingMedia?.dispose();
           this.speakingMedia = undefined;
           this.authHost?.dispose();
           this.authHost = new NativeAuthHost(this.controller,
             () => this.alive && this.foreground && this.pageReady && this.isTrustedDocument(), () => this.context());
           if (!this.authHost.attach()) this.authHost = undefined;
+          this.beginColdStartCandidate();
           if (this.authHost !== undefined) {
+            if (NATIVE_CLOUD_SYNC_ENABLED) {
+              const nativeSync: NativeSyncHost = new NativeSyncHost(this.controller,
+                () => this.alive && this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
+                this.authHost.trustedOwnerProvider(), this.authHost, true);
+              const nativeStudySync: NativeStudySyncHost = new NativeStudySyncHost(this.controller,
+                () => this.alive && this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
+                this.authHost.trustedOwnerProvider(), this.authHost, true);
+              const nativeLifecycle: NativeLifecycleObserver = new NativeLifecycleObserver(this.controller,
+                this.authHost.trustedOwnerProvider(),
+                () => this.alive && this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
+                nativeSync, nativeStudySync, true, this.authHost);
+              if (nativeSync.attach() && nativeStudySync.attach() && nativeLifecycle.attach()) {
+                this.syncHost = nativeSync;
+                this.studySyncHost = nativeStudySync;
+                this.syncLifecycleObserver = nativeLifecycle;
+              } else {
+                nativeSync.dispose();
+                nativeStudySync.dispose();
+                nativeLifecycle.dispose();
+              }
+            }
             this.speakingMedia = new SpeakingMediaHost(this.controller, () => this.context(),
               () => this.alive && this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
               this.authHost.trustedOwnerProvider());
@@ -995,7 +1056,7 @@ struct Index {
             (message: string) => this.toast(message));
           if (!this.downloads.attach(this.controller)) this.downloads = undefined;
         })
-        .onPageBegin(() => this.pageBegin())
+        .onPageBegin((event) => this.pageBegin(event.url))
         .onPageEnd((event) => this.pageEnd(event.url))
         .onConsole((event) => this.playbackConsole(event.message))
         // SDK 18 documents null as pass-through, but its callback type omits null.

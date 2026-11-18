@@ -5,10 +5,11 @@ import {normalizeMainlandPhone,parsePhoneCapabilities,parsePhoneChallenge,parseP
 
 export type PhoneFlowProps={purpose:PhonePurpose;transport:PhoneClientTransport;
   onMutation:(purpose:PhonePurpose,body:PhoneVerification)=>Promise<void>;
-  challenge?:PhoneChallenge|null;onChallenge?:(challenge:PhoneChallenge|null)=>void;outcome?:PhoneOutcome|null;disabled?:boolean};
+  challenge?:PhoneChallenge|null;onChallenge?:(challenge:PhoneChallenge|null)=>void;outcome?:PhoneOutcome|null;disabled?:boolean;
+  variant?:'default'|'login-choice';requireConsent?:()=>boolean;onPassword?:()=>void;onOutcomeReset?:()=>void};
 
 /** Shared real React form; successful mutation never authenticates or selects an owner. */
-export default function PhoneFlow({purpose,transport,onMutation,challenge:resume,onChallenge,outcome,disabled=false}:PhoneFlowProps){
+export default function PhoneFlow({purpose,transport,onMutation,challenge:resume,onChallenge,outcome,disabled=false,variant='default',requireConsent,onPassword,onOutcomeReset}:PhoneFlowProps){
   const [phase,setPhase]=useState<'loading'|'ready'|'unavailable'|'unknown'>('loading');
   const [phone,setPhone]=useState(resume?.purpose===purpose?resume.phone:'');const [code,setCode]=useState('');
   const [challenge,setChallenge]=useState<PhoneChallenge|null>(resume?.purpose===purpose?resume:null);
@@ -34,11 +35,15 @@ export default function PhoneFlow({purpose,transport,onMutation,challenge:resume
   }
   useEffect(()=>{
     alive.current=true;void status();
-    const leave=()=>{cancel();setPhone('');setCode('');setBusy(false);clearChallenge();setPhase('unknown');setMessage('页面已离开，请重新核对手机号服务。');};
-    const visibility=()=>{if(document.visibilityState==='hidden')leave();};
+    // Returning from the SMS app must retain the non-secret phone/challenge in
+    // memory, but never retain entered verification digits. A resumed form
+    // independently probes capability again and checks the expiry timestamp.
+    const leave=()=>{cancel();setCode('');setBusy(false);setPhase('unknown');setMessage('');};
+    const visibility=()=>{if(document.visibilityState==='hidden')leave();else void status();};
+    const pageShow=()=>{if(document.visibilityState!=='hidden')void status();};
     const timer=setInterval(()=>setNow(Date.now()),1000);
-    window.addEventListener('pagehide',leave);document.addEventListener('visibilitychange',visibility);
-    return()=>{alive.current=false;cancel();clearInterval(timer);window.removeEventListener('pagehide',leave);document.removeEventListener('visibilitychange',visibility);};
+    window.addEventListener('pagehide',leave);window.addEventListener('pageshow',pageShow);document.addEventListener('visibilitychange',visibility);
+    return()=>{alive.current=false;cancel();clearInterval(timer);window.removeEventListener('pagehide',leave);window.removeEventListener('pageshow',pageShow);document.removeEventListener('visibilitychange',visibility);};
     // Transport is created once by the account shell. Purpose changes create a fresh form.
   },[transport,purpose]);
   const normalized=normalizeMainlandPhone(phone),verifyRetryTime=outcome?.retryAt?Date.parse(outcome.retryAt):0;
@@ -46,6 +51,7 @@ export default function PhoneFlow({purpose,transport,onMutation,challenge:resume
   const expired=!!challenge&&Date.parse(challenge.expiresAt)<=now;
   async function send(){
     if(disabled||locked.current||phase!=='ready'||!normalized||resendSeconds>0)return;
+    if(requireConsent&&!requireConsent())return;
     cancel();const current=++generation.current,controller=new AbortController();pending.current=controller;locked.current=true;
     setBusy(true);setCode('');setMessage('');
     try{const reply=await transport.request('challenge',{purpose,phone:normalized},controller.signal);
@@ -53,18 +59,38 @@ export default function PhoneFlow({purpose,transport,onMutation,challenge:resume
       if(reply.status!==202){const error=parsePhoneOutcome(reply);setChallengeError(error);setRetryAt(error.retryAt??null);setMessage(phoneOutcomeMessage(error));
         if(reply.status>=500){setPhase('unknown');clearChallenge();}return;}
       const accepted=parsePhoneChallenge(reply.body,purpose,normalized);if(!accepted)throw Error('Invalid challenge confirmation');
-      setChallengeError(null);setRetryAt(accepted.resendAt);setChallenge(accepted);onChallenge?.(accepted);setNow(Date.now());setMessage('验证码发送请求已获确认，请查看短信。');
+      setChallengeError(null);onOutcomeReset?.();setRetryAt(accepted.resendAt);setChallenge(accepted);onChallenge?.(accepted);setNow(Date.now());setMessage('验证码发送请求已获确认，请查看短信。');
     }catch{if(alive.current&&current===generation.current){setPhase('unknown');clearChallenge();setMessage('发送结果无法确认，请重新核对状态；不会假定短信已发送。');}}
     finally{if(alive.current&&current===generation.current){pending.current=null;locked.current=false;setBusy(false);}}
   }
   async function submit(event:FormEvent<HTMLFormElement>){
     event.preventDefault();if(disabled||locked.current||phase!=='ready'||!challenge||expired||verifyRetryTime>now||outcome?.attemptsRemaining===0||normalized!==challenge.phone||!/^[0-9]{6}$/.test(code))return;
+    if(requireConsent&&!requireConsent())return;
     const body={challengeId:challenge.challengeId,phone:challenge.phone,code};setCode('');locked.current=true;setBusy(true);setMessage('');
     const current=generation.current;
     try{await onMutation(purpose,body);}catch{if(alive.current&&current===generation.current){setPhase('unknown');setMessage('提交结果未知，请先重新核对账号；不会假定已绑定或登录。');}}
     finally{body.code='';if(alive.current&&current===generation.current){locked.current=false;setBusy(false);}}
   }
   const blocked=disabled||busy||phase!=='ready';
+  if(variant==='login-choice'&&purpose==='login')return <section className="auth-choice-content auth-phone-content" aria-labelledby={id+'-title'} aria-busy={busy||phase==='loading'}>
+    <div className="auth-choice-heading auth-phone-heading"><h1 id={id+'-title'}>手机号登录</h1><p>未注册的手机号验证后自动注册</p></div>
+    <form noValidate onSubmit={event=>void submit(event)} className="auth-phone-fields">
+      <input className="auth-phone-field" aria-label="手机号" placeholder="请输入手机号" name="phone" type="tel" inputMode="tel" autoComplete="tel-national" value={phone} disabled={disabled||busy}
+        onChange={event=>{setPhone(event.target.value);clearChallenge();onOutcomeReset?.();setChallengeError(null);setRetryAt(null);setMessage('');}} />
+      <div className="auth-phone-code"><input className="auth-phone-field" aria-label="验证码" placeholder="请输入验证码" name="code" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code}
+        onChange={event=>setCode(event.target.value)} disabled={blocked||!challenge||expired} pattern="[0-9]{6}" />
+        <button type="button" className="auth-phone-get-code" disabled={blocked||!normalized||resendSeconds>0} onClick={()=>void send()}>{busy?'正在处理……':resendSeconds>0?`${resendSeconds} 秒后重发`:challenge?'重新获取':'获取验证码'}</button></div>
+      <button type="submit" className="auth-choice-button auth-choice-primary auth-phone-submit" disabled={blocked||!challenge||expired||verifyRetryTime>now||outcome?.attemptsRemaining===0||normalized!==challenge.phone||!/^[0-9]{6}$/.test(code)}>登录 / 注册</button>
+    </form>
+    {onPassword&&<button type="button" className="auth-choice-other" onClick={onPassword}>账号密码登录</button>}
+    {phase==='loading'&&<p role="status" className="auth-choice-feedback">正在核对手机号服务能力……</p>}
+    {phase==='unavailable'&&<p role="status" className="auth-choice-feedback">手机号服务尚未配置，暂时不能登录。</p>}
+    {phase==='unknown'&&<><p role="alert" className="auth-choice-feedback">手机号服务状态无法确认，请重新核对。</p><button type="button" className="auth-choice-other" disabled={busy||disabled} onClick={()=>void status()}>重新核对</button></>}
+    {expired&&<p role="status" className="auth-choice-feedback">验证码已过期，请重新获取。</p>}
+    {message&&<p role="status" className="auth-choice-feedback">{message}</p>}
+    {challengeError?.attemptsRemaining!==undefined&&<p role="alert" className="auth-choice-feedback">剩余尝试次数：{challengeError.attemptsRemaining}。</p>}
+    {outcome&&outcome.status!==200&&<p role="alert" className="auth-choice-feedback">{phoneOutcomeMessage(outcome)}{outcome.attemptsRemaining!==undefined?` 剩余尝试次数：${outcome.attemptsRemaining}。`:''}</p>}
+  </section>;
   return <section className="panel" aria-labelledby={id+'-title'} aria-busy={busy||phase==='loading'} style={{display:'grid',gap:12}}>
     <h2 id={id+'-title'}>{purpose==='bind'?'绑定手机号':'手机号登录'}</h2>
     {phase==='loading'&&<p role="status">正在核对手机号服务能力……</p>}
@@ -73,7 +99,7 @@ export default function PhoneFlow({purpose,transport,onMutation,challenge:resume
     <p className="small muted">仅支持中国大陆 +86。格式合法不代表已验证；账号记录仍属于原稳定身份。</p>
     {phase==='ready'&&<form onSubmit={event=>void submit(event)} style={{display:'grid',gap:12}}>
       <label className="field" htmlFor={id+'-number'}>手机号（+86）<input id={id+'-number'} name="phone" type="tel" inputMode="tel" autoComplete="tel-national" value={phone}
-        disabled={disabled||busy} onChange={event=>{setPhone(event.target.value);clearChallenge();setMessage('');}} required aria-describedby={id+'-help'}/></label>
+        disabled={disabled||busy} onChange={event=>{setPhone(event.target.value);clearChallenge();onOutcomeReset?.();setChallengeError(null);setRetryAt(null);setMessage('');}} required aria-describedby={id+'-help'}/></label>
       <p id={id+'-help'} className="small muted">输入 11 位手机号或完整 +86 号码。</p>
       <button type="button" className="button secondary" disabled={blocked||!normalized||resendSeconds>0} onClick={()=>void send()}>
         {busy?'正在处理……':resendSeconds>0?`${resendSeconds} 秒后可重发`:challenge?'重新发送验证码':'发送验证码'}</button>

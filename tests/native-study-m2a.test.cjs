@@ -17,6 +17,18 @@ const checkin=(overrides={})=>({id:randomUUID(),date:'2026-01-01',minutes:4,load
 const mark=(overrides={})=>({qid:'synthetic-q',flagged:true,reason:null,note:'',revision:1,mutationId:randomUUID(),updatedAt:date,...overrides});
 const task=(overrides={})=>({id:randomUUID(),resourceId:'synthetic-resource',plannedDate:'2026-01-01',status:'planned',minutes:5,checkinId:null,revision:1,mutationId:randomUUID(),updatedAt:date,...overrides});
 
+test('download preserves the original attempt mode in both directions and refuses score conflicts without progress',()=>{
+ for(const localMode of ['first','review']){
+  const local=attempt({correct:true,mode:localMode}),start=snapshot();start.data.attempts=[local];
+  const remote={...local,mode:localMode==='first'?'review':'first'},payload=page({changes:[{kind:'attempt',id:local.id,data:remote}]});
+  const before=JSON.stringify(start),out=project(start,payload,lease());
+  assert.deepEqual(plain(out.data.attempts),[local]);assert.equal(JSON.stringify(start),before);
+  const repeated=project(out,page({changes:payload.changes,checkpoint:tok('B')}),lease());assert.deepEqual(plain(repeated.data.attempts),[local]);
+  const conflict=page({changes:[{kind:'attempt',id:local.id,data:{...remote,correct:false}}]});
+  assert.throws(()=>project(start,conflict,lease()),{status:422});assert.equal(JSON.stringify(start),before);
+ }
+});
+
 test('missing profile preserves local settings and private recording; remote settings are held for review',()=>{
  const start=snapshot(),before=JSON.stringify(start),empty=project(start,page(),lease());
  assert.equal(JSON.stringify(start),before);assert.deepEqual(plain(empty.data.profile),plain(start.data.profile));assert.deepEqual(plain(empty.data.recordings),plain(start.data.recordings));
@@ -28,9 +40,9 @@ test('missing profile preserves local settings and private recording; remote set
 
 test('page replay, immutable conflicts, mutable revision order and local-only data',()=>{
  const first=attempt(),oldMark=mark(),oldTask=task(),start=snapshot();start.data.attempts=[first];start.data.questionMarks=[oldMark];start.data.resourceTasks=[oldTask];
- const server={...first,correct:true,mode:'review'},check=checkin(),newMark={...oldMark,revision:2,mutationId:randomUUID(),note:'newer'},staleTask={...oldTask,status:'completed'};
+ const server={...first,mode:'review'},check=checkin(),newMark={...oldMark,revision:2,mutationId:randomUUID(),note:'newer'},staleTask={...oldTask,status:'completed'};
  const payload=page({changes:[{kind:'attempt',id:first.id,data:server},{kind:'checkin',id:check.id,data:check},{kind:'questionMark',id:newMark.qid,data:newMark},{kind:'resourceTask',id:staleTask.id,data:staleTask}]});
- const out=project(start,payload,lease());assert.equal(out.data.attempts[0].correct,true);assert.equal(out.data.attempts[0].mode,'review');assert.equal(out.data.checkins.length,1);
+ const out=project(start,payload,lease());assert.equal(out.data.attempts[0].correct,first.correct);assert.equal(out.data.attempts[0].mode,first.mode);assert.equal(out.data.checkins.length,1);
  assert.equal(out.data.questionMarks[0].revision,2);assert.equal(out.data.resourceTasks[0].revision,1);assert.deepEqual(plain(out.data.recordings),plain(start.data.recordings));
  const again=project(out,payload,lease());assert.equal(again.data.attempts.length,1);assert.equal(again.data.checkins.length,1);
  const before=JSON.stringify(start),bad=page({changes:[{kind:'attempt',id:first.id,data:{...server,choice:1}}]});
@@ -74,6 +86,18 @@ test('continuation and checkpoint progress are separate from upload acknowledgem
  await assert.rejects(native.acknowledgeNativeUpload(finished,prepared,{status:500,body:{ok:true}},lease()));
  await assert.rejects(native.acknowledgeNativeUpload({...finished,pendingOperations:[{...op,data:{...a,choice:1}}]},prepared,{status:200,body:{ok:true}},lease()));
  await assert.rejects(native.acknowledgeNativeUpload({...finished,pendingOperations:[op,op]},prepared,{status:200,body:{ok:true}},lease()));
+});
+
+test('attempt upload preserves an explicit first anchor without sending client score or mode',async()=>{
+ const first=attempt(),review=attempt({mode:'review'});
+ const root={id:randomUUID(),owner,type:'attempt',data:first,firstAttemptId:first.id};
+ const next={id:randomUUID(),owner,type:'attempt',data:review,firstAttemptId:first.id};
+ assert.equal((await native.prepareNativeUpload(root,lease())).wire.data.firstAttemptId,first.id);
+ const wire=(await native.prepareNativeUpload(next,lease())).wire.data;
+ assert.equal(wire.firstAttemptId,first.id);assert.equal('correct' in wire,false);assert.equal('mode' in wire,false);
+ await assert.rejects(native.prepareNativeUpload({...root,firstAttemptId:randomUUID()},lease()));
+ await assert.rejects(native.prepareNativeUpload({...next,firstAttemptId:review.id},lease()));
+ await assert.rejects(native.prepareNativeUpload({...next,firstAttemptId:'bad'},lease()));
 });
 
 test('response must match the original request state across initial, continued, and completed rounds',()=>{

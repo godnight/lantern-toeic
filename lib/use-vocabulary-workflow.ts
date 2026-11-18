@@ -58,7 +58,7 @@ export function useVocabularyWorkflow(options:VocabularyWorkflowHookOptions):Voc
   return()=>{cancelled=true;const instance=service.current;if(instance?.generation===id){instance.value.close();service.current=null;}};
   // One service owns this scope; the legacy adapter reads the latest committed journal.
   // eslint-disable-next-line react-hooks/exhaustive-deps
- },[key,options.identityReady,options.legacy.ready,options.legacy.error,options.practiceQuestionCatalogs,openAttempt]);
+ },[key,options.identityReady,options.legacy.ready,options.legacy.error,options.practiceQuestionCatalogs,openAttempt,accountAccess]);
  useEffect(()=>{void refreshSnapshot();},[options.legacy.events,options.timezone]);
  useEffect(()=>{
   let channel:BroadcastChannel|undefined;

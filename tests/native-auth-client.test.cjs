@@ -36,17 +36,197 @@ function clock(){
 function bridge(options={}){
   const calls=[],timer=clock(),target={location:{origin:options.origin||'https://lantern.local'},crypto:{randomUUID:()=>crypto.randomUUID()}};
   target.self=target;target.top=options.frame?{}:target;
-  if(!options.missing)target.LanternAuthHost={request(raw){const request=JSON.parse(raw);calls.push(request);options.onCall?.(request);}};
+  if(!options.missing)target.LanternAuthHost={request(raw){const request=JSON.parse(raw);calls.push(request);options.onCall?.(request);},...options.localActive?{isLocalActive(raw){return options.localActive(JSON.parse(raw));}}:{}};
   const transport=transportModule.createNativeAuthTransport(target,timer);
   function reply(index,value){const request=calls[index];assert(request,'Expected pending native request');const result=plain(value);if(request.version!==2&&result.body?.session)delete result.body.session;target.__lanternAuthReceive?.({id:request.id,...request.version===2?{version:2}:{},...result});}
   return {target,transport,calls,timer,reply};
 }
 function controller(options={}){
-  const harness=bridge(options),value=new NativeAccountController(harness.transport,harness.timer),states=[];
+  const harness=bridge(options),value=new NativeAccountController(harness.transport,harness.timer,{localOffline:options.localOffline===true,networkEvents:options.networkEvents}),states=[];
   value.subscribe((state,synchronous)=>states.push({state:plain(state),synchronous}));
   return {...harness,value,states};
 }
 async function initial(h,value=session(A)){h.value.start();h.reply(0,value);await tick();return h.value.getSnapshot();}
+
+test('local-only startup enters cached owner while offline without asserting a remote session',async()=>{
+ const h=controller({localOffline:true,localActive:({uid,generation})=>uid===A.id&&generation===7});
+ try{
+  h.value.start();assert.equal(h.calls[0].action,'local-session');
+  h.reply(0,{status:200,body:{user:A,local:{scope:'local-study-only',generation:7}}});await tick();
+  let state=h.value.getSnapshot();assert.equal(state.status,'ready');assert.equal(state.access.scope,'local-study-only');assert.equal(state.access.owner,A.id);assert(state.access.canAccess());
+  assert.equal(h.calls[1].action,'session');assert.equal(h.calls[1].version,2);
+  h.reply(1,{status:503,body:{code:'native-auth-unavailable'}});await tick();
+  state=h.value.getSnapshot();assert.equal(state.status,'ready');assert.equal(state.user.id,A.id);assert.equal(state.access.scope,'local-study-only');assert(state.access.canAccess());
+  const old=state.access;h.value.suspend();assert.equal(old.canAccess(),false);assert.equal(old.sessionSignal.aborted,true);
+ }finally{h.value.dispose();}
+});
+test('local owner upgrades only on matching remote proof and never automatically switches owners',async()=>{
+ for(const serverUser of [A,B]){
+  const h=controller({localOffline:true,localActive:()=>true});
+  try{
+   h.value.start();h.reply(0,{status:200,body:{user:A,local:{scope:'local-study-only',generation:7}}});await tick();
+   const local=h.value.getSnapshot().access;h.reply(1,session(serverUser));await tick();const after=h.value.getSnapshot();
+   assert.equal(local.canAccess(),false);assert.equal(local.sessionSignal.aborted,true);
+   if(serverUser===A){assert.equal(after.status,'ready');assert.equal(after.user.id,A.id);assert.equal(after.access.scope,'remote');}
+   else assert.equal(after.status,'blocked');
+  }finally{h.value.dispose();}
+ }
+});
+test('invalid or revoked local evidence falls back to the existing online gate',async()=>{
+ for(const options of [{localOffline:true,localActive:()=>false},{localOffline:true,localActive:()=>true}]){
+  const h=controller(options);try{
+   h.value.start();h.reply(0,{status:200,body:{user:A,local:{scope:options.localActive()?'remote':'local-study-only',generation:7}}});await tick();
+   assert.equal(h.value.getSnapshot().status,'checking');assert.equal(h.calls[1].action,'session');
+   h.reply(1,{status:503,body:{code:'native-auth-unavailable'}});await tick();assert.notEqual(h.value.getSnapshot().status,'ready');
+  }finally{h.value.dispose();}
+ }
+});
+test('starting an explicit account change closes local access before any mutation reply',async()=>{
+ const h=controller({localOffline:true,localActive:()=>true});try{
+  h.value.start();h.reply(0,{status:200,body:{user:A,local:{scope:'local-study-only',generation:7}}});await tick();
+  h.reply(1,{status:503,body:{code:'native-auth-unavailable'}});await tick();const prior=h.value.getSnapshot().access;
+  const pending=h.value.mutate('logout');assert.equal(prior.canAccess(),false);assert.equal(prior.sessionSignal.aborted,true);
+  h.reply(2,{status:503,body:{code:'native-auth-unavailable'}});assert.equal(await pending,false);
+ }finally{h.value.dispose();}
+});
+test('a network return during an in-flight local check automatically retries without losing local data',async()=>{
+ const listeners=new Set(),networkEvents={addEventListener:(_type,fn)=>listeners.add(fn),removeEventListener:(_type,fn)=>listeners.delete(fn)};
+ const h=controller({localOffline:true,localActive:()=>true,networkEvents});try{
+  h.value.start();h.reply(0,{status:200,body:{user:A,local:{scope:'local-study-only',generation:7}}});await tick();
+  assert.equal(h.value.getSnapshot().access.scope,'local-study-only');assert.equal(h.calls[1].action,'session');
+  for(const listener of listeners)listener();h.reply(1,{status:503,body:{code:'native-auth-unavailable'}});await tick();
+  assert.equal(h.value.getSnapshot().access.scope,'local-study-only');assert.equal(h.calls[2].action,'session');
+  h.reply(2,session(A));await tick();assert.equal(h.value.getSnapshot().access.scope,'remote');
+ }finally{h.value.dispose();assert.equal(listeners.size,0);}
+});
+test('online session expiry aborts remote access before reacquiring the same native local owner',async()=>{
+ const h=controller({localOffline:true,localActive:({uid,generation})=>uid===A.id&&generation===7});try{
+  h.value.start();h.reply(0,{status:401,body:{code:'local-unavailable'}});await tick();h.reply(1,session(A));await tick();
+  const online=h.value.getSnapshot().access;assert.equal(online.scope,'remote');assert(online.canAccess());
+  h.timer.advance(3600000);assert.equal(online.canAccess(),false);assert.equal(online.sessionSignal.aborted,true);
+  assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(h.calls[2].action,'local-session');
+  h.reply(2,{status:200,body:{user:A,local:{scope:'local-study-only',generation:7}}});await tick();
+  let state=h.value.getSnapshot();assert.equal(state.status,'ready');assert.equal(state.access.scope,'local-study-only');assert(state.access.canAccess());
+  h.reply(3,{status:503,body:{code:'native-auth-unavailable'}});await tick();state=h.value.getSnapshot();
+  assert.equal(state.access.scope,'local-study-only');assert(state.access.canAccess());
+ }finally{h.value.dispose();}
+});
+test('expiry cannot restore a different cached owner or a session invalidated during local read',async()=>{
+ for(const interruption of ['different','suspended']){
+  const h=controller({localOffline:true,localActive:()=>true});try{
+   h.value.start();h.reply(0,{status:401,body:{code:'local-unavailable'}});await tick();h.reply(1,session(A));await tick();
+   const online=h.value.getSnapshot().access;h.timer.advance(3600000);assert.equal(online.canAccess(),false);assert.equal(h.calls[2].action,'local-session');
+   if(interruption==='suspended')h.value.suspend();
+   h.reply(2,{status:200,body:{user:interruption==='different'?B:A,local:{scope:'local-study-only',generation:7}}});await tick();
+   assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(h.calls.length,3,'no automatic remote retry or account switch');
+  }finally{h.value.dispose();}
+ }
+});
+async function expiredOnline(h){
+ h.value.start();h.reply(0,{status:401,body:{code:'local-unavailable'}});await tick();h.reply(1,session(A));await tick();
+ const access=h.value.getSnapshot().access;h.timer.advance(3600000);
+ assert.equal(access.sessionSignal.aborted,true);assert.equal(h.calls[2].action,'local-session');
+}
+const localA={status:200,body:{user:A,local:{scope:'local-study-only',generation:7}}};
+const localBusy={status:503,body:{code:'local-unavailable'}};
+test('disabled offline feature preserves the existing expiry gate without a local request',async()=>{
+ const h=controller({localActive:()=>true});try{
+  await initial(h,session(A));h.timer.advance(3600000);await tick();
+  assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(h.calls.length,1);
+  h.timer.advance(60000);await tick();assert.equal(h.calls.length,1);
+ }finally{h.value.dispose();}
+});
+test('expiry retries transient native busy with bounded backoff and restores only local access',async()=>{
+ const h=controller({localOffline:true,localActive:({uid,generation})=>uid===A.id&&generation===7});try{
+  await expiredOnline(h);h.reply(2,localBusy);await tick();h.timer.advance(249);await tick();assert.equal(h.calls.length,3);
+  h.timer.advance(1);await tick();assert.equal(h.calls[3].action,'local-session');h.reply(3,localBusy);await tick();
+  h.timer.advance(500);await tick();assert.equal(h.calls[4].action,'local-session');h.reply(4,localA);await tick();
+  const state=h.value.getSnapshot();assert.equal(state.status,'ready');assert.equal(state.access.scope,'local-study-only');assert(state.access.canAccess());
+  assert.equal(h.calls[5].action,'session');h.reply(5,closed);await tick();assert.equal(h.value.getSnapshot().access.scope,'local-study-only');
+ }finally{h.value.dispose();}
+});
+test('expiry retries native timeout, then reacquires the same owner',async()=>{
+ const h=controller({localOffline:true,localActive:()=>true});try{
+  await expiredOnline(h);h.timer.advance(15000);await tick();assert.equal(h.calls.length,3);
+  h.timer.advance(250);await tick();assert.equal(h.calls[3].action,'local-session');h.reply(3,localA);await tick();
+  assert.equal(h.value.getSnapshot().access.scope,'local-study-only');h.reply(4,closed);await tick();
+ }finally{h.value.dispose();}
+});
+test('expiry retry exhaustion stays blocked until a network event starts another bounded round',async()=>{
+ const listeners=new Set(),networkEvents={addEventListener:(_type,fn)=>listeners.add(fn),removeEventListener:(_type,fn)=>listeners.delete(fn)};
+ const h=controller({localOffline:true,localActive:()=>true,networkEvents});try{
+  await expiredOnline(h);let index=2;
+  for(const delay of [250,500,1000,2000,4000,8000,60000,60000,60000,60000]){h.reply(index++,localBusy);await tick();h.timer.advance(delay);await tick();assert.equal(h.calls[index].action,'local-session');}
+  h.reply(index,localBusy);await tick();assert.equal(h.value.getSnapshot().status,'blocked');h.timer.advance(60000);await tick();assert.equal(h.calls.length,index+1);
+  for(const listener of listeners){listener();listener();}await tick();assert.equal(h.calls.length,index+2);h.reply(index+1,localA);await tick();
+  assert.equal(h.value.getSnapshot().access.scope,'local-study-only');h.reply(index+2,closed);await tick();
+ }finally{h.value.dispose();}
+});
+test('parked expiry recovery never resumes after explicit account change or background',async()=>{
+ for(const action of ['suspend','logout','login']){
+  const listeners=new Set(),networkEvents={addEventListener:(_type,fn)=>listeners.add(fn),removeEventListener:(_type,fn)=>listeners.delete(fn)};
+  const h=controller({localOffline:true,localActive:()=>true,networkEvents});try{
+   await expiredOnline(h);let index=2;
+   for(const delay of [250,500,1000,2000,4000,8000,60000,60000,60000,60000]){h.reply(index++,localBusy);await tick();h.timer.advance(delay);await tick();}
+   h.reply(index,localBusy);await tick();if(action==='suspend')h.value.suspend();else assert.equal(await h.value.mutate(action,credentials),false);
+   for(const listener of listeners)listener();h.timer.advance(60000);await tick();assert.equal(h.calls.length,index+1,action);assert.equal(h.value.getSnapshot().status,'blocked');
+  }finally{h.value.dispose();}
+ }
+});
+test('expiry retry never accepts another owner or retries non-transient failures',async()=>{
+ for(const response of [{status:200,body:{user:B,local:{scope:'local-study-only',generation:7}}},guest,{status:503,body:{code:'native-auth-unavailable'}}]){
+  const h=controller({localOffline:true,localActive:()=>true});try{
+   await expiredOnline(h);h.reply(2,localBusy);await tick();h.timer.advance(250);await tick();h.reply(3,response);await tick();
+   assert.equal(h.value.getSnapshot().status,'blocked');h.timer.advance(60000);await tick();assert.equal(h.calls.length,4);
+  }finally{h.value.dispose();}
+ }
+});
+test('expiry retry stops on background, disposal, logout or switching accounts',async()=>{
+ for(const action of ['suspend','dispose','logout','login','huawei','phone']){
+  const h=controller({localOffline:true,localActive:()=>true});try{
+   await expiredOnline(h);h.reply(2,localBusy);await tick();
+   if(action==='suspend')h.value.suspend();else if(action==='dispose')h.value.dispose();
+   else if(action==='huawei')assert.equal(await h.value.mutateHuawei('login'),false);
+   else if(action==='phone')assert.equal(await h.value.mutatePhone('login',{}),undefined);
+   else assert.equal(await h.value.mutate(action,credentials),false);
+   h.timer.advance(60000);await tick();assert.equal(h.calls.length,3,action);
+   if(action!=='dispose')assert.equal(h.value.getSnapshot().status,'blocked');
+  }finally{h.value.dispose();}
+ }
+});
+test('account change while native local proof is in flight rejects a late proof',async()=>{
+ const h=controller({localOffline:true,localActive:()=>true});try{
+  await expiredOnline(h);assert.equal(await h.value.mutate('logout'),false);h.reply(2,localA);await tick();
+  assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(h.calls.length,3);
+ }finally{h.value.dispose();}
+});
+test('expiry to local-only immediately cancels cloud synchronization and cannot reactivate it',async()=>{
+ const h=controller({localOffline:true,localActive:()=>true}),{createNativeSyncLifecycle}=load('lib/cloud-sync/native-lifecycle.ts');
+ let starts=0,cancels=0;
+ const client={async activate(){},async cancel(){cancels++;},async start(){starts++;}};
+ const port={snapshot:async()=>({owner:A.id,seq:1}),subscribeRevocation:()=>()=>{},drain:async()=>{},hold:async()=>{},complete:async()=>{},resume:async()=>{}};
+ const lifecycle=createNativeSyncLifecycle(h.value,client,port);
+ try{
+  h.value.start();h.reply(0,{status:401,body:{code:'local-unavailable'}});await tick();h.reply(1,session(A));await tick();await lifecycle.settled();
+  assert.equal(lifecycle.status().phase,'ready');assert.equal(starts,1);
+  h.timer.advance(3600000);assert.notEqual(lifecycle.status().phase,'ready');const priorCancels=cancels;
+  h.reply(2,localBusy);await tick();assert.notEqual(lifecycle.status().phase,'ready');assert.equal(starts,1);
+  h.timer.advance(250);await tick();h.reply(3,localA);await tick();
+  h.reply(4,{status:503,body:{code:'native-auth-unavailable'}});await tick();await lifecycle.settled();
+  assert.equal(h.value.getSnapshot().access.scope,'local-study-only');assert.notEqual(lifecycle.status().phase,'ready');assert.equal(starts,1);assert(cancels>=priorCancels);
+ }finally{lifecycle.dispose();h.value.dispose();}
+});
+test('explicit logout supersedes an online expiry and never revives its local owner',async()=>{
+ const h=controller({localOffline:true,localActive:()=>true});try{
+  h.value.start();h.reply(0,{status:401,body:{code:'local-unavailable'}});await tick();h.reply(1,session(A));await tick();
+  const old=h.value.getSnapshot().access,pending=h.value.mutate('logout');assert.equal(old.canAccess(),false);assert.equal(old.sessionSignal.aborted,true);
+  assert.equal(h.calls[2].action,'logout');assert.equal(h.calls.filter(call=>call.action==='local-session').length,1);
+  h.reply(2,{status:200,body:{ok:true}});await tick();assert.equal(h.calls[3].action,'session');h.reply(3,guest);
+  assert.equal(await pending,true);assert.equal(h.value.getSnapshot().status,'ready');assert.equal(h.value.getSnapshot().user,null);
+  h.timer.advance(3600000);
+  assert.equal(h.calls.filter(call=>call.action==='local-session').length,1);
+ }finally{h.value.dispose();}
+});
 
 test('register/login navigation succeeds only after the independent live session proof',async()=>{
  for(const action of ['register','login']){

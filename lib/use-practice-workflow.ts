@@ -10,7 +10,7 @@ export type PracticeWorkflowHookOptions={owner:string|null;nativeMode:boolean;re
 export type PracticeWorkflowController={
  scopeKey:string;ready:boolean;error:string;busy:boolean;session:PracticeSession|null;sessions:PracticeSession[];pendingSettlements:PracticeSession[];
  start:(queue:readonly Question[],options:PracticeStartOptions)=>Promise<PracticeResult>;
- resume:(id:string)=>Promise<PracticeResult>;submit:(choice:number,seconds:number,expectedCursor?:number)=>Promise<PracticeResult>;next:(expectedCursor?:number)=>Promise<PracticeResult>;
+ resume:(id:string)=>Promise<PracticeResult>;resumeGuarded:(id:string,stillWanted:()=>boolean)=>Promise<PracticeResult>;submit:(choice:number,seconds:number,expectedCursor?:number)=>Promise<PracticeResult>;next:(expectedCursor?:number)=>Promise<PracticeResult>;
  closeView:(expectedId?:string)=>Promise<PracticeResult>;restart:(id:string,options:PracticeRestartOptions)=>Promise<PracticeResult>;leave:(id?:string)=>Promise<PracticeResult>;
  updateTraining:(write:TrainingWrite)=>Promise<PracticeResult>;
  updateSettlementDraft:(id:string,draft:PracticeSettlementDraft)=>Promise<PracticeResult>;settle:(id:string,draft?:PracticeSettlementDraft)=>Promise<PracticeResult>;refresh:()=>Promise<void>;
@@ -48,7 +48,7 @@ export function usePracticeWorkflow(options:PracticeWorkflowHookOptions):Practic
   return()=>{cancelled=true;const instance=service.current;if(instance?.generation===id){instance.value.close();service.current=null;}};
   // Each callback checks current identity again before touching the legacy journal.
   // eslint-disable-next-line react-hooks/exhaustive-deps
- },[key,options.ready,catalogVersion,compatibleCatalogVersions,options.timezone,initializationAttempt]);
+ },[key,options.ready,catalogVersion,compatibleCatalogVersions,options.timezone,initializationAttempt,accountAccess]);
  useEffect(()=>{void refreshSnapshot();},[options.attempts]);
  useEffect(()=>{
   let channel:BroadcastChannel|undefined;
@@ -57,7 +57,7 @@ export function usePracticeWorkflow(options:PracticeWorkflowHookOptions):Practic
   const invalidate=()=>void refreshSnapshot();window.addEventListener('focus',invalidate);window.addEventListener('storage',invalidate);
   return()=>{notify.current=null;channel?.close();window.removeEventListener('focus',invalidate);window.removeEventListener('storage',invalidate);};
  },[key]);
- async function run(action:(value:PracticeWorkflow)=>Promise<PracticeResult>,show=false):Promise<PracticeResult>{
+ async function run(action:(value:PracticeWorkflow)=>Promise<PracticeResult>,show=false,stillWanted?:()=>boolean):Promise<PracticeResult>{
   const instance=service.current;if(!accountAccess()||!instance||instance.key!==key||!current.ready)return {status:'blocked',reason:current.error||'练习持久记录尚未就绪。'};
   operationCount.current++;setBusy(true);
   const task=operationTail.current.then(async():Promise<PracticeResult>=>{
@@ -66,6 +66,7 @@ export function usePracticeWorkflow(options:PracticeWorkflowHookOptions):Practic
    try{
     const result=await action(instance.value);
     if(!accountAccess()||service.current!==instance||activeKey.current!==key||!latest.current.ready)return {status:'blocked',reason:'scope-changed'};
+    if(stillWanted&&!stillWanted())return {status:'blocked',reason:'resume-cancelled'};
     if(show&&'sessionId'in result&&result.sessionId&&(result.status==='started'||result.status==='restored'||result.status==='replayed'))setVisible({key,id:result.sessionId});
     notify.current?.();await refreshSnapshot();return result;
    }catch(error){await refreshSnapshot();return {status:'blocked',reason:error instanceof Error?error.message:'练习操作未完成，原记录保留。'};}
@@ -94,7 +95,7 @@ export function usePracticeWorkflow(options:PracticeWorkflowHookOptions):Practic
  const noSession=():PracticeResult=>({status:'blocked',reason:'practice-session-not-visible'});
  return {
   scopeKey:key,ready:current.ready&&options.ready,error:current.error,busy,session,sessions:current.projection?.sessions??[],pendingSettlements:current.projection?.pendingSettlements??[],
-  start,restart:(id,options)=>run(value=>value.restart(id,options),true),resume:id=>run(value=>value.resume(id),true),
+  start,restart:(id,options)=>run(value=>value.restart(id,options),true),resume:id=>run(value=>value.resume(id),true),resumeGuarded:(id,stillWanted)=>run(value=>value.resume(id),true,stillWanted),
   submit:(choice,seconds,cursor=session?.cursor)=>session&&cursor!==undefined?run(value=>value.submit(session.id,choice,seconds,cursor)):Promise.resolve(noSession()),
   next:(cursor=session?.cursor)=>session&&cursor!==undefined?run(value=>value.next(session.id,cursor)):Promise.resolve(noSession()),
   closeView:async(expectedId=session?.id)=>{if(!accountAccess()||service.current!==renderedService||activeKey.current!==key||visibleRef.current.key!==key||visibleRef.current.id!==expectedId)return {status:'blocked',reason:'scope-changed'};const id=expectedId??'';setVisible({key,id:null});return {status:'closed',sessionId:id};},

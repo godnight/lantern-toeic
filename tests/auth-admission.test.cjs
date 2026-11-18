@@ -6,13 +6,22 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const path = require('node:path');
 const fs = require('node:fs');
-const {environment, PASSWORD, sha} = require('./helpers/product-auth-harness.cjs');
+const {environment: createEnvironment, PASSWORD, sha} = require('./helpers/product-auth-harness.cjs');
 const root = process.env.LANTERN_REVIEW_ROOT || path.resolve(__dirname, '..');
 const FROZEN = '101209685a200ba49a8762818f86dd8be8a91f29';
 // Exact bytes extracted once with git show from the reviewed frozen commit.
 // Runtime verification needs neither the Git history nor a network fetch.
 const FROZEN_SERVICE_SHA256 = 'f8bb8bc6d3943c3a23ec1f18d4a4f459a47c51bbbaad7b707cce5382bc313afc';
-const windowNow = () => Math.floor(Date.now() / 900000) * 900000;
+// Keep the test in one real admission window even when CI starts a KDF a few
+// milliseconds before a wall-clock boundary. The KDF and SQL remain real; only
+// the clock exposed to the isolated auth modules is fixed.
+const FIXED_NOW = 1800000899999; // Last millisecond of a 15-minute window.
+class AdmissionTestDate extends Date {
+  constructor(...args) {super(...(args.length ? args : [FIXED_NOW]));}
+  static now() {return FIXED_NOW;}
+}
+const environment = options => createEnvironment({...options, Date: AdmissionTestDate});
+const windowNow = () => Math.floor(FIXED_NOW / 900000) * 900000;
 const rateScope = (action, username) => action + ':username:' + sha(username);
 const send = (e, username, action = 'login') => e.call(action, 'POST', {body: {username, password: PASSWORD}});
 const seed = (e, scope, count, windowStart = windowNow()) => e.sqlite.prepare('INSERT INTO auth_rate_limits(scope,window_start,count) VALUES(?,?,?)').run(scope, windowStart, count);
@@ -58,6 +67,21 @@ test('AUTH-01 fixed: a full global budget rejects 1000 new usernames without all
   assert.equal(windowNow(), windowStart);assert.deepEqual(e.rows('auth_rate_limits'), before);
   assert.deepEqual(e.rows('auth_users'), []);assert.deepEqual(e.rows('auth_sessions'), []);
   t.diagnostic(JSON.stringify({result: 'BOUNDED_REJECTION', requests: 1001, rowsBefore: before.length, rowsAfter: e.rows('auth_rate_limits').length, globalCount: count(e, 'global:credentials'), sqlOperations: e.queries.length}));
+});
+
+test('KDF-busy credential requests do not spend admission budgets or block another account afterward', async t => {
+  const e = environment();t.after(() => e.close());
+  await e.register('protected_user', PASSWORD);
+  const windowStart = windowNow(), before = count(e, 'global:credentials', windowStart);
+  const responses = await Promise.all(Array.from({length: 120}, (_, i) => send(e, 'burst_user_' + i)));
+  const results = await Promise.all(responses.map(async response => ({status: response.status, code: (await response.json()).code})));
+  assert.equal(results.filter(result => result.status === 401 && result.code === 'invalid-credentials').length, 1);
+  assert.equal(results.filter(result => result.status === 429 && result.code === 'auth-busy').length, 119);
+  assert.equal(count(e, 'global:credentials', windowStart), before + 1, 'Busy rejections must not spend the global budget');
+  assert.equal(e.rows('auth_rate_limits').filter(row => row.scope.startsWith('login:username:')).length, 1);
+  const legitimate = await e.call('login', 'POST', {body: {username: 'protected_user', password: PASSWORD}});
+  assert.equal(legitimate.status, 200);
+  assert.equal(count(e, 'global:credentials', windowStart), before + 2);
 });
 
 test('AUTH-01 fixed: independent KDF modules can work concurrently but atomically share the final global slot', async t => {

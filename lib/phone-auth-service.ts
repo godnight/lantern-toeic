@@ -26,7 +26,7 @@ export function createPhoneAuthService(options:Readonly<Options>){
    if(!parsed.ok)return authJson({code:'invalid-phone-request'},400);
    const bindingUser=purpose==='bind'?await readProductIdentity(request.headers,env):null;
    if(purpose==='bind'&&!bindingUser)return authJson({code:'unauthenticated'},401);
-   const session=createProductSessionMaterial(request.headers);
+   const session=createProductSessionMaterial(request.headers,env);
    const store=createPhoneD1Store({db:config.db,purpose,audience:options.audience,providerId:options.providerId,phone:parsed.phone,bindingUser,bindingTokenHash:productSessionTokenHash(request.headers),session});
    const boundary=createPhoneVerificationBoundary({provider:options.provider,providerId:options.providerId,audience:options.audience,store});
    const result=await boundary.verifyAndCommit(purpose==='bind'?{purpose,phone:parsed.phone,bindingUserId:bindingUser!.id}:{purpose,phone:parsed.phone},body.opaqueCredential);
@@ -36,7 +36,7 @@ export function createPhoneAuthService(options:Readonly<Options>){
    }
    const user=store.committedIdentity();
    if(!user||user.id!==result.userId)return unavailable(true);
-   return purpose==='login'?productSessionResponse(user,session.token):authJson({ok:true,user,phone:result.phone,capabilities:{passwordLogin:true,phoneLogin:false,passwordRecovery:false}});
+   return purpose==='login'?productSessionResponse(user,session.token,session.seconds):authJson({ok:true,user,phone:result.phone,capabilities:{passwordLogin:true,phoneLogin:false,passwordRecovery:false}});
   }catch{return unavailable(true);}
  };
 }

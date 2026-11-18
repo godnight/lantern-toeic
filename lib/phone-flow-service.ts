@@ -63,7 +63,7 @@ export function createPhoneFlowService(options:PhoneFlowOptions){
    try{assertion=await providerDeadline(signal=>adapter.verify({providerReference:row.provider_reference!,challengeId:row.challenge_id,code:input.code as string},toChallengeContext(row),signal));}
    catch{await challenges.quarantine(row,'unknown',ticket);return unavailable(true,true);}
    if(!assertion){const attemptsRemaining=await challenges.rejectCode(row,ticket);return authJson({code:'phone-invalid-code',attemptsRemaining},400);}
-   const session=createProductSessionMaterial(request.headers),store=createPhoneD1Store({...context,session,challenge:{id:row.challenge_id,verificationTicket:ticket}});
+   const session=createProductSessionMaterial(request.headers,env),store=createPhoneD1Store({...context,session,challenge:{id:row.challenge_id,verificationTicket:ticket}});
    const boundary=createPhoneVerificationBoundary({provider:{verify:async()=>assertion},providerId:options.providerId,audience:options.audience,store});
    const verified=await boundary.verifyAndCommit(purpose==='bind'?{purpose,phone:parsed.phone,bindingUserId:bindingUser!.id}:{purpose,phone:parsed.phone},'server-verified-challenge');
    if(!verified.ok){
@@ -77,7 +77,7 @@ export function createPhoneFlowService(options:PhoneFlowOptions){
    }
    const user=store.committedIdentity();if(!user||user.id!==verified.userId)return unavailable(true,true);
    if(purpose==='bind')return authJson({ok:true,user,phone:parsed.phone,capabilities:fullCapabilities});
-   const response=productSessionResponse(user,session.token);
+   const response=productSessionResponse(user,session.token,session.seconds);
    const reply=authJson({user,capabilities:fullCapabilities});reply.headers.set('Set-Cookie',response.headers.get('set-cookie')!);return reply;
   }catch(error){
    if(error instanceof PhoneFlowError)return authJson({code:error.code,...(error.retryAt===undefined?{}:{retryAt:iso(error.retryAt)}),...(error.attemptsRemaining===undefined?{}:{attemptsRemaining:error.attemptsRemaining})},error.status);

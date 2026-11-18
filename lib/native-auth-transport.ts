@@ -2,7 +2,7 @@ import {parseProductIdentity,type ProductCredentials} from './product-identity';
 import {monotonicNow,readSessionProof} from './session-proof';
 import {normalizeMainlandPhone,parsePhonePublicReply,validPhoneVerification,type PhoneVerification,type PhonePurpose,type PhoneClientTransport} from './phone-auth-client';
 
-export type NativeAuthAction='session'|'register'|'login'|'logout'|'phone-status'|'phone-challenge'|'phone-bind'|'phone-login'|'providers'|'huawei-login'|'huawei-bind';
+export type NativeAuthAction='session'|'local-session'|'register'|'login'|'logout'|'phone-status'|'phone-challenge'|'phone-bind'|'phone-login'|'providers'|'huawei-login'|'huawei-bind';
 export type NativeAuthProviders=Readonly<{huaweiLogin:boolean;huaweiBinding:boolean}>;
 export const CLOSED_NATIVE_PROVIDERS:NativeAuthProviders=Object.freeze({huaweiLogin:false,huaweiBinding:false});
 export function parseNativeProviders(value:unknown):NativeAuthProviders|null {
@@ -16,11 +16,11 @@ export class NativeAuthFailure extends Error {
   constructor(readonly code:NativeAuthFailureCode){super('Native authentication '+code);this.name='NativeAuthFailure';}
 }
 export type NativeAuthWindow={location:{origin:string};top?:unknown;self?:unknown;
-  LanternAuthHost?:{request:(serialized:string)=>unknown};__lanternAuthReceive?:(payload:unknown)=>void;
+  LanternAuthHost?:{request:(serialized:string)=>unknown;isLocalActive?:(serialized:string)=>unknown};__lanternAuthReceive?:(payload:unknown)=>void;
   crypto:{randomUUID:()=>string}};
 export type NativeAuthClock={set:(callback:()=>void,ms:number)=>unknown;clear:(timer:unknown)=>void;now?:()=>number};
 export type NativeAuthTransport={request:(action:NativeAuthAction,body?:NativeAuthBody,signal?:AbortSignal,version?:2)=>Promise<NativeAuthReply>;
-  cancelAll:()=>void;dispose:()=>void};
+  isLocalActive?:(owner:string,generation:number)=>boolean;cancelAll:()=>void;dispose:()=>void};
 const TRUSTED_ORIGIN='https://lantern.local',DEADLINE_MS=15000,HUAWEI_DEADLINE_MS=230000;
 const object=(value:unknown):value is Record<string,unknown>=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const unavailable=(action:NativeAuthAction):NativeAuthReply=>({status:503,body:{code:'native-auth-unavailable',
@@ -45,6 +45,20 @@ function publicBody(value:unknown,proof=false):Record<string,unknown> {
   return body;
 }
 
+function localBody(value:unknown,elapsedMs:number):Record<string,unknown> {
+  if(!object(value)||Object.keys(value).sort().join(',')!=='local,user'||!object(value.local)||
+    !['generation,scope','generation,resumeOnly,scope,validForMs'].includes(Object.keys(value.local).sort().join(','))||value.local.scope!=='local-study-only'||
+    !Number.isSafeInteger(value.local.generation)||(value.local.generation as number)<1)throw new NativeAuthFailure('protocol');
+  const user=parseProductIdentity(value.user);if(!user)throw new NativeAuthFailure('protocol');
+  if('resumeOnly' in value.local){
+    const budget=value.local.validForMs;
+    if(value.local.resumeOnly!==true||typeof budget!=='number'||!Number.isSafeInteger(budget)||budget<1||budget>43200000||!Number.isFinite(elapsedMs)||elapsedMs<0)throw new NativeAuthFailure('protocol');
+    const remaining=Math.floor(budget-elapsedMs);if(remaining<1)throw new NativeAuthFailure('protocol');
+    return {user,local:{scope:'local-study-only',generation:value.local.generation,resumeOnly:true,validForMs:remaining}};
+  }
+  return {user,local:{scope:'local-study-only',generation:value.local.generation}};
+}
+
 /** A fixed asynchronous native bridge, without cookies/tokens or persistent state. */
 export function createNativeAuthTransport(target:NativeAuthWindow=window as unknown as NativeAuthWindow,
   clock:NativeAuthClock=defaultClock):NativeAuthTransport {
@@ -67,7 +81,7 @@ export function createNativeAuthTransport(target:NativeAuthWindow=window as unkn
       const reply={status:value.status as number,body:value.body as Record<string,unknown>};
       const providers=item.action==='providers'&&reply.status===200?parseNativeProviders(value.body):null;
       if(item.action==='providers'&&reply.status===200&&!providers)throw new NativeAuthFailure('protocol');
-      const body=providers?{...providers}:item.action.startsWith('phone-')?reply.body:publicBody(value.body,item.version===2);
+      const body=providers?{...providers}:item.action==='local-session'&&reply.status===200?localBody(value.body,(clock.now??monotonicNow)()-item.startedAt):item.action.startsWith('phone-')?reply.body:publicBody(value.body,item.version===2);
       if(item.version===2&&reply.status!==200&&body.session!==undefined)throw new NativeAuthFailure('protocol');
       if(item.version===2&&reply.status===200){const proof=readSessionProof(value.body,'native',(clock.now??monotonicNow)()-item.startedAt);if(!proof)throw new NativeAuthFailure('protocol');body.session={validForMs:proof.validForMs};}
       finish(value.id,item.action.startsWith('phone-')?parsePhonePublicReply(item.action.slice(6) as 'status'|'challenge'|'bind'|'login',reply):{status:reply.status,body,...item.version===2?{version:2 as const}:{}});
@@ -79,8 +93,8 @@ export function createNativeAuthTransport(target:NativeAuthWindow=window as unkn
     request(action,body,signal,version){
       if(disposed)return Promise.reject(new NativeAuthFailure('disposed'));
       if(version!==undefined&&(version!==2||action!=='session'||body!==undefined))return Promise.reject(new NativeAuthFailure('protocol'));
-      if(!['session','register','login','logout','phone-status','phone-challenge','phone-bind','phone-login','providers','huawei-login','huawei-bind'].includes(action))return Promise.reject(new NativeAuthFailure('protocol'));
-      const mutation=action!=='session'&&action!=='phone-status'&&action!=='providers';
+      if(!['session','local-session','register','login','logout','phone-status','phone-challenge','phone-bind','phone-login','providers','huawei-login','huawei-bind'].includes(action))return Promise.reject(new NativeAuthFailure('protocol'));
+      const mutation=action!=='session'&&action!=='local-session'&&action!=='phone-status'&&action!=='providers';
       if(mutation&&mutationId!==null)return Promise.reject(new NativeAuthFailure('mutation-busy'));
       const password=action==='register'||action==='login',challenge=action==='phone-challenge',verification=action==='phone-bind'||action==='phone-login';
       if(password?(!body||Object.keys(body).sort().join(',')!=='password,username'||!('username' in body)||!('password' in body)||typeof body.username!=='string'||typeof body.password!=='string'):
@@ -94,7 +108,7 @@ export function createNativeAuthTransport(target:NativeAuthWindow=window as unkn
         if(!/^[a-f0-9-]{36}$/i.test(id)||pending.has(id)){reject(new NativeAuthFailure('protocol'));return;}
         if(mutation)mutationId=id;
         const abort=()=>finish(id,undefined,new NativeAuthFailure('superseded'));
-        const item:Pending={action,version,startedAt:version===2?(clock.now??monotonicNow)():0,resolve,reject,timer:undefined,removeAbort:()=>signal?.removeEventListener('abort',abort)};
+        const item:Pending={action,version,startedAt:version===2||action==='local-session'?(clock.now??monotonicNow)():0,resolve,reject,timer:undefined,removeAbort:()=>signal?.removeEventListener('abort',abort)};
         pending.set(id,item);signal?.addEventListener('abort',abort,{once:true});
         item.timer=clock.set(()=>finish(id,undefined,new NativeAuthFailure('timeout')),action.startsWith('huawei-')?HUAWEI_DEADLINE_MS:DEADLINE_MS);
         try{
@@ -105,6 +119,10 @@ export function createNativeAuthTransport(target:NativeAuthWindow=window as unkn
           target.LanternAuthHost!.request(serialized);serialized='';
         }catch{finish(id,undefined,new NativeAuthFailure('bridge-failed'));}
       });
+    },
+    isLocalActive(owner,generation){
+      if(disposed||!trusted()||typeof owner!=='string'||!Number.isSafeInteger(generation)||generation<1||typeof target.LanternAuthHost?.isLocalActive!=='function')return false;
+      try{return target.LanternAuthHost.isLocalActive(JSON.stringify({uid:owner,generation}))===true;}catch{return false;}
     },cancelAll,
     dispose(){if(disposed)return;disposed=true;for(const id of [...pending.keys()])finish(id,undefined,new NativeAuthFailure('disposed'));
       if(target.__lanternAuthReceive===receive){if(previous)target.__lanternAuthReceive=previous;else delete target.__lanternAuthReceive;}}
@@ -113,7 +131,7 @@ export function createNativeAuthTransport(target:NativeAuthWindow=window as unkn
 
 declare global {
   interface Window {
-    LanternAuthHost?:{request:(serialized:string)=>unknown};
+    LanternAuthHost?:{request:(serialized:string)=>unknown;isLocalActive?:(serialized:string)=>unknown};
     __lanternAuthReceive?:(payload:unknown)=>void;
   }
 }

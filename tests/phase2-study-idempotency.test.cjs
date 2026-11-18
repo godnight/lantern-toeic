@@ -41,11 +41,47 @@ function harness(storage=new Map(),options={}){
  // Most journal tests use a synthetic granted session. The guard integration
  // case opts into the real learning-access module with a controlled context.
  const learningAccess=options.getAccess?load('lib/learning-access.tsx',{react:{createContext:initial=>({initial}),useContext:()=>options.getAccess()}}):{useLearningAccess:()=>()=>true};
- const hook=load('lib/use-study.ts',{react,'./learning-access':learningAccess,sonner:{toast:{error:value=>errors.push(value)}},'./study-model':model,'./study-backup':backup},{localStorage,navigator:{get onLine(){return online;}},window:{addEventListener(){},removeEventListener(){}},setTimeout:()=>1,clearTimeout(){},fetch:async(url,init)=>{requests.push({url,init});if(options.fetch)return options.fetch(url,init);throw Error('Offline test must not fetch');}});
+ const hook=load('lib/use-study.ts',{react,'./learning-access':learningAccess,sonner:{toast:{error:value=>errors.push(value)}},'./study-model':model,'./study-backup':backup},{localStorage,navigator:{get onLine(){return online;}},window:options.window??{addEventListener(){},removeEventListener(){}},CustomEvent:options.CustomEvent,setTimeout:()=>1,clearTimeout(){},fetch:async(url,init)=>{requests.push({url,init});if(options.fetch)return options.fetch(url,init);throw Error('Offline test must not fetch');}});
  const render=(nextOwner=owner)=>{owner=nextOwner;cursor=0;const api=hook.useStudy(owner);const batch=effects;effects=[];batch.forEach(fn=>fn());return api;};
  render();return {render,storage,writes,errors,requests,online(value){online=value;},ops:()=>[...storage.entries()].filter(([k])=>k.startsWith(main+':op:')).map(([,v])=>JSON.parse(v))};
 }
 function journal(storage,type,data,{id=randomUUID(),owner='alice',ack=false}={}){storage.set(main+':op:'+id,JSON.stringify({id,owner,type,data}));if(ack)storage.set(main+':ack:'+id,'1');return id;}
+
+test('actual study writer notifies the current account only after its local save succeeds',()=>{
+ const events=[],window={addEventListener(){},removeEventListener(){},dispatchEvent(event){events.push(event);}},CustomEvent=class {constructor(type,options){this.type=type;this.detail=options.detail;}};
+ const h=harness(new Map(),{window,CustomEvent});assert.equal(h.render().addAttempt(a()),true);
+ assert.deepEqual(events.map(e=>[e.type,e.detail]),[['lantern-study-changed',main]]);
+ const failed=harness(new Map(),{window,CustomEvent,beforeSet(key){if(key.includes(':op:'))throw Error('quota');}});
+ assert.equal(failed.render().addAttempt(a()),false);assert.equal(events.length,1);
+});
+
+test('single-device journal atomically preserves the first-attempt anchor across reload',()=>{
+ const storage=new Map(),first=harness(storage),api=first.render(),root=a();
+ const review={...a(),mode:'review',createdAt:'2025-01-01T00:00:00.000Z'};
+ assert.equal(api.addAttempt(root),true);assert.equal(api.addAttempt(review),true);
+ const ops=first.ops().filter(x=>x.type==='attempt');
+ assert.equal(ops.length,2);assert.equal(ops.find(x=>x.data.id===root.id).firstAttemptId,root.id);
+ assert.equal(ops.find(x=>x.data.id===review.id).firstAttemptId,root.id);
+ const reopened=harness(storage);assert.equal(reopened.ops().find(x=>x.data.id===review.id).firstAttemptId,root.id);
+});
+test('an orphan review remains locally usable but gets no invented anchor',()=>{
+ const h=harness(),review={...a(),mode:'review'};
+ assert.equal(h.render().addAttempt(review),true);
+ const op=h.ops().find(x=>x.data.id===review.id);assert.equal(Object.hasOwn(op,'firstAttemptId'),false);
+ assert.deepEqual(plain(h.render().readAttempt(review.id)),review);
+});
+test('compaction retains an unacknowledged review anchor while preserving its acknowledged first attempt',async()=>{
+ const store=new Map(),h=harness(store),api=h.render(),first=a(),review={...a(),mode:'review'};
+ assert.equal(api.addAttempt(first),true);assert.equal(api.addAttempt(review),true);
+ const initial=h.ops(),firstOp=initial.find(x=>x.data.id===first.id),reviewOp=initial.find(x=>x.data.id===review.id);
+ store.set(main+':ack:'+firstOp.id,'1');
+ const storage={get length(){return store.size;},key:i=>[...store.keys()][i]??null,getItem:key=>store.get(key)??null,setItem:(key,value)=>store.set(key,String(value)),removeItem:key=>store.delete(key)};
+ const journalModule=load('lib/study-journal.ts',{'./study-model':model});
+ const result=await journalModule.compactStudyJournal({storage,key:main,owner:'alice',readSnapshot:()=>plain(h.render().data),withLock:async(_name,work)=>work(),createId:randomUUID,threshold:1});
+ assert.equal(result.status,'compacted');assert.equal(store.has(main+':op:'+firstOp.id),false);
+ const retained=JSON.parse(store.get(main+':op:'+reviewOp.id));assert.equal(retained.firstAttemptId,first.id);
+ const reopened=harness(store).render();assert.deepEqual(plain(reopened.readAttempt(first.id)),first);assert.deepEqual(plain(reopened.readAttempt(review.id)),review);
+});
 
 test('local fixed attempts and checkins replay in canonical property order without another journal entry',()=>{
  const h=harness(),api=h.render(),attempt=a(),checkin=c();

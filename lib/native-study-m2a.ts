@@ -21,7 +21,7 @@ type WritableKind = Exclude<Kind,'profile'>;
 type Change = {kind:Kind;id:string;data:unknown};
 export type NativeStudyPage = {syncProtocol:typeof NATIVE_STUDY_PROTOCOL;schemaVersion:2;owner:string;hasProfile:boolean;profilePolicy:'preserve-local-when-absent';changes:Change[];nextCursor:string|null;checkpoint:string|null};
 export type NativeDownload = {checkpoint:string|null;continuation:string|null;pendingProfiles:Profile[]};
-export type NativePendingOperation = {id:string;owner:string;type:string;data:unknown};
+export type NativePendingOperation = {id:string;owner:string;type:string;data:unknown;firstAttemptId?:string};
 export type NativeUploadAck = {id:string;fingerprint:string};
 export type NativeProjection = {version:1;stateVersion:number;owner:string;data:StudyData;download:NativeDownload;pendingOperations:NativePendingOperation[];uploadAcks:NativeUploadAck[]};
 export type NativeStudyLease = {owner:string;signal:AbortSignal;isCurrent:()=>boolean};
@@ -109,7 +109,14 @@ export function projectNativeStudyPage(snapshot:NativeProjection,value:unknown,r
    if(JSON.stringify(profile)!==JSON.stringify(data.profile)&&!pendingProfiles.some(old=>JSON.stringify(old)===JSON.stringify(profile))){if(pendingProfiles.length>=100)throw new StudySyncError('待确认的个人设置过多，本机记录已保留',507);pendingProfiles.push(copy(profile));}
   }else if(change.kind==='attempt'){
    const row=change.data as Attempt,index=data.attempts.findIndex(old=>old.id===row.id);
-   if(index<0)data.attempts.push(row);else {if(immutableWire('attempt',data.attempts[index])!==immutableWire('attempt',row))throw new StudySyncError('同一答题标识内容不同，本机记录已保留',422);data.attempts[index]=row;}
+   if(index<0)data.attempts.push(row);else {
+    const local=data.attempts[index];
+    // A local attempt is also the exact durable fact referenced by an active
+    // practice session. Server arrival order cannot rewrite its original mode.
+    // A scoring disagreement must stop the page rather than accept a local
+    // score as authoritative or overwrite that fact and break reconciliation.
+    if(immutableWire('attempt',local)!==immutableWire('attempt',row)||local.correct!==row.correct)throw new StudySyncError('同一答题标识内容不同，本机记录已保留',422);
+   }
   }else if(change.kind==='checkin'){
    const row=change.data as Checkin,index=data.checkins.findIndex(old=>old.id===row.id);
    if(index<0)data.checkins.push(row);else if(immutableWire('checkin',data.checkins[index])!==immutableWire('checkin',row))throw new StudySyncError('同一学习记录标识内容不同，本机记录已保留',422);
@@ -126,12 +133,15 @@ export async function prepareNativeUpload(operation:NativePendingOperation,lease
  const before=JSON.stringify(operation),frozen=copy(operation);
  if(!uuidPattern.test(frozen.id)||!['attempt','checkin','questionMark','resourceTask'].includes(frozen.type)||!isRecord(frozen.data))throw invalid();
  const kind=frozen.type as WritableKind, data=frozen.data;
+ if(frozen.firstAttemptId!==undefined&&(kind!=='attempt'||typeof frozen.firstAttemptId!=='string'||!uuidPattern.test(frozen.firstAttemptId)))throw invalid();
  // Existing validators verify authored event fields, including their shape.
  // Server owns the attempt's correct/mode; they are omitted from wire data.
  let wireData:Record<string,unknown>;
  if(kind==='attempt'){
   if(!exact(data,fields.attempt))throw invalid();immutableWire('attempt',data as Attempt);
-  const {id,qid,choice,createdAt,seconds}=data;wireData={id,qid,choice,createdAt,seconds};
+  const {id,qid,choice,createdAt,seconds}=data;
+  if(frozen.firstAttemptId!==undefined&&((data.mode==='first')!==(frozen.firstAttemptId===id)))throw invalid();
+  wireData={id,qid,choice,createdAt,seconds,...(frozen.firstAttemptId?{firstAttemptId:frozen.firstAttemptId}:{})};
  }else if(kind==='checkin'){
   if(!exact(data,fields.checkin))throw invalid();immutableWire('checkin',data as Checkin);wireData=data;
  }else{

@@ -8,12 +8,13 @@ function load(relative){const file=path.resolve(ROOT,relative);if(cache.has(file
  vm.runInNewContext(out,{exports,require(n){assert(n.startsWith('.'));return load(path.relative(ROOT,path.resolve(path.dirname(file),n+'.ts')));},Map,Set,Promise,Error,JSON,Object,Array,Number,String,Boolean,RegExp,Date,AbortController,setTimeout,clearTimeout},{filename:file});return exports;}
 const phone=load('lib/phone-auth-client.ts'),native=load('lib/native-auth-transport.ts'),{NativeAccountController}=load('lib/native-account-controller.ts');
 const A={id:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'},B={id:'usr_bbbbbbbb-2222-4222-8222-222222222222',username:'synthetic_b'};
-const caps={passwordLogin:true,phoneLogin:true,passwordRecovery:false,cloudSync:false},session=user=>({status:200,body:{user,capabilities:caps}}),guest={status:401,body:{code:'unauthenticated'}};
+const caps={passwordLogin:true,phoneLogin:true,passwordRecovery:false,cloudSync:false},session=user=>({status:200,body:{user,capabilities:caps,session:{validForMs:3600000}}}),guest={status:401,body:{code:'unauthenticated'}};
 const number='+8613800138000',verification=()=>({challengeId:'c'.repeat(32),phone:number,code:'731428'});
 const challenge=(purpose='login')=>({challengeId:'c'.repeat(32),phone:number,purpose,expiresAt:new Date(Date.now()+300000).toISOString(),resendAt:new Date(Date.now()+60000).toISOString()});
 function bridge(){const calls=[],timers=new Map();let next=0;const target={location:{origin:'https://lantern.local'},crypto:{randomUUID:()=>crypto.randomUUID()},LanternAuthHost:{request(raw){calls.push(JSON.parse(raw));}}};target.top=target.self=target;
- const transport=native.createNativeAuthTransport(target,{set(fn,ms){const id=++next;timers.set(id,{fn,ms});return id;},clear(id){timers.delete(id);}});
- const value=new NativeAccountController(transport);return {calls,target,transport,value,timers,reply(i,r){target.__lanternAuthReceive?.({id:calls[i].id,...plain(r)});},expire(){for(const [,v] of [...timers])v.fn();}};}
+ const clock={now:()=>0,set(fn,ms){const id=++next;timers.set(id,{fn,ms});return id;},clear(id){timers.delete(id);}};
+ const transport=native.createNativeAuthTransport(target,clock);
+ const value=new NativeAccountController(transport,clock);return {calls,target,transport,value,timers,reply(i,r){const request=calls[i];assert(request,'expected a native bridge request');const result=plain(r);if(request.version!==2&&result.body?.session)delete result.body.session;target.__lanternAuthReceive?.({id:request.id,...request.version===2?{version:2}:{},...result});},expire(){for(const [,v] of [...timers])v.fn();}};}
 async function initial(h,proof=session(A)){h.value.start();h.reply(0,proof);await tick();}
 
 test('mainland input normalizes only ASCII11 digit +86 numbers',()=>{
@@ -72,18 +73,26 @@ test('invalid-code error preserves attempts and original owner only after indepe
 });
 test('unknown phone mutation timeout and late callback do not select owner or probe automatically',async()=>{
  const h=bridge();await initial(h,guest);const pending=h.value.mutatePhone('login',verification());h.expire();await pending;assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(h.calls.length,2);
- h.reply(1,session(B));await tick();assert.equal(h.value.getSnapshot().status,'blocked');h.value.recheck();h.reply(2,session(A));await tick();assert.equal(h.value.getSnapshot().user.id,A.id);h.value.dispose();
+ h.reply(1,session(B));await tick();h.value.suspend();h.value.resume();await tick();assert.equal(h.calls.length,2);assert.equal(h.value.getSnapshot().status,'blocked');h.value.recheck();h.reply(2,session(A));await tick();assert.equal(h.value.getSnapshot().user.id,A.id);h.value.dispose();
 });
 test('explicit unknown503 phone result remains blocked until manual session recheck',async()=>{
  const h=bridge();await initial(h);const pending=h.value.mutatePhone('bind',verification());h.reply(1,{status:503,body:{code:'auth-state-unknown'}});await pending;
- assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(h.calls.length,2);h.reply(1,{status:200,body:{...session(A).body,ok:true,phone:number}});await tick();assert.equal(h.value.getSnapshot().status,'blocked');
+ assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(h.calls.length,2);h.reply(1,{status:200,body:{...session(A).body,ok:true,phone:number}});await tick();h.value.suspend();h.value.resume();await tick();assert.equal(h.calls.length,2);assert.equal(h.value.getSnapshot().status,'blocked');
  h.value.recheck();h.reply(2,session(A));await tick();assert.equal(h.value.getSnapshot().user.id,A.id);h.value.dispose();
 });
-test('page leave/suspend invalidates an in-flight phone verification and ignores old success',async()=>{
- const h=bridge();await initial(h);const pending=h.value.mutatePhone('bind',verification());h.value.suspend();h.reply(1,{status:200,body:{...session(A).body,ok:true,phone:number}});await pending;assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(h.calls.length,2);h.value.dispose();
+test('unconfirmed independent proof after phone login stays held across suspend and resume',async()=>{
+ const h=bridge();try{
+  await initial(h,guest);const pending=h.value.mutatePhone('login',verification());h.reply(1,session(B));await tick();assert.equal(h.calls[2].action,'session');
+  h.reply(2,{status:200,body:{user:B,capabilities:caps}});assert.equal(await pending,undefined);assert.equal(h.value.getSnapshot().status,'blocked');
+  h.value.suspend();h.value.resume();await tick();assert.equal(h.calls.length,3);assert.equal(h.value.getSnapshot().status,'blocked');
+  h.value.recheck();h.reply(3,session(A));await tick();assert.equal(h.value.getSnapshot().user.id,A.id);
+ }finally{h.value.dispose();}
+});
+test('page leave/suspend holds an in-flight phone verification until explicit recheck',async()=>{
+ const h=bridge();await initial(h);const pending=h.value.mutatePhone('bind',verification());h.value.suspend();h.reply(1,{status:200,body:{...session(A).body,ok:true,phone:number}});await pending;assert.equal(h.value.getSnapshot().status,'blocked');assert.equal(h.calls.length,2);h.value.resume();await tick();assert.equal(h.calls.length,2,'resume cannot automatically select an account after an uncertain mutation');h.value.recheck();assert.equal(h.calls.length,3);h.reply(2,session(A));await tick();assert.equal(h.value.getSnapshot().status,'ready');h.value.dispose();
 });
 test('Web phone adapter uses fixed paths/methods and credentials without owner fields',async()=>{
- const calls=[],adapter=phone.createWebPhoneTransport(async(url,options)=>{calls.push({url,options});const action=url.split('/').at(-1);return {status:action==='status'?200:action==='challenge'?202:200,json:async()=>action==='status'?{capabilities:{phoneLogin:true,phoneBinding:true}}:action==='challenge'?challenge('bind'):{...session(A).body,ok:true,phone:number}};});
+ const calls=[],adapter=phone.createWebPhoneTransport(async(url,options)=>{calls.push({url,options});const action=url.split('/').at(-1);return {status:action==='status'?200:action==='challenge'?202:200,json:async()=>action==='status'?{capabilities:{phoneLogin:true,phoneBinding:true}}:action==='challenge'?challenge('bind'):{user:A,capabilities:caps,ok:true,phone:number}};});
  await adapter.request('status');await adapter.request('challenge',{purpose:'bind',phone:number});await adapter.mutate('bind',verification());
  assert.deepEqual(calls.map(c=>c.url),['/api/auth/phone/status','/api/auth/phone/challenge','/api/auth/phone/bind']);assert.deepEqual(calls.map(c=>c.options.method),['GET','POST','POST']);
  for(const row of calls){assert.equal(row.options.credentials,'same-origin');assert.equal(row.options.cache,'no-store');assert(!Object.hasOwn(row.options,'owner'));}
@@ -110,10 +119,24 @@ test('all new client and real React source typechecks with candidate-first alias
   jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,resolveJsonModule:true,allowJs:true,skipLibCheck:true,types:['node'],typeRoots:[path.join(SITE,'node_modules/@types')],baseUrl:ROOT,paths:{'@/*':[path.join(ROOT,'*'),path.join(SITE,'*')]},lib:['lib.es2022.d.ts','lib.dom.d.ts','lib.dom.iterable.d.ts']});
  const errors=ts.getPreEmitDiagnostics(program).filter(d=>d.category===ts.DiagnosticCategory.Error);assert.equal(errors.length,0,ts.formatDiagnostics(errors,{getCanonicalFileName:f=>f,getCurrentDirectory:()=>ROOT,getNewLine:()=> '\n'}));
 });
-test('real native-host Back contract stays unchanged; Root owns popstate and priority account handler',()=>{
+test('native Back uses registered priority and account root only returns to a verified owner',()=>{
  const source=fs.readFileSync(path.join(SITE,'lib/native-host.ts'),'utf8'),exports={},listeners={},target={location:{origin:'https://lantern.local'}};
  const out=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
  vm.runInNewContext(out,{exports,window:target,document:{visibilityState:'visible',addEventListener:(k,f)=>listeners[k]=f},Set,Map,console,setTimeout,clearTimeout});exports.installHarmonyHost();assert.equal(target.__LANTERN_HARMONY__.onBackPress(),true);
  let called=0;const unsubscribe=exports.registerNativeBack(()=>{called++;return true;},100);assert.equal(target.__LANTERN_HARMONY__.onBackPress(),true);assert.equal(called,1);unsubscribe();
- const root=fs.readFileSync(path.join(ROOT,'mobile/src/NativeAccountRoot.tsx'),'utf8');assert(root.includes("window.addEventListener('popstate',pop)"));assert(root.includes('registerNativeBack(()=>{closeRef.current();return true;},100)'));assert(root.includes("if(state.status!=='ready')return"));
+ const file=path.join(ROOT,'mobile/src/NativeAccountRoot.tsx');
+ const rootOut=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText;
+ function accountBack(state,{accountOpen=true,legacy=false,returnOwner=A.id}={}){
+  let index=0,effect=0,handler,priority;const updates=[];
+  const values=[state,accountOpen,legacy,returnOwner,{huaweiLogin:false,huaweiBinding:false},null];
+  const react={useState(){const at=index++;return [values[at],v=>updates.push([at,v])];},useRef(){return {current:{getSnapshot:()=>state}};},useEffect(fn){if(++effect===2)fn();}};
+  const imports={react,'react/jsx-runtime':{jsx:()=>null,jsxs:()=>null},'react-dom':{flushSync:fn=>fn()},'@/app/study-app':{},'@/app/account/account-panel':{},'@/app/learn/guest-data-recovery':{},'@/lib/native-host':{registerNativeBack(fn,p){handler=fn;priority=p;return()=>{};}},'@/lib/native-auth-transport':{},'@/lib/native-account-controller':{},'@/lib/ui-theme':{},'@/lib/cloud-sync/native-account-root':{attachNativeAccountSync:()=>()=>{}}};
+  const module={};vm.runInNewContext(rootOut,{exports:module,require(name){if(name==='@/lib/native-workspace-resume')return load('lib/native-workspace-resume.ts');assert(Object.hasOwn(imports,name),`unexpected import: ${name}`);return imports[name];},Object});
+  module.default();assert.equal(priority,100);return {handled:handler(),updates};
+ }
+ const access={owner:A.id,canAccess:()=>true,assertAccess:()=>true};
+ let result=accountBack({status:'ready',user:A,access});assert.equal(result.handled,true);assert.deepEqual(result.updates,[[1,false]]);
+ result=accountBack({status:'ready',user:A,access},{returnOwner:B.id});assert.equal(result.handled,false);assert.deepEqual(result.updates,[]);
+ result=accountBack({status:'blocked',message:'synthetic'});assert.equal(result.handled,false);assert.deepEqual(result.updates,[]);
+ result=accountBack({status:'blocked',message:'synthetic'},{legacy:true});assert.equal(result.handled,true);assert.deepEqual(result.updates,[[2,false]]);
 });

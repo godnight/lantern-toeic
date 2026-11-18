@@ -31,6 +31,7 @@ export interface AuthBody {
   code?: string;
   error?: string;
   user?: AuthUser;
+  local?: AuthLocalProof;
   capabilities?: AuthCapabilities;
   ok?: boolean;
   phone?: string;
@@ -40,6 +41,12 @@ export interface AuthBody {
   resendAt?: string;
   retryAt?: string;
   attemptsRemaining?: number;
+}
+export interface AuthLocalProof {
+  scope: string;
+  generation: number;
+  resumeOnly?: boolean;
+  validForMs?: number;
 }
 export interface AuthReply {
   version?: number;
@@ -122,7 +129,7 @@ export function isoTime(value: string | undefined): number | undefined {
   return time;
 }
 
-export function parseAuthRequest(raw: string): AuthRequest | undefined {
+export function parseAuthRequest(raw: string, allowLocal: boolean = false): AuthRequest | undefined {
   if (typeof raw !== 'string' || raw.length > 4096 || utf8Length(raw) > 4096) return undefined;
   try {
     const value: AuthRequest = JSON.parse(raw) as AuthRequest;
@@ -132,6 +139,7 @@ export function parseAuthRequest(raw: string): AuthRequest | undefined {
     const keys: string = Object.keys(value).sort().join(',');
     if (value.version !== undefined) return value.version === 2 && keys === 'action,id,version' && value.action === 'session' ? value : undefined;
     if (keys !== 'action,id' && keys !== 'action,body,id') return undefined;
+    if (value.action === 'local-session') return allowLocal && keys === 'action,id' ? value : undefined;
     if (['providers', 'huawei-login', 'huawei-bind'].includes(value.action)) return keys === 'action,id' ? value : undefined;
     if (value.action === 'session' || value.action === 'logout' || value.action === 'phone-status') {
       if (value.body !== undefined && (value.body === null || typeof value.body !== 'object' ||
@@ -311,7 +319,9 @@ export function productCookieLines(lines: string[]): string[] | undefined {
   return selected;
 }
 
-export function sessionCookie(lines: string[]): AuthCookie | undefined {
+// A staged compatibility candidate; old releases and normal builds remain at 12h.
+export const PERSISTENT_SESSION_ENABLED: boolean = false;
+export function sessionCookie(lines: string[], allowPersistent: boolean = false): AuthCookie | undefined {
   const selected: string[] | undefined = productCookieLines(lines);
   if (selected === undefined) return undefined;
   let result: AuthCookie | undefined = undefined;
@@ -339,10 +349,10 @@ export function sessionCookie(lines: string[]): AuthCookie | undefined {
       else if (name === 'httponly' && equal < 0) httpOnly = true;
       else if (name === 'path' && value === '/') path = true;
       else if (name === 'samesite' && value.toLowerCase() === 'strict') sameSite = true;
-      else if (name === 'max-age' && /^(0|[1-9][0-9]{0,4})$/.test(value)) maxAge = Number(value);
+      else if (name === 'max-age' && /^(0|[1-9][0-9]{0,6})$/.test(value)) maxAge = Number(value);
       else return undefined; // Includes Domain, Expires, duplicate or unknown attributes.
     }
-    if (!secure || !httpOnly || !path || !sameSite || maxAge < 0 || maxAge > 43200 ||
+    if (!secure || !httpOnly || !path || !sameSite || maxAge < 0 || maxAge > (allowPersistent ? 2592000 : 43200) ||
       (token === '' ? maxAge !== 0 : maxAge === 0)) return undefined;
     result = { token: token, maxAge: maxAge };
   }

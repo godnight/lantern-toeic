@@ -57,35 +57,20 @@ export class PasswordHashBusyError extends Error {
 // One slot per module/isolate, shared by registration and verification. There is
 // deliberately no waiting queue: callers must apply backpressure at the boundary.
 let activeDerivations = 0;
+type Derive = (password: string, salt: Buffer) => Promise<Buffer>;
+type ReservedPasswordHasher = {
+  hashPassword: (password: string) => Promise<string>;
+  verifyPassword: (password: unknown, encodedHash: unknown) => Promise<boolean>;
+};
 
-async function derive(password: string, salt: Buffer): Promise<Buffer> {
-  if (activeDerivations >= PASSWORD_HASH_CONCURRENCY) throw new PasswordHashBusyError();
-  activeDerivations++;
-  try {
-    // Keep the slot until the actual crypto callback resolves/rejects. A timeout
-    // race must not free it while expensive work is still running underneath.
-    return await new Promise<Buffer>((resolve, reject) => {
-      scrypt(password, salt, KEY_BYTES, SCRYPT_OPTIONS, (error, key) => {
-        if (error) reject(error);
-        else resolve(key);
-      });
-    });
-  } finally {
-    // Also runs if scrypt throws synchronously inside the Promise executor.
-    activeDerivations--;
-  }
-}
-
-/** Hash exactly the supplied password; never trim, normalize, truncate or log it. */
-export async function hashPassword(password: string): Promise<string> {
+async function hashWith(derive: Derive, password: string): Promise<string> {
   if (!validatePassword(password).ok) throw new Error('Invalid password');
   const salt = randomBytes(SALT_BYTES);
   const key = await derive(password, salt);
   return `${HASH_PREFIX}${salt.toString('hex')}$${key.toString('hex')}`;
 }
 
-/** Unsupported/corrupt stored formats fail closed; runtime crypto errors propagate. */
-export async function verifyPassword(password: unknown, encodedHash: unknown): Promise<boolean> {
+async function verifyWith(derive: Derive, password: unknown, encodedHash: unknown): Promise<boolean> {
   if (!validatePassword(password).ok || typeof password !== 'string' || typeof encodedHash !== 'string') {
     return false;
   }
@@ -98,4 +83,49 @@ export async function verifyPassword(password: unknown, encodedHash: unknown): P
   const expected = Buffer.from(parsed[2], 'hex');
   const actual = await derive(password, Buffer.from(parsed[1], 'hex'));
   return timingSafeEqual(actual, expected);
+}
+
+/** Reserve the same no-queue KDF slot before admission can spend a shared
+ * database budget. The callback may perform at most one derivation; an escaped
+ * callback cannot use the slot after it is released. */
+export async function withPasswordHashSlot<T>(action: (hasher: ReservedPasswordHasher) => Promise<T>): Promise<T> {
+  if (activeDerivations >= PASSWORD_HASH_CONCURRENCY) throw new PasswordHashBusyError();
+  activeDerivations++;
+  let used = false, closed = false, pending: Promise<Buffer> | undefined;
+  const derive: Derive = (password, salt) => {
+    if (used || closed) throw new Error('Password hash slot is no longer available');
+    used = true;
+    pending = new Promise<Buffer>((resolve, reject) => {
+      scrypt(password, salt, KEY_BYTES, SCRYPT_OPTIONS, (error, key) => {
+        if (error) reject(error);
+        else resolve(key);
+      });
+    });
+    return pending;
+  };
+  try {
+    return await action(Object.freeze({
+      hashPassword: (password: string) => hashWith(derive, password),
+      verifyPassword: (password: unknown, encodedHash: unknown) => verifyWith(derive, password, encodedHash),
+    }));
+  } finally {
+    closed = true;
+    // An escaped or unawaited callback must never release the slot before the
+    // underlying crypto work actually completes, including synchronous errors.
+    if (pending) await pending.catch(() => {});
+    activeDerivations--;
+  }
+}
+
+/** Hash exactly the supplied password; never trim, normalize, truncate or log it. */
+export async function hashPassword(password: string): Promise<string> {
+  if (!validatePassword(password).ok) throw new Error('Invalid password');
+  return withPasswordHashSlot(hasher => hasher.hashPassword(password));
+}
+
+/** Unsupported/corrupt stored formats fail closed; runtime crypto errors propagate. */
+export async function verifyPassword(password: unknown, encodedHash: unknown): Promise<boolean> {
+  if (!validatePassword(password).ok || typeof password !== 'string' || typeof encodedHash !== 'string' ||
+      encodedHash.length !== HASH_PREFIX.length + SALT_BYTES * 2 + 1 + KEY_BYTES * 2 || !HASH_PATTERN.test(encodedHash)) return false;
+  return withPasswordHashSlot(hasher => hasher.verifyPassword(password, encodedHash));
 }

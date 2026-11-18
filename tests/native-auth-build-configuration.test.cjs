@@ -53,6 +53,7 @@ function storeRuntime(configAlias, records) {
   vm.runInNewContext(js, { exports, require: id => {
     if (id === '@ohos.security.asset') return { __esModule: true, default: asset };
     if (id === './AuthConfiguration') return { AUTH_SESSION_ALIAS: configAlias };
+    if (id === './AuthMigrationConfiguration') return { AUTH_MIGRATION_ENABLED: false };
     if (id === '@kit.BasicServicesKit') return {};
     throw Error('Unexpected module');
   }, Uint8Array, Map, Date, JSON, Number, String, Error });

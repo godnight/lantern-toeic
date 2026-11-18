@@ -1,0 +1,234 @@
+{
+  "version": 1,
+  "migrations": {
+    "0000_spotty_stellaris.sql": [
+      "645c82cacba07613c9ac9514b8989b8ec283e4b99de46a28667ecf9eecc352d8",
+      "f8032d96f9201b0ec17f7eafb27e891abf165064f926455355e91b45260b7955"
+    ],
+    "0001_study_data_v2.sql": [
+      "212f08dbdfc17c909496f652518f033a7cd46876a883d0dc330851efc0e1b288",
+      "4a56ca3295f3fa2d570a467234375ff1bc0ea796ac21bb2d39491e7f25bd1e79"
+    ],
+    "0002_parched_edwin_jarvis.sql": [
+      "583b0991563225c48785f4d772a9937cad87ad5c69e55b699ee2df736f6a1423",
+      "cd50a3d5ce9e77630b4c834fe24d7e1ed5c6cb2243c7898864a0187f96031093"
+    ],
+    "0003_cynical_snowbird.sql": [
+      "6c2326424520e349535c8a9ff6bcf9f01e3d5e243eb02c31d8c36f48f433cea3",
+      "f775dab202fe1ea4386a27195963a45ab1efedbb99b53c8a7a9f7c3dab1aa17b"
+    ],
+    "0004_study_sync_index.sql": [
+      "5c1ff8c98a36c9328055c4a82af42ecf43a10752bcfe63081122e68ae9078e59",
+      "8ed2b6613ff7c609ce5928d7f9417b9999947e2143bf4c923c51fb1e09d3c245"
+    ],
+    "lantern_vocab_sync_v1.sql": [
+      "06977bdb4655324a7123534a104e8ff40eab0ae587fd3852f5e9ca5bc7a37f2b"
+    ]
+  },
+  "schema": [
+    {
+      "type": "index",
+      "name": "exam_library_owner_sha",
+      "tblName": "exam_library",
+      "sha": "63f97e7c09c300011ad8c189cdaed8a492501e3e2f6c01246ee4b6f8ade222ef"
+    },
+    {
+      "type": "index",
+      "name": "lantern_vocab_events_owner_revision",
+      "tblName": "lantern_vocab_events",
+      "sha": "2f0306ef10712531690b893650e2cbfd6e3b701163cf8ce3b676e1ba484ac84d"
+    },
+    {
+      "type": "index",
+      "name": "study_sync_owner_revision",
+      "tblName": "study_sync_index",
+      "sha": "13db67ce863560db7f78d18b61432f85a6c3066fdb0d764f7d5aa98663fe62f1"
+    },
+    {
+      "type": "table",
+      "name": "attempts",
+      "tblName": "attempts",
+      "sha": "dc8c55720876b0ab3f140a970cfa3838f72bac4a127850ea238a6fc366e2393e"
+    },
+    {
+      "type": "table",
+      "name": "checkins",
+      "tblName": "checkins",
+      "sha": "c0c73c684b366c0244a20546f541390a6f0bdd1f8977349dda2685747a8784a0"
+    },
+    {
+      "type": "table",
+      "name": "exam_library",
+      "tblName": "exam_library",
+      "sha": "d81d5f6806891013840188a24aceec97d3b3613598ca5f30a263d6b9fffadc2a"
+    },
+    {
+      "type": "table",
+      "name": "lantern_vocab_cursors",
+      "tblName": "lantern_vocab_cursors",
+      "sha": "2f808c27482489675b3c82e9d254955b91248b1ae615e0e2e89a0d0700830a49"
+    },
+    {
+      "type": "table",
+      "name": "lantern_vocab_events",
+      "tblName": "lantern_vocab_events",
+      "sha": "1ab7c71c09563277daaa702daf317a1699fafd4d16e34bfca4336fc5dcf57cc5"
+    },
+    {
+      "type": "table",
+      "name": "lantern_vocab_snapshots",
+      "tblName": "lantern_vocab_snapshots",
+      "sha": "3fedf6ef38e9d08d5acf73e09488de934e95e54405ab13f1955be5686f0bc330"
+    },
+    {
+      "type": "table",
+      "name": "profiles",
+      "tblName": "profiles",
+      "sha": "3ff5de3ac3f7a2e0f55c875dc6a46d56ca41c721735d577ee74f799e6e663206"
+    },
+    {
+      "type": "table",
+      "name": "question_marks",
+      "tblName": "question_marks",
+      "sha": "d3deb9548aa66ae4ff20f79e59a645b423e13a94937688d1e36a5d065435001a"
+    },
+    {
+      "type": "table",
+      "name": "recordings",
+      "tblName": "recordings",
+      "sha": "ac4c0e6015ddc6207b5a873af5211d1c0beefd3e4031fdb0dbe64eab9cbd88e5"
+    },
+    {
+      "type": "table",
+      "name": "resource_tasks",
+      "tblName": "resource_tasks",
+      "sha": "0214e018d2c2daaa20f59199ddab3a5ef938911c71ee2e67a9d5df300e22ea26"
+    },
+    {
+      "type": "table",
+      "name": "study_sync_clock",
+      "tblName": "study_sync_clock",
+      "sha": "e81562fd5e2fe2cd97ed49667f5d3a8e2fd1d5e0f806d378214032adaa858d07"
+    },
+    {
+      "type": "table",
+      "name": "study_sync_index",
+      "tblName": "study_sync_index",
+      "sha": "98708fbef5ab0bf19f1b921293391636009641a851f63c14761c1fbf949f8c94"
+    },
+    {
+      "type": "table",
+      "name": "vocabulary_events",
+      "tblName": "vocabulary_events",
+      "sha": "c302fe5a8dadae2493addb29ffce60c31e7719861e828060bbfc2ff1d783c2a3"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_attempts_delete",
+      "tblName": "attempts",
+      "sha": "afa71bc3fe1efd869152a15ad2019f34f486da9886c904c0c5486b7514fbe77e"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_attempts_insert",
+      "tblName": "attempts",
+      "sha": "55936e12278ec5e71efd03824bff588608b485fb1f4a7a1ddf37c23476a741b0"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_attempts_update",
+      "tblName": "attempts",
+      "sha": "84d010e3459167d4f3a03fab558222b434970cc3829162057caa6e61cb7f644b"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_checkins_delete",
+      "tblName": "checkins",
+      "sha": "73985403d8a705aafd3dffd97c81137096c9822907aaabb1b718966d0ae8dbfd"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_checkins_insert",
+      "tblName": "checkins",
+      "sha": "14aa16e12b2d152aea98a4758a0c449aa0e2935ed72139c3a460a9a991576a47"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_checkins_update",
+      "tblName": "checkins",
+      "sha": "44bed7372f0da06b010b6082f473cc01a9a468ad18f75db6667e86d005ffe0e2"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_profiles_delete",
+      "tblName": "profiles",
+      "sha": "c0ad1ebcf3bb0a2dc403172cb81d2b887bdde5ff10b7c5dcafb1d7c78b86859f"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_profiles_insert",
+      "tblName": "profiles",
+      "sha": "000138f9a8862bc934e74c2c538b692fa3bd0aaef84f9acad9609b77a11941d4"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_profiles_update",
+      "tblName": "profiles",
+      "sha": "9efd2224c7c2f8d010ccec57d1900d42e62ee40d93b228514f21271ff610bb4e"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_question_marks_delete",
+      "tblName": "question_marks",
+      "sha": "b02fb8f2a6cff1bfdbb16a1629c56a6d0375040fc25b9c2db74c5b345c9c934c"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_question_marks_insert",
+      "tblName": "question_marks",
+      "sha": "c40ac212fbab1f0ca365fc078a617e82ef15715a71fd13e56251027d5ff72e0a"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_question_marks_update",
+      "tblName": "question_marks",
+      "sha": "b1274a3e72d9dd7a98e862d4a9a0a93c9eab11ef77ce2af5674af2e4400a8fa4"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_recordings_delete",
+      "tblName": "recordings",
+      "sha": "6a001e13754d938f9b971ba4403fd1f816c9c47a6dd2e30221e36a10e96089ef"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_recordings_insert",
+      "tblName": "recordings",
+      "sha": "e95dfe663296954a85da863f258e2b2345f6208ebe63b8ffdfdf682f41e9471a"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_recordings_update",
+      "tblName": "recordings",
+      "sha": "c12e37d0a8fc8fbb7928b7d7f51e1eb08325fac63b6472d0056060ce19bf6af9"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_resource_tasks_delete",
+      "tblName": "resource_tasks",
+      "sha": "25b1c6415dd989b961cefa76e46f5293a26c17a0a53cee963599ab1f05a6edfd"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_resource_tasks_insert",
+      "tblName": "resource_tasks",
+      "sha": "5298d8e3f05f398bfead9837361d80c209b0d696dd23b1a426fc2ef4a1084776"
+    },
+    {
+      "type": "trigger",
+      "name": "study_sync_resource_tasks_update",
+      "tblName": "resource_tasks",
+      "sha": "f1179a2fa14bb51fe8c541d31fa1635b41b65093fc8413b5647283da0a400afa"
+    }
+  ]
+}
