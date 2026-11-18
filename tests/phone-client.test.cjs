@@ -131,7 +131,7 @@ test('native Back uses registered priority and account root only returns to a ve
   const values=[state,accountOpen,legacy,returnOwner,{huaweiLogin:false,huaweiBinding:false},null];
   const react={useState(){const at=index++;return [values[at],v=>updates.push([at,v])];},useRef(){return {current:{getSnapshot:()=>state}};},useEffect(fn){if(++effect===2)fn();}};
   const imports={react,'react/jsx-runtime':{jsx:()=>null,jsxs:()=>null},'react-dom':{flushSync:fn=>fn()},'@/app/study-app':{},'@/app/account/account-panel':{},'@/app/learn/guest-data-recovery':{},'@/lib/native-host':{registerNativeBack(fn,p){handler=fn;priority=p;return()=>{};}},'@/lib/native-auth-transport':{},'@/lib/native-account-controller':{},'@/lib/ui-theme':{},'@/lib/cloud-sync/native-account-root':{attachNativeAccountSync:()=>()=>{}}};
-  const module={};vm.runInNewContext(rootOut,{exports:module,require(name){assert(Object.hasOwn(imports,name),`unexpected import: ${name}`);return imports[name];},Object});
+  const module={};vm.runInNewContext(rootOut,{exports:module,require(name){if(name==='@/lib/native-workspace-resume')return load('lib/native-workspace-resume.ts');assert(Object.hasOwn(imports,name),`unexpected import: ${name}`);return imports[name];},Object});
   module.default();assert.equal(priority,100);return {handled:handler(),updates};
  }
  const access={owner:A.id,canAccess:()=>true,assertAccess:()=>true};
