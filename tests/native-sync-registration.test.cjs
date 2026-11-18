@@ -18,7 +18,7 @@ test('document, foreground and disposal paths invalidate or dispose both bridges
  assert.match(invalidate,/this\.syncHost\?\.invalidate\(\)/);assert.match(invalidate,/this\.studySyncHost\?\.invalidate\(\)/);
  const foreground=section('private onForegroundChanged(): void {','private startBridgeSync(): void {');assert.match(foreground,/this\.startBridgeSync\(\)/);
  const start=section('private startBridgeSync(): void {','private syncBridge(');assert.match(start,/this\.invalidateBridge\(\)/);
- const page=section('private pageBegin(): void {','private pageEnd(');assert.match(page,/this\.invalidateBridge\(\)/);
+ const page=section('private pageBegin(','private pageEnd(');assert.match(page,/this\.invalidateBridge\(\)/);
  const dispose=section('aboutToDisappear(): void {','private context():');
  assert.ok(dispose.indexOf('this.syncHost?.dispose()')<dispose.indexOf('this.authHost?.dispose()'));
  assert.ok(dispose.indexOf('this.studySyncHost?.dispose()')<dispose.indexOf('this.authHost?.dispose()'));
