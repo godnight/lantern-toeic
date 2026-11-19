@@ -15,7 +15,7 @@ import {useVocabularyWorkflow} from '@/lib/use-vocabulary-workflow';
 import {usePracticeWorkflow} from '@/lib/use-practice-workflow';
 import {practiceUnits,selectPractice} from '@/lib/practice-selection';
 import {createStudyBackup,StudyBackupDateError} from '@/lib/study-backup';
-import {registerNativeBack} from '@/lib/native-host';
+import {isNativeForeground,registerNativeBack} from '@/lib/native-host';
 import {EMPTY_DATA,createId,expandQuestionGroups,PARTS,dayKey,daysUntil,dayOffset,getWeek,firstAttempts,reviewSchedule,chooseQuestions,dailyPlan,type Profile,type Question,type Speaking,type Recording,type Theme} from '@/lib/study-model';
 import {QUESTIONS as questions,LISTENING_COLLECTION_QUESTIONS,LISTENING50_STATS,PRACTICE_QUESTION_CATALOGS,QUESTION_CATALOG_STATS} from '@/lib/question-catalog';
 import sData from '@/content/speaking.json';
@@ -54,13 +54,15 @@ import localAsrProfile from '@/content/local-asr-profile.json';
 import {stopLessonAudio} from '@/lib/lesson-audio';
 import {applyDocumentTheme,UI_THEME_META} from '@/lib/ui-theme';
 import {getSpeakingRecovery,hasSpeakingRecovery,retainSpeakingRecovery,releaseSpeakingRecovery,subscribeSpeakingRecovery} from '@/lib/speaking-recovery';
+import {nativeWorkspaceResume,resumeForOwner,type NativeWorkspaceResume} from '@/lib/native-workspace-resume';
 let workspaceOwnerEpoch=Date.now();
 const prompts=sData as Speaking[];
 const questionById=new Map(questions.map(question=>[question.id,question]));
 const ONLINE_SITE_URL='https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site';
 function saveFile(name:string,text:string,type='application/json'){const u=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);}
 function ChoiceSelect({value,onChange,items,label}:{value:string;onChange:(v:string)=>void;items:{value:string;label:string}[];label:string}){return <Select value={value} onValueChange={onChange}><SelectTrigger className="form-select" aria-label={label}><SelectValue/></SelectTrigger><SelectContent>{items.map(x=><SelectItem key={x.value} value={x.value}>{x.label}</SelectItem>)}</SelectContent></Select>}
-export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable=false,remoteLearningEnabled=false}:{owner:string|null;nativeMode?:boolean;onAccount?:()=>void;legacyAvailable?:boolean;remoteLearningEnabled?:boolean}){
+export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable=false,remoteLearningEnabled=false,resumeSnapshot,onResumeSnapshot}:{owner:string|null;nativeMode?:boolean;onAccount?:()=>void;legacyAvailable?:boolean;remoteLearningEnabled?:boolean;resumeSnapshot?:NativeWorkspaceResume|null;onResumeSnapshot?:(snapshot:NativeWorkspaceResume|null)=>void}){
+ const pendingNativeResume=useRef(nativeMode?resumeForOwner(resumeSnapshot??null,owner):null);
  const accountAccess=useLearningAccess(owner);
  useEffect(()=>()=>stopLessonAudio(),[]);
  const [feedbackOwnerGeneration]=useState(()=>++workspaceOwnerEpoch);
@@ -95,12 +97,55 @@ export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable
  const consumeDiscoveryReturn=useCallback(()=>setPendingDiscoveryReturn(previous=>previous.owner===owner&&previous.value?{...previous,value:null}:previous),[owner]);
  useLayoutEffect(()=>{setPendingDiscoveryReturn(previous=>previous.owner===owner?previous:{owner,value:null});},[owner]);
  const [discoveryLibraryActive,setDiscoveryLibraryActive]=useState(discoveryReturn?.category==='library');
- const [nav,setNav]=useState(discoveryReturn?'resources':'today');const [planRoute,setPlanRoute]=useState<{id:number;initial:LearningPlanPage}|null>(null);const [themeOpen,setThemeOpen]=useState(false);const [installOpen,setInstallOpen]=useState(false);const [speaking,setSpeaking]=useState<Speaking|null>(null);const [checkinOpen,setCheckinOpen]=useState(false);const [minutes,setMinutes]=useState('5');const [load,setLoad]=useState<'轻'|'刚好'|'重'>('刚好');const [note,setNote]=useState('');const [selectedResource,setSelectedResource]=useState<{id:string;title:string}|null>(null);const [trainingTab,setTrainingTab]=useState('lr');const [recordingPlay,setRecordingPlay]=useState<{url:string;title:string;recording:Recording;request:number}|null>(null);const [installPrompt,setInstallPrompt]=useState<any>(null);const [now,setNow]=useState(new Date());
+ const [nav,setNav]=useState<string>(pendingNativeResume.current?.nav??(discoveryReturn?'resources':'today'));const [planRoute,setPlanRoute]=useState<{id:number;initial:LearningPlanPage}|null>(null);const [themeOpen,setThemeOpen]=useState(false);const [installOpen,setInstallOpen]=useState(false);const [speaking,setSpeaking]=useState<Speaking|null>(null);const [checkinOpen,setCheckinOpen]=useState(false);const [minutes,setMinutes]=useState('5');const [load,setLoad]=useState<'轻'|'刚好'|'重'>('刚好');const [note,setNote]=useState('');const [selectedResource,setSelectedResource]=useState<{id:string;title:string}|null>(null);const [trainingTab,setTrainingTab]=useState('lr');const [recordingPlay,setRecordingPlay]=useState<{url:string;title:string;recording:Recording;request:number}|null>(null);const [installPrompt,setInstallPrompt]=useState<any>(null);const [now,setNow]=useState(new Date());
  const planId=useRef(0),planBackRef=useRef<(()=>void)|null>(null),planScroll=useRef(0);
  const searchOrigin=useRef<{nav:string;scroll:number;focus:HTMLElement|null;focusTag:string;focusLabel:string|null;focusText:string;focusIndex:number;searchTrigger?:boolean}|null>(null);const consumedSearchPop=useRef(false);
  const [resourceFocus,setResourceFocus]=useState(false);
  const [practiceLookup,setPracticeLookup]=useState<{term:string;token:string;focus:HTMLElement|null;origin:'practice'|'vocabulary';scroll:number}|null>(null);const lookupRef=useRef(practiceLookup);lookupRef.current=practiceLookup;const consumedLookupPop=useRef(false),lookupReturnRef=useRef<typeof practiceLookup>(null);
  const [searchFrom,setSearchFrom]=useState('today');const [vocabFocus,setVocabFocus]=useState(false);const [checkinError,setCheckinError]=useState('');
+ const resumeIntent=useRef(0),resumeCaptureBlocked=useRef(false),resumePublish=useRef<(()=>void)|null>(null),[resumeRevision,setResumeRevision]=useState(0);
+ const interruptResume=useCallback(()=>{
+  if(!nativeMode||!onResumeSnapshot)return;
+  resumeIntent.current++;resumeCaptureBlocked.current=true;
+  if(pendingNativeResume.current){pendingNativeResume.current=null;setResumeRevision(value=>value+1);}
+  if(accountAccess())onResumeSnapshot(null);
+ },[nativeMode,onResumeSnapshot,accountAccess]);
+ // Clear the previously committed hint before React processes any new user
+ // action. If the app backgrounds in the same turn, no stale view is restored.
+ useLayoutEffect(()=>{
+  if(!nativeMode||!onResumeSnapshot)return;
+  const interrupt=interruptResume;
+  const afterGesture=()=>{const intent=resumeIntent.current;requestAnimationFrame(()=>{if(intent===resumeIntent.current&&accountAccess()&&isNativeForeground()&&document.visibilityState!=='hidden'){resumeCaptureBlocked.current=false;resumePublish.current?.();}});};
+  let scrollGesture=false;
+  const passive=(target:EventTarget|null)=>target instanceof Element&&(target===document.body||!!target.closest('#workspace-main'))&&!target.closest('button,a,input,select,textarea,summary,label,[contenteditable="true"],[role="button"],[role="dialog"]');
+  const pointerDown=(event:PointerEvent)=>{scrollGesture=passive(event.target);interrupt();};
+  const pointerUp=()=>{if(scrollGesture)afterGesture();scrollGesture=false;};
+  const pointerCancel=()=>{if(scrollGesture)afterGesture();scrollGesture=false;};
+  const blankClick=(event:MouseEvent)=>{if(passive(event.target))afterGesture();};
+  const unregisterBack=registerNativeBack(()=>{if(pendingNativeResume.current)interrupt();return false;},210);
+  document.addEventListener('pointerdown',pointerDown,true);for(const type of ['click','keydown','input','submit'])document.addEventListener(type,interrupt,true);
+  document.addEventListener('pointerup',pointerUp,true);document.addEventListener('pointercancel',pointerCancel,true);document.addEventListener('click',blankClick,true);
+  window.addEventListener('popstate',interrupt,true);
+  return()=>{unregisterBack();document.removeEventListener('pointerdown',pointerDown,true);for(const type of ['click','keydown','input','submit'])document.removeEventListener(type,interrupt,true);document.removeEventListener('pointerup',pointerUp,true);document.removeEventListener('pointercancel',pointerCancel,true);document.removeEventListener('click',blankClick,true);window.removeEventListener('popstate',interrupt,true);};
+ },[nativeMode,onResumeSnapshot,accountAccess,interruptResume]);
+ useLayoutEffect(()=>{resumeCaptureBlocked.current=false;},[nav,practiceWorkflow.session,practiceWorkflow.ready,vocabularyWorkflow.activeSession,mockOpen,speaking,recordingPlay,practiceLookup,practiceSettlementId,practiceRecords,practiceRestart,planRoute,themeOpen,installOpen,checkinOpen,vocabFocus,resourceFocus]);
+ const resumeWorkflow=useRef(practiceWorkflow);resumeWorkflow.current=practiceWorkflow;
+ useEffect(()=>{
+  const saved=pendingNativeResume.current;if(!saved||!ready||!practiceWorkflow.ready||!accountAccess())return;
+  if(saved.practiceSessionId){
+   if(!resumeWorkflow.current.sessions.some(item=>item.id===saved.practiceSessionId&&item.status==='active')){pendingNativeResume.current=null;setResumeRevision(value=>value+1);onResumeSnapshot?.(null);return;}
+   let live=true;const intent=resumeIntent.current;const wanted=()=>live&&accountAccess()&&resumeIntent.current===intent&&pendingNativeResume.current===saved;
+   void resumeWorkflow.current.resumeGuarded(saved.practiceSessionId,wanted).then(result=>{if(!wanted())return;pendingNativeResume.current=null;setResumeRevision(value=>value+1);if(['restored','replayed'].includes(result.status))requestAnimationFrame(()=>{if(live&&accountAccess()&&resumeIntent.current===intent)window.scrollTo({top:saved.scroll});});else onResumeSnapshot?.(null);});
+   return()=>{live=false;};
+  }
+  let live=true;const intent=resumeIntent.current;pendingNativeResume.current=null;setResumeRevision(value=>value+1);requestAnimationFrame(()=>{if(live&&resumeIntent.current===intent&&accountAccess()&&isNativeForeground())window.scrollTo({top:saved.scroll});});return()=>{live=false;};
+ },[ready,practiceWorkflow.ready,accountAccess]);
+ useLayoutEffect(()=>{
+  if(!nativeMode||!onResumeSnapshot||!accountAccess()||pendingNativeResume.current||!ready||!practiceWorkflow.ready)return;
+  const excluded=practiceWorkflow.busy||mockOpen||!!speaking||!!recordingPlay||!!practiceLookup||!!practiceSettlementId||!!practiceRecords||!!practiceRestart||!!planRoute||themeOpen||installOpen||checkinOpen||vocabFocus||resourceFocus;
+  const publish=()=>{if(!accountAccess()||resumeCaptureBlocked.current)return;const id=queue&&practiceWorkflow.session?.status==='active'?practiceWorkflow.session.id:null;onResumeSnapshot(nativeWorkspaceResume(owner,nav,window.scrollY,id,excluded));};
+  resumePublish.current=publish;publish();window.addEventListener('scroll',publish,{passive:true});return()=>{window.removeEventListener('scroll',publish);if(resumePublish.current===publish)resumePublish.current=null;};
+ },[nativeMode,onResumeSnapshot,owner,nav,queue,practiceWorkflow.session,practiceWorkflow.ready,practiceWorkflow.busy,vocabularyWorkflow.activeSession,ready,accountAccess,mockOpen,speaking,recordingPlay,practiceLookup,practiceSettlementId,practiceRecords,practiceRestart,planRoute,themeOpen,installOpen,checkinOpen,vocabFocus,resourceFocus,resumeRevision]);
  const recordingAbort=useRef<AbortController|null>(null);
  const recordingRequest=useRef(0);const recordingScope=useRef({owner,nav,tab:trainingTab,alive:true});recordingScope.current={owner,nav,tab:trainingTab,alive:true};
  useEffect(()=>{recordingScope.current.alive=true;return()=>{recordingScope.current.alive=false;recordingRequest.current++;recordingAbort.current?.abort();recordingAbort.current=null;};},[]);
@@ -121,7 +166,7 @@ export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable
  useLayoutEffect(()=>{
   const state={...(window.history.state||{})};
   for(const field of ['lanternWorkspaceView','lanternWorkspaceFrom','lanternVocabularyView','lanternPracticeView','lanternPracticeLookup'])delete state[field];
-  window.history.replaceState({...state,lanternWorkspaceView:'today'},'');
+  window.history.replaceState({...state,lanternWorkspaceView:pendingNativeResume.current?.nav??'today'},'');
  },[]);
  useEffect(()=>{const previous=window.history.scrollRestoration;if(previous===undefined)return;window.history.scrollRestoration='manual';return()=>{window.history.scrollRestoration=previous;};},[]);
  useEffect(()=>registerNativeBack(()=>{
