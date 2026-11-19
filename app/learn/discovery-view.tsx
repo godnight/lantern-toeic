@@ -6,6 +6,7 @@ import {createDiscoveryFavoritesStore,type DiscoveryFavoritesResult} from '@/lib
 import {readDiscoveryReturn,readDiscoveryReturnSnapshot,rememberDiscoveryReturn,clearDiscoveryReturn,type DiscoveryCategory,type DiscoveryReturnState} from '@/lib/discovery-return';
 import {DISCOVERY_SEED,readDiscoveryFeedCache,refreshDiscoveryFeed} from '@/lib/discovery-feed';
 import type {DiscoveryContentKind,DiscoveryFeedSnapshot,DiscoveryItem,DiscoverySourceStatus} from '@/lib/discovery-feed-contract';
+import type {DiscoveryResume} from '@/lib/native-workspace-resume';
 import './discovery.css';
 
 const categories=[['all','全部'],['video','视频'],['podcast','播客'],['article','文章']] as const;
@@ -16,7 +17,7 @@ type FeedCategory='all'|DiscoveryContentKind;
 type SourceControl='cover'|'title'|'source';
 type View={scope:string;category:FeedCategory|'library';query:string;savedOnly:boolean;sourceIds?:string[]};
 type Props={owner:string|null;canAccess:()=>boolean;library:ReactNode;active?:boolean;libraryFocused?:boolean;
- initialReturn?:DiscoveryReturnState|null;initialReturnToken?:string|null;onReturnConsumed?:()=>void;onLibraryActiveChange?:(active:boolean)=>void};
+ initialNativeView?:DiscoveryResume|null;onNativeViewChange?:(value:DiscoveryResume|null)=>void;initialReturn?:DiscoveryReturnState|null;initialReturnToken?:string|null;onReturnConsumed?:()=>void;onLibraryActiveChange?:(active:boolean)=>void};
 type ScopedFeed={scope:string;snapshot:DiscoveryFeedSnapshot;pending:boolean};
 function categoryOf(value:DiscoveryCategory|undefined):View['category']{
  if(value==='library'||value==='video'||value==='podcast'||value==='article')return value;
@@ -44,7 +45,7 @@ function successTime(value:number|null|undefined){
 }
 
 /** A curated external-link directory. Opening a source never submits study time. */
-export default function DiscoveryView({owner,canAccess,library,active=true,libraryFocused=false,initialReturn,initialReturnToken,onReturnConsumed,onLibraryActiveChange}:Props){
+export default function DiscoveryView({owner,canAccess,library,active=true,libraryFocused=false,initialNativeView,onNativeViewChange,initialReturn,initialReturnToken,onReturnConsumed,onLibraryActiveChange}:Props){
  const current=useRef({owner,canAccess,active,alive:true,generation:1});
  if(current.current.owner!==owner||current.current.canAccess!==canAccess)current.current={owner,canAccess,active,alive:true,generation:current.current.generation+1};
  else current.current.active=active;
@@ -52,7 +53,7 @@ export default function DiscoveryView({owner,canAccess,library,active=true,libra
  const matching=()=>current.current.alive&&current.current.generation===generation&&current.current.owner===owner;
  const permitted=()=>matching()&&canAccess();
  const fromSaved=(saved:DiscoveryReturnState|null):View=>({scope,category:categoryOf(saved?.category),query:saved?.query??'',savedOnly:saved?.savedOnly??false,...saved?.sourceIds!==undefined?{sourceIds:[...saved.sourceIds]}:{}});
- const [viewState,setView]=useState<View>(()=>fromSaved(canAccess()?readDiscoveryReturn(owner):null));
+ const [viewState,setView]=useState<View>(()=>{const saved=canAccess()?(initialReturn===undefined?readDiscoveryReturn(owner):initialReturn):null;return saved?fromSaved(saved):initialNativeView&&canAccess()?{scope,...initialNativeView}:fromSaved(null);});
  const view=viewState.scope===scope?viewState:fromSaved(null);
  const [favorites,setFavorites]=useState<{scope:string;result:DiscoveryFavoritesResult}|null>(null),[notice,setNotice]=useState('');
  const [feed,setFeed]=useState<ScopedFeed>(()=>({scope,snapshot:canAccess()?readSnapshot():seedSnapshot(),pending:true}));
@@ -129,10 +130,12 @@ export default function DiscoveryView({owner,canAccess,library,active=true,libra
   });
   return()=>cancelAnimationFrame(frame);
  },[active,owner,canAccess,allowed,ready,view.category,view.query,view.savedOnly,view.sourceIds,feedState.pending,snapshot.entries]);
- const change=(patch:Partial<Omit<View,'scope'>>)=>{if(!permitted()||!current.current.active)return;setView(previous=>({...(previous.scope===scope?previous:fromSaved(null)),...patch,scope}));setNotice('');};
+ useLayoutEffect(()=>{if(!onNativeViewChange||!active||!permitted())return;onNativeViewChange(view.category==='library'?null:{category:view.category,query:view.query,savedOnly:view.savedOnly,...view.sourceIds!==undefined?{sourceIds:[...view.sourceIds]}:{}});},[active,scope,view.category,view.query,view.savedOnly,view.sourceIds,onNativeViewChange]);
+ const captureView=(next:View=view)=>{if(!onNativeViewChange||!permitted()||!current.current.active)return;onNativeViewChange(next.category==='library'?null:{category:next.category,query:next.query,savedOnly:next.savedOnly,...next.sourceIds!==undefined?{sourceIds:[...next.sourceIds]}:{}});};
+ const change=(patch:Partial<Omit<View,'scope'>>)=>{if(!permitted()||!current.current.active)return;const next={...view,...patch,scope};setView(next);captureView(next);setNotice('');};
  const toggle=(entry:DiscoveryItem)=>{
   if(!permitted()||!current.current.active||!active)return;
-  const result=store.current?.toggle(entry.id,entry);
+  captureView();const result=store.current?.toggle(entry.id,entry);
   if(result?.status==='ready'){setFavorites({scope,result});setNotice(result.ids.includes(entry.id)?'已收藏。':'已取消收藏。');}
   else setNotice('收藏未能保存，原记录已保留。请稍后重试。');
  };
@@ -143,8 +146,8 @@ export default function DiscoveryView({owner,canAccess,library,active=true,libra
   return saved;
  };
  const externalClick=(entry:DiscoveryItem,control:SourceControl)=>(event:MouseEvent<HTMLAnchorElement>)=>{if(!beforeExternal(entry,control))event.preventDefault();};
- const refresh=()=>{if(permitted()&&current.current.active&&!feedState.pending)setRefreshCount(count=>count+1);};
- const closeSources=()=>{setSourcesOpen(false);requestAnimationFrame(()=>{if(permitted()&&current.current.active)sourceButton.current?.focus({preventScroll:true});});};
+ const refresh=()=>{if(permitted()&&current.current.active&&!feedState.pending){captureView();setRefreshCount(count=>count+1);}};
+ const closeSources=()=>{captureView();setSourcesOpen(false);requestAnimationFrame(()=>{if(permitted()&&current.current.active)sourceButton.current?.focus({preventScroll:true});});};
  const sourceKey=(event:KeyboardEvent<HTMLDivElement>)=>{
   if(event.key==='Escape'){event.preventDefault();closeSources();return;}
   if(event.key!=='Tab'||!sheet.current||typeof document==='undefined')return;
@@ -156,8 +159,8 @@ export default function DiscoveryView({owner,canAccess,library,active=true,libra
  const toggleSource=(id:string)=>{const next=new Set(view.sourceIds??sources.map(source=>source.id));if(next.has(id))next.delete(id);else next.add(id);const all=sources.length>0&&sources.every(source=>next.has(source.id));change({sourceIds:all?undefined:[...next]});};
  return <section className="discovery-view" aria-label="精选英语内容" data-discovery-mode={view.category==='library'?'library':'feed'}>
   {view.category!=='library'&&<header className="discovery-header">
-   <div className="discovery-topline"><button type="button" className="discovery-icon-button discovery-library-button" aria-label="资料库" disabled={!allowed} onClick={()=>change({category:'library'})}><Library size={22} aria-hidden="true"/></button><h1>{view.savedOnly?'收藏':'发现'}</h1><div className="discovery-header-actions"><button type="button" className="discovery-icon-button" aria-label="我的收藏" aria-pressed={view.savedOnly} disabled={!allowed} onClick={()=>change({savedOnly:!view.savedOnly})}><Bookmark size={21} aria-hidden="true"/>{ids.length>0&&<span className="discovery-saved-dot" aria-hidden="true"/>}</button><button type="button" ref={sourceButton} className="discovery-icon-button" aria-label="内容来源" disabled={!allowed} onClick={()=>{if(permitted()&&current.current.active)setSourcesOpen(true);}}><SlidersHorizontal size={21} aria-hidden="true"/></button></div></div>
-   <form className="discovery-search" role="search" onSubmit={event=>{event.preventDefault();resultsTitle.current?.focus({preventScroll:true});}}><Search size={18} aria-hidden="true"/><label><span className="sr-only">搜索英文内容</span><input ref={searchInput} type="search" value={view.query} maxLength={200} placeholder="搜索英文内容" onChange={event=>change({query:event.target.value})}/></label>{view.query&&<button type="button" className="discovery-search-clear" aria-label="清除搜索" onClick={()=>{change({query:''});requestAnimationFrame(()=>searchInput.current?.focus({preventScroll:true}));}}><X size={17} aria-hidden="true"/></button>}</form><nav className="discovery-categories" aria-label="内容类型">{categories.map(([id,label])=><button type="button" key={id} data-discovery-category={id} aria-pressed={view.category===id} disabled={!allowed} onClick={()=>change({category:id})}>{label}</button>)}</nav>
+   <div className="discovery-topline"><button type="button" className="discovery-icon-button discovery-library-button" aria-label="资料库" disabled={!allowed} onClick={()=>change({category:'library'})}><Library size={22} aria-hidden="true"/></button><h1>{view.savedOnly?'收藏':'发现'}</h1><div className="discovery-header-actions"><button type="button" className="discovery-icon-button" aria-label="我的收藏" aria-pressed={view.savedOnly} disabled={!allowed} onClick={()=>change({savedOnly:!view.savedOnly})}><Bookmark size={21} aria-hidden="true"/>{ids.length>0&&<span className="discovery-saved-dot" aria-hidden="true"/>}</button><button type="button" ref={sourceButton} className="discovery-icon-button" aria-label="内容来源" disabled={!allowed} onClick={()=>{if(permitted()&&current.current.active){captureView();setSourcesOpen(true);}}}><SlidersHorizontal size={21} aria-hidden="true"/></button></div></div>
+   <form className="discovery-search" role="search" onSubmit={event=>{event.preventDefault();captureView();resultsTitle.current?.focus({preventScroll:true});}}><Search size={18} aria-hidden="true"/><label><span className="sr-only">搜索英文内容</span><input ref={searchInput} onFocus={()=>captureView()} type="search" value={view.query} maxLength={200} placeholder="搜索英文内容" onChange={event=>change({query:event.target.value})}/></label>{view.query&&<button type="button" className="discovery-search-clear" aria-label="清除搜索" onClick={()=>{change({query:''});requestAnimationFrame(()=>searchInput.current?.focus({preventScroll:true}));}}><X size={17} aria-hidden="true"/></button>}</form><nav className="discovery-categories" aria-label="内容类型">{categories.map(([id,label])=><button type="button" key={id} data-discovery-category={id} aria-pressed={view.category===id} disabled={!allowed} onClick={()=>change({category:id})}>{label}</button>)}</nav>
   </header>}
   {view.category==='library'&&!libraryFocused&&<button type="button" className="discovery-library-back" disabled={!allowed} onClick={()=>change({category:'all'})}><ChevronLeft size={18} aria-hidden="true"/>返回发现</button>}
   <div className="discovery-library" hidden={view.category!=='library'}>{library}</div>
