@@ -74,3 +74,19 @@ test('native and visibility suspension preserve SDK interaction while page depar
  }finally{h.unmount();}
  assert(h.calls.includes('dispose'));
 });
+
+test('provider discovery retries after blocked session rechecks to anonymous ready',async()=>{
+ const blocked={status:'blocked',message:'暂时无法确认账号'};const h=harness(blocked);try{
+  assert.equal(h.calls.filter(call=>call==='providers').length,0);
+  h.controller.emit(ready(null));h.render();assert.equal(h.calls.filter(call=>call==='providers').length,1);
+  h.providers.resolve({huaweiLogin:true,huaweiBinding:false});await tick();assert.equal(h.panel().huawei.login,true);
+ }finally{h.unmount();}
+});
+
+test('late provider discovery cannot reopen capabilities after the session becomes blocked',async()=>{
+ const h=harness();try{
+  h.controller.emit({status:'blocked',message:'账号需要核对'});h.render();
+  h.providers.resolve({huaweiLogin:true,huaweiBinding:true});await tick();
+  assert.equal(h.panel().huawei.login,false);assert.equal(h.panel().huawei.binding,false);
+ }finally{h.unmount();}
+});

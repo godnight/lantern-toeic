@@ -1,4 +1,5 @@
 'use client';
+import type {VocabularyPrevious} from '@/lib/native-workspace-resume';
 
 import {useEffect,useLayoutEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {ArrowRight,BookOpen,CalendarDays,Check,CheckCircle2,ChevronLeft,ChevronRight,Download,Plus,RefreshCw,Settings2,Upload} from 'lucide-react';
@@ -229,12 +230,14 @@ export function TodayVocabularyTask({workflow,onOpen,onOpenStudy,onPlanOverview,
   </section>;
 }
 
-export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlocked=false,onFinish}:{workflow:Workflow;theme:Theme;onExampleLookup?:ExampleLookup;overlayBlocked?:boolean;onFinish?:()=>void}){
+export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlocked=false,onFinish,initialPrevious,onPreviousChange}:{workflow:Workflow;theme:Theme;onExampleLookup?:ExampleLookup;overlayBlocked?:boolean;onFinish?:()=>void;initialPrevious?:VocabularyPrevious|null;onPreviousChange?:(value:VocabularyPrevious|null)=>void}){
   const session=workflow.activeSession;
-  const [previousStep,setPreviousStep]=useState<string|null>(null);
+  const [previousStep,setPreviousStep]=useState<string|null>(()=>initialPrevious&&session?.id===initialPrevious.sessionId&&session?.cursor===initialPrevious?.cursor&&session?.queue[session.cursor-1]?.id===initialPrevious?.stepId?initialPrevious.stepId:null);
+  const identity=useRef(JSON.stringify([workflow.scopeKey,session?.id,session?.cursor]));
+  const choosePrevious=(id:string|null)=>{setPreviousStep(id);onPreviousChange?.(id&&session?{sessionId:session.id,stepId:id,cursor:session.cursor}:null);};
   const viewingPrevious=!!session&&session.status==='active'&&session.cursor>0&&session.queue[session.cursor-1]?.id===previousStep;
   const step=viewingPrevious?session!.queue[session!.cursor-1]:session?.currentStep;
-  useEffect(()=>setPreviousStep(null),[workflow.scopeKey,session?.id,session?.cursor]);
+  useEffect(()=>{const next=JSON.stringify([workflow.scopeKey,session?.id,session?.cursor]);if(identity.current!==next){identity.current=next;choosePrevious(null);}},[workflow.scopeKey,session?.id,session?.cursor]);
   const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[selected,setSelected]=useState<RawVocabularyRating|null>(null);
   const contentRoot=useRef<HTMLDivElement>(null),wordHeading=useRef<HTMLHeadingElement>(null),previousWord=useRef<string|null>(null),focusedReceipt=useRef<string|null>(null);
   const targetKey=JSON.stringify([workflow.scopeKey,session?.id??null,step?.id??null]);
@@ -307,7 +310,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   const headwordAudio=getWordAudioBindingForSnapshot(step.word,'headword'),exampleAudio=getWordAudioBindingForSnapshot(step.word,'example'),audioHeld=isPrivateWordAudioBlocked(step.word);
   const intent=step.intent==='new'?'新词':step.intent==='reinforcement'?'巩固':step.intent==='manual-review'?'主动复习':'到期复习';
   return <section className="phase2-vocabulary-session" aria-label="单词学习">
-    <div className="phase2-word-session-heading"><span>{viewingPrevious?'上一词 · ':''}{intent} · {viewingPrevious?session.cursor:session.cursor+1} / {session.queue.length}</span><span title={session.dayWindow.timezone}>{session.dayWindow.localDate}</span><button type="button" className="text-button phase2-previous-word" aria-hidden={session.cursor===0||undefined} disabled={blocked||viewingPrevious||session.cursor===0} onClick={()=>{if(session.cursor>0)setPreviousStep(session.queue[session.cursor-1].id);}}>上一词</button></div>
+    <div className="phase2-word-session-heading"><span>{viewingPrevious?'上一词 · ':''}{intent} · {viewingPrevious?session.cursor:session.cursor+1} / {session.queue.length}</span><span title={session.dayWindow.timezone}>{session.dayWindow.localDate}</span><button type="button" className="text-button phase2-previous-word" aria-hidden={session.cursor===0||undefined} disabled={blocked||viewingPrevious||session.cursor===0} onClick={()=>{if(session.cursor>0)choosePrevious(session.queue[session.cursor-1].id);}}>上一词</button></div>
     {session.blockedReason&&<div className="phase2-vocab-alert" role="alert"><b>原词卡记录尚未确认</b><p>{session.blockedReason}</p><p>请先恢复独立的词库记录备份，再重新读取计划。此状态不计为整组完成，也不会补写学习事件。</p><button type="button" className="text-button" disabled={overlayBlocked||busy} onClick={()=>void workflow.refresh()}><RefreshCw size={15}/>重新核对词卡记录</button></div>}
     <article className="phase2-word-card panel v045-stable-word-card" tabIndex={-1}>
       <fieldset disabled={blocked} className="phase2-word-fieldset">
@@ -336,7 +339,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
             </div>
             {!revealed?<div className="phase2-rating-actions" role="group" aria-label="回想反馈">
               {(['known','fuzzy','forgotten'] as const).map(rating=><button key={rating} type="button" className={`button ${rating==='known'?'primary':'secondary'}`} disabled={blocked||!!fixedRating&&fixedRating!==rating} aria-pressed={fixedRating===rating} aria-busy={busy&&fixedRating===rating} onClick={()=>void run(rating)}><span>{RATING_NAMES[rating]}</span></button>)}
-            </div>:<div className="phase2-revealed-actions">{step.receipt!.rawRating==='known'&&!step.correctedToForgotten&&<button type="button" className="button secondary phase2-correct-rating" disabled={blocked} aria-busy={busy} onClick={()=>void correct()}>{step.correctionPending?'重试改判':'改为忘记'}</button>}{viewingPrevious?<button type="button" className="button primary phase2-next-word" disabled={blocked} onClick={()=>setPreviousStep(null)}>返回当前词<ArrowRight size={17}/></button>:<button type="button" className="button primary phase2-next-word" disabled={blocked||session.queue.some(row=>row.correctionPending)} aria-busy={busy} onClick={()=>void run()}>{session.cursor===session.queue.length-1?'完成这一组':'下一词'}<ArrowRight size={17}/></button>}</div>}
+            </div>:<div className="phase2-revealed-actions">{step.receipt!.rawRating==='known'&&!step.correctedToForgotten&&<button type="button" className="button secondary phase2-correct-rating" disabled={blocked} aria-busy={busy} onClick={()=>void correct()}>{step.correctionPending?'重试改判':'改为忘记'}</button>}{viewingPrevious?<button type="button" className="button primary phase2-next-word" disabled={blocked} onClick={()=>choosePrevious(null)}>返回当前词<ArrowRight size={17}/></button>:<button type="button" className="button primary phase2-next-word" disabled={blocked||session.queue.some(row=>row.correctionPending)} aria-busy={busy} onClick={()=>void run()}>{session.cursor===session.queue.length-1?'完成这一组':'下一词'}<ArrowRight size={17}/></button>}</div>}
           </footer>
         </div>
       </fieldset>
@@ -344,7 +347,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   </section>;
 }
 
-export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=false,onOpenSearch,onCancel,onEditPlan,entryView='study'}:{workflow:Workflow;theme:Theme;onExampleLookup?:ExampleLookup;overlayBlocked?:boolean;onOpenSearch?:()=>void;onCancel?:()=>void;onEditPlan?:()=>void;entryView?:'plan'|'study'}){
+export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=false,onOpenSearch,onCancel,onEditPlan,entryView='study',initialPrevious,onPreviousChange}:{workflow:Workflow;theme:Theme;onExampleLookup?:ExampleLookup;overlayBlocked?:boolean;onOpenSearch?:()=>void;onCancel?:()=>void;onEditPlan?:()=>void;entryView?:'plan'|'study';initialPrevious?:VocabularyPrevious|null;onPreviousChange?:(value:VocabularyPrevious|null)=>void}){
   const projection=workflow.projection,plan=projection?.plan;
   const [editing,setEditing]=useState(false);
   const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[completedHidden,setCompletedHidden]=useState('');
@@ -421,7 +424,7 @@ export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=fa
     {workflow.ready&&!workflow.error&&projection&&<>
       {(editing||!plan)&&(onEditPlan?<section className="panel v041-vocabulary-setup"><h2>尚未设置单词安排</h2><button type="button" className="button primary" disabled={blocked} onClick={edit}>制定单词计划</button></section>:<VocabularyPlanEditor workflow={workflow} onLeave={()=>{if(plan)setEditing(false);else onCancel?.();}} onSaved={()=>setEditing(false)}/>)}
       {!editing&&plan&&<>
-        {showSession?<VocabularyStudyCard workflow={workflow} theme={theme} onExampleLookup={onExampleLookup} overlayBlocked={overlayBlocked||busy} onFinish={()=>setCompletedHidden(workflow.activeSession?.id||'')}/>:<TodayVocabularyTask workflow={workflow} disabled={blocked} onOpen={openPlan} onOpenStudy={openStudy} compact/>}
+        {showSession?<VocabularyStudyCard initialPrevious={initialPrevious} onPreviousChange={onPreviousChange} workflow={workflow} theme={theme} onExampleLookup={onExampleLookup} overlayBlocked={overlayBlocked||busy} onFinish={()=>setCompletedHidden(workflow.activeSession?.id||'')}/>:<TodayVocabularyTask workflow={workflow} disabled={blocked} onOpen={openPlan} onOpenStudy={openStudy} compact/>}
         <section className="v041-current-plan panel" aria-label="当前单词计划"><div className="phase2-vocab-heading"><h2>{planName(plan.bookId)}</h2><button type="button" className="text-button" disabled={blocked} onClick={edit}><Settings2 size={16}/>调整</button></div><p>每天 {plan.dailyNew} 个新词 · 每周 {plan.weekdays.length} 天</p><progress aria-label="总目标覆盖进度" value={Math.min(projection.counts.learned,plan.goal)} max={Math.max(1,plan.goal)}/><p>已学 {projection.counts.learned} / {plan.goal}</p>{savedEstimate&&<small>{savedEstimate.title}</small>}
           <details className="v041-plan-details"><summary>查看安排</summary>
         {selected&&<section className="phase2-plan-calendar panel" aria-label="单词计划日历">

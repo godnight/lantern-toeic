@@ -21,7 +21,7 @@ export default function NativeAccountRoot(){
  },[state]);
  useEffect(()=>{
   const value=new NativeAccountController(createNativeAuthTransport());controller.current=value;
-  let foreground=true,initialized=false,alive=true;
+  let foreground=true,initialized=false;
   const off=value.subscribe((next,sync)=>{
    if((next.status==='ready'&&next.user?.id!==savedWorkspace.current?.owner)||
       (next.status==='blocked'&&foreground&&document.visibilityState!=='hidden'))savedWorkspace.current=null;
@@ -32,10 +32,16 @@ export default function NativeAccountRoot(){
   const visibility=()=>document.visibilityState==='hidden'?hide():show();
   window.addEventListener('pagehide',leave);window.addEventListener('pageshow',show);window.addEventListener('focus',show);document.addEventListener('visibilitychange',visibility);
   initialized=true;if(foreground&&document.visibilityState!=='hidden')value.start();else value.suspend(false);
-  void value.getProviders().then(next=>{if(alive)setProviders(next);},()=>{if(alive)setProviders({huaweiLogin:false,huaweiBinding:false});});
   if(!document.documentElement.dataset.uiTheme)applyDocumentTheme('paper');
-  return()=>{alive=false;off();native();value.dispose();controller.current=null;savedWorkspace.current=null;window.removeEventListener('pagehide',leave);window.removeEventListener('pageshow',show);window.removeEventListener('focus',show);document.removeEventListener('visibilitychange',visibility);};
+  return()=>{off();native();value.dispose();controller.current=null;savedWorkspace.current=null;window.removeEventListener('pagehide',leave);window.removeEventListener('pageshow',show);window.removeEventListener('focus',show);document.removeEventListener('visibilitychange',visibility);};
  },[]);
+ useEffect(()=>{
+  const active=controller.current;
+  if(!active||state.status!=='ready'||state.unavailable||!state.access.canAccess()){setProviders({huaweiLogin:false,huaweiBinding:false});return;}
+  let live=true;
+  void active.getProviders().then(next=>{if(live&&controller.current===active&&active.getSnapshot()===state)setProviders(next);},()=>{if(live&&controller.current===active&&active.getSnapshot()===state)setProviders({huaweiLogin:false,huaweiBinding:false});});
+  return()=>{live=false;};
+ },[state]);
  const canReturn=accountOpen&&state.status==='ready'&&!!state.user&&state.user.id===returnOwner&&state.access.owner===returnOwner&&state.access.canAccess();
  const enter=()=>{if(state.status!=='ready'||!state.user||controller.current?.getSnapshot()!==state||state.access.owner!==state.user.id||!state.access.assertAccess())return false;setAccountOpen(false);return true;};
  const submit=async(mode:'register'|'login',credentials:{username:string;password:string})=>{
@@ -60,5 +66,5 @@ export default function NativeAccountRoot(){
   resumeSnapshot={resumeForOwner(savedWorkspace.current,state.user.id)} onResumeSnapshot={captureWorkspace}
   onAccount={()=>{savedWorkspace.current=null;setReturnOwner(state.user!.id);setAccountOpen(true);}}/>;
  const panelState:NativeAccountState=state.status==='ready'&&state.user&&!state.access.canAccess()?{status:'blocked',message:'会话有效期已结束，原分区已锁定。请联网重新核对账号。'}:state;
- return <AccountPanel state={panelState} onSubmit={submit} onLogout={()=>{savedWorkspace.current=null;void controller.current?.mutate('logout');}} onRecheck={()=>{savedWorkspace.current=null;controller.current?.recheck();}} onEnter={enter} onBack={canReturn?enter:undefined} onLegacy={()=>{savedWorkspace.current=null;setLegacy(true);}} huawei={{login:providers.huaweiLogin,binding:providers.huaweiBinding,onLogin:()=>{void huawei('login');},onBind:()=>{void huawei('bind');}}}/>;
+ return <AccountPanel simplified={!accountOpen||!returnOwner} state={panelState} onSubmit={submit} onLogout={()=>{savedWorkspace.current=null;setReturnOwner(null);void controller.current?.mutate('logout');}} onRecheck={()=>{savedWorkspace.current=null;controller.current?.recheck();}} onEnter={enter} onBack={canReturn?enter:undefined} onLegacy={()=>{savedWorkspace.current=null;setLegacy(true);}} huawei={{login:providers.huaweiLogin,binding:providers.huaweiBinding,onLogin:()=>{void huawei('login');},onBind:()=>{void huawei('bind');}}}/>;
 }
