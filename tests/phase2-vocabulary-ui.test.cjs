@@ -199,8 +199,11 @@ test('reading position survives same-word save and retry; only the next word res
  const content=nodes(h.tree,node=>node.props?.className==='phase2-word-content')[0].props.ref;
  const heading=nodes(h.tree,node=>node.type==='h2'&&node.props.className==='phase2-current-word')[0].props.ref;
  let revealFocusCalls=0,cardScrollCalls=0,headingTop=100;
- const document={defaultView:{innerHeight:640},querySelectorAll:()=>[]};
- content.current={ownerDocument:document,scrollTop:137,focus:()=>{revealFocusCalls++;},closest:selector=>{assert.equal(selector,'.phase2-word-card');return {scrollIntoView:options=>{assert.equal(options.block,'start');assert.equal(options.behavior,'instant');cardScrollCalls++;}};}};let focusCalls=0;heading.current={focus:()=>{focusCalls++;},getBoundingClientRect:()=>({top:headingTop,bottom:headingTop+40})};
+ const document={defaultView:{innerHeight:640,scrollBy:options=>{assert.equal(options.behavior,'instant');assert.equal(options.top,92);cardScrollCalls++;}},querySelectorAll:()=>[]};
+ const sessionHeading={ownerDocument:document,getBoundingClientRect:()=>({top:100})};
+ const sessionRoot={querySelector:selector=>{assert.equal(selector,'.phase2-word-session-heading');return sessionHeading;}};
+ const closest=selector=>{assert.equal(selector,'.phase2-vocabulary-session');return sessionRoot;};
+ content.current={ownerDocument:document,scrollTop:137,focus:()=>{revealFocusCalls++;},closest};let focusCalls=0;heading.current={focus:options=>{assert.equal(options.preventScroll,true);focusCalls++;},getBoundingClientRect:()=>({top:headingTop,bottom:headingTop+40}),closest};
  h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);
  h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);assert.equal(focusCalls,0);assert.equal(revealFocusCalls,1);assert.equal(cardScrollCalls,0);
  active.currentStep={...active.currentStep,id:'next-word',word:{...word,id:'available',word:'available',meaning:'可用的'},receipt:undefined};

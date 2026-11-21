@@ -26,6 +26,27 @@ const planName=(id:WorkflowBookId)=>PLAN_CHOICES.find(book=>book.id===id)?.label
 const newPlanDraft=():VocabularyPlanDraft=>({bookId:'general-base-1.2',goal:getWorkflowBook('general-base-1.2').capacity,dailyNew:15,weekdays:[1,2,3,4,5]});
 const successful=(result:VocabularyWorkflowResult)=>result.status==='applied'||result.status==='replayed';
 
+// The session heading precedes the card. Measure the actual sticky header rather
+// than assuming the card's scroll margin also leaves the heading unobscured.
+function wordSessionTop(element:HTMLElement){
+  const doc=element.ownerDocument,view=doc.defaultView;
+  if(!view)return 0;
+  const viewportTop=view.visualViewport?.offsetTop??0;
+  return [...doc.querySelectorAll<HTMLElement>('.workspace-topbar')].reduce((top,node)=>{
+    if(!node.getClientRects().length)return top;
+    const style=view.getComputedStyle(node),rect=node.getBoundingClientRect();
+    if(style.position==='sticky')return Math.max(top,viewportTop+(parseFloat(style.top)||0)+rect.height);
+    if(style.position==='fixed'&&rect.top<=viewportTop&&rect.bottom>viewportTop)return Math.max(top,rect.bottom);
+    return top;
+  },viewportTop);
+}
+function scrollWordSessionToTop(element:HTMLElement){
+  const heading=element.closest<HTMLElement>('.phase2-vocabulary-session')?.querySelector<HTMLElement>('.phase2-word-session-heading');
+  const view=heading?.ownerDocument.defaultView;
+  if(!heading||!view)return;
+  view.scrollBy({top:heading.getBoundingClientRect().top-wordSessionTop(heading)-8,behavior:'instant'});
+}
+
 /** Form validation uses the same stable catalog membership as the workflow. */
 export function evaluatePlanDraft(draft:VocabularyPlanDraft,projection:VocabularyProjection) {
   const ids=new Set(vocabularyPlanMembers(draft.bookId,projection.candidates).map(word=>word.id));
@@ -257,8 +278,11 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
         const usableTop=chrome.filter(item=>item.header&&item.rect.top<=top&&item.rect.bottom>top).reduce((edge,item)=>Math.max(edge,item.rect.bottom),top);
         const usableBottom=chrome.filter(item=>!item.header&&item.rect.top<bottom&&item.rect.bottom>top).reduce((edge,item)=>Math.min(edge,item.rect.top),bottom);
         const rect=heading.getBoundingClientRect();
-        // A tall card need not fit in full; only bring an obscured new word back.
-        if(rect.top<usableTop||rect.bottom>usableBottom)contentRoot.current?.closest<HTMLElement>('.phase2-word-card')?.scrollIntoView({block:'start',behavior:'instant'});
+        const sessionHeading=contentRoot.current?.closest<HTMLElement>('.phase2-vocabulary-session')?.querySelector<HTMLElement>('.phase2-word-session-heading');
+        // A tall card need not fit in full. Keep the session counter readable
+        // whenever a word change needs to reposition the page.
+        if(rect.top<usableTop||rect.bottom>usableBottom||sessionHeading&&sessionHeading.getBoundingClientRect().top<wordSessionTop(sessionHeading))
+          scrollWordSessionToTop(heading);
       }
       wordHeading.current?.focus({preventScroll:true});
     }
@@ -389,7 +413,7 @@ export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=fa
     if(!card)return;
     lastStudyOpen.current=token;
     card.focus({preventScroll:true});
-    card.scrollIntoView({block:'start',behavior:'instant'});
+    scrollWordSessionToTop(card);
     // Position a newly committed group before its first paint. This one resume
     // positioning pass respects the actual fixed navigation,
     // including its safe-area padding. Long answers keep natural reading scroll.
@@ -404,8 +428,10 @@ export function VocabularyPlan({workflow,theme,onExampleLookup,overlayBlocked=fa
       const action=controls.getBoundingClientRect(),usableBottom=Math.min(viewportBottom,navTop)-8;
       // Correct a control already entering the viewport, not an unseen action
       // below a long answer. No ongoing listener can fight user scrolling.
-      if(action.top<viewportBottom&&action.bottom>usableBottom)
-        window.scrollBy({top:action.bottom-usableBottom,behavior:'instant'});
+      const heading=card.closest<HTMLElement>('.phase2-vocabulary-session')?.querySelector<HTMLElement>('.phase2-word-session-heading');
+      const room=heading?Math.max(0,heading.getBoundingClientRect().top-wordSessionTop(heading)):0;
+      if(action.top<viewportBottom&&action.bottom>usableBottom&&room>0)
+        window.scrollBy({top:Math.min(action.bottom-usableBottom,room),behavior:'instant'});
     }
   },[workflow.scopeKey,activeSessionId,studyOpenRequest,overlayBlocked,busy,entryView]);
   const savedEstimate=projection&&plan?evaluatePlanDraft(plan,projection):null;
