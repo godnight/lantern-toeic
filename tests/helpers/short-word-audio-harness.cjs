@@ -16,7 +16,8 @@ function environment({regression,order='pause-first',reentry=false}={}){
  if(regression==='without-offset-proof'){
   const before='(elapsed<expectedMs*.8&&!observedShortStart)';assert.equal(code.split(before).length,2);code=code.replace(before,'(elapsed<expectedMs*.8)');
  }else if(regression==='old-final-50ms'){
-  const before='lastProgress!==null&&actual!==null&&actual>=lastProgress&&\n        lastAdvanceGap>=(actual-lastProgress)/rate*800;';assert.equal(code.split(before).length,2);code=code.replace(before,'lastProgress!==null&&lastProgress>=duration-.05;');
+  const newline=code.includes('\r\n')?'\r\n':'\n';
+  const before=['lastProgress!==null&&actual!==null&&actual>=lastProgress&&','        lastAdvanceGap>=(actual-lastProgress)/rate*800;'].join(newline);assert.equal(code.split(before).length,2);code=code.replace(before,'lastProgress!==null&&lastProgress>=duration-.05;');
  }else assert.equal(regression,undefined);
  const globals={Map,Error,Math,Number,JSON,performance:{now:()=>now},setTimeout(fn,delay){timers.set(++timerId,{fn,delay,at:now+delay});return timerId;},clearTimeout:id=>timers.delete(id),console:{info(message){diagnostics.push(JSON.parse(message.slice('Bundled playback '.length)));}}};
  const controller={};vm.runInNewContext(ts.transpileModule(code,{fileName:'lesson-audio.ts',compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,{...globals,exports:controller});
