@@ -99,7 +99,7 @@ function textOf(node) {
 // Expand the shipped pure layout/theme components so navigation is exercised
 // through its real buttons. Business children remain explicit, props-preserving
 // placeholders; the real recording-history component gets independent hook slots.
-function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
+function createStudyApp(h, {data,keyedWorkspace=false,api={},buildIdentity} = {}) {
   const pureComponents = new Set();
   let workspaceComponent;
   const jsx = (type, props, key) => {if(keyedWorkspace&&type===workspaceComponent)h.replaceWorkspace(key);return (pureComponents.has(type)||type?.name==='SettingsRow') ? type(props) : ({type, props, key});};
@@ -156,7 +156,7 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
   }
   for (const name of ['dialog','tabs','select','radio-group','progress','sonner']) imports['@/components/ui/'+name]=stubs;
   Object.assign(imports,require('./helpers/phase2-shell-fixture.cjs').workflowShellFixture(h.react,load('lib/practice-selection.ts',{'./study-model':h.model},h.browser)));
-  imports['@/public/build-identity.json']={default:JSON.parse(fs.readFileSync(root+'/public/build-identity.json','utf8'))};
+  imports['@/public/build-identity.json']={default:buildIdentity ?? JSON.parse(fs.readFileSync(root+'/public/build-identity.json','utf8'))};
   Object.assign(imports,require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root));
  const app = load('app/study-workspace.tsx',imports,h.browser);
   h.recovery=imports['@/lib/speaking-recovery'];
@@ -494,6 +494,25 @@ test('storage quota failure keeps resource checkin open without a false success 
   const retained = nodes(tree, n => n.type === 'Dialog' && n.props.open && textOf(n).includes('实际学习分钟'))[0];
   assert.ok(retained, 'Leave the draft open for retry');
   assert.equal(nodes(retained, n => n.type === 'textarea')[0].props.value, 'Keep my takeaway when storage fails');
+});
+
+test('about shows the actual native build version and preserves the web release version', () => {
+  const identity={...JSON.parse(fs.readFileSync(root+'/public/build-identity.json','utf8')),versionName:'9.8.7',versionCode:87654,buildId:'qa-build-identity'};
+  const release=JSON.parse(fs.readFileSync(root+'/release-manifest.json','utf8'));
+  assert.notEqual(identity.versionName,release.version,'The fixture must distinguish native and web versions');
+  for(const nativeMode of [true,false]) {
+    const h=environment(),App=createStudyApp(h,{buildIdentity:identity});
+    h.setRenderer(()=>App({owner:'alice',nativeMode}));
+    const render=()=>h.render();
+    render();navigateApp(render,'profile');
+    const about=nodes(render(),n=>n.type==='button'&&textOf(n)==='关于微光')[0];
+    assert.ok(about,'Find the real about page entry');about.props.onClick();
+    const facts=nodes(render(),n=>n.type==='dl'&&n.props.className==='v040-about-facts')[0];
+    assert.ok(facts,'Render the real about page');
+    assert.match(textOf(facts),new RegExp(`应用版本v${(nativeMode?identity.versionName:release.version).replaceAll('.','\\.')} / ${identity.versionCode}`));
+    assert.ok(textOf(facts).includes(identity.buildId));
+    h.cleanup();
+  }
 });
 
 test('M1 access guidance keeps Web and native learning local', async () => {
