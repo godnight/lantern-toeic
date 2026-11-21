@@ -29,10 +29,46 @@ function App(){const [nav,setNav]=useState('today');const [focused,setFocused]=u
    const nav=page.getByRole('navigation',{name:'主导航'});
    await nav.locator('button').first().waitFor();
    assert.equal(await nav.getByRole('button').count(),6);
+   if(width<700){
+    const close=page.locator('.workspace-drawer-head button');
+    const last=page.locator('.workspace-sidebar-bottom').getByRole('button',{name:'设置',exact:true});
+    // The slide transition must have finished: focusing an element still offscreen can fail.
+    await page.waitForFunction(()=>Math.abs(document.querySelector('.workspace-sidebar').getBoundingClientRect().left)<1);
+    assert.equal(await close.evaluate(el=>document.activeElement===el),true,'Mouse-open must move focus inside the drawer');
+    await page.keyboard.press('Shift+Tab');
+    assert.equal(await last.evaluate(el=>document.activeElement===el),true,'Shift+Tab wraps from first to last');
+    await page.keyboard.press('Tab');
+    assert.equal(await close.evaluate(el=>document.activeElement===el),true,'Tab wraps from last to first');
+    for(let i=0;i<24;i++){
+     await page.keyboard.press('Tab');
+     assert.equal(await page.evaluate(()=>document.querySelector('.workspace-sidebar').contains(document.activeElement)),true,'Tab must stay inside the open drawer');
+    }
+    await toggle.focus();
+    await page.keyboard.press('Tab');
+    assert.equal(await close.evaluate(el=>document.activeElement===el),true,'Tab from outside returns to the drawer');
+    await page.keyboard.press('Escape');
+    assert.equal(await toggle.getAttribute('aria-expanded'),'false');
+    assert.equal(await toggle.evaluate(el=>document.activeElement===el),true,'Escape returns focus to the opener');
+    await toggle.click();
+    await page.waitForFunction(()=>Math.abs(document.querySelector('.workspace-sidebar').getBoundingClientRect().left)<1);
+    await close.click();
+    assert.equal(await toggle.evaluate(el=>document.activeElement===el),true,'Close button returns focus to the opener');
+    await toggle.click();
+    await page.locator('.workspace-drawer-backdrop').click({position:{x:360,y:300}});
+    assert.equal(await toggle.evaluate(el=>document.activeElement===el),true,'Backdrop close returns focus to the opener');
+    await toggle.click();
+   }else{
+    const contentButton=page.getByRole('button',{name:'进入专注',exact:true});
+    await contentButton.focus();
+    assert.equal(await contentButton.evaluate(el=>document.activeElement===el),true,'Wide drawer must not trap body focus');
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(()=>document.querySelector('.workspace-sidebar').contains(document.activeElement)),false,'Wide drawer must leave page keyboard access available');
+   }
    await nav.getByRole('button',{name:'发现',exact:true}).click();
    assert.equal(await page.locator('[data-page]').textContent(),'resources');
    if(width<700){
     assert.equal(await toggle.getAttribute('aria-expanded'),'false');
+    assert.equal(await toggle.evaluate(el=>document.activeElement===el),true,'Choosing a destination returns focus to the opener');
     await toggle.click();
     assert.equal(await page.evaluate(()=>document.body.style.overflow),'hidden');
     await page.keyboard.press('Escape');
