@@ -46,17 +46,17 @@ body[data-ui-theme="night"],
 html[data-ui-theme="hollow"],
 body[data-ui-theme="hollow"],
 .ui-theme-preview[data-ui-theme="hollow"] {
-  --ui-canvas: #101b29;
-  --ui-surface: #172435;
-  --ui-surface-muted: #213044;
-  --ui-text: #edf0ed;
-  --ui-text-secondary: #b0becb;
-  --ui-primary: #efbd75;
-  --ui-on-primary: #291e12;
-  --ui-selection: #3b3540;
-  --ui-divider: #34485a;
+  --ui-canvas: #101820;
+  --ui-surface: #19252f;
+  --ui-surface-muted: #202c36;
+  --ui-text: #ecf1f4;
+  --ui-text-secondary: #a9b6c2;
+  --ui-primary: #b6d5e9;
+  --ui-on-primary: #10212f;
+  --ui-selection: #263b4b;
+  --ui-divider: #303b46;
   --ui-control-border: #8093a2;
-  --ui-focus: #f3cd96;
+  --ui-focus: #b6d5e9;
   --ui-success: #a0cfb7;
   --ui-warning: #efcf8f;
   --ui-danger: #f0aaa4;

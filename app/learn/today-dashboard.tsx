@@ -1,9 +1,10 @@
 'use client';
 
 import type {ReactNode} from 'react';
-import {ArrowRight,Headphones,RotateCcw} from 'lucide-react';
+import {ArrowRight,CalendarDays,Headphones,RotateCcw} from 'lucide-react';
 import type {Theme} from '@/lib/study-model';
 import {ThemeScene} from './ui-theme';
+import './kimi-pages.css';
 
 export type TodayDashboardProps = {
   theme?: Theme;
@@ -30,12 +31,16 @@ export function TodayDashboard({theme='paper',dateLabel,wordTask,wordSummary,rev
   disabled=false,notices}:TodayDashboardProps) {
   const tasks=[
     {key:'practice',icon:Headphones,title:'听读练习',summary:practiceSummary,label:practiceLabel,onClick:onOpenPractice},
-    {key:'review',icon:RotateCcw,title:'今日复习',summary:reviewSummary,label:'查看复习',onClick:onOpenReview},
+    {key:'review',icon:RotateCcw,title:'到期复习',summary:reviewSummary,label:'查看复习',onClick:onOpenReview},
+    {key:'plan',icon:CalendarDays,title:'学习计划',summary:'单词安排与备考目标',label:'查看计划',onClick:onOpenPlan},
   ];
   return <div className="v040-page v040-today" data-v040-page="today">
-    <div className="v041-today-scene"><ThemeScene theme={theme} scene="todayHero"/><div className="v040-page-heading"><p className="v040-date">{dateLabel}</p><h1>今日学习</h1></div></div>
+    <div className="v041-today-scene"><div className="v040-page-heading"><p className="v040-date">{dateLabel}</p><h1>今日</h1></div></div>
     {notices}
-    <div className="v040-word-action">{wordTask}</div>
+    <div className="v040-today-lead">
+      <div className="v040-word-action">{wordTask}</div>
+      <ThemeScene theme={theme} scene="todayRest" className="v041-today-calm"/>
+    </div>
     <section aria-labelledby="v040-tasks-title">
       <div className="v040-section-heading"><h2 id="v040-tasks-title">今日安排</h2></div>
       <div className="v040-task-list v045-today-tasks">{tasks.map(task=><div className="v040-task-row v045-today-task" key={task.key}>
@@ -46,6 +51,5 @@ export function TodayDashboard({theme='paper',dateLabel,wordTask,wordSummary,rev
         </button>
       </div>)}</div>
     </section>
-    <ThemeScene theme={theme} scene="todayRest" className="v041-today-calm"/>
   </div>;
 }

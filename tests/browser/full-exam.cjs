@@ -216,9 +216,10 @@ async function freshContext() {
   });
 }
 async function enter(section = '练习') {
-  // At 390px the app has a visible mobile nav, while its sidebar duplicate is hidden.
+  // At 390px the same six destinations are in the navigation drawer.
   await page.setViewportSize({width:390,height:844});
-  const nav = page.getByRole('navigation', {name:'手机主导航',exact:true});
+  await (await visible(page.getByRole('button',{name:'展开导航',exact:true}))).click();
+  const nav = page.getByRole('navigation', {name:'主导航',exact:true});
   await visible(nav);
   nativeAccount.assertVerified(page);
   await (await visible(nav.getByRole('button', {name:section==='资料'?'发现':section,exact:true}))).click();
@@ -321,7 +322,7 @@ async function backupManagement() {
   // Backups moved to the shared My > Data management screen. Use its real UI;
   // the ordinary exam catalog intentionally has no export/restore controls.
   await click('返回学习');
-  await click('打开个人信息与设置'); await click('数据管理');
+  await click('展开导航'); await click('设置'); await click('数据管理');
   const panel = page.locator('.v041-mock-data');
   await visible(panel.getByRole('heading',{name:'模考备份',exact:true}));
   await backupIdle();
@@ -480,7 +481,7 @@ async function downloadBackup(name) {
     try {
       await click('保存并退出');await page.getByRole('dialog').getByRole('button',{name:'保存并退出',exact:true}).click();await visible(page.getByRole('button',{name:'中断标记未保存，仍退出（计时继续）',exact:true}));
       const failed=(await currentAttempt(a=>a.id===before.id)).attempt;assert.deepEqual(failed.answers,before.answers);assert.equal(failed.listeningDeadline,before.listeningDeadline);
-      await screenshot('quota-exit-recovery');await click('中断标记未保存，仍退出（计时继续）');await click('确认未保存仍退出');await visible(page.getByRole('navigation',{name:'手机主导航',exact:true}));
+      await screenshot('quota-exit-recovery');await click('中断标记未保存，仍退出（计时继续）');await click('确认未保存仍退出');await visible(page.getByRole('button',{name:'展开导航',exact:true}));
     } finally {await page.evaluate(()=>window.__restoreQaPut?.());}
     await enter();await click('继续考试');await visible(page.getByRole('article',{name:'第 1 题',exact:true}));
     const restored=(await currentAttempt(a=>a.id===before.id)).attempt;assert.deepEqual(restored.answers,before.answers);assert.equal(restored.listeningDeadline,before.listeningDeadline);

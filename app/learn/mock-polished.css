@@ -1,0 +1,17 @@
+/* The exam remains an independent page. These rules only change geometry;
+   storage, deadlines and confirmation gates stay in MockExam. */
+.mock-shell{min-height:100dvh;padding:0 22px max(32px,env(safe-area-inset-bottom));background:var(--ui-background,var(--background));color:var(--ui-text,var(--foreground));}
+.mock-shell .mock-exam{max-width:860px;margin:auto;padding:12px 0 32px;}
+.mock-shell .mock-heading{align-items:center;gap:16px;min-height:64px;padding:0 0 16px;margin-bottom:18px;}
+.mock-shell .mock-heading h2{font-size:clamp(22px,2.6vw,28px);line-height:1.3;}
+.mock-shell .mock-heading .eyebrow{margin-bottom:4px;letter-spacing:0;}
+.mock-shell .mock-exam .panel{border-radius:18px;}
+.mock-shell .mock-exam .button{min-height:48px;border-radius:14px;}
+.mock-shell .mock-library-tabs{display:flex;flex-wrap:wrap;gap:8px;}
+.mock-shell .mock-library-tabs button{min-height:44px;border-radius:999px;}
+.mock-shell .mock-catalog{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px;}
+.mock-shell .mock-workspace{min-width:0;}
+.mock-shell .mock-paper-content,.mock-shell .mock-question,.mock-shell .mock-answer-card{min-width:0;}
+.mock-shell .mock-choices label{min-height:48px;border-radius:14px;}
+@media(max-width:699px){.mock-shell .mock-heading{flex-wrap:wrap;}.mock-shell .mock-heading>div{flex:1 1 100%;}.mock-shell .mock-heading .mock-exit{order:-1;}.mock-shell .mock-catalog-toolbar{flex-wrap:wrap;gap:12px;}.mock-shell .mock-actions>.button{min-height:48px;}}
+@media(max-width:359px){.mock-shell{padding-left:16px;padding-right:16px;}.mock-shell .mock-exam .panel{padding:16px;}}

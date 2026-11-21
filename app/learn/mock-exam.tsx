@@ -10,6 +10,7 @@ import {EXAM_LIMITS, READING_MS, advanceAttempt, examKey, getListeningDurationMs
 import {openExamRepository, type ExamRepository, type ExamSummary, type SavedExamAttempt, type ExamView} from '@/lib/exam-storage';
 import {ExamAssetLeases, releaseExamAssetLease, type ExamAssetLease, ExamUiSession, StaleExamOwner, attachExamMedia, audioOffsetSeconds, checkExamAudioDuration, clockText, remainingMs, trySaveExamExit, verifyExamImage} from '@/lib/exam-ui';
 import ExamLibrary from './exam-library';
+import './mock-polished.css';
 
 type Props = {ownerId: string | null; onClose: () => void; cloudEnabled?:boolean;managementOnly?:boolean};
 type Catalog = {packages: ExamSummary[]; attempts: SavedExamAttempt[]};

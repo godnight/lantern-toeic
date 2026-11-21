@@ -94,11 +94,13 @@ function shell(){return nodes(tree).find(node=>node.type==='WorkspaceShell');}
 function settle(){let count=0;while(navigation.length){assert.ok(++count<20);navigation.shift()();render();}render();}
 function key(values={}){let prevented=false;const event={key:'k',ctrlKey:true,metaKey:false,isComposing:false,keyCode:0,preventDefault(){prevented=true;},...values};for(const fn of [...listeners.get('keydown')||[]])fn(event);render();return prevented;}
 
-const actualShell=load('app/learn/workspace-shell.tsx',{'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':proxy,'./ui-theme':{ThemeMotif:'ThemeMotif',workspaceSceneBackdrop:()=>null}}).WorkspaceShell;
+const shellHooks={useState:value=>[typeof value==='function'?value():value,()=>{}],useRef:value=>({current:value}),useEffect(){}};
+const actualShell=load('app/learn/workspace-shell.tsx',{react:shellHooks,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':proxy,'./ui-theme':{ThemeMotif:'ThemeMotif',workspaceSceneBackdrop:()=>null}}).WorkspaceShell;
 cursor=0;effects=[];tree=app({owner:'bob',nativeMode:false});effects.forEach(fn=>fn());
 const props=shell().props,output=actualShell(props);
-const nameNode=nodes(output).find(n=>n.type==='div'&&n.props?.className==='workspace-identity');
-const identityText=nodes(nameNode).flatMap(n=>Array.isArray(n.props?.children)?n.props.children:[n.props?.children]).filter(x=>typeof x==='string').join(' ');
+// The drawer no longer renders the owner identity; inspect the whole shell so
+// the privacy check still catches any future accidental exposure anywhere.
+const identityText=nodes(output).flatMap(n=>Array.isArray(n.props?.children)?n.props.children:[n.props?.children]).filter(x=>typeof x==='string').join(' ');
 const reviewBadge=nodes(output).some(n=>n.type==='small'&&n.props?.children===1);
 slots.forEach(slot=>slot?.cleanup?.());
 return {props,identityText,reviewBadge,appliedTheme:appliedThemes.at(-1)};

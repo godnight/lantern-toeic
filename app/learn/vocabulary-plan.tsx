@@ -310,18 +310,18 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   const headwordAudio=getWordAudioBindingForSnapshot(step.word,'headword'),exampleAudio=getWordAudioBindingForSnapshot(step.word,'example'),audioHeld=isPrivateWordAudioBlocked(step.word);
   const intent=step.intent==='new'?'新词':step.intent==='reinforcement'?'巩固':step.intent==='manual-review'?'主动复习':'到期复习';
   return <section className="phase2-vocabulary-session" aria-label="单词学习">
-    <div className="phase2-word-session-heading"><span>{viewingPrevious?'上一词 · ':''}{intent} · {viewingPrevious?session.cursor:session.cursor+1} / {session.queue.length}</span><span title={session.dayWindow.timezone}>{session.dayWindow.localDate}</span><button type="button" className="text-button phase2-previous-word" aria-hidden={session.cursor===0||undefined} disabled={blocked||viewingPrevious||session.cursor===0} onClick={()=>{if(session.cursor>0)choosePrevious(session.queue[session.cursor-1].id);}}>上一词</button></div>
+    <div className="phase2-word-session-heading"><span>{viewingPrevious?'上一词 · ':''}{intent} · {viewingPrevious?session.cursor:session.cursor+1} / {session.queue.length}</span><span title={session.dayWindow.timezone}>{session.dayWindow.localDate}</span></div>
     {session.blockedReason&&<div className="phase2-vocab-alert" role="alert"><b>原词卡记录尚未确认</b><p>{session.blockedReason}</p><p>请先恢复独立的词库记录备份，再重新读取计划。此状态不计为整组完成，也不会补写学习事件。</p><button type="button" className="text-button" disabled={overlayBlocked||busy} onClick={()=>void workflow.refresh()}><RefreshCw size={15}/>重新核对词卡记录</button></div>}
     <article className="phase2-word-card panel v045-stable-word-card" tabIndex={-1}>
       <fieldset disabled={blocked} className="phase2-word-fieldset">
         <legend className="sr-only">先回想，再反馈</legend>
         <div className="phase2-word-layout">
-          <div ref={contentRoot} className="phase2-word-content" role="region" aria-label="单词内容" tabIndex={0}>
           <header className="phase2-word-header">
             <div className="v041-word-heading"><h2 ref={wordHeading} tabIndex={-1} className="phase2-current-word" lang="en">{step.word.word}</h2>
             {audioHeld?<p className="word-footnote">此词发音待核对，原学习记录保留。</p>:<SpeechPlayer mode="word" key={step.id} text={step.word.word} {...(headwordAudio||{materialId:step.word.id,segmentId:'headword'})} label="听单词发音" sourceLabel={headwordAudio?PRIVATE_AUDIO_LABEL:'单词学习'}/>}</div>
             <p className="word-phonetic" lang={reference.phonetics.length?'en':undefined} aria-label="音标">{reference.phonetics.length?reference.phonetics.join(' · '):'暂无音标'}</p>
           </header>
+          <div ref={contentRoot} className="phase2-word-content" role="region" aria-label="单词内容" tabIndex={0}>
           <div className="phase2-word-body">
             <WorkflowNotice workflow={workflow}/>
             {revealed?<div className="phase2-word-meaning"><p><span className="word-pos">{step.word.pos}</span>{step.word.meaning}</p>
@@ -329,7 +329,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
               {step.word.example&&<div className={`phase2-word-example${audioHeld?' phase2-word-example--silent':''}`}><blockquote><InteractiveExample text={step.word.example} onLookup={onExampleLookup} disabled={overlayBlocked}/></blockquote>{!audioHeld&&<SpeechPlayer mode="example" key={step.id+'-example'} text={step.word.example} {...(exampleAudio||{materialId:step.word.id,segmentId:'example'})} label="听例句发音" sourceLabel={exampleAudio?PRIVATE_AUDIO_LABEL:'单词学习'}/>}</div>}
               {step.word.translation&&<p className="muted">{step.word.translation}</p>}
               {reference.etymology&&<section className="phase2-word-etymology" aria-label="词源与构词参考"><h3>词源与构词参考</h3><p>{reference.etymology}</p></section>}
-            </div>:null}
+            </div>:<p className="phase2-word-prompt">回想释义，再选择熟悉程度。</p>}
             {message&&<p className="phase2-vocab-message" role="alert">{message}</p>}
           </div>
           </div>
@@ -339,7 +339,8 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
             </div>
             {!revealed?<div className="phase2-rating-actions" role="group" aria-label="回想反馈">
               {(['known','fuzzy','forgotten'] as const).map(rating=><button key={rating} type="button" className={`button ${rating==='known'?'primary':'secondary'}`} disabled={blocked||!!fixedRating&&fixedRating!==rating} aria-pressed={fixedRating===rating} aria-busy={busy&&fixedRating===rating} onClick={()=>void run(rating)}><span>{RATING_NAMES[rating]}</span></button>)}
-            </div>:<div className="phase2-revealed-actions">{step.receipt!.rawRating==='known'&&!step.correctedToForgotten&&<button type="button" className="button secondary phase2-correct-rating" disabled={blocked} aria-busy={busy} onClick={()=>void correct()}>{step.correctionPending?'重试改判':'改为忘记'}</button>}{viewingPrevious?<button type="button" className="button primary phase2-next-word" disabled={blocked} onClick={()=>choosePrevious(null)}>返回当前词<ArrowRight size={17}/></button>:<button type="button" className="button primary phase2-next-word" disabled={blocked||session.queue.some(row=>row.correctionPending)} aria-busy={busy} onClick={()=>void run()}>{session.cursor===session.queue.length-1?'完成这一组':'下一词'}<ArrowRight size={17}/></button>}</div>}
+            </div>:<div className="phase2-revealed-actions">{viewingPrevious?<button type="button" className="button primary phase2-next-word" disabled={blocked} onClick={()=>choosePrevious(null)}>返回当前词<ArrowRight size={17}/></button>:<button type="button" className="button primary phase2-next-word" disabled={blocked||session.queue.some(row=>row.correctionPending)} aria-busy={busy} onClick={()=>void run()}>{session.cursor===session.queue.length-1?'完成这一组':'下一词'}<ArrowRight size={17}/></button>}</div>}
+            <div className="phase2-word-tools"><button type="button" className="text-button phase2-previous-word" aria-hidden={session.cursor===0||viewingPrevious||undefined} disabled={blocked||viewingPrevious||session.cursor===0} onClick={()=>{if(session.cursor>0)choosePrevious(session.queue[session.cursor-1].id);}}>上一词</button>{revealed&&step.receipt!.rawRating==='known'&&!step.correctedToForgotten&&<button type="button" className="text-button phase2-correct-rating" disabled={blocked} aria-busy={busy} onClick={()=>void correct()}>{step.correctionPending?'重试改判':'改为忘记'}</button>}</div>
           </footer>
         </div>
       </fieldset>

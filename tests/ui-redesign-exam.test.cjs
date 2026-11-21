@@ -100,7 +100,7 @@ const ui=load(path.join(siteRoot,'lib/exam-ui.ts'),{'@/lib/exam-model':model});
 const dialog=new Proxy({},{get:(_,name)=>name});
 const componentPath=path.join(sourceRoot,'app/learn/mock-exam.tsx');
 const imports={react:React,'react/jsx-runtime':runtime,'lucide-react':icons,'@/components/ui/dialog':dialog,
-  '@/lib/native-host':{},'@/lib/exam-model':model,'@/lib/exam-storage':{},'@/lib/exam-ui':ui,'./exam-library':{}};
+  '@/lib/native-host':{},'@/lib/exam-model':model,'@/lib/exam-storage':{},'@/lib/exam-ui':ui,'./exam-library':{},'./mock-polished.css':{}};
 const component=load(componentPath,imports);
 const synthetic=require(path.join(siteRoot,'tests/fixtures/synthetic-exam.cjs'));
 const legacySynthetic=require(path.join(siteRoot,'tests/fixtures/synthetic-legacy-exam.cjs'));

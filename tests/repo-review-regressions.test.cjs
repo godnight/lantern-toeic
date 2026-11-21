@@ -51,8 +51,8 @@ function environment({reverse = false} = {}) {
   const toast = Object.assign(() => {}, {success: text => messages.success.push(text), error: text => messages.error.push(text), message: text => messages.error.push(text)});
   const browser = {
     HTMLElement:class HTMLElement{},requestAnimationFrame:fn=>{fn();return 1;},
-    document: {querySelector:()=>null,querySelectorAll:()=>[],activeElement:null,documentElement: {dataset: {},style:{setProperty(){}}}, body:{dataset:{},style:{}}, hidden: false},
-    window: {location:{search:''}, history:{state:null,pushState(state){this.state=state;},replaceState(state){this.state=state;},back(){this.state=null;listeners.get('popstate')?.({state:null});}}, addEventListener: (name, fn) => listeners.set(name, fn), removeEventListener: name => listeners.delete(name), scrollTo() {}},
+    document: {querySelector:()=>null,querySelectorAll:()=>[],activeElement:null,documentElement: {dataset: {},style:{setProperty(){}}}, body:{dataset:{},style:{}}, hidden: false,addEventListener(){},removeEventListener(){}},
+    window: {location:{search:''},matchMedia:()=>({matches:false,addEventListener(){},removeEventListener(){}}), history:{state:null,pushState(state){this.state=state;},replaceState(state){this.state=state;},back(){this.state=null;listeners.get('popstate')?.({state:null});}}, addEventListener: (name, fn) => listeners.set(name, fn), removeEventListener: name => listeners.delete(name), scrollTo() {}},
     navigator: {get onLine() {return online;}},
     localStorage, setInterval: () => 1, clearInterval() {}, setTimeout, clearTimeout,
     fetch: async (url, init) => {
@@ -111,7 +111,7 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
   }, h.browser);
   for (const component of Object.values(themeUi)) if (typeof component === 'function'&&component!==themeUi.ThemeScene) pureComponents.add(component);
   const workspace = load('app/learn/workspace-shell.tsx', {
-    'react/jsx-runtime':runtime, 'lucide-react':stubs, './ui-theme':themeUi
+    react:h.react, 'react/jsx-runtime':runtime, 'lucide-react':stubs, './ui-theme':themeUi
   }, h.browser);
   for (const component of Object.values(workspace)) if (typeof component === 'function') pureComponents.add(component);
   const speaking = load('app/learn/speaking.tsx', {...require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root),'@/lib/lesson-audio':{stopLessonAudio(){}},
@@ -126,7 +126,13 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
   const practiceRecords=load('app/learn/practice-records.tsx',presentationImports,h.browser);
   pureComponents.add(practiceRecords.PracticeTaskActions);
   const presentation={};
-  for(const file of ['personal-settings','today-dashboard','practice-home']){const module=load('app/learn/'+file+'.tsx',presentationImports,h.browser);presentation['./learn/'+file]=module;for(const component of Object.values(module))if(typeof component==='function')pureComponents.add(component);}
+  // The real PracticeHome is expanded by this intentionally lightweight JSX
+  // harness, which otherwise shares parent hook slots across component mounts.
+  // Its independent local state is not used to select the page here: the real
+  // parent owns listeningFocused. Keep those child hooks separate so entering
+  // the listening page does not corrupt the workspace's owner/queue slots.
+  const practiceReact={...h.react,useState(initial){return [typeof initial==='function'?initial():initial,()=>{}];},useRef(initial){return {current:initial};},useEffect(){}};
+  for(const file of ['personal-settings','today-dashboard','practice-home']){const module=load('app/learn/'+file+'.tsx',file==='practice-home'?{...presentationImports,react:practiceReact}:presentationImports,h.browser);presentation['./learn/'+file]=module;for(const component of Object.values(module))if(typeof component==='function')pureComponents.add(component);}
   const imports = {
     ...presentation,'./learn/practice-records':practiceRecords,'./account/account-form':{default:'AccountForm'},'./learn/legal-pages':{PublicInfoLinks:'PublicInfoLinks'},'./legal-pages':{PublicInfoLinks:'PublicInfoLinks'},
     react:h.react, 'react/jsx-runtime':runtime, 'lucide-react':stubs, sonner:{toast:h.toast},
@@ -247,14 +253,14 @@ test('I09: nested lookup preserves the same practice queue and restores its look
   dictionary.props.onBack();practice=nodes(render(),n=>n.type==='Practice')[0];assert.equal(practice.props.queue,before.props.queue);assert.equal(practice.props.lookupActive,false);assert.equal(backCount,1);assert.equal(focusCount,1);
 });
 function navigateApp(render, id) {
-  if(id==='profile'){const entry=nodes(render(),n=>n.type==='button'&&n.props['aria-label']==='打开个人信息与设置')[0]||nodes(render(),n=>n.type==='button'&&textOf(n)==='我的与设置')[0];assert.ok(entry,'Actual personal entry');entry.props.onClick();return;}
-  const nav=nodes(render(),n=>n.type==='nav'&&n.props['aria-label']==='桌面主导航')[0];
+  if(id==='profile'){const entry=nodes(render(),n=>n.type==='button'&&textOf(n)==='设置')[0];assert.ok(entry,'Actual personal entry');entry.props.onClick();return;}
+  const nav=nodes(render(),n=>n.type==='nav'&&n.props['aria-label']==='主导航')[0];
   const labels={today:'今日',train:'练习',resources:'发现',profile:'我的'};
   const button=nodes(nav,n=>n.type==='button'&&textOf(n)===labels[id])[0];
   assert.ok(button,'Find the real WorkspaceShell navigation button for '+id);
   button.props.onClick();
 }
-function startWorkspacePractice(render){navigateApp(render,'train');const start=nodes(render(),n=>n.type==='button'&&n.props['aria-label']==='听力 · Part 1 · 开始')[0];assert.ok(start,'Actual Part 1 entry');start.props.onClick();}
+function startWorkspacePractice(render){navigateApp(render,'train');const listening=nodes(render(),n=>n.type==='button'&&n.props.className?.includes('listening-entry'))[0];assert.ok(listening,'Actual listening page entry');listening.props.onClick();const start=nodes(render(),n=>n.type==='button'&&n.props['aria-label']==='听力 · Part 1 · 开始')[0];assert.ok(start,'Actual Part 1 entry');start.props.onClick();}
 // Daily recommendations are now a model contract; the redesigned Today UI routes
 // to explicit Part selection instead of rendering the old three task buttons.
 function dailySnapshot(render) {

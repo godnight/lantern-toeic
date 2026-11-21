@@ -32,7 +32,7 @@ export function PersonalSettings({name,scope,theme,dailyNewLabel,accountLabel,sy
   onPlan,onThemes,onAccount,onBackups,onPreferences,onRecordings,onAbout,onSync,
   disabled=false,syncDisabled=false}:PersonalSettingsProps){
   return <div className="v040-page v040-profile" data-v040-page="profile">
-    <div className="v040-page-heading"><h1>我的</h1></div>
+    <div className="v040-page-heading"><h1>设置</h1></div>
     <section className="v040-profile-card" aria-label="个人信息">
       <span className="v040-profile-avatar" aria-hidden="true"><UserRound size={24}/></span>
       <div><strong>{name}</strong><p>{scope}</p></div>

@@ -1,0 +1,24 @@
+/* One shell for the six themes; theme variables provide color and artwork. */
+body[data-ui-theme] .v040-workspace-shell{--workspace-drawer-width:clamp(192px,26vw,230px)}
+body[data-ui-theme] .v040-workspace-shell .workspace-sidebar{position:fixed;inset:0 auto 0 0;z-index:110;width:min(80vw,324px);padding:calc(18px + env(safe-area-inset-top,0px)) 16px calc(18px + env(safe-area-inset-bottom,0px));background:var(--ui-surface);border-right:1px solid var(--ui-divider);overflow-y:auto;overscroll-behavior:contain;visibility:hidden;transform:translateX(-100%);display:flex;transition:transform 190ms ease,visibility 190ms}
+body[data-ui-theme] .v040-workspace-shell[data-drawer-open="true"]:not(.workspace-focused) .workspace-sidebar{visibility:visible;transform:translateX(0)}
+body[data-ui-theme] .v040-workspace-shell .workspace-drawer-backdrop{position:fixed;inset:0;z-index:100;background:#111c29a1}
+body[data-ui-theme] .v040-workspace-shell .workspace-drawer-head{height:43px;display:flex;align-items:center;justify-content:space-between;padding-left:11px;margin-bottom:13px}
+body[data-ui-theme] .v040-workspace-shell .workspace-drawer-head h2{margin:0;font-size:16px;font-weight:660;color:var(--ui-text)}
+body[data-ui-theme] .v040-workspace-shell .workspace-drawer-head button,body[data-ui-theme] .v040-workspace-shell .workspace-drawer-toggle{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border:0;border-radius:10px;background:transparent;color:var(--ui-text)}
+body[data-ui-theme] .v040-workspace-shell .workspace-sidebar nav{display:grid;gap:3px}
+body[data-ui-theme] .v040-workspace-shell .workspace-sidebar nav button,body[data-ui-theme] .v040-workspace-shell .workspace-sidebar-bottom>button{width:100%;display:flex;align-items:center;gap:11px;min-height:46px;padding:0 11px;border:0;border-radius:9px;background:transparent;color:var(--ui-text);font-size:15px;text-align:left}
+body[data-ui-theme] .v040-workspace-shell .workspace-sidebar nav button[aria-current="page"],body[data-ui-theme] .v040-workspace-shell .workspace-sidebar-bottom>button[aria-current="page"]{background:var(--ui-selection);color:var(--ui-primary);font-weight:630}
+body[data-ui-theme] .v040-workspace-shell .workspace-sidebar nav button small{margin-left:auto}
+body[data-ui-theme] .v040-workspace-shell .workspace-sidebar-bottom{display:grid;gap:3px;margin-top:15px;padding-top:14px;border-top:1px solid var(--ui-divider)}
+body[data-ui-theme] .v040-workspace-shell .workspace-body{margin-left:0;min-width:0;transition:margin-left 190ms ease}
+body[data-ui-theme] .v040-workspace-shell:not(.workspace-focused) .workspace-topbar{position:sticky;top:0;z-index:20;display:flex!important;align-items:center;justify-content:space-between;width:100%;max-width:none;min-height:64px;height:64px;margin:0;padding:0 22px!important;border-bottom:1px solid var(--ui-divider);background:var(--ui-canvas)!important}
+body[data-ui-theme] .v040-workspace-shell .workspace-topbar-brand{display:flex;align-items:center;gap:6px}
+body[data-ui-theme] .v040-workspace-shell .workspace-mobile-brand{display:inline-flex!important;align-items:center;gap:9px;border:0;background:transparent;color:var(--ui-text)}
+body[data-ui-theme] .v040-workspace-shell .workspace-mobile-brand img{width:29px;height:29px;object-fit:contain}
+body[data-ui-theme] .v040-workspace-shell:not(.workspace-focused) .workspace-main{max-width:860px;padding:28px 22px calc(28px + env(safe-area-inset-bottom,0px))!important}
+body[data-ui-theme] .v040-workspace-shell .workspace-mobile-nav{display:none!important}
+body[data-ui-theme] .v040-workspace-shell.workspace-focused :is(.workspace-topbar,.workspace-sidebar){display:none!important}
+@media(min-width:700px){body[data-ui-theme] .v040-workspace-shell .workspace-sidebar{width:var(--workspace-drawer-width)}body[data-ui-theme] .v040-workspace-shell[data-drawer-open="true"]:not(.workspace-focused) .workspace-body{margin-left:var(--workspace-drawer-width)}}
+@media(max-width:359px){body[data-ui-theme] .v040-workspace-shell:not(.workspace-focused) .workspace-main{padding-left:16px!important;padding-right:16px!important}body[data-ui-theme] .v040-workspace-shell:not(.workspace-focused) .workspace-topbar{padding-left:16px!important;padding-right:16px!important}}
+@media(prefers-reduced-motion:reduce){body[data-ui-theme] .v040-workspace-shell :is(.workspace-sidebar,.workspace-body){transition:none}}

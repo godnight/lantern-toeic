@@ -10,7 +10,7 @@ function environment({regression,order='pause-first',reentry=false}={}){
  let now=0,confirmed=0,errors=0,player,reentered=false,timerId=0;const timers=new Map(),medias=[],diagnostics=[],completions=[],plays=[];
  const source=fs.readFileSync(path.join(root,'lib/lesson-audio.ts'),'utf8'),ast=ts.createSourceFile('lesson-audio.ts',source,ts.ScriptTarget.Latest,true);
  const nodes=ast.statements.filter(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='createBundledPlayback'||ts.isVariableStatement(n)&&n.declarationList.declarations.some(d=>ts.isIdentifier(d.name)&&['active','playbackSequence'].includes(d.name.text)));assert.equal(nodes.length,3);
- let code=nodes.map(n=>n.getText(ast)).join('\n\n')+'\nexports.createBundledPlayback=createBundledPlayback;';
+ let code=nodes.map(n=>n.getText(ast).replace(/\r\n/g,'\n')).join('\n\n')+'\nexports.createBundledPlayback=createBundledPlayback;';
  // Explicit test mutants reproduce the two obsolete predicates without private
  // historical source files. Normal cases execute unchanged actual source.
  if(regression==='without-offset-proof'){
