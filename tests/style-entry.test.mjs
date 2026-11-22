@@ -6,15 +6,14 @@ const read = file => readFile(new URL(`../${file}`, import.meta.url), 'utf8');
 const sideEffectImports = source => [...source.matchAll(/^import\s+['"]([^'"]+)['"];?\s*$/gm)].map(match => match[1]);
 
 test('Web and Harmony share one explicitly ordered global style entry', async () => {
-  const [web, mobile, shared] = await Promise.all([
-    read('app/layout.tsx'), read('mobile/src/main.tsx'), read('app/style-entry.ts'),
+  const [web, mobile, wrapper, shared] = await Promise.all([
+    read('app/layout.tsx'), read('mobile/src/main.tsx'), read('app/style-entry.ts'), read('app/style-entry.css'),
   ]);
-  for (const [source, entry] of [[web, './style-entry'], [mobile, '../../app/style-entry']]) {
-    const imports = sideEffectImports(source);
-    assert.equal(imports.filter(specifier => specifier === entry).length, 1);
-    assert.equal(imports.filter(specifier => specifier.endsWith('.css')).length, 0);
-  }
-  assert.deepEqual(sideEffectImports(shared), [
+  assert.deepEqual(sideEffectImports(web), ['./style-entry.css']);
+  assert.deepEqual(sideEffectImports(mobile), ['../../app/style-entry']);
+  assert.deepEqual(sideEffectImports(wrapper), ['./style-entry.css']);
+  const cssImports = [...shared.matchAll(/^\s*@import\s+['"]([^'"]+)['"];\s*$/gm)].map(match => match[1]);
+  assert.deepEqual(cssImports, [
     './globals.css',
     './redesign.css',
     './v041-design-theme.css',
@@ -23,4 +22,5 @@ test('Web and Harmony share one explicitly ordered global style entry', async ()
     './v041-app-redesign.css',
     './learn/legal-pages.css',
   ]);
+  assert.equal(shared.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*@import\s+['"][^'"]+['"];\s*$/gm, '').trim(), '', 'CSS entry must only order the existing stylesheets');
 });

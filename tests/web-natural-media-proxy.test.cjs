@@ -234,6 +234,7 @@ test('factory snapshots admitted entries so later mutation cannot change upstrea
 test('actual Worker checks media first and preserves existing API and image handlers', async () => {
   const calls = [];
   const worker = load('worker/index.ts', {
+    './local-candidate-media': { async handleLocalCandidateMedia() { return null; } },
     './natural-media-proxy': { async handleNaturalMediaRequest(req) { calls.push('media:' + new URL(req.url).pathname); return req.url.endsWith(mediaPath) ? new Response('media', { status: 200 }) : null; } },
     'vinext/server/app-router-entry': { fetch(req, env, ctx) { calls.push('app'); assert.equal(env.marker, 1); assert.equal(ctx.marker, 2); return new Response('app'); } },
     'vinext/server/image-optimization': { DEFAULT_DEVICE_SIZES: [640], DEFAULT_IMAGE_SIZES: [32], handleImageOptimization() { calls.push('image'); return new Response('image'); } },

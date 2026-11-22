@@ -5,6 +5,7 @@ import {fileURLToPath} from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 for (const [script, ...args] of [
   ['scripts/build-verified.mjs'],
+  ['scripts/check-local-candidate-worker-first.mjs'],
   ['scripts/prune-web-natural-media.mjs', '--apply'],
 ]) {
   const code = await new Promise(resolve => {
