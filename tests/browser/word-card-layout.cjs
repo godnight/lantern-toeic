@@ -12,6 +12,7 @@ const {createRequire} = require('node:module');
 const {pathToFileURL} = require('node:url');
 const {waitForWordHeaderEdge} = require('./word-header-edge.cjs');
 const {verifyWordHeaderEdge} = require('./word-header-edge-check.cjs');
+const {waitForWordWorkspace} = require('./word-workspace-ready.cjs');
 
 const REPO = path.resolve(process.env.LANTERN_WORDCARD_QA_REPO || path.join(__dirname, '../..'));
 const repoRequire = createRequire(path.join(REPO, 'package.json'));
@@ -372,7 +373,9 @@ async function openFixturePage(config) {
   await page.goto(`${origin}/?theme=${config.theme}&font=${config.font}`, {waitUntil: 'networkidle'});
   await page.waitForFunction(() => !!window.__wordCardQA);
   await page.locator('.v045-stable-word-card').waitFor({state: 'visible'});
+  await waitForWordWorkspace(page);
   if (config.prepareControls !== false) await reachControls();
+  await waitForWordWorkspace(page);
 }
 async function runFreshPreparationControl(){
   let control;

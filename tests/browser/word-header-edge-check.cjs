@@ -5,6 +5,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const {chromium}=require('playwright');
 const {waitForWordHeaderEdge}=require('./word-header-edge.cjs');
+const {waitForWordWorkspace}=require('./word-workspace-ready.cjs');
 
 async function verifyWordHeaderEdge(page){
     await page.setContent('<div class="phase2-word-header" tabindex="0" style="height:80px;width:200px;overflow:auto"><div style="height:400px">Synthetic scrolling</div></div>');
@@ -32,6 +33,18 @@ async function verifyWordHeaderEdge(page){
     await end;
     assert.ok(await header.evaluate(el=>Math.abs(el.scrollTop-(el.scrollHeight-el.clientHeight))<=1));
     console.log('PASS synchronous edge waits reject off-edge positions and require stable frames');
+    await page.setContent('<style>@keyframes qa-pulse { from {opacity:1} to {opacity:.9} } .workspace-body {margin-left:224px;transition:margin-left 190ms;animation:qa-pulse 1s infinite alternate}</style><div class="v040-workspace-shell" data-drawer-open="false"><div class="workspace-body"><div class="v045-stable-word-card">Synthetic card</div></div></div>');
+    await page.evaluate(()=>{document.body.dataset.uiTheme='night';});
+    const body=page.locator('.workspace-body');
+    await body.evaluate(el=>getComputedStyle(el).marginLeft);
+    settled=false;
+    const workspace=waitForWordWorkspace(page).then(()=>{settled=true;});
+    await page.waitForTimeout(80);
+    assert.equal(settled,false,'Workspace wait must reject the initial off-centre layout');
+    await body.evaluate(el=>{el.style.marginLeft='0px';});
+    await workspace;
+    assert.ok(await body.evaluate(el=>Math.abs(parseFloat(getComputedStyle(el).marginLeft))<=.02));
+    console.log('PASS workspace wait observes finite layout transition and ignores infinite animation');
 }
 async function main(){
   const chrome=['C:/Program Files/Google/Chrome/Application/chrome.exe','C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'].find(fs.existsSync);
