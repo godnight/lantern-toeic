@@ -51,8 +51,8 @@ function environment({reverse = false} = {}) {
   const toast = Object.assign(() => {}, {success: text => messages.success.push(text), error: text => messages.error.push(text), message: text => messages.error.push(text)});
   const browser = {
     HTMLElement:class HTMLElement{},requestAnimationFrame:fn=>{fn();return 1;},
-    document: {querySelector:()=>null,querySelectorAll:()=>[],activeElement:null,documentElement: {dataset: {},style:{setProperty(){}}}, body:{dataset:{},style:{}}, hidden: false},
-    window: {location:{search:''}, history:{state:null,pushState(state){this.state=state;},replaceState(state){this.state=state;},back(){this.state=null;listeners.get('popstate')?.({state:null});}}, addEventListener: (name, fn) => listeners.set(name, fn), removeEventListener: name => listeners.delete(name), scrollTo() {}},
+    document: {querySelector:()=>null,querySelectorAll:()=>[],activeElement:null,documentElement: {dataset: {},style:{setProperty(){}}}, body:{dataset:{},style:{}}, hidden: false,addEventListener(){},removeEventListener(){}},
+    window: {location:{search:''},matchMedia:()=>({matches:false,addEventListener(){},removeEventListener(){}}), history:{state:null,pushState(state){this.state=state;},replaceState(state){this.state=state;},back(){this.state=null;listeners.get('popstate')?.({state:null});}}, addEventListener: (name, fn) => listeners.set(name, fn), removeEventListener: name => listeners.delete(name), scrollTo() {}},
     navigator: {get onLine() {return online;}},
     localStorage, setInterval: () => 1, clearInterval() {}, setTimeout, clearTimeout,
     fetch: async (url, init) => {
@@ -99,7 +99,7 @@ function textOf(node) {
 // Expand the shipped pure layout/theme components so navigation is exercised
 // through its real buttons. Business children remain explicit, props-preserving
 // placeholders; the real recording-history component gets independent hook slots.
-function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
+function createStudyApp(h, {data,keyedWorkspace=false,api={},buildIdentity} = {}) {
   const pureComponents = new Set();
   let workspaceComponent;
   const jsx = (type, props, key) => {if(keyedWorkspace&&type===workspaceComponent)h.replaceWorkspace(key);return (pureComponents.has(type)||type?.name==='SettingsRow') ? type(props) : ({type, props, key});};
@@ -111,7 +111,7 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
   }, h.browser);
   for (const component of Object.values(themeUi)) if (typeof component === 'function'&&component!==themeUi.ThemeScene) pureComponents.add(component);
   const workspace = load('app/learn/workspace-shell.tsx', {
-    'react/jsx-runtime':runtime, 'lucide-react':stubs, './ui-theme':themeUi
+    react:h.react, 'react/jsx-runtime':runtime, 'lucide-react':stubs, './ui-theme':themeUi
   }, h.browser);
   for (const component of Object.values(workspace)) if (typeof component === 'function') pureComponents.add(component);
   const speaking = load('app/learn/speaking.tsx', {...require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root),'@/lib/lesson-audio':{stopLessonAudio(){}},
@@ -126,7 +126,13 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
   const practiceRecords=load('app/learn/practice-records.tsx',presentationImports,h.browser);
   pureComponents.add(practiceRecords.PracticeTaskActions);
   const presentation={};
-  for(const file of ['personal-settings','today-dashboard','practice-home']){const module=load('app/learn/'+file+'.tsx',presentationImports,h.browser);presentation['./learn/'+file]=module;for(const component of Object.values(module))if(typeof component==='function')pureComponents.add(component);}
+  // The real PracticeHome is expanded by this intentionally lightweight JSX
+  // harness, which otherwise shares parent hook slots across component mounts.
+  // Its independent local state is not used to select the page here: the real
+  // parent owns listeningFocused. Keep those child hooks separate so entering
+  // the listening page does not corrupt the workspace's owner/queue slots.
+  const practiceReact={...h.react,useState(initial){return [typeof initial==='function'?initial():initial,()=>{}];},useRef(initial){return {current:initial};},useEffect(){}};
+  for(const file of ['personal-settings','today-dashboard','practice-home']){const module=load('app/learn/'+file+'.tsx',file==='practice-home'?{...presentationImports,react:practiceReact}:presentationImports,h.browser);presentation['./learn/'+file]=module;for(const component of Object.values(module))if(typeof component==='function')pureComponents.add(component);}
   const imports = {
     ...presentation,'./learn/practice-records':practiceRecords,'./account/account-form':{default:'AccountForm'},'./learn/legal-pages':{PublicInfoLinks:'PublicInfoLinks'},'./legal-pages':{PublicInfoLinks:'PublicInfoLinks'},
     react:h.react, 'react/jsx-runtime':runtime, 'lucide-react':stubs, sonner:{toast:h.toast},
@@ -150,7 +156,7 @@ function createStudyApp(h, {data,keyedWorkspace=false,api={}} = {}) {
   }
   for (const name of ['dialog','tabs','select','radio-group','progress','sonner']) imports['@/components/ui/'+name]=stubs;
   Object.assign(imports,require('./helpers/phase2-shell-fixture.cjs').workflowShellFixture(h.react,load('lib/practice-selection.ts',{'./study-model':h.model},h.browser)));
-  imports['@/public/build-identity.json']={default:JSON.parse(fs.readFileSync(root+'/public/build-identity.json','utf8'))};
+  imports['@/public/build-identity.json']={default:buildIdentity ?? JSON.parse(fs.readFileSync(root+'/public/build-identity.json','utf8'))};
   Object.assign(imports,require('./helpers/prepared-workspace-fixture.cjs').preparedWorkspaceImports(root));
  const app = load('app/study-workspace.tsx',imports,h.browser);
   h.recovery=imports['@/lib/speaking-recovery'];
@@ -247,14 +253,14 @@ test('I09: nested lookup preserves the same practice queue and restores its look
   dictionary.props.onBack();practice=nodes(render(),n=>n.type==='Practice')[0];assert.equal(practice.props.queue,before.props.queue);assert.equal(practice.props.lookupActive,false);assert.equal(backCount,1);assert.equal(focusCount,1);
 });
 function navigateApp(render, id) {
-  if(id==='profile'){const entry=nodes(render(),n=>n.type==='button'&&n.props['aria-label']==='打开个人信息与设置')[0]||nodes(render(),n=>n.type==='button'&&textOf(n)==='我的与设置')[0];assert.ok(entry,'Actual personal entry');entry.props.onClick();return;}
-  const nav=nodes(render(),n=>n.type==='nav'&&n.props['aria-label']==='桌面主导航')[0];
+  if(id==='profile'){const entry=nodes(render(),n=>n.type==='button'&&textOf(n)==='设置')[0];assert.ok(entry,'Actual personal entry');entry.props.onClick();return;}
+  const nav=nodes(render(),n=>n.type==='nav'&&n.props['aria-label']==='主导航')[0];
   const labels={today:'今日',train:'练习',resources:'发现',profile:'我的'};
   const button=nodes(nav,n=>n.type==='button'&&textOf(n)===labels[id])[0];
   assert.ok(button,'Find the real WorkspaceShell navigation button for '+id);
   button.props.onClick();
 }
-function startWorkspacePractice(render){navigateApp(render,'train');const start=nodes(render(),n=>n.type==='button'&&n.props['aria-label']==='听力 · Part 1 · 开始')[0];assert.ok(start,'Actual Part 1 entry');start.props.onClick();}
+function startWorkspacePractice(render){navigateApp(render,'train');const listening=nodes(render(),n=>n.type==='button'&&n.props.className?.includes('listening-entry'))[0];assert.ok(listening,'Actual listening page entry');listening.props.onClick();const start=nodes(render(),n=>n.type==='button'&&n.props['aria-label']==='听力 · Part 1 · 开始')[0];assert.ok(start,'Actual Part 1 entry');start.props.onClick();}
 // Daily recommendations are now a model contract; the redesigned Today UI routes
 // to explicit Part selection instead of rendering the old three task buttons.
 function dailySnapshot(render) {
@@ -488,6 +494,35 @@ test('storage quota failure keeps resource checkin open without a false success 
   const retained = nodes(tree, n => n.type === 'Dialog' && n.props.open && textOf(n).includes('实际学习分钟'))[0];
   assert.ok(retained, 'Leave the draft open for retry');
   assert.equal(nodes(retained, n => n.type === 'textarea')[0].props.value, 'Keep my takeaway when storage fails');
+});
+
+test('about shows the actual native build version and preserves the web release version', () => {
+  const identity={...JSON.parse(fs.readFileSync(root+'/public/build-identity.json','utf8')),versionName:'9.8.7',versionCode:87654,buildId:'qa-build-identity'};
+  const release=JSON.parse(fs.readFileSync(root+'/release-manifest.json','utf8'));
+  assert.notEqual(identity.versionName,release.version,'The fixture must distinguish native and web versions');
+  for(const nativeMode of [true,false]) {
+    const h=environment(),App=createStudyApp(h,{buildIdentity:identity});
+    h.setRenderer(()=>App({owner:'alice',nativeMode}));
+    const render=()=>h.render();
+    render();navigateApp(render,'profile');
+    const about=nodes(render(),n=>n.type==='button'&&textOf(n)==='关于微光')[0];
+    assert.ok(about,'Find the real about page entry');about.props.onClick();
+    const facts=nodes(render(),n=>n.type==='dl'&&n.props.className==='v040-about-facts')[0];
+    assert.ok(facts,'Render the real about page');
+    const actual=textOf(facts);
+    assert.match(actual,new RegExp(`应用版本v${(nativeMode?identity.versionName:release.version).replaceAll('.','\\.')}`));
+    if(nativeMode){
+      assert.ok(actual.includes(` / ${identity.versionCode}`));
+      assert.ok(actual.includes(`构建标识${identity.buildId}`));
+      assert.ok(actual.includes('使用方式鸿蒙本机应用'));
+    }else{
+      assert.ok(!actual.includes(String(identity.versionCode)),'Web must not display the native version code');
+      assert.ok(!actual.includes(identity.buildId),'Web must not display the native build ID');
+      assert.ok(!actual.includes('构建标识'));
+      assert.ok(actual.includes('使用方式网页版'));
+    }
+    h.cleanup();
+  }
 });
 
 test('M1 access guidance keeps Web and native learning local', async () => {

@@ -28,9 +28,9 @@ function harness(initial=ready(null)){
   dispose(){calls.push('dispose');}
  }
  const StudyApp=()=>null,AccountPanel=()=>null;
- const React={useState(initial){const index=cursor++;if(!cells[index])cells[index]={value:initial};return [cells[index].value,value=>{cells[index].value=typeof value==='function'?value(cells[index].value):value;}];},useRef(initial){const index=cursor++;if(!cells[index])cells[index]={current:initial};return cells[index];},useEffect(fn,deps){const index=cursor++,old=cells[index];if(!old||deps.some((dep,i)=>!Object.is(dep,old.deps[i])))effects.push(()=>{old?.cleanup?.();cells[index]={deps,cleanup:fn()};});}};
+ const React={useState(initial){const index=cursor++;if(!cells[index])cells[index]={value:initial};return [cells[index].value,value=>{cells[index].value=typeof value==='function'?value(cells[index].value):value;}];},useRef(initial){const index=cursor++;if(!cells[index])cells[index]={current:initial};return cells[index];},useCallback:fn=>fn,useEffect(fn,deps){const index=cursor++,old=cells[index];if(!old||deps.some((dep,i)=>!Object.is(dep,old.deps[i])))effects.push(()=>{old?.cleanup?.();cells[index]={deps,cleanup:fn()};});}};
  const jsx={jsx:(type,props)=>({type,props}),jsxs:(type,props)=>({type,props})};
- const imports={react:React,'react/jsx-runtime':jsx,'react-dom':{flushSync:fn=>fn()},'@/app/study-app':{default:StudyApp},'@/app/account/account-panel':{AccountPanel},'@/app/learn/guest-data-recovery':{GuestDataRecovery:()=>null},'@/lib/native-host':{subscribeNativeState:fn=>{nativeListener=fn;return()=>{nativeListener=null;};},registerNativeBack:()=>()=>{}},'@/lib/native-auth-transport':{createNativeAuthTransport:()=>({})},'@/lib/native-account-controller':{INITIAL_NATIVE_ACCOUNT_STATE:{status:'checking',message:''},NativeAccountController:Controller},'@/lib/ui-theme':{applyDocumentTheme(){}}};
+ const imports={react:React,'react/jsx-runtime':jsx,'react-dom':{flushSync:fn=>fn()},'@/app/study-app':{default:StudyApp},'@/app/account/account-panel':{AccountPanel},'@/app/learn/guest-data-recovery':{GuestDataRecovery:()=>null},'@/lib/native-host':{subscribeNativeState:fn=>{nativeListener=fn;return()=>{nativeListener=null;};},registerNativeBack:()=>()=>{}},'@/lib/native-auth-transport':{createNativeAuthTransport:()=>({})},'@/lib/native-account-controller':{INITIAL_NATIVE_ACCOUNT_STATE:{status:'checking',message:''},NativeAccountController:Controller},'@/lib/ui-theme':{applyDocumentTheme(){}},'@/lib/native-workspace-resume':require('./helpers/actual-source-loader.cjs').createSourceLoader({root}).load('lib/native-workspace-resume.ts')};
  const exports={};vm.runInNewContext(source,{exports,require:name=>{assert(Object.hasOwn(imports,name),'Unexpected UI dependency '+name);return imports[name];},window:target,document},{filename:'mobile/src/NativeAccountRoot.tsx'});
  const render=()=>{cursor=0;output=exports.default();while(effects.length)effects.shift()();return output;};
  const fire=(map,name)=>{for(const listener of map.get(name)??[])listener();};
@@ -73,4 +73,20 @@ test('native and visibility suspension preserve SDK interaction while page depar
   assert.deepEqual(h.calls.filter(Array.isArray),[['suspend',true,true],['suspend',true,true],['suspend',true,false]]);
  }finally{h.unmount();}
  assert(h.calls.includes('dispose'));
+});
+
+test('provider discovery retries after blocked session rechecks to anonymous ready',async()=>{
+ const blocked={status:'blocked',message:'暂时无法确认账号'};const h=harness(blocked);try{
+  assert.equal(h.calls.filter(call=>call==='providers').length,0);
+  h.controller.emit(ready(null));h.render();assert.equal(h.calls.filter(call=>call==='providers').length,1);
+  h.providers.resolve({huaweiLogin:true,huaweiBinding:false});await tick();assert.equal(h.panel().huawei.login,true);
+ }finally{h.unmount();}
+});
+
+test('late provider discovery cannot reopen capabilities after the session becomes blocked',async()=>{
+ const h=harness();try{
+  h.controller.emit({status:'blocked',message:'账号需要核对'});h.render();
+  h.providers.resolve({huaweiLogin:true,huaweiBinding:true});await tick();
+  assert.equal(h.panel().huawei.login,false);assert.equal(h.panel().huawei.binding,false);
+ }finally{h.unmount();}
 });

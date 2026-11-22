@@ -1,9 +1,10 @@
 {
   "name": "lantern-toeic-mobile",
   "private": true,
-  "version": "0.4.6",
+  "version": "0.4.8",
   "type": "module",
   "scripts": {
+    "prebuild": "node ../scripts/check-version-consistency.mjs",
     "build": "node scripts/sync-audio.mjs --check && node ../node_modules/vite/bin/vite.js build --config vite.config.ts && node scripts/sync-audio.mjs"
   }
 }

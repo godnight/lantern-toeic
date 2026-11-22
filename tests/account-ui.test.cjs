@@ -5,7 +5,7 @@ const root=path.resolve(__dirname,'..'),loader=createSourceLoader({root,imports:
 const identity=loader.load('lib/product-identity.ts'),{AccountPanel,accountNotice}=loader.load('app/account/account-panel.tsx');
 const A={id:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'};
 const ready={status:'ready',user:null,capabilities:{passwordLogin:true,phoneLogin:false,passwordRecovery:false,cloudSync:false},unavailable:false,message:'',access:{owner:null,epoch:1,canAccess:()=>true,assertAccess:()=>true}};
-const props={onSubmit:async()=>{},onRecheck(){},onLogout(){},onEnter(){}};
+const props={simplified:true,onSubmit:async()=>{},onRecheck(){},onLogout(){},onEnter(){}};
 test('field failures identify the first invalid field without changing credential rules',()=>{
  assert.equal(identity.validateProductCredentials('坏名','x'.repeat(15),'x'.repeat(15)).field,'username');
  assert.equal(identity.validateProductCredentials('learner','x'.repeat(7),'x'.repeat(7)).field,'password');
@@ -14,19 +14,19 @@ test('field failures identify the first invalid field without changing credentia
  assert.equal(identity.validateProductCredentials('learner','x'.repeat(15),'y'.repeat(15)).field,'confirmation');
  assert.deepEqual({...identity.validateProductCredentials(' Learner ',' '.repeat(15),' '.repeat(15)).credentials},{username:'learner',password:' '.repeat(15)});
 });
-test('anonymous form has one title, short action and rules in account explanation',()=>{
- const html=renderToStaticMarkup(React.createElement(AccountPanel,{...props,state:ready}));assert.equal((html.match(/<h1/g)||[]).length,1);assert(!html.includes('<h2'));assert.match(html,/>注册<\/button>/);assert.match(html,/<details><summary>账号说明<\/summary>/);assert(!html.includes('安全返回'));assert(!html.includes('注册并核对账号'));
+test('anonymous landing has one title and keeps the password form behind its entry',()=>{
+ const html=renderToStaticMarkup(React.createElement(AccountPanel,{...props,state:ready}));assert.equal((html.match(/<h1/g)||[]).length,1);assert.match(html,/>账号密码登录<\/button>/);assert(!html.includes('name="username"'));assert(!html.includes('账号说明'));assert(!html.includes('安全返回'));assert(!html.includes('注册并核对账号'));
 });
 test('unknown notice protects data without internal terminology or a success claim',()=>{
  const state={status:'blocked',message:'账号操作结果尚未确认，本机分区已锁定。请显式联网重新核对；不会自动重发。'};
- const html=renderToStaticMarkup(React.createElement(AccountPanel,{...props,state}));assert.match(html,/上次操作的结果还未确认，请重新核对账号后继续/);assert(!html.includes('注册失败'));assert.match(html,/重新核对账号/);assert(!/分区|显式|已成功/.test(html));assert.equal(accountNotice({...ready,user:A,message:'当前身份已重新核对；这不确认原账号操作结果。'},'register'),'已确认当前账号；之前操作的结果仍未确认。');
+ const html=renderToStaticMarkup(React.createElement(AccountPanel,{...props,state}));assert.match(html,/上次操作尚未确认/);assert.match(html,/本机记录会保留/);assert(!html.includes('注册失败'));assert.match(html,/重新核对/);assert(!/分区|显式|已成功/.test(html));assert.equal(accountNotice({...ready,user:A,message:'当前身份已重新核对；这不确认原账号操作结果。'},'register'),'已确认当前账号；之前操作的结果仍未确认。');
 });
 
 test('Huawei actions require a native capability and preserve the password form',()=>{
  const render=extra=>renderToStaticMarkup(React.createElement(AccountPanel,{...props,state:ready,...extra}));
  for(const extra of [{},{huawei:{login:false,binding:false,onLogin(){},onBind(){}}}])assert(!render(extra).includes('华为账号'));
  const actions={login:true,binding:true,onLogin(){},onBind(){}};
- const guest=render({huawei:actions});assert.match(guest,/>华为账号登录<\/button>/);assert(!guest.includes('绑定华为账号'));assert.match(guest,/name="username"/);assert.match(guest,/name="password"/);
+ const guest=render({huawei:actions});assert.match(guest,/>华为账号登录<\/button>/);assert(!guest.includes('绑定华为账号'));assert.match(guest,/账号密码登录/);assert(!guest.includes('name="username"'));
  const member=render({state:{...ready,user:A},huawei:actions});assert.match(member,/>绑定华为账号<\/button>/);assert.match(member,/保留现有学习记录与登录方式，不会合并其他微光账号/);assert(!member.includes('>华为账号登录</button>'));
  for(const state of [{status:'checking',message:'华为账号授权进行中，旧学习分区已暂停。'},{status:'blocked',message:'账号身份待重新核对，学习分区已暂停。'},{...ready,unavailable:true}]){
   const html=render({state,huawei:actions});assert(!html.includes('>华为账号登录</button>'));assert(!html.includes('>绑定华为账号</button>'));
@@ -42,4 +42,11 @@ test('Huawei notices identify cancellation and conflict without inventing login 
 test('verified identity metadata is matching proof memory only, never a raw owner or nickname',()=>{
  let current=null;const l=createSourceLoader({root,imports:{react:{createContext:initial=>({initial}),useContext:()=>current}}}),m=l.load('lib/learning-access.tsx');assert.equal(m.useVerifiedLearningAccount(A.id),null);
  current={owner:A.id,user:A,epoch:7,canAccess:()=>true};assert.equal(m.useVerifiedLearningAccount(A.id).user.username,A.username);assert.equal(m.useVerifiedLearningAccount('other'),null);current={owner:A.id,epoch:7,canAccess:()=>true};assert.equal(m.useVerifiedLearningAccount(A.id),null);current={owner:A.id,user:A,epoch:7,canAccess:()=>false};assert.equal(m.useVerifiedLearningAccount(A.id),null);
+});
+
+test('web registration and signed-in management preserve their legacy entry',()=>{
+ const web=renderToStaticMarkup(React.createElement(AccountPanel,{...props,simplified:false,initialMode:'register',state:ready}));
+ assert.match(web,/name="username"/);assert.match(web,/>注册<\/button>/);assert.match(web,/账号说明/);
+ const nativeUser=renderToStaticMarkup(React.createElement(AccountPanel,{...props,state:{...ready,user:A}}));
+ assert.match(nativeUser,/当前账号/);assert.match(nativeUser,/退出本机/);
 });

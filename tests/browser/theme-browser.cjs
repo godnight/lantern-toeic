@@ -17,7 +17,7 @@ const {chromium} = repoRequire('playwright');
 const UI_THEME_ORDER=['paper','crystal','hollow','silk','whale-bay','whale-moon'];
 const UI_THEME_BY_PERSISTED={paper:'day',crystal:'night',hollow:'hollow',silk:'silk','whale-bay':'whale-bay','whale-moon':'whale-moon'};
 const UI_THEME_META={paper:{name:'日间'},crystal:{name:'夜间'},hollow:{name:'空洞骑士'},silk:{name:'丝之歌'},'whale-bay':{name:'咕噜海湾'},'whale-moon':{name:'澜音星海'}};
-const EXPECTED_COLORS={paper:['rgb(244, 241, 233)','rgb(41, 52, 43)'],crystal:['rgb(18, 28, 35)','rgb(228, 239, 240)'],hollow:['rgb(16, 27, 41)','rgb(237, 240, 237)'],silk:['rgb(32, 24, 34)','rgb(242, 233, 228)'],'whale-bay':['rgb(244, 241, 233)','rgb(33, 54, 66)'],'whale-moon':['rgb(15, 27, 48)','rgb(237, 243, 249)']};
+const EXPECTED_COLORS={paper:['rgb(244, 241, 233)','rgb(41, 52, 43)'],crystal:['rgb(18, 28, 35)','rgb(228, 239, 240)'],hollow:['rgb(16, 24, 32)','rgb(236, 241, 244)'],silk:['rgb(32, 24, 34)','rgb(242, 233, 228)'],'whale-bay':['rgb(244, 241, 233)','rgb(33, 54, 66)'],'whale-moon':['rgb(15, 27, 48)','rgb(237, 243, 249)']};
 
 const MODE=process.argv.includes('--web')?'web':process.env.LANTERN_THEME_QA_MODE||'native';
 assert.ok(['native','web'].includes(MODE),'LANTERN_THEME_QA_MODE must be native or web');
@@ -71,8 +71,7 @@ async function prepareWebFixture(){
  const entry=`import React from ${JSON.stringify(posix(repoRequire.resolve('react')))};
 import {createRoot} from ${JSON.stringify(posix(repoRequire.resolve('react-dom/client')))};
 import StudyApp from ${JSON.stringify(posix(path.join(REPO,'app/study-app.tsx')))};
-import ${JSON.stringify(posix(path.join(REPO,'app/globals.css')))};
-${['redesign.css','v041-design-theme.css','learn/v041-vocabulary.css','learn/audio-redesign.css','v041-app-redesign.css','learn/legal-pages.css'].map(file=>'import '+JSON.stringify(posix(path.join(REPO,'app',file)))+';').join('\n')}
+import ${JSON.stringify(posix(path.join(REPO,'app/style-entry.ts')))};
 createRoot(document.getElementById('root')).render(React.createElement(React.StrictMode,null,React.createElement(StudyApp,{owner:${JSON.stringify(QA_OWNER)},remoteLearningEnabled:true})));
 `;
  await fs.writeFile(path.join(directory,'entry.tsx'),entry,{flag:'wx'});
@@ -188,7 +187,7 @@ async function blueLakeViewportScreenshot(){
   const top=Math.max(0,geometry.header?.bottom??0),bottom=geometry.navFixed?Math.min(geometry.viewport.height,geometry.nav.top):geometry.viewport.height;
   assert.ok(geometry.image.top>=top-1&&geometry.image.bottom<=bottom+1,'Blue lake is covered by fixed navigation/header: '+JSON.stringify(geometry));
   assert.ok(geometry.image.left>=-1&&geometry.image.right<=geometry.viewport.width+1,'Blue lake exceeds viewport width');
-  assert.ok(Math.abs(geometry.image.width/geometry.image.height-1672/941)<.01,'Blue lake frame ratio changed');
+  assert.ok(Math.abs(geometry.scene.width/geometry.scene.height-2)<.025,'Blue lake frame must retain the approved 2:1 window');
   const file=await screenshot('hollow-blue-lake-viewport-390',{fullPage:false});
   report.blueLakeViewports??=[];report.blueLakeViewports.push({file,fullPage:false,geometry});
   return geometry;
@@ -263,13 +262,16 @@ async function freshPage(width){
  const target=MODE==='native'?NATIVE_ORIGIN:ORIGIN;
  await page.goto(target+'/',{waitUntil:'networkidle'});assert.equal(new URL(page.url()).origin,target);await ready();
 }
-async function ready(){const welcome=page.locator('[data-first-run="welcome"]');await Promise.race([welcome.waitFor(),page.getByRole('heading',{name:'今日学习',exact:true}).waitFor()]);if(await welcome.isVisible())await welcome.locator('[data-first-run-action="guest"]').click();await page.getByRole('heading',{name:'今日学习',exact:true}).waitFor();await eventually(()=>page.locator('#workspace-main button:enabled').count().then(count=>count>0),'Today screen did not become ready');}
+async function ready(){const welcome=page.locator('[data-first-run="welcome"]');await Promise.race([welcome.waitFor(),page.getByRole('heading',{name:'今日',exact:true}).waitFor()]);if(await welcome.isVisible())await welcome.locator('[data-first-run-action="guest"]').click();await page.getByRole('heading',{name:'今日',exact:true}).waitFor();await eventually(()=>page.locator('#workspace-main button:enabled').count().then(count=>count>0),'Today screen did not become ready');}
 // Current workspace contract. The complete former atlas suite is retained in
 // theme-atlas-legacy.cjs; it is not claimed as passing against the redesigned UI.
 const NAV=['今日','单词','练习','复习','进度','发现'];
 async function rootTheme(id){await page.waitForFunction(expected=>document.body.dataset.uiTheme===expected,UI_THEME_BY_PERSISTED[id]);}
-function navigation(){return page.getByRole('navigation',{name:page.viewportSize().width<1024?'手机主导航':'桌面主导航',exact:true});}
-async function navigate(label){const button=navigation().getByRole('button',{name:label,exact:true});await button.click();await eventually(()=>button.getAttribute('aria-current').then(value=>value==='page'),'Current navigation is not '+label);await page.locator('#workspace-main').waitFor({state:'visible'});}
+function navigation(){return page.getByRole('navigation',{name:'主导航',exact:true});}
+async function openNavigation(){const toggle=page.locator('.workspace-drawer-toggle');if(await toggle.getAttribute('aria-expanded')!=='true')await toggle.click();await navigation().waitFor({state:'visible'});await page.waitForFunction(()=>{const drawer=document.querySelector('.workspace-sidebar'),body=document.querySelector('.workspace-body'),rect=drawer.getBoundingClientRect(),margin=parseFloat(getComputedStyle(body).marginLeft);return Math.abs(rect.left)<.02&&(innerWidth<700||Math.abs(margin-rect.width)<.02);});}
+async function closeNavigation(){const toggle=page.locator('.workspace-drawer-toggle');if(await toggle.getAttribute('aria-expanded')==='true')await page.locator('.workspace-drawer-head').getByRole('button',{name:'收起导航',exact:true}).click();await page.locator('.workspace-sidebar').waitFor({state:'hidden'});await page.waitForFunction(()=>Math.abs(parseFloat(getComputedStyle(document.querySelector('.workspace-body')).marginLeft))<.02);}
+async function navigate(label){await openNavigation();await navigation().getByRole('button',{name:label,exact:true}).click();await eventually(()=>page.locator('.workspace-sidebar nav button[aria-current="page"] span').first().textContent().then(value=>value===label),'Current navigation is not '+label);await closeNavigation();await page.locator('#workspace-main').waitFor({state:'visible'});}
+async function accessibleNavigation(label){await openNavigation();await accessibleControl(navigation().getByRole('button',{name:label,exact:true}));await closeNavigation();}
 const routeGeometry=new Map();
 async function layout(label){
  const dimensions=await page.evaluate(()=>({width:innerWidth,document:document.documentElement.scrollWidth,body:document.body.scrollWidth}));
@@ -280,7 +282,7 @@ async function layout(label){
    const main=document.querySelector('#workspace-main'),shown=el=>!!el&&el.getClientRects().length>0&&getComputedStyle(el).visibility!=='hidden';
    const rect=el=>{const r=el.getBoundingClientRect();return {x:r.x,y:r.y+scrollY,width:r.width,height:r.height};};
    const values=selector=>[...main.querySelectorAll(selector)].filter(shown).map(rect);
-   const nav=document.querySelector(innerWidth<1024?'.workspace-mobile-nav':'.workspace-sidebar');
+   const nav=document.querySelector('.workspace-sidebar');
    return {headings:values('h1'),scenes:values('figure.v041-theme-scene'),panels:values('.panel'),buttons:values('button.button.primary,button.phase2-primary,button.primary').slice(0,4),navigation:nav&&shown(nav)?rect(nav):null};
   });
   const key=dimensions.width+':'+label,reference=routeGeometry.get(key);
@@ -329,9 +331,11 @@ function collectLearningFacts(storage = globalThis.localStorage) {
 async function facts(){return page.evaluate(collectLearningFacts);}
 async function sceneScreenshotReady(id) {
  const scenes = page.locator('[data-scene="todayHero"], [data-scene="todayRest"]');
- await eventually(async () => await scenes.count() === 2,'Both page-owned today scene frames must exist');
+ await eventually(async () => await scenes.count() === 1,'Today must render its one page-owned scene frame');
  const frameNames=await scenes.evaluateAll(elements=>elements.map(el=>el.getAttribute('data-scene')));
- assert.deepEqual(frameNames,['todayHero','todayRest']);
+ assert.deepEqual(frameNames,['todayRest']);
+ const sources={paper:'neutral-paper',crystal:'neutral-crystal',hollow:'hollow-lake',silk:'silk-calm','whale-bay':'whale-bay-home','whale-moon':'whale-moon-home'};
+ assert.equal(await scenes.first().getAttribute('data-scene-source'),sources[id]);
  const images = await scenes.locator('img').evaluateAll(async elements => {
   let timer;
   try {
@@ -363,21 +367,21 @@ async function sceneScreenshotReady(id) {
   assert.notEqual(img.sceneStatus, 'unavailable', 'Screenshot scene image must not be a failure placeholder');
  }
  if(id==='paper'||id==='crystal')assert.equal(images.length,0,'Neutral day/night scenes do not invent art');
- else assert.equal(images.length,2,'The two artwork themes each provide two real images');
+ else assert.equal(images.length,1,'The selected illustrated theme must render its approved Today image');
  return {images,frameNames, afterDecodeAnimationFrames: 2};
 }
 async function imageInfo(locator){await locator.scrollIntoViewIfNeeded();await eventually(()=>locator.evaluate(img=>img.complete&&img.naturalWidth>0),'Image failed to decode');return locator.evaluate(async img=>{const r=img.getBoundingClientRect();const bitmap=await createImageBitmap(await(await fetch(img.currentSrc)).blob());const pixelWidth=bitmap.width;bitmap.close();return{pixelWidth,path:new URL(img.currentSrc).pathname,width:img.naturalWidth,height:img.naturalHeight,displayWidth:r.width,displayHeight:r.height,fit:getComputedStyle(img).objectFit};});}
-async function artwork(id){await navigate('今日');const brand=page.locator(page.viewportSize().width<1024?'.workspace-mobile-brand':'.workspace-brand');await accessibleControl(brand);assert.equal(await brand.locator('svg').count(),1);assert.equal(await brand.locator('img').count(),0,'Current brand is the shared Flame mark');const scenes=page.locator('[data-scene="todayHero"], [data-scene="todayRest"]');assert.equal(await scenes.count(),2,'Every theme must use the same today slots');const data=[];for(const scene of await scenes.all()){const image=scene.locator('img');data.push({slot:await scene.getAttribute('data-scene'),source:await scene.getAttribute('data-scene-source'),...(await image.count()?{image:await imageInfo(image)}:{neutral:true})});}return{scenes:data};}
-async function choose(id,method){await page.getByRole('button',{name:'打开个人信息与设置',exact:true}).click();await page.getByRole('button',{name:/^外观主题/}).click();const group=page.getByRole('group',{name:'界面主题',exact:true});await group.waitFor();assert.equal(await group.getByRole('button').count(),6);const button=group.locator('[data-theme-choice="'+id+'"]');await accessibleControl(button);if(method==='preview')await button.locator('.v041-theme-thumb').click();else if(method==='caption')await button.locator('.v041-theme-option-name').click();else{await button.focus();await page.keyboard.press(method==='space'?'Space':'Enter');}await eventually(()=>button.getAttribute('aria-pressed').then(value=>value==='true'),'Theme selection did not become pressed');assert.equal(await group.locator('button[aria-pressed="true"]').count(),1);await rootTheme(id);await accessibleControl(button);return layout('theme-picker-'+id);}
+async function artwork(id){await navigate('今日');const brand=page.locator('.workspace-mobile-brand');await accessibleControl(brand);const icon=brand.locator('img');assert.equal(await icon.count(),1);assert.equal(await icon.getAttribute('src'),'/icons/login-approved.png');await eventually(()=>icon.evaluate(img=>img.complete&&img.naturalWidth>0),'Approved brand image must decode');const scenes=page.locator('[data-scene="todayHero"], [data-scene="todayRest"]');assert.equal(await scenes.count(),1,'Every theme must use the same today slot');const data=[];for(const scene of await scenes.all()){const image=scene.locator('img');data.push({slot:await scene.getAttribute('data-scene'),source:await scene.getAttribute('data-scene-source'),...(await image.count()?{image:await imageInfo(image)}:{neutral:true})});}return{scenes:data};}
+async function choose(id,method){await openNavigation();await page.locator('.workspace-sidebar-bottom').getByRole('button',{name:'设置',exact:true}).click();await closeNavigation();await page.getByRole('button',{name:/^外观主题/}).click();const group=page.getByRole('group',{name:'界面主题',exact:true});await group.waitFor();assert.equal(await group.getByRole('button').count(),6);const button=group.locator('[data-theme-choice="'+id+'"]');await accessibleControl(button);if(method==='preview')await button.locator('.v041-theme-thumb').click();else if(method==='caption')await button.locator('.v041-theme-option-name').click();else{await button.focus();await page.keyboard.press(method==='space'?'Space':'Enter');}await eventually(()=>button.getAttribute('aria-pressed').then(value=>value==='true'),'Theme selection did not become pressed');assert.equal(await group.locator('button[aria-pressed="true"]').count(),1);await rootTheme(id);await accessibleControl(button);return layout('theme-picker-'+id);}
 async function colors(id,width){const sample=await page.locator('body').evaluate(el=>({background:getComputedStyle(el).backgroundColor,foreground:getComputedStyle(el).color}));assert.deepEqual([sample.background,sample.foreground],EXPECTED_COLORS[id],'Rendered palette must match accepted workspace colors');paletteSamples.push({id,width,...sample});return sample;}
 (async()=>{
  await allocateOutput();await startPreview();browser=await launchBrowser();
  for(const width of WIDTHS){
-  await step(`${width}px: fresh ${MODE} workspace has six accessible learning routes`,async()=>{await freshPage(width);await rootTheme('hollow');assert.deepEqual((await navigation().getByRole('button').allTextContents()).slice(0,6).map(x=>x.trim()),NAV);for(const label of NAV)await accessibleControl(navigation().getByRole('button',{name:label,exact:true}));return layout('fresh');});
+  await step(`${width}px: fresh ${MODE} workspace has six accessible learning routes`,async()=>{await freshPage(width);await rootTheme('hollow');await openNavigation();assert.deepEqual((await navigation().getByRole('button').allTextContents()).slice(0,6).map(x=>x.trim()),NAV);for(const label of NAV)await accessibleControl(navigation().getByRole('button',{name:label,exact:true}));await closeNavigation();return layout('fresh');});
   for(const [index,id] of PALETTES.entries()){
    const before=await facts();
    await step(`${width}px: ${id} selection via ${['preview','caption','enter','space'][index%4]} persists without changing learning facts`,async()=>{await choose(id,['preview','caption','enter','space'][index%4]);const sample=await colors(id,width);await page.reload({waitUntil:'networkidle'});await ready();await rootTheme(id);assert.deepEqual(await colors(id,width),sample);assert.deepEqual(await facts(),before,'Theme switch changed learning facts or goals');return{sample,layout:await layout('reloaded-'+id)};});
-   await step(`${width}px: ${id} artwork and all six route layouts`,async()=>{const art=await artwork(id);const layouts=[];for(const label of NAV){await navigate(label);await accessibleControl(navigation().getByRole('button',{name:label,exact:true}));await rootTheme(id);layouts.push({label,...await layout('route:'+label)});}await navigate('今日');const screenshotArt=await sceneScreenshotReady(id);await screenshot(`${id}-${width}`);const homeViewport=width===390?await homeViewportScreenshot(id,390,844):null;const lakeViewport=id==='hollow'&&width===390?await blueLakeViewportScreenshot():null;assert.deepEqual(await facts(),before);return{art,layouts,screenshotArt,homeViewport,lakeViewport};});
+   await step(`${width}px: ${id} artwork and all six route layouts`,async()=>{const art=await artwork(id);const layouts=[];for(const label of NAV){await navigate(label);await accessibleNavigation(label);await rootTheme(id);layouts.push({label,...await layout('route:'+label)});}await navigate('今日');const screenshotArt=await sceneScreenshotReady(id);await screenshot(`${id}-${width}`);const homeViewport=width===390?await homeViewportScreenshot(id,390,844):null;const lakeViewport=id==='hollow'&&width===390?await blueLakeViewportScreenshot():null;assert.deepEqual(await facts(),before);return{art,layouts,screenshotArt,homeViewport,lakeViewport};});
   }
   const beforePractice=await facts();await step(`${width}px: representative practice dialog remains readable and closes without writing an answer`,async()=>{await navigate('练习');const task=page.locator('.practice-task-row').filter({hasText:'Part 5 ·'});await task.locator('[data-task-primary]').click();const dialog=page.getByRole('dialog').filter({has:page.locator('.practice-footer')});await dialog.waitFor({state:'visible'});assert.ok(await dialog.getByRole('radio').count()>=3);const control=dialog.getByRole('button',{name:'确认答案',exact:true});assert.equal(await control.isDisabled(),true);await accessibleControl(control);const dimensions=await layout('practice-representative');await screenshot(`practice-representative-${width}`);await page.keyboard.press('Escape');const confirmation=page.getByRole('dialog',{name:'暂时退出练习？',exact:true});await confirmation.waitFor({state:'visible'});await confirmation.getByRole('button',{name:'保存并返回',exact:true}).click();await eventually(()=>page.getByRole('dialog').count().then(n=>n===0),'Practice did not close');assert.deepEqual(await facts(),beforePractice);return dimensions;});
   await step(`${width}px: six distinct rendered palettes and reduced motion respected`,async()=>{const samples=paletteSamples.filter(x=>x.width===width);assert.equal(new Set(samples.map(x=>x.background+' / '+x.foreground)).size,6);await page.emulateMedia({reducedMotion:'reduce'});const running=await page.evaluate(()=>document.getAnimations().filter(a=>a.playState==='running'&&Number(a.effect?.getComputedTiming().duration)>1).map(a=>({name:a.animationName,duration:a.effect?.getComputedTiming().duration})));assert.deepEqual(running,[],'Reduced-motion preference left a long running animation');await page.reload({waitUntil:'domcontentloaded'});await ready();await rootTheme(PALETTES.at(-1));await page.emulateMedia({reducedMotion:'no-preference'});return{palettes:6,reducedMotion:true};});

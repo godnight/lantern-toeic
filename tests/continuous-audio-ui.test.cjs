@@ -61,6 +61,17 @@ test('an unconfirmed new bundled source cannot replace the last valid track with
  const e=environment(),events=[];e.lesson.installBundledLessonAudio([{text:'Good.',file:FILE},{text:'Failure.',file:OTHER_FILE}]);const good=e.player({text:'Good.',trackId:'question',onCheckpoint:v=>events.push(v)}),bad=e.player({text:'Failure.',trackId:'sentence:0',onCheckpoint:v=>events.push(v)});
  try{good.click();await confirm(good);good.audio.currentTime=8.7;await tick();good.render();good.click();e.queueAudio({rejectPlay:true});events.length=0;bad.click();await tick();bad.render();e.lesson.stopLessonAudio();assert.ok(nodes(bad.tree,n=>n.props?.role==='alert').length,'Current failure stays visible inline');assert.ok(events.length);assert.ok(events.every(v=>v.trackId==='question'&&v.positionSeconds===8.7));assert.equal(bad.audios.length,1);}finally{bad.close();good.close();}
 });
+test('word feedback renderer retains an accessible real error and clears it for a new word',async()=>{
+ const e=environment();e.lesson.installBundledLessonAudio([{text:'Failure.',file:FILE},{text:'Next.',file:OTHER_FILE}]);
+ e.queueAudio({rejectPlay:true});const p=e.player({text:'Failure.',mode:'word',renderFeedback:feedback=>({type:'feedback-target',props:{children:feedback}})});
+ try{
+  p.click();await tick();p.render();
+  const target=nodes(p.tree,n=>n.type==='feedback-target')[0],region=nodes(target,n=>n.props?.role==='region')[0];
+  assert.ok(region,'The feedback target remains mounted');assert.equal(region.props.tabIndex,0);assert.equal(region.props['aria-label'],'单词发音提示');
+  assert.match(textOf(nodes(region,n=>n.props?.role==='alert')[0]),/暂时无法播放/);
+  p.update({text:'Next.'});assert.equal(nodes(p.tree,n=>n.props?.role==='alert').length,0,'A changed word cannot retain an old error');
+ }finally{p.close();}
+});
 test('unconfirmed native resume can be cancelled by pause or background before metadata',async()=>{
  for(const action of ['pause','background','native','record-global']){
   const e=environment(),events=[];e.lesson.installBundledLessonAudio([{text:'Pending.',file:FILE}]);const p=e.player({text:'Pending.',trackId:'question',checkpoint:checkpoint(FILE),onCheckpoint:v=>events.push(v)});

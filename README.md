@@ -2,7 +2,9 @@
 
 Web/PWA 与 HarmonyOS 共用 React 学习界面和学习模型，提供单词、听读、复习、模考与口语录音练习。
 
-当前交付为 **0.4.5 / 20059**：今日安排的两个操作入口已更新，网页版已部署，手机已原位升级。实际验证状态和已知问题见 [当前状态](docs/PROJECT_STATUS.md)；这里不再堆叠各次开发中的历史快照。
+源码候选版本以 `harmony/AppScope/app.json5` 为准，发布和验证情况见[项目状态](docs/PROJECT_STATUS.md)。最新版源码与已部署的网页版是不同事实；最近一次核实的网页版部署为 **0.4.5 / 20061**。
+
+直接运行 `npm --prefix mobile run build` 仅生成开发预览；其中继承的 `public/build-identity.json` 不代表本次代码的正式构建身份。正式交件须按冻结流程生成并核验身份与输入摘要，并保留实际构建回执。
 
 - [打开网页版](https://lantern-toeic-godnight.zhuangzeliang.chatgpt.site)
 - [分级验证与发布](docs/RELEASE_POLICY.md)：小改定向验证，大版本完整回归

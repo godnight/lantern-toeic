@@ -47,5 +47,6 @@ next-env.d.ts
 
 # Generated diagnostic reports (may contain environment metadata)
 /reports/
+/.preview/
 /release-assets/
 __pycache__/

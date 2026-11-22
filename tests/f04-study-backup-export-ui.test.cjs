@@ -15,8 +15,8 @@ const ts = require(path.join(root, 'node_modules/typescript'));
 const genericError = '备份暂时无法生成，当前记录未改。';
 const successMessage = '学习记录备份已生成，请确认文件已保存。';
 const entries = [
-  {name:'resources', label:'导出学习记录', route:['我的','数据管理']},
-  {name:'backups', label:'导出学习记录', route:['我的','数据管理']},
+  {name:'resources', label:'导出学习记录', route:['设置','数据管理']},
+  {name:'backups', label:'导出学习记录', route:['设置','数据管理']},
 ];
 
 function load(file, imports = {}, globals = {}) {
@@ -112,7 +112,7 @@ function workspace(data, {failDownload = false} = {}) {
     static revokeObjectURL(url){events.push(['revoke-object-url',url]);}
   }
   const document = {
-    documentElement:{dataset:{},style:{setProperty(){}}},body:{dataset:{},style:{}},hidden:false,
+    documentElement:{dataset:{},style:{setProperty(){}}},body:{dataset:{},style:{}},hidden:false,addEventListener(){},removeEventListener(){},
     querySelector:()=>null,querySelectorAll:()=>[],
     createElement(tag) {
       assert.equal(tag,'a','Only the real saveFile download anchor is permitted.');
@@ -120,7 +120,7 @@ function workspace(data, {failDownload = false} = {}) {
     },
   };
   const browser = {document,localStorage,URL:SyntheticURL,
-    window:{location:{search:'',origin:'https://f04.invalid'},scrollY:0,
+    window:{location:{search:'',origin:'https://f04.invalid'},scrollY:0,matchMedia:()=>({matches:false,addEventListener(){},removeEventListener(){}}),
       history:{state:null,pushState(value){this.state=value;},replaceState(value){this.state=value;}},
       addEventListener(){},removeEventListener(){},scrollTo(){}},
     navigator:{onLine:false},setInterval:()=>1,clearInterval(){},setTimeout:()=>1,clearTimeout(){},
@@ -135,7 +135,7 @@ function workspace(data, {failDownload = false} = {}) {
   }, browser);
   Object.values(themeUi).filter(value=>typeof value==='function'&&value!==themeUi.ThemeScene).forEach(value=>pure.add(value));
   const shell = load('app/learn/workspace-shell.tsx', {
-    'react/jsx-runtime':runtime,'lucide-react':stubs,'./ui-theme':themeUi,
+    react,'react/jsx-runtime':runtime,'lucide-react':stubs,'./ui-theme':themeUi,
   }, browser);
   Object.values(shell).filter(value=>typeof value==='function').forEach(value=>pure.add(value));
   const mutation = name => (...args)=>{events.push(['study-mutation',name,args]);throw Error(`Unexpected study mutation: ${name}`);};

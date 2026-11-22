@@ -18,8 +18,19 @@ test('both required checks always start and classify the complete PR history bef
     const allSteps = steps(source);
     assert.match(allSteps[0], /actions\/checkout/);
     assert.match(allSteps[1], /id: scope\n\s+run: node \.github\/scripts\/change-scope\.mjs/);
-    for (const step of allSteps.slice(2)) assert.match(step, /\n        if: .*steps\.scope\.outputs\./, `${name}: expensive step lacks a scope guard`);
+    for (const step of allSteps.slice(2)) {
+      // The dependency-free version check must also cover metadata-only PRs.
+      if (name === 'core' && step.includes('node scripts/check-version-consistency.mjs')) continue;
+      assert.match(step, /\n        if: .*steps\.scope\.outputs\./, `${name}: expensive step lacks a scope guard`);
+    }
   }
+});
+
+test('source version check is unconditional, including metadata-only changes', () => {
+  const checks = steps(workflow('core')).filter(step => step.includes('node scripts/check-version-consistency.mjs'));
+  assert.equal(checks.length, 1);
+  assert.doesNotMatch(checks[0], /\n\s+if:/);
+  assert.doesNotMatch(checks[0], /continue-on-error|\|\| true/);
 });
 
 test('full Core preserves broad regressions while presentation UI only runs type and component checks', () => {

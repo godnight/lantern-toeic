@@ -84,7 +84,7 @@ test('approved image exceptions and the discovery feed remain isolated',()=>{
  assert.match(dark[1],/--tab-shade-mid:\s*rgba\(9,19,32,\.95\)/);
  for(const theme of themes)assert.equal(workspaceSceneBackdrop(theme,'resources',true),null,`${theme} discovery feed has no scene backdrop`);
  const {WorkspaceShell}=loader.load('app/learn/workspace-shell.tsx');
- const html=renderToStaticMarkup(React.createElement(WorkspaceShell,{theme:'hollow',nav:'resources',name:'Synthetic',scope:'Test',syncLabel:'',reviewCount:0,onNavigate(){},onSearch(){},onSync(){},discoveryFeedActive:true},null));
+ const html=renderToStaticMarkup(React.createElement(WorkspaceShell,{theme:'hollow',nav:'resources',reviewCount:0,onNavigate(){},onSearch(){},discoveryFeedActive:true},null));
  assert(!html.includes('data-scene-background='));assert(!html.includes('--page-scene:'));
 });
 

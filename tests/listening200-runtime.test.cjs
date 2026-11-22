@@ -111,16 +111,18 @@ test('actual workflow accepts synthetic full200 but blocks201 and incomplete aut
  assert.equal((await w.start(all,{unitIds:[...new Set(all.map(unitId))]})).status,'started');assert.equal((await w.readProjection()).sessions[0].catalogVersion,expanded.QUESTION_CATALOG_VERSIONS.listening200_313);assert.equal(legacy.attempts.size,0);
  }finally{w.close();}
 });
-function home(questions,listening){const noop=()=>null,jsx=(type,props)=>({type,props}),calls=[];
- const ui=loader({react:{useState:value=>[value,()=>{}]},'react/jsx-runtime':{jsx,jsxs:jsx},'lucide-react':{ArrowRight:noop,BookOpen:noop,Headphones:noop,Mic:noop,Clock:noop},
+function home(questions,listening,showListening=false){const noop=()=>null,jsx=(type,props)=>({type,props}),calls=[];
+ const ui=loader({react:{useState:value=>[typeof value==='function'?value():value,()=>{}],useRef:value=>({current:value}),useEffect:()=>{}},'react/jsx-runtime':{jsx,jsxs:jsx},'lucide-react':{ArrowRight:noop,BookOpen:noop,Headphones:noop,Mic:noop,Clock:noop},
  '@/components/ui/tabs':{Tabs:noop,TabsContent:noop,TabsList:noop,TabsTrigger:noop},
  '@/components/ui/dialog':{Dialog:noop,DialogContent:noop,DialogHeader:noop,DialogTitle:noop,DialogDescription:noop}}).load('app/learn/practice-home.tsx');
- const tree=ui.PracticeHome({questions,listening,busy:false,tab:'lr',onTab(){},onStart:rows=>calls.push(['start',rows.length]),onPart(){},onCustom:(part,count)=>calls.push(['custom',part,count]),onWrong(){},onListeningWrong(){},onMock(){},children:null}),nodes=[];
+ const tree=ui.PracticeHome({questions,listening,listeningFocused:showListening,busy:false,tab:'lr',onTab(){},onStart:rows=>calls.push(['start',rows.length]),onPart(){},onCustom:(part,count)=>calls.push(['custom',part,count]),onWrong(){},onListeningWrong(){},onMock(){},children:null}),nodes=[];
  function walk(value){if(Array.isArray(value))return value.forEach(walk);if(!value||typeof value!=='object')return;nodes.push(value);walk(value.props?.children);}walk(tree);
  function text(value){if(value==null)return '';if(Array.isArray(value))return value.map(text).join('');return typeof value==='object'?text(value.props?.children):String(value);}return{calls,nodes,text};}
 test('actual PracticeHome presents 200 only for actual200 props and bounds the large-catalog handler',()=>{
- const ui=home(expanded.QUESTIONS,expanded.LISTENING_COLLECTION_QUESTIONS);assert.equal(ui.text(ui.nodes.find(n=>n.type==='option'&&n.props.value==='listening50')),'听力200题');
+ const listeningUi=home(expanded.QUESTIONS,expanded.LISTENING_COLLECTION_QUESTIONS,true);assert.equal(listeningUi.text(listeningUi.nodes.find(n=>n.type==='button'&&n.props['aria-pressed']===true)),'听力 200 题');
+ const ui=home(expanded.QUESTIONS,expanded.LISTENING_COLLECTION_QUESTIONS);
  ui.nodes.find(n=>n.type==='button'&&ui.text(n)==='综合练习').props.onClick();assert.deepEqual(ui.calls,[['custom',undefined,200]]);
- const prior=home(old.QUESTIONS,old.LISTENING_COLLECTION_QUESTIONS);assert.equal(prior.text(prior.nodes.find(n=>n.type==='option'&&n.props.value==='listening50')),'听力50题');
+ const priorListening=home(old.QUESTIONS,old.LISTENING_COLLECTION_QUESTIONS,true);assert.equal(priorListening.text(priorListening.nodes.find(n=>n.type==='button'&&n.props['aria-pressed']===true)),'听力 50 题');
+ const prior=home(old.QUESTIONS,old.LISTENING_COLLECTION_QUESTIONS);
  prior.nodes.find(n=>n.type==='button'&&prior.text(n)==='综合练习').props.onClick();assert.deepEqual(prior.calls,[['start',163]]);
 });

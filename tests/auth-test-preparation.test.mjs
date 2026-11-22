@@ -110,7 +110,7 @@ test('actual CLI success, production failure and missing input perform no writes
  t.after(async()=>{for(const item of await readdir(directory))await unlink(path.join(directory,item));await rmdir(directory);});
  const {target,inventory}=fixture();
  await writeFile(targetPath,JSON.stringify(target));await writeFile(inventoryPath,JSON.stringify(inventory));
- const run=args=>spawnSync(process.execPath,['--import','data:text/javascript,'+encodeURIComponent(guard),'scripts/auth-local.mjs','prepare',...args],{cwd:root,encoding:'utf8',windowsHide:true,env:{SystemRoot:process.env.SystemRoot||'',TEMP:tmpdir(),TMP:tmpdir()},timeout:10000});
+ const run=args=>spawnSync(process.execPath,['--import','data:text/javascript,'+encodeURIComponent(guard),'scripts/auth-local.mjs','prepare',...args],{cwd:root,encoding:'utf8',windowsHide:true,env:{SystemRoot:process.env.SystemRoot||'',TEMP:tmpdir(),TMP:tmpdir(),...(process.env.ELECTRON_RUN_AS_NODE?{ELECTRON_RUN_AS_NODE:process.env.ELECTRON_RUN_AS_NODE}:{})},timeout:10000});
  const args=['--target',targetPath,'--inventory',inventoryPath];
  const good=run(args);assert.equal(good.status,0,good.stderr);assert.equal(JSON.parse(good.stdout).status,'PLAN_ONLY');assert(!good.stderr.includes('FORBIDDEN_SIDE_EFFECT'));
  target.projectId=PRODUCTION_PROJECT;await writeFile(targetPath,JSON.stringify(target));

@@ -28,7 +28,8 @@ function harness(componentName,initialProps,references=referenceFixture){
  react.useLayoutEffect=react.useEffect;
  react.useSyncExternalStore=(_subscribe,read)=>read();
  const jsx=(type,props)=>typeof type==='function'&&['WorkflowNotice','ThemeScene','SpeechPlayer','InteractiveExample','VocabularyPlanEditor','PlanEditorActions','PlanExitPrompt'].includes(type.name)?type(props):{type,props};
- const componentExports={};const imports={react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':new Proxy({},{get:()=>function Icon(){}}),'@/lib/vocabulary-model':{CATEGORIES:{office:'办公事务'}},'@/lib/workflow-catalog':{getWorkflowCatalog:id=>id==='expressions'?[words[1]]:words,WORKFLOW_BOOKS:books,getWorkflowBook:id=>{const book=books.find(row=>row.id===id);assert.ok(book);return book;},getCandidateLearningWord:row=>words.find(current=>current.id===row.id)??null},'./interactive-example':{InteractiveExample:function InteractiveExample(p){return {type:'example',props:p};}},'./practice':{SpeechPlayer:function SpeechPlayer(){return {type:'audio',props:{}};}},'./ui-theme':{ThemeScene:function ThemeScene(p){return p.theme==='hollow'?{type:'figure',props:{'data-scene':p.scene}}:null;}}};
+ const componentExports={};const imports={react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':new Proxy({},{get:()=>function Icon(){}}),'@/lib/vocabulary-model':{CATEGORIES:{office:'办公事务'}},'@/lib/workflow-catalog':{getWorkflowCatalog:id=>id==='expressions'?[words[1]]:words,WORKFLOW_BOOKS:books,getWorkflowBook:id=>{const book=books.find(row=>row.id===id);assert.ok(book);return book;},getCandidateLearningWord:row=>words.find(current=>current.id===row.id)??null},'./interactive-example':{InteractiveExample:function InteractiveExample(p){return {type:'example',props:p};}},'./practice':{SpeechPlayer:function SpeechPlayer(p){return {type:'audio',props:p};}},'./ui-theme':{ThemeScene:function ThemeScene(p){return p.theme==='hollow'?{type:'figure',props:{'data-scene':p.scene}}:null;}}};
+ imports['react-dom']={createPortal:(child,target)=>({type:'portal',props:{children:child,target}})};
  imports['@/lib/vocabulary-workflow']=require('./helpers/actual-source-loader.cjs').createSourceLoader({permitLearningAccess:true,root,imports:{'./workflow-catalog':imports['@/lib/workflow-catalog']}}).load('lib/vocabulary-workflow.ts');
  imports['@/lib/word-audio-bindings-v040']={getWordAudioBindingForSnapshot:()=>null,isPrivateWordAudioBlocked:()=>false,PRIVATE_AUDIO_LABEL:'Synthetic no playback'};
  imports['@/lib/lesson-audio']={naturalAudioRegistry:{pinSelectors:async()=>({release(){}})},subscribeProductLessonAudio:()=>()=>{},productLessonAudioState:()=>({phase:'ready'})};
@@ -41,6 +42,20 @@ function harness(componentName,initialProps,references=referenceFixture){
  render();render();
  return {exports:componentExports,downloads,get tree(){return tree;},render,update(next){props={...props,...next};render();render();},button,click(label){const node=button(label);assert.ok(node,'button: '+label);node.props.onClick?.();render();},async flush(){await tick();render();await tick();render();},unmount(){slots.forEach(value=>value?.cleanup?.());}};
 }
+
+test('word audio feedback has its own target beside the reading scroller',()=>{
+ const h=harness('VocabularyStudyCard',{workflow:controller({activeSession:session()}),theme:'paper'});
+ const middle=nodes(h.tree,n=>n.props?.className==='phase2-word-middle')[0];
+ assert.ok(middle,'The fixed middle region exists');
+ const children=Array.isArray(middle.props.children)?middle.props.children:[middle.props.children];
+ assert.deepEqual(Array.from(children,n=>n.props?.className),['phase2-word-content','phase2-word-audio-feedback']);
+ const target={id:'word-feedback-target'};children[1].props.ref(target);h.render();
+ const audio=nodes(h.tree,n=>n.type==='audio'&&n.props.mode==='word')[0];
+ assert.ok(audio,'The word player is retained');
+ const rendered=audio.props.renderFeedback('synthetic status');
+ assert.equal(rendered.type,'portal');assert.equal(rendered.props.target,target);assert.equal(rendered.props.children,'synthetic status');
+ h.unmount();
+});
 
 test('invalid total goal takes priority over selected days; covered equality needs no new-word days',()=>{
  const h=harness('TodayVocabularyTask',{workflow:controller(),onOpen(){}}),evaluate=h.exports.evaluatePlanDraft;
@@ -197,14 +212,20 @@ test('reading position survives same-word save and retry; only the next word res
  const workflow=controller({activeSession:active,submitRating:async rating=>{if(++tries===1)return {status:'pending'};active.currentStep.receipt={...receipt,rawRating:rating};return {status:'applied'};}});
  const h=harness('VocabularyStudyCard',{workflow,theme:'hollow'});
  const content=nodes(h.tree,node=>node.props?.className==='phase2-word-content')[0].props.ref;
+ const header=nodes(h.tree,node=>node.props?.className==='phase2-word-header')[0];
+ assert.equal(header.props.role,'region');assert.equal(header.props['aria-label'],'单词及音标');assert.equal(header.props.tabIndex,0);
+ const headerScroll=header.props.ref;headerScroll.current={scrollTop:85};
  const heading=nodes(h.tree,node=>node.type==='h2'&&node.props.className==='phase2-current-word')[0].props.ref;
  let revealFocusCalls=0,cardScrollCalls=0,headingTop=100;
- const document={defaultView:{innerHeight:640},querySelectorAll:()=>[]};
- content.current={ownerDocument:document,scrollTop:137,focus:()=>{revealFocusCalls++;},closest:selector=>{assert.equal(selector,'.phase2-word-card');return {scrollIntoView:options=>{assert.equal(options.block,'start');assert.equal(options.behavior,'instant');cardScrollCalls++;}};}};let focusCalls=0;heading.current={focus:()=>{focusCalls++;},getBoundingClientRect:()=>({top:headingTop,bottom:headingTop+40})};
- h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);
- h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);assert.equal(focusCalls,0);assert.equal(revealFocusCalls,1);assert.equal(cardScrollCalls,0);
+ const document={defaultView:{innerHeight:640,scrollBy:options=>{assert.equal(options.behavior,'instant');assert.equal(options.top,92);cardScrollCalls++;}},querySelectorAll:()=>[]};
+ const sessionHeading={ownerDocument:document,getBoundingClientRect:()=>({top:100})};
+ const sessionRoot={querySelector:selector=>{assert.equal(selector,'.phase2-word-session-heading');return sessionHeading;}};
+ const closest=selector=>{assert.equal(selector,'.phase2-vocabulary-session');return sessionRoot;};
+ content.current={ownerDocument:document,scrollTop:137,focus:()=>{revealFocusCalls++;},closest};let focusCalls=0;heading.current={focus:options=>{assert.equal(options.preventScroll,true);focusCalls++;},getBoundingClientRect:()=>({top:headingTop,bottom:headingTop+40}),closest};
+ h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);assert.equal(headerScroll.current.scrollTop,85);
+ h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);assert.equal(headerScroll.current.scrollTop,85);assert.equal(focusCalls,0);assert.equal(revealFocusCalls,1);assert.equal(cardScrollCalls,0);
  active.currentStep={...active.currentStep,id:'next-word',word:{...word,id:'available',word:'available',meaning:'可用的'},receipt:undefined};
- h.render();assert.equal(content.current.scrollTop,0);assert.equal(focusCalls,1);assert.equal(cardScrollCalls,0);
+ h.render();assert.equal(content.current.scrollTop,0);assert.equal(headerScroll.current.scrollTop,0);assert.equal(focusCalls,1);assert.equal(cardScrollCalls,0);
  headingTop=-40;active.currentStep={...active.currentStep,id:'offscreen-word'};h.render();assert.equal(cardScrollCalls,1);assert.equal(focusCalls,2);
  h.update({overlayBlocked:true});active.currentStep={...active.currentStep,id:'overlay-word'};h.render();assert.equal(cardScrollCalls,1);assert.equal(focusCalls,2);
  assert.doesNotMatch(text(h.tree),/安静的；轻声的|可用的/);h.unmount();

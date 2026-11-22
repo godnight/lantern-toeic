@@ -10,6 +10,9 @@ const net = require('node:net');
 const {spawn} = require('node:child_process');
 const {createRequire} = require('node:module');
 const {pathToFileURL} = require('node:url');
+const {waitForWordHeaderEdge} = require('./word-header-edge.cjs');
+const {verifyWordHeaderEdge} = require('./word-header-edge-check.cjs');
+const {waitForWordWorkspace} = require('./word-workspace-ready.cjs');
 
 const REPO = path.resolve(process.env.LANTERN_WORDCARD_QA_REPO || path.join(__dirname, '../..'));
 const repoRequire = createRequire(path.join(REPO, 'package.json'));
@@ -206,22 +209,44 @@ async function screenshot(condition, suffix) {
   report.screenshots.push({condition: condition.id, file: name, bytes: bytes.length, sha256: digest(bytes)});
 }
 async function reachControls() {
-  await page.locator('.phase2-word-controls').scrollIntoViewIfNeeded();
-  await page.evaluate(() => {
-    const button = document.querySelector('.phase2-word-controls .button');
-    const r = button.getBoundingClientRect();
-    const nav = document.querySelector('.workspace-mobile-nav');
-    const n = nav?.getBoundingClientRect();
-    const boundary = n && getComputedStyle(nav).position === 'fixed' ? n.top : innerHeight;
-    if (r.bottom > boundary - 8) scrollBy(0, r.bottom - boundary + 8);
-  });
-  await settleFrames();
-  const hit = await page.locator('.phase2-word-controls .button').first().evaluate(element => {
+  const button=page.locator('.phase2-word-controls .button').first();
+  const readHit=()=>button.evaluate(element => {
     const r = element.getBoundingClientRect(), x = r.x + r.width / 2, y = r.y + r.height / 2;
     const target = document.elementFromPoint(x, y);
-    return {visible: x >= 0 && x <= innerWidth && y >= 0 && y <= innerHeight, hit: target === element || element.contains(target)};
+    const header=document.querySelector('.workspace-topbar'),h=header?.getBoundingClientRect();
+    const nav=document.querySelector('.workspace-mobile-nav'),n=nav?.getBoundingClientRect();
+    const top=h&&h.height>0?Math.max(0,h.bottom):0;
+    const bottom=n&&n.height>0&&getComputedStyle(nav).position==='fixed'?Math.min(innerHeight,n.top):innerHeight;
+    return {visible:r.left>=0&&r.right<=innerWidth&&r.top>=top-1&&r.bottom<=bottom+1,
+      hit:target===element||element.contains(target),width:r.width,height:r.height};
   });
+  let hit=await readHit();
+  if(!hit.visible||!hit.hit){
+    // Only move the actual action if needed; the whole footer includes hidden
+    // tools and can push an otherwise reachable session heading under the bar.
+    await button.scrollIntoViewIfNeeded();
+    await button.evaluate(element=>{
+      const r=element.getBoundingClientRect(),header=document.querySelector('.workspace-topbar'),h=header?.getBoundingClientRect();
+      const nav=document.querySelector('.workspace-mobile-nav'),n=nav?.getBoundingClientRect();
+      const top=h&&h.height>0?Math.max(0,h.bottom):0;
+      const bottom=n&&n.height>0&&getComputedStyle(nav).position==='fixed'?Math.min(innerHeight,n.top):innerHeight;
+      if(r.top<top)scrollBy(0,r.top-top-8);else if(r.bottom>bottom)scrollBy(0,r.bottom-bottom+8);
+    });
+    await settleFrames();
+    hit=await readHit();
+  }
+  assert.ok(hit.width>=44&&hit.height>=44,'Action target below44px: '+JSON.stringify(hit));
   assert.ok(hit.visible && hit.hit, 'Action unreachable or under fixed navigation: ' + JSON.stringify(hit));
+  const sessionHeading=await page.locator('.phase2-word-session-heading').evaluate(element=>{
+    const header=document.querySelector('.workspace-topbar'),h=header?.getBoundingClientRect();
+    const top=h&&h.height>0?Math.max(0,h.bottom):0;
+    return [...element.querySelectorAll(':scope > span')].map(span=>{
+      const r=span.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,target=document.elementFromPoint(x,y);
+      return {text:span.textContent.trim(),visible:r.top>=top-1&&r.bottom<=innerHeight+1,hit:target===span||span.contains(target)};
+    });
+  });
+  assert.equal(sessionHeading.length,2,'Word count and date must both be present');
+  assert.ok(sessionHeading.every(item=>item.text&&item.visible&&item.hit),'Word count or date is obscured: '+JSON.stringify(sessionHeading));
 }
 async function visiblePointerClick(locator,condition,wordIndex,phase,reference) {
   const before=await snapshot(condition,wordIndex,`${phase}-neutral-preclick`);
@@ -289,7 +314,7 @@ async function inputPreparationControl(condition) {
   return control;
 }
 async function audioStatusPressure(condition, wordIndex, reference, preserveReading = false) {
-  const feedback = page.locator('.v041-word-heading .speech-audio-feedback');
+  const feedback = page.locator('.phase2-word-audio-feedback > .speech-audio-feedback');
   assert.equal(await feedback.count(), 1, 'Actual SpeechPlayer status slot missing');
   // A growing status above the text may change scrollTop to preserve its visual anchor.
   // Compare the same teaching paragraph in the viewport, including after clearing status.
@@ -348,7 +373,9 @@ async function openFixturePage(config) {
   await page.goto(`${origin}/?theme=${config.theme}&font=${config.font}`, {waitUntil: 'networkidle'});
   await page.waitForFunction(() => !!window.__wordCardQA);
   await page.locator('.v045-stable-word-card').waitFor({state: 'visible'});
+  await waitForWordWorkspace(page);
   if (config.prepareControls !== false) await reachControls();
+  await waitForWordWorkspace(page);
 }
 async function runFreshPreparationControl(){
   let control;
@@ -369,6 +396,37 @@ async function assertWordReference(word, revealed) {
   assert.equal(await etymology.count(), revealed && word.etymology ? 1 : 0, 'Etymology revealed before a confirmed rating or missing after it');
   if(revealed && word.etymology) assert.equal((await etymology.locator('p').innerText()).trim(), word.etymology.trim());
 }
+async function assertScrollableWordHeader(word) {
+  const header = page.getByRole('region', {name: '单词及音标', exact: true});
+  const before = await header.evaluate(element => ({height:element.clientHeight, full:element.scrollHeight}));
+  assert.ok(before.height > 0, 'Word header has no reading area');
+  await header.evaluate(element => element.focus({preventScroll:true}));
+  const waitForEdge = edge => waitForWordHeaderEdge(page,header,edge,word.word);
+  if(before.full > before.height + 1){await page.keyboard.press('End');await waitForEdge('end');}
+  const end = await header.evaluate(element => {
+    const phonetic = element.querySelector('.word-phonetic'), h = element.getBoundingClientRect(), p = phonetic.getBoundingClientRect();
+    return {scrollTop:element.scrollTop, max:element.scrollHeight-element.clientHeight, headerFocused:document.activeElement===element,
+      phoneticBottom:p.bottom, headerBottom:h.bottom, phoneticText:phonetic.textContent.trim()};
+  });
+  assert.equal(end.headerFocused, true, 'Keyboard focus left the word header: '+JSON.stringify({word:word.word,...end}));
+  assert.ok(end.scrollTop >= end.max - 2, 'Keyboard cannot reach the end of the word header: '+JSON.stringify({word:word.word,...end}));
+  assert.ok(end.phoneticBottom <= end.headerBottom + 2, 'End of the phonetic text is not reachable: '+JSON.stringify({word:word.word,...end}));
+  assert.equal(end.phoneticText, word.phonetics.length ? word.phonetics.join(' · ') : '暂无音标');
+  if(before.full > before.height + 1){await page.keyboard.press('Home');await waitForEdge('start');}
+  const first = await header.evaluate(element => {
+    const title = element.querySelector('.phase2-current-word'), button = element.querySelector('.speech-audio-icon');
+    const h=element.getBoundingClientRect(), t=title.getBoundingClientRect(), b=button?.getBoundingClientRect();
+    const hit=b&&document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);
+    return {scrollTop:element.scrollTop, title: title.textContent.trim(), titleTop:t.top, headerTop:h.top,
+      headerFocused:document.activeElement===element, focus:document.activeElement?.className||document.activeElement?.tagName,
+      audioHit:!!button&&(hit===button||button.contains(hit))};
+  });
+  assert.ok(first.scrollTop <= 2 && first.titleTop >= first.headerTop - 1, 'Keyboard cannot return to the start of the word: '+JSON.stringify({word:word.word,...first}));
+  assert.equal(first.headerFocused, true, 'Keyboard focus left the word header: '+JSON.stringify({word:word.word,...first}));
+  assert.equal(first.title, word.word);
+  assert.equal(first.audioHit, true, 'Word audio button is not reachable after returning to the start: '+JSON.stringify({word:word.word,...first}));
+  await page.locator('.phase2-current-word').evaluate(element => element.focus({preventScroll:true}));
+}
 async function runCondition(config) {
   const condition = {...config, status: 'RUNNING', geometry: [], flow: []}; report.conditions.push(condition);
   await openFixturePage({...config, prepareControls: config.id !== 'hollow-390'});
@@ -381,6 +439,7 @@ async function runCondition(config) {
     assert.equal(await page.getByText(word.answerMarker, {exact: false}).count(), 0, 'Unrevealed answer is mounted in DOM');
     assert.equal(await page.locator('.phase2-word-meaning').count(), 0);
     await assertWordReference(word, false);
+    if(index===1||index===3)await assertScrollableWordHeader(word);
     const before = index === 0 ? first : await snapshot(condition, index, 'before'); stable(first, before);
     const savedBefore = beforeState.saved.length, attemptBefore = beforeState.attempts.length;
     await visiblePointerClick(page.getByRole('button', {name: label, exact: true}),condition,index,'rating',first);
@@ -420,16 +479,36 @@ async function runCondition(config) {
       'First confirmed reveal lost focus instead of moving to the reading region');
     if (config.id === 'hollow-390' && index === 0) {
       const visible = await page.locator('.phase2-word-content').evaluate(element => {
-        const area = element.getBoundingClientRect();
-        const targets = [...element.querySelectorAll('.phase2-current-word,.word-phonetic,.phase2-word-meaning > p,.phase2-word-example,.phase2-word-etymology')];
+        const area = element.getBoundingClientRect(), meaning = element.querySelector('.phase2-word-meaning > p');
+        const head = document.querySelector('.phase2-word-header');
+        const containsPoint = (target, x, y) => {const hit = document.elementFromPoint(x, y); return hit === target || target.contains(hit);};
+        const shown = target => {const r = target.getBoundingClientRect(); return r.bottom > Math.max(0, area.top) && r.top < Math.min(innerHeight, area.bottom);};
+        const m = meaning?.getBoundingClientRect();
+        const initiallyVisible = !!meaning && shown(meaning) &&
+          containsPoint(meaning, m.left + 2, Math.max(area.top + 1, m.top + 1));
+        const headerVisible = ['.phase2-current-word','.word-phonetic'].every(selector => {
+          const target = head?.querySelector(selector); if (!target) return false;
+          const r = target.getBoundingClientRect(), h = head.getBoundingClientRect();
+          return r.top >= Math.max(0, h.top) - 1 && r.bottom <= Math.min(innerHeight, h.bottom) + 1;
+        });
         const button = element.querySelector('.phase2-word-example .speech-audio-icon');
-        const rect = button.getBoundingClientRect(), hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
-        return {scrollTop: element.scrollTop, fits: element.scrollHeight <= element.clientHeight + 1,
-          allVisible: targets.every(target => {const r = target.getBoundingClientRect(); return r.top >= Math.max(0, area.top) - 1 && r.bottom <= Math.min(innerHeight, area.bottom) + 1;}),
-          exampleAudioHit: hit === button || button.contains(hit)};
+        if (!button) return {initiallyVisible, headerVisible, exampleAudioHit:false};
+        const before = button.getBoundingClientRect();
+        element.scrollTop += Math.max(0, before.bottom - area.bottom + 1);
+        const r = button.getBoundingClientRect();
+        const exampleAudioHit = r.top >= area.top - 1 && r.bottom <= area.bottom + 1 &&
+          containsPoint(button, r.x + r.width / 2, r.y + r.height / 2);
+        const translation = element.querySelector('.phase2-word-meaning > p.muted');
+        if (!translation) return {initiallyVisible, headerVisible, exampleAudioHit, translationHit:false};
+        const prior = translation.getBoundingClientRect();
+        element.scrollTop += Math.max(0, prior.top - area.top);
+        const t = translation.getBoundingClientRect();
+        const translationHit = !!translation.textContent.trim() && shown(translation) &&
+          containsPoint(translation, t.left + 2, Math.max(area.top + 1, t.top + 1));
+        return {initiallyVisible, headerVisible, exampleAudioHit, translationHit};
       });
-      assert.deepEqual(visible, {scrollTop: 0, fits: true, allVisible: true, exampleAudioHit: true},
-        'Typical revealed card must show phonetics, meaning, example, translation and etymology with a reachable example-audio target before scrolling');
+      assert.deepEqual(visible, {initiallyVisible:true, headerVisible:true, exampleAudioHit:true, translationHit:true},
+        'Typical revealed card must show its word, phonetics and meaning, and expose example audio and translation through normal reading scroll');
       condition.typicalFirstScreen = visible;
       await screenshot(condition, 'typical-revealed-first-screen');
     }
@@ -475,6 +554,8 @@ async function main() {
   await fs.access(chromium.executablePath()); // Never install a browser here.
   browser = await chromium.launch({headless: true});
   report.browser = {playwright: repoRequire('playwright/package.json').version, executable: chromium.executablePath()};
+  const edgePage=await browser.newPage();
+  try{await verifyWordHeaderEdge(edgePage);}finally{await edgePage.close();}
   await runFreshPreparationControl();
   for (const condition of CONDITIONS) await runCondition(condition);
   const ordinary = report.conditions.find(condition => condition.id === 'hollow-390').geometry.find(row => row.typography.meaning);

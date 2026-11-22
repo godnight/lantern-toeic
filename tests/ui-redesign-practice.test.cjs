@@ -57,7 +57,8 @@ function harness({attempts = [], outcomes = [true], queue, browser, lookup = fal
     useRef(initial) {const i = cursor++; if (!(i in slots)) slots[i] = {current: initial}; return slots[i];},
     useEffect(fn, deps) {const i = cursor++; if (!slots[i] || !same(slots[i].deps, deps)) {const old = slots[i]; slots[i] = {deps,setup:fn}; effects.push(() => {old?.cleanup?.(); slots[i].cleanup = fn();});}}
   };
-  const jsx = (type, props, key) => ({type, props, key});
+  react.useLayoutEffect=react.useEffect;
+  const jsx = (type, props, key) => typeof type==='function'&&type.name==='PracticeFrame'?type(props):({type, props, key});
   const stubs = new Proxy({}, {get: (_, name) => String(name)});
   const imports = {
     react, 'react/jsx-runtime': {jsx, jsxs: jsx, Fragment: 'fragment'}, 'lucide-react': stubs,
@@ -86,7 +87,7 @@ function harness({attempts = [], outcomes = [true], queue, browser, lookup = fal
   const choose = value => {const radio = one(n => n.type === 'RadioGroup'); assert.ok(!radio.props.disabled); radio.props.onValueChange(String(value)); return render();};
   const nativeBack = () => {assert.deepEqual([...backs.keys()], [10]); assert.equal(backs.get(10)(), true); return render();};
   render();
-  return {render, one, button, click, choose, nativeBack, durable(value){props.durable=value;return render();}, calls, saved, finishes, lookups, lookupActive(value){props.lookupActive=value;return render();}, nativeResult(){const handled=backs.get(10)();render();return handled;}, strictReplay(){const active=slots.filter(slot=>slot?.setup);active.forEach(slot=>{slot.cleanup?.();slot.cleanup=undefined;});active.forEach(slot=>{slot.cleanup=slot.setup();});return render();}, get tree(){return tree;}, get closed(){return closed;}, advance(ms){now += ms;}, dismissMain(){one(n => n.type === 'Dialog' && n.props.open && nodes(n, x => x.props?.className === 'practice-dialog').length).props.onOpenChange(false); return render();}, unmount(){slots.forEach(slot => slot?.cleanup?.()); assert.equal(backs.size, 0);}};
+  return {render, one, button, click, choose, nativeBack, durable(value){props.durable=value;return render();}, calls, saved, finishes, lookups, lookupActive(value){props.lookupActive=value;return render();}, nativeResult(){const handled=backs.get(10)();render();return handled;}, strictReplay(){const active=slots.filter(slot=>slot?.setup);active.forEach(slot=>{slot.cleanup?.();slot.cleanup=undefined;});active.forEach(slot=>{slot.cleanup=slot.setup();});return render();}, get tree(){return tree;}, get closed(){return closed;}, advance(ms){now += ms;}, dismissMain(){const page=nodes(tree,n=>n.props?.className==='listening-practice-header')[0];if(page){const close=nodes(page,n=>n.type==='button'&&textOf(n)==='返回')[0];close.props.onClick();}else one(n => n.type === 'Dialog' && n.props.open && nodes(n, x => x.props?.className === 'practice-dialog').length).props.onOpenChange(false); return render();}, unmount(){slots.forEach(slot => slot?.cleanup?.()); assert.equal(backs.size, 0);}};
 }
 
 test('failed save retains the same answer and attempt identity; retry gates feedback and next question', () => {
@@ -326,7 +327,7 @@ test('I09: controlled lookup leaves Practice mounted with identical question, an
   assert.equal(nodes(h.tree,n=>n.type==='DialogTitle'&&textOf(n)==='暂时退出练习？').length,0);
   assert.equal(h.nativeResult(),false,'Nested dictionary owns Native Back while active');
   assert.equal(h.one(n=>n.props?.className==='question-scroll practice-with-material').key,main.key);
-  assert.equal(nodes(h.tree,n=>n.type==='Dialog'&&n.props.open).length,1,'Main Practice remains open');
+  assert.equal(nodes(h.tree,n=>n.props?.className==='listening-practice-page').length,1,'Listening practice remains mounted');
   h.lookupActive(false);
   assert.equal(h.one(n=>n.type==='RadioGroup').props.value,'1');assert.equal(h.one(n=>n.type==='Progress').props.value,50);
   assert.equal(h.one(n=>n.type==='textarea'&&n.props['aria-label']==='听写答案').props.value,'the reservation is confirmed');
@@ -356,7 +357,7 @@ test('I09: repeated lookup does not advance the question or create attempts/chec
   const h=harness({queue:lookupQuestions(),lookup:true});h.choose(1);h.click('确认答案');
   const staleNext=h.button('下一题');h.click('查词 reservation');
   staleNext.props.onClick();h.render();assert.deepEqual(h.lookups,['reservation']);
-  assert.match(textOf(h.one(n=>n.type==='DialogDescription')),/1 \/ 2 · 首次作答/);assert.equal(h.saved.length,1);
+  assert.match(textOf(h.one(n=>n.props?.className==='listening-practice-header')),/1 \/ 2 · 首次作答/);assert.equal(h.saved.length,1);
   assert.equal(h.button('查词 reservation').props.disabled,true);assert.equal(h.calls.length,1);assert.equal(h.finishes.length,0);
   h.lookupActive(false);h.click('查词 reservation');assert.deepEqual(h.lookups,['reservation','reservation']);
   assert.equal(h.saved.length,1);h.unmount();

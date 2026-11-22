@@ -1,6 +1,4 @@
 /* The approved discovery feed has its own header; the library retains its existing shell. */
-body[data-ui-theme] .v040-workspace-shell.workspace-discovery-feed .workspace-topbar{display:none!important;}
-body[data-ui-theme] .v040-workspace-shell.workspace-discovery-feed .workspace-main{padding-top:0!important;}
 body[data-ui-theme] .v040-workspace-shell.workspace-discovery-feed .workspace-body{z-index:auto;}
 body[data-ui-theme] .v040-workspace-shell.workspace-discovery-feed::before{background-image:none!important;background-color:var(--ui-canvas);}
 .discovery-view{min-width:0;color:var(--ui-text);font-size:1rem;}

@@ -78,12 +78,12 @@ export function PublicInfoBoundary({children}:{children:ReactNode}){
 }
 
 /** Ordinary links remain public routes without a provider, including before login. */
-export function PublicInfoLinks({className='',compact=false}:{className?:string;compact?:boolean}={}){
+export function PublicInfoLinks({className='',compact=false,kinds=['privacy','terms','support'],supportLabel}:{className?:string;compact?:boolean;kinds?:readonly ('privacy'|'terms'|'support')[];supportLabel?:string}={}){
   const open=useContext(PublicInfoContext);
   return <nav className={`v041-public-info-links${compact?' v041-public-info-links--compact':''} ${className}`.trim()} aria-label="政策与联系">
-    {(['privacy','terms','support'] as const).map(kind=>{const Icon=LINK_ICONS[kind];return <a key={kind} href={`/${kind}`}
+    {kinds.map(kind=>{const Icon=LINK_ICONS[kind];return <a key={kind} href={`/${kind}`}
       onClick={event=>{if(open&&!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey){event.preventDefault();open(kind);}}}>
-      {!compact&&<Icon size={20} aria-hidden="true"/>}<span>{TITLES[kind]}</span>{!compact&&<ChevronRight size={18} aria-hidden="true"/>}
+      {!compact&&<Icon size={20} aria-hidden="true"/>}<span>{kind==='support'&&supportLabel?supportLabel:TITLES[kind]}</span>{!compact&&<ChevronRight size={18} aria-hidden="true"/>}
     </a>;})}
   </nav>;
 }
