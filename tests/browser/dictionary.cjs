@@ -35,14 +35,17 @@ async function step(name,fn){await fn();report.steps.push({name,status:'passed'}
  async function context(){const c=await browser.newContext({viewport:{width:390,height:844},locale:'zh-CN',timezoneId:'Asia/Shanghai',acceptDownloads:true,serviceWorkers:'block'});nativeAccounts.set(c,await installNativeAccountFixture(c,{report}));await c.route('**/*',r=>new URL(r.request().url()).origin===origin?fulfillNativePreview(r,previewOrigin):r.abort());return c;}
  async function enter(page){
  page.setDefaultTimeout(20000);page.on('pageerror',e=>report.errors.push(String(e)));await page.goto(origin);
- const nav=page.getByRole('navigation',{name:'手机主导航',exact:true});
- await nav.waitFor();nativeAccounts.get(page.context()).assertVerified(page);
+ await page.getByRole('heading',{name:'今日',exact:true}).waitFor();nativeAccounts.get(page.context()).assertVerified(page);
+ await page.getByRole('button',{name:'展开导航',exact:true}).click();
+ const nav=page.getByRole('navigation',{name:'主导航',exact:true});
+ await nav.waitFor();
  await nav.getByRole('button',{name:'单词',exact:true}).click();
  const library=page.locator('[data-workflow-origin] > details').filter({has:page.locator('summary').filter({hasText:'词库与收藏'})});
  await library.locator(':scope > summary').click();await page.getByLabel('搜索单词或中文释义').waitFor();
 }
 async function records(page){
- await page.getByRole('button',{name:'打开个人信息与设置',exact:true}).click();
+ await page.getByRole('button',{name:'展开导航',exact:true}).click();
+ await page.locator('.workspace-sidebar-bottom').getByRole('button',{name:'设置',exact:true}).click();
  await page.getByRole('button',{name:'数据管理',exact:true}).click();
  await page.getByRole('region',{name:'词卡记录备份与恢复',exact:true}).waitFor();
 }

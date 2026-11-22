@@ -289,7 +289,7 @@ async function inputPreparationControl(condition) {
   return control;
 }
 async function audioStatusPressure(condition, wordIndex, reference, preserveReading = false) {
-  const feedback = page.locator('.v041-word-heading .speech-audio-feedback');
+  const feedback = page.locator('.phase2-word-audio-feedback > .speech-audio-feedback');
   assert.equal(await feedback.count(), 1, 'Actual SpeechPlayer status slot missing');
   // A growing status above the text may change scrollTop to preserve its visual anchor.
   // Compare the same teaching paragraph in the viewport, including after clearing status.

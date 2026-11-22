@@ -2,6 +2,7 @@
 import type {VocabularyPrevious} from '@/lib/native-workspace-resume';
 
 import {useEffect,useLayoutEffect,useRef,useState,useSyncExternalStore} from 'react';
+import {createPortal} from 'react-dom';
 import {ArrowRight,BookOpen,CalendarDays,Check,CheckCircle2,ChevronLeft,ChevronRight,Download,Plus,RefreshCw,Settings2,Upload} from 'lucide-react';
 import type {Theme} from '@/lib/study-model';
 import type {Word} from '@/lib/vocabulary-model';
@@ -252,6 +253,7 @@ export function TodayVocabularyTask({workflow,onOpen,onOpenStudy,onPlanOverview,
 }
 
 export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlocked=false,onFinish,initialPrevious,onPreviousChange}:{workflow:Workflow;theme:Theme;onExampleLookup?:ExampleLookup;overlayBlocked?:boolean;onFinish?:()=>void;initialPrevious?:VocabularyPrevious|null;onPreviousChange?:(value:VocabularyPrevious|null)=>void}){
+  const [wordAudioFeedbackTarget,setWordAudioFeedbackTarget]=useState<HTMLDivElement|null>(null);
   const session=workflow.activeSession;
   const [previousStep,setPreviousStep]=useState<string|null>(()=>initialPrevious&&session?.id===initialPrevious.sessionId&&session?.cursor===initialPrevious?.cursor&&session?.queue[session.cursor-1]?.id===initialPrevious?.stepId?initialPrevious.stepId:null);
   const identity=useRef(JSON.stringify([workflow.scopeKey,session?.id,session?.cursor]));
@@ -342,10 +344,10 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
         <div className="phase2-word-layout">
           <header className="phase2-word-header">
             <div className="v041-word-heading"><h2 ref={wordHeading} tabIndex={-1} className="phase2-current-word" lang="en">{step.word.word}</h2>
-            {audioHeld?<p className="word-footnote">此词发音待核对，原学习记录保留。</p>:<SpeechPlayer mode="word" key={step.id} text={step.word.word} {...(headwordAudio||{materialId:step.word.id,segmentId:'headword'})} label="听单词发音" sourceLabel={headwordAudio?PRIVATE_AUDIO_LABEL:'单词学习'}/>}</div>
+            {audioHeld?<p className="word-footnote">此词发音待核对，原学习记录保留。</p>:<SpeechPlayer mode="word" key={step.id} text={step.word.word} {...(headwordAudio||{materialId:step.word.id,segmentId:'headword'})} label="听单词发音" sourceLabel={headwordAudio?PRIVATE_AUDIO_LABEL:'单词学习'} renderFeedback={feedback=>wordAudioFeedbackTarget?createPortal(feedback,wordAudioFeedbackTarget):null}/>}</div>
             <p className="word-phonetic" lang={reference.phonetics.length?'en':undefined} aria-label="音标">{reference.phonetics.length?reference.phonetics.join(' · '):'暂无音标'}</p>
           </header>
-          <div ref={contentRoot} className="phase2-word-content" role="region" aria-label="单词内容" tabIndex={0}>
+          <div className="phase2-word-middle"><div ref={contentRoot} className="phase2-word-content" role="region" aria-label="单词内容" tabIndex={0}>
           <div className="phase2-word-body">
             <WorkflowNotice workflow={workflow}/>
             {revealed?<div className="phase2-word-meaning"><p><span className="word-pos">{step.word.pos}</span>{step.word.meaning}</p>
@@ -356,7 +358,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
             </div>:<p className="phase2-word-prompt">回想释义，再选择熟悉程度。</p>}
             {message&&<p className="phase2-vocab-message" role="alert">{message}</p>}
           </div>
-          </div>
+          </div><div className="phase2-word-audio-feedback" ref={setWordAudioFeedbackTarget}/></div>
           <footer className="phase2-word-controls">
             <div className="phase2-word-status" role="status" aria-live="polite" aria-atomic="true">
               {busy?<span>正在保存反馈…</span>:step.correctionPending?<span>改判待确认，请重试。</span>:revealed?<span className="phase2-feedback-saved"><CheckCircle2 size={17}/>{step.correctedToForgotten?'已改为：忘记':'已保存：'+RATING_NAMES[step.receipt!.rawRating]}</span>:fixedRating?<span className="phase2-fixed-feedback">待确认：{RATING_NAMES[fixedRating]}，请重试。</span>:null}

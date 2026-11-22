@@ -22,7 +22,7 @@ import {registerNativeBack,subscribeNativeState} from '@/lib/native-host';
 import './practice-pages.css';
 // Paused players remain mounted. Only the most recently started player owns the checkpoint.
 let checkpointOwner:object|null=null;
-export function SpeechPlayer({text,label='播放音频',trackId='question',checkpoint,onCheckpoint,audioKey,materialId,segmentId,voiceProfileId,contextHash,naturalOnly=false,mode='listening',className='',disabled=false}:{text:string;label?:string;sourceLabel?:string;trackId?:string;checkpoint?:TrainingAudio|null;onCheckpoint?:(value:TrainingAudio,urgent?:boolean)=>void;audioKey?:string;materialId?:string;segmentId?:string;voiceProfileId?:string;contextHash?:string;naturalOnly?:boolean;mode?:'listening'|'word'|'example';className?:string;disabled?:boolean}){
+export function SpeechPlayer({text,label='播放音频',trackId='question',checkpoint,onCheckpoint,audioKey,materialId,segmentId,voiceProfileId,contextHash,naturalOnly=false,mode='listening',className='',disabled=false,renderFeedback}:{text:string;label?:string;sourceLabel?:string;trackId?:string;checkpoint?:TrainingAudio|null;onCheckpoint?:(value:TrainingAudio,urgent?:boolean)=>void;audioKey?:string;materialId?:string;segmentId?:string;voiceProfileId?:string;contextHash?:string;naturalOnly?:boolean;mode?:'listening'|'word'|'example';className?:string;disabled?:boolean;renderFeedback?:(feedback:ReactNode)=>ReactNode}){
  const accountAccess=useLearningAccess();
  const compact=mode!=='listening',effectiveRate=(value:number)=>compact?1:value;
  const [,audioRevision]=useState(0);
@@ -106,6 +106,14 @@ export function SpeechPlayer({text,label='播放音频',trackId='question',check
  };
 
  const availability=productLessonAudioState();
+ const hasFeedback=preparing||!!prepareError||!clip||!!(checkpoint?.trackId===trackId&&!matching);
+ const feedback=<div className={compact?'speech-audio-feedback':'audio-meta'} {...(renderFeedback&&hasFeedback?{role:'region',tabIndex:0,'aria-label':'单词发音提示'}:{})}>{!compact&&<b>{label}</b>}
+   {preparing&&<small role="status">正在准备音频…</small>}
+   {prepareError&&<small role="alert">{prepareError}</small>}
+   {!clip&&<small role="status">{availability.phase==='error'?'音频暂时不可用，请重试。':'这段音频尚未准备。'}</small>}
+   {!clip&&availability.phase==='error'&&<button type="button" className="text-button" onClick={()=>void retryProductLessonAudio()}>重试准备音频</button>}
+   {checkpoint?.trackId===trackId&&!matching&&<small role="status">音频已更新，请从头播放。</small>}
+  </div>;
  const actionName=compact?(mode==='word'?'单词发音':'例句'):label;
  const actionLabel=preparing?'正在准备 '+actionName:playing?'暂停 '+actionName:completed?'再听一遍 '+actionName:position>0&&!(mode==='word'&&!played.current)?'继续 '+actionName:compact?'播放 '+actionName:label;
  return <div className={(compact?'speech-audio':'audio-player practice-audio-player speech-audio')+' speech-audio--'+mode+(className?' '+className:'')} data-audio-mode={mode} data-audio-state={preparing?'preparing':playing?'playing':completed?'completed':prepareError?'error':'idle'}>
@@ -115,13 +123,7 @@ export function SpeechPlayer({text,label='播放音频',trackId='question',check
    title={playing?'暂停':completed?'再听一遍':'播放'} onClick={()=>void play()}>
    {preparing?<LoaderCircle size={20} className="speech-audio-loading"/>:playing?<Pause size={20}/>:completed?<RotateCcw size={20}/>:compact?<Volume2 size={22}/>:<Play size={20} fill="currentColor"/>}
   </button>
-  <div className={compact?'speech-audio-feedback':'audio-meta'}>{!compact&&<b>{label}</b>}
-   {preparing&&<small role="status">正在准备音频…</small>}
-   {prepareError&&<small role="alert">{prepareError}</small>}
-   {!clip&&<small role="status">{availability.phase==='error'?'音频暂时不可用，请重试。':'这段音频尚未准备。'}</small>}
-   {!clip&&availability.phase==='error'&&<button type="button" className="text-button" onClick={()=>void retryProductLessonAudio()}>重试准备音频</button>}
-   {checkpoint?.trackId===trackId&&!matching&&<small role="status">音频已更新，请从头播放。</small>}
-  </div>
+  {renderFeedback?renderFeedback(feedback):feedback}
   {!compact&&<Select value={rate} onValueChange={v=>{pause();rateRef.current=Number(v);setRate(v);capture(true);}}>
    <SelectTrigger disabled={disabled||!clip||preparing} aria-label="语速" className="speed-select"><SelectValue/></SelectTrigger>
    <SelectContent>{['0.7','0.85','1','1.15'].map(r=><SelectItem key={r} value={r}>{r}×</SelectItem>)}</SelectContent>

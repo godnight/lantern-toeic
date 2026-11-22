@@ -28,7 +28,8 @@ function harness(componentName,initialProps,references=referenceFixture){
  react.useLayoutEffect=react.useEffect;
  react.useSyncExternalStore=(_subscribe,read)=>read();
  const jsx=(type,props)=>typeof type==='function'&&['WorkflowNotice','ThemeScene','SpeechPlayer','InteractiveExample','VocabularyPlanEditor','PlanEditorActions','PlanExitPrompt'].includes(type.name)?type(props):{type,props};
- const componentExports={};const imports={react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':new Proxy({},{get:()=>function Icon(){}}),'@/lib/vocabulary-model':{CATEGORIES:{office:'办公事务'}},'@/lib/workflow-catalog':{getWorkflowCatalog:id=>id==='expressions'?[words[1]]:words,WORKFLOW_BOOKS:books,getWorkflowBook:id=>{const book=books.find(row=>row.id===id);assert.ok(book);return book;},getCandidateLearningWord:row=>words.find(current=>current.id===row.id)??null},'./interactive-example':{InteractiveExample:function InteractiveExample(p){return {type:'example',props:p};}},'./practice':{SpeechPlayer:function SpeechPlayer(){return {type:'audio',props:{}};}},'./ui-theme':{ThemeScene:function ThemeScene(p){return p.theme==='hollow'?{type:'figure',props:{'data-scene':p.scene}}:null;}}};
+ const componentExports={};const imports={react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':new Proxy({},{get:()=>function Icon(){}}),'@/lib/vocabulary-model':{CATEGORIES:{office:'办公事务'}},'@/lib/workflow-catalog':{getWorkflowCatalog:id=>id==='expressions'?[words[1]]:words,WORKFLOW_BOOKS:books,getWorkflowBook:id=>{const book=books.find(row=>row.id===id);assert.ok(book);return book;},getCandidateLearningWord:row=>words.find(current=>current.id===row.id)??null},'./interactive-example':{InteractiveExample:function InteractiveExample(p){return {type:'example',props:p};}},'./practice':{SpeechPlayer:function SpeechPlayer(p){return {type:'audio',props:p};}},'./ui-theme':{ThemeScene:function ThemeScene(p){return p.theme==='hollow'?{type:'figure',props:{'data-scene':p.scene}}:null;}}};
+ imports['react-dom']={createPortal:(child,target)=>({type:'portal',props:{children:child,target}})};
  imports['@/lib/vocabulary-workflow']=require('./helpers/actual-source-loader.cjs').createSourceLoader({permitLearningAccess:true,root,imports:{'./workflow-catalog':imports['@/lib/workflow-catalog']}}).load('lib/vocabulary-workflow.ts');
  imports['@/lib/word-audio-bindings-v040']={getWordAudioBindingForSnapshot:()=>null,isPrivateWordAudioBlocked:()=>false,PRIVATE_AUDIO_LABEL:'Synthetic no playback'};
  imports['@/lib/lesson-audio']={naturalAudioRegistry:{pinSelectors:async()=>({release(){}})},subscribeProductLessonAudio:()=>()=>{},productLessonAudioState:()=>({phase:'ready'})};
@@ -41,6 +42,20 @@ function harness(componentName,initialProps,references=referenceFixture){
  render();render();
  return {exports:componentExports,downloads,get tree(){return tree;},render,update(next){props={...props,...next};render();render();},button,click(label){const node=button(label);assert.ok(node,'button: '+label);node.props.onClick?.();render();},async flush(){await tick();render();await tick();render();},unmount(){slots.forEach(value=>value?.cleanup?.());}};
 }
+
+test('word audio feedback has its own target beside the reading scroller',()=>{
+ const h=harness('VocabularyStudyCard',{workflow:controller({activeSession:session()}),theme:'paper'});
+ const middle=nodes(h.tree,n=>n.props?.className==='phase2-word-middle')[0];
+ assert.ok(middle,'The fixed middle region exists');
+ const children=Array.isArray(middle.props.children)?middle.props.children:[middle.props.children];
+ assert.deepEqual(Array.from(children,n=>n.props?.className),['phase2-word-content','phase2-word-audio-feedback']);
+ const target={id:'word-feedback-target'};children[1].props.ref(target);h.render();
+ const audio=nodes(h.tree,n=>n.type==='audio'&&n.props.mode==='word')[0];
+ assert.ok(audio,'The word player is retained');
+ const rendered=audio.props.renderFeedback('synthetic status');
+ assert.equal(rendered.type,'portal');assert.equal(rendered.props.target,target);assert.equal(rendered.props.children,'synthetic status');
+ h.unmount();
+});
 
 test('invalid total goal takes priority over selected days; covered equality needs no new-word days',()=>{
  const h=harness('TodayVocabularyTask',{workflow:controller(),onOpen(){}}),evaluate=h.exports.evaluatePlanDraft;
