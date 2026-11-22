@@ -33,6 +33,6 @@
 @media(prefers-reduced-motion:reduce){.practice-task-menu-items{scroll-behavior:auto}}
 
 .practice-task-row .practice-task-progress{display:none}
-.practice-today-copy>small{min-height:2.8em;line-height:1.4}
+.v040-today .practice-today-copy>small{min-height:2.8em;line-height:1.4}
 .practice-today-record-slot{min-height:44px}
 .practice-today-record-slot>.text-button{min-height:44px}

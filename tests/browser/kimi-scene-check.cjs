@@ -9,6 +9,7 @@ const OUT=path.join(TMP,'screenshots');
 const entry=`import React from 'react';
 import {createRoot} from 'react-dom/client';
 import '../../app/style-entry';
+import '../../app/practice-task-resume.css';
 import {applyDocumentTheme} from '../../lib/ui-theme';
 import {TodayDashboard} from '../../app/learn/today-dashboard';
 import {WorkspaceShell} from '../../app/learn/workspace-shell';
@@ -32,6 +33,9 @@ async function run(){
    await page.goto(`${origin}/outputs/kimi-scene-check/index.html?theme=${theme}`,{waitUntil:'networkidle'});await page.locator('.v040-today-lead').waitFor();
    if(opened){await page.getByRole('button',{name:'展开导航',exact:true}).click();await page.locator('.v040-workspace-shell[data-drawer-open="true"]').waitFor();await page.waitForFunction(()=>{const body=document.querySelector('.workspace-body'),drawer=document.querySelector('.workspace-sidebar');return Math.abs(parseFloat(getComputedStyle(body).marginLeft)-drawer.getBoundingClientRect().width)<.02;});}
    await page.evaluate(async()=>{await document.fonts.ready;const img=document.querySelector('.v041-today-calm img');if(img){await img.decode();}});
+   const lineHeights=await page.evaluate(()=>[...document.querySelectorAll('.v040-task-copy>small')].map(el=>({practice:el.parentElement.classList.contains('practice-today-copy'),size:parseFloat(getComputedStyle(el).fontSize),height:parseFloat(getComputedStyle(el).lineHeight)})));
+   assert(lineHeights.some(x=>x.practice)&&lineHeights.some(x=>!x.practice),'Today exercise and other summaries are rendered');
+   for(const line of lineHeights)assert(Math.abs(line.height/line.size-(line.practice?1.4:1.5))<.01,JSON.stringify({issue:'summary-line-height',theme,width,opened,line}));
    const v=await page.evaluate(()=>{const rect=s=>{const r=document.querySelector(s).getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom}};const f=document.querySelector('.v041-today-calm'),img=f.querySelector('img');return {viewport:[innerWidth,innerHeight],documentWidth:document.documentElement.scrollWidth,task:rect('.v040-word-action'),frame:rect('.v041-today-calm'),source:f.dataset.sceneSource,status:f.dataset.sceneStatus,img:img?{src:img.currentSrc,complete:img.complete,natural:[img.naturalWidth,img.naturalHeight],fit:getComputedStyle(img).objectFit}:null};});
    const file=path.join(OUT,`${theme}-${width}${opened?'-drawer':''}.png`);await page.screenshot({path:file,fullPage:true});report.cases.push({theme,width,height,opened,...v,file});
    assert(v.documentWidth<=width+1,JSON.stringify({issue:'overflow',theme,width,opened,...v}));assert.equal(v.status,'available',JSON.stringify(v));assert(Math.abs(v.frame.w/v.frame.h-2)<.025,JSON.stringify({issue:'aspect',theme,width,opened,...v}));
