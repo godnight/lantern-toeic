@@ -369,6 +369,33 @@ async function assertWordReference(word, revealed) {
   assert.equal(await etymology.count(), revealed && word.etymology ? 1 : 0, 'Etymology revealed before a confirmed rating or missing after it');
   if(revealed && word.etymology) assert.equal((await etymology.locator('p').innerText()).trim(), word.etymology.trim());
 }
+async function assertScrollableWordHeader(word) {
+  const header = page.getByRole('region', {name: '单词及音标', exact: true});
+  const before = await header.evaluate(element => ({height:element.clientHeight, full:element.scrollHeight}));
+  assert.ok(before.height > 0, 'Word header has no reading area');
+  await header.evaluate(element => element.focus({preventScroll:true}));
+  if(before.full > before.height + 1){await page.keyboard.press('End');await page.waitForFunction(()=>{const el=document.querySelector('.phase2-word-header');return el.scrollTop>=el.scrollHeight-el.clientHeight-2;});}
+  const end = await header.evaluate(element => {
+    const phonetic = element.querySelector('.word-phonetic'), h = element.getBoundingClientRect(), p = phonetic.getBoundingClientRect();
+    return {scrollTop:element.scrollTop, max:element.scrollHeight-element.clientHeight,
+      phoneticBottom:p.bottom, headerBottom:h.bottom, phoneticText:phonetic.textContent.trim()};
+  });
+  assert.ok(end.scrollTop >= end.max - 2, 'Keyboard cannot reach the end of the word header');
+  assert.ok(end.phoneticBottom <= end.headerBottom + 2, 'End of the phonetic text is not reachable');
+  assert.equal(end.phoneticText, word.phonetics.length ? word.phonetics.join(' · ') : '暂无音标');
+  if(before.full > before.height + 1){await page.keyboard.press('Home');await page.waitForFunction(()=>document.querySelector('.phase2-word-header').scrollTop<=2);}
+  const first = await header.evaluate(element => {
+    const title = element.querySelector('.phase2-current-word'), button = element.querySelector('.speech-audio-icon');
+    const h=element.getBoundingClientRect(), t=title.getBoundingClientRect(), b=button?.getBoundingClientRect();
+    const hit=b&&document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);
+    return {scrollTop:element.scrollTop, title: title.textContent.trim(), titleTop:t.top, headerTop:h.top,
+      audioHit:!!button&&(hit===button||button.contains(hit))};
+  });
+  assert.ok(first.scrollTop <= 2 && first.titleTop >= first.headerTop - 1, 'Keyboard cannot return to the start of the word');
+  assert.equal(first.title, word.word);
+  assert.equal(first.audioHit, true, 'Word audio button is not reachable after returning to the start');
+  await page.locator('.phase2-current-word').evaluate(element => element.focus({preventScroll:true}));
+}
 async function runCondition(config) {
   const condition = {...config, status: 'RUNNING', geometry: [], flow: []}; report.conditions.push(condition);
   await openFixturePage({...config, prepareControls: config.id !== 'hollow-390'});
@@ -381,6 +408,7 @@ async function runCondition(config) {
     assert.equal(await page.getByText(word.answerMarker, {exact: false}).count(), 0, 'Unrevealed answer is mounted in DOM');
     assert.equal(await page.locator('.phase2-word-meaning').count(), 0);
     await assertWordReference(word, false);
+    if(index===1||index===3)await assertScrollableWordHeader(word);
     const before = index === 0 ? first : await snapshot(condition, index, 'before'); stable(first, before);
     const savedBefore = beforeState.saved.length, attemptBefore = beforeState.attempts.length;
     await visiblePointerClick(page.getByRole('button', {name: label, exact: true}),condition,index,'rating',first);
@@ -420,16 +448,36 @@ async function runCondition(config) {
       'First confirmed reveal lost focus instead of moving to the reading region');
     if (config.id === 'hollow-390' && index === 0) {
       const visible = await page.locator('.phase2-word-content').evaluate(element => {
-        const area = element.getBoundingClientRect();
-        const targets = [...element.querySelectorAll('.phase2-current-word,.word-phonetic,.phase2-word-meaning > p,.phase2-word-example,.phase2-word-etymology')];
+        const area = element.getBoundingClientRect(), meaning = element.querySelector('.phase2-word-meaning > p');
+        const head = document.querySelector('.phase2-word-header');
+        const containsPoint = (target, x, y) => {const hit = document.elementFromPoint(x, y); return hit === target || target.contains(hit);};
+        const shown = target => {const r = target.getBoundingClientRect(); return r.bottom > Math.max(0, area.top) && r.top < Math.min(innerHeight, area.bottom);};
+        const m = meaning?.getBoundingClientRect();
+        const initiallyVisible = !!meaning && shown(meaning) &&
+          containsPoint(meaning, m.left + 2, Math.max(area.top + 1, m.top + 1));
+        const headerVisible = ['.phase2-current-word','.word-phonetic'].every(selector => {
+          const target = head?.querySelector(selector); if (!target) return false;
+          const r = target.getBoundingClientRect(), h = head.getBoundingClientRect();
+          return r.top >= Math.max(0, h.top) - 1 && r.bottom <= Math.min(innerHeight, h.bottom) + 1;
+        });
         const button = element.querySelector('.phase2-word-example .speech-audio-icon');
-        const rect = button.getBoundingClientRect(), hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
-        return {scrollTop: element.scrollTop, fits: element.scrollHeight <= element.clientHeight + 1,
-          allVisible: targets.every(target => {const r = target.getBoundingClientRect(); return r.top >= Math.max(0, area.top) - 1 && r.bottom <= Math.min(innerHeight, area.bottom) + 1;}),
-          exampleAudioHit: hit === button || button.contains(hit)};
+        if (!button) return {initiallyVisible, headerVisible, exampleAudioHit:false};
+        const before = button.getBoundingClientRect();
+        element.scrollTop += Math.max(0, before.bottom - area.bottom + 1);
+        const r = button.getBoundingClientRect();
+        const exampleAudioHit = r.top >= area.top - 1 && r.bottom <= area.bottom + 1 &&
+          containsPoint(button, r.x + r.width / 2, r.y + r.height / 2);
+        const translation = element.querySelector('.phase2-word-meaning > p.muted');
+        if (!translation) return {initiallyVisible, headerVisible, exampleAudioHit, translationHit:false};
+        const prior = translation.getBoundingClientRect();
+        element.scrollTop += Math.max(0, prior.top - area.top);
+        const t = translation.getBoundingClientRect();
+        const translationHit = !!translation.textContent.trim() && shown(translation) &&
+          containsPoint(translation, t.left + 2, Math.max(area.top + 1, t.top + 1));
+        return {initiallyVisible, headerVisible, exampleAudioHit, translationHit};
       });
-      assert.deepEqual(visible, {scrollTop: 0, fits: true, allVisible: true, exampleAudioHit: true},
-        'Typical revealed card must show phonetics, meaning, example, translation and etymology with a reachable example-audio target before scrolling');
+      assert.deepEqual(visible, {initiallyVisible:true, headerVisible:true, exampleAudioHit:true, translationHit:true},
+        'Typical revealed card must show its word, phonetics and meaning, and expose example audio and translation through normal reading scroll');
       condition.typicalFirstScreen = visible;
       await screenshot(condition, 'typical-revealed-first-screen');
     }

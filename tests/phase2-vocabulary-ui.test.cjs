@@ -212,6 +212,9 @@ test('reading position survives same-word save and retry; only the next word res
  const workflow=controller({activeSession:active,submitRating:async rating=>{if(++tries===1)return {status:'pending'};active.currentStep.receipt={...receipt,rawRating:rating};return {status:'applied'};}});
  const h=harness('VocabularyStudyCard',{workflow,theme:'hollow'});
  const content=nodes(h.tree,node=>node.props?.className==='phase2-word-content')[0].props.ref;
+ const header=nodes(h.tree,node=>node.props?.className==='phase2-word-header')[0];
+ assert.equal(header.props.role,'region');assert.equal(header.props['aria-label'],'单词及音标');assert.equal(header.props.tabIndex,0);
+ const headerScroll=header.props.ref;headerScroll.current={scrollTop:85};
  const heading=nodes(h.tree,node=>node.type==='h2'&&node.props.className==='phase2-current-word')[0].props.ref;
  let revealFocusCalls=0,cardScrollCalls=0,headingTop=100;
  const document={defaultView:{innerHeight:640,scrollBy:options=>{assert.equal(options.behavior,'instant');assert.equal(options.top,92);cardScrollCalls++;}},querySelectorAll:()=>[]};
@@ -219,10 +222,10 @@ test('reading position survives same-word save and retry; only the next word res
  const sessionRoot={querySelector:selector=>{assert.equal(selector,'.phase2-word-session-heading');return sessionHeading;}};
  const closest=selector=>{assert.equal(selector,'.phase2-vocabulary-session');return sessionRoot;};
  content.current={ownerDocument:document,scrollTop:137,focus:()=>{revealFocusCalls++;},closest};let focusCalls=0;heading.current={focus:options=>{assert.equal(options.preventScroll,true);focusCalls++;},getBoundingClientRect:()=>({top:headingTop,bottom:headingTop+40}),closest};
- h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);
- h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);assert.equal(focusCalls,0);assert.equal(revealFocusCalls,1);assert.equal(cardScrollCalls,0);
+ h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);assert.equal(headerScroll.current.scrollTop,85);
+ h.click('模糊');await h.flush();assert.equal(content.current.scrollTop,137);assert.equal(headerScroll.current.scrollTop,85);assert.equal(focusCalls,0);assert.equal(revealFocusCalls,1);assert.equal(cardScrollCalls,0);
  active.currentStep={...active.currentStep,id:'next-word',word:{...word,id:'available',word:'available',meaning:'可用的'},receipt:undefined};
- h.render();assert.equal(content.current.scrollTop,0);assert.equal(focusCalls,1);assert.equal(cardScrollCalls,0);
+ h.render();assert.equal(content.current.scrollTop,0);assert.equal(headerScroll.current.scrollTop,0);assert.equal(focusCalls,1);assert.equal(cardScrollCalls,0);
  headingTop=-40;active.currentStep={...active.currentStep,id:'offscreen-word'};h.render();assert.equal(cardScrollCalls,1);assert.equal(focusCalls,2);
  h.update({overlayBlocked:true});active.currentStep={...active.currentStep,id:'overlay-word'};h.render();assert.equal(cardScrollCalls,1);assert.equal(focusCalls,2);
  assert.doesNotMatch(text(h.tree),/安静的；轻声的|可用的/);h.unmount();

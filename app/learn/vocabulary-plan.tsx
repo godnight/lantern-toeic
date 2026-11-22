@@ -262,7 +262,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   const step=viewingPrevious?session!.queue[session!.cursor-1]:session?.currentStep;
   useEffect(()=>{const next=JSON.stringify([workflow.scopeKey,session?.id,session?.cursor]);if(identity.current!==next){identity.current=next;choosePrevious(null);}},[workflow.scopeKey,session?.id,session?.cursor]);
   const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[selected,setSelected]=useState<RawVocabularyRating|null>(null);
-  const contentRoot=useRef<HTMLDivElement>(null),wordHeading=useRef<HTMLHeadingElement>(null),previousWord=useRef<string|null>(null),focusedReceipt=useRef<string|null>(null);
+  const contentRoot=useRef<HTMLDivElement>(null),wordHeader=useRef<HTMLElement>(null),wordHeading=useRef<HTMLHeadingElement>(null),previousWord=useRef<string|null>(null),focusedReceipt=useRef<string|null>(null);
   const targetKey=JSON.stringify([workflow.scopeKey,session?.id??null,step?.id??null]);
   const currentTarget=useRef(targetKey),attempt=useRef(0);currentTarget.current=targetKey;
   const pending=useRef(false),scope=useRef(workflow.scopeKey),overlayActive=useRef(overlayBlocked);scope.current=workflow.scopeKey;overlayActive.current=overlayBlocked;
@@ -270,6 +270,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
   useEffect(()=>{
     const wordKey=step?JSON.stringify([workflow.scopeKey,step.id]):null;
     if(contentRoot.current)contentRoot.current.scrollTop=0;
+    if(wordHeader.current)wordHeader.current.scrollTop=0;
     if(previousWord.current&&wordKey&&previousWord.current!==wordKey&&!overlayBlocked){
       const document=contentRoot.current?.ownerDocument,view=document?.defaultView,heading=wordHeading.current;
       if(document&&view&&heading){
@@ -342,7 +343,7 @@ export function VocabularyStudyCard({workflow,theme,onExampleLookup,overlayBlock
       <fieldset disabled={blocked} className="phase2-word-fieldset">
         <legend className="sr-only">先回想，再反馈</legend>
         <div className="phase2-word-layout">
-          <header className="phase2-word-header">
+          <header ref={wordHeader} className="phase2-word-header" role="region" aria-label="单词及音标" tabIndex={0}>
             <div className="v041-word-heading"><h2 ref={wordHeading} tabIndex={-1} className="phase2-current-word" lang="en">{step.word.word}</h2>
             {audioHeld?<p className="word-footnote">此词发音待核对，原学习记录保留。</p>:<SpeechPlayer mode="word" key={step.id} text={step.word.word} {...(headwordAudio||{materialId:step.word.id,segmentId:'headword'})} label="听单词发音" sourceLabel={headwordAudio?PRIVATE_AUDIO_LABEL:'单词学习'} renderFeedback={feedback=>wordAudioFeedbackTarget?createPortal(feedback,wordAudioFeedbackTarget):null}/>}</div>
             <p className="word-phonetic" lang={reference.phonetics.length?'en':undefined} aria-label="音标">{reference.phonetics.length?reference.phonetics.join(' · '):'暂无音标'}</p>
