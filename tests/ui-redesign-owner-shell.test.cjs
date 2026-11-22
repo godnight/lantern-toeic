@@ -66,7 +66,8 @@ class Element {
  focus(){this.focusCount++;focused=this;document.activeElement=this;}
 }
 const focus=new Element(),lookup=new Element({tag:'INPUT',label:'搜索单词或中文释义',text:'',identity:'lookup'});controls=[focus];
-const document={activeElement:focus,querySelectorAll:()=>controls,querySelector:()=>shell()?.props.nav==='search'?lookup:null};
+const documentListeners=new Map();
+const document={activeElement:focus,querySelectorAll:()=>controls,querySelector:()=>shell()?.props.nav==='search'?lookup:null,addEventListener(name,fn){if(!documentListeners.has(name))documentListeners.set(name,new Set());documentListeners.get(name).add(fn);},removeEventListener(name,fn){documentListeners.get(name)?.delete(fn);}};
 const window={location:{search:''},scrollY:0,scrollTo(x,y){this.scrollY=typeof x==='object'?x.top:y;scrolls.push(this.scrollY);},
  addEventListener(name,fn){if(!listeners.has(name))listeners.set(name,new Set());listeners.get(name).add(fn);},removeEventListener(name,fn){listeners.get(name)?.delete(fn);},
  history:{entries:[{}],index:0,scrollRestoration:'auto',get state(){return this.entries[this.index];},
@@ -103,6 +104,7 @@ const props=shell().props,output=actualShell(props);
 const identityText=nodes(output).flatMap(n=>Array.isArray(n.props?.children)?n.props.children:[n.props?.children]).filter(x=>typeof x==='string').join(' ');
 const reviewBadge=nodes(output).some(n=>n.type==='small'&&n.props?.children===1);
 slots.forEach(slot=>slot?.cleanup?.());
+assert.ok([...documentListeners.values()].every(handlers=>handlers.size===0),'Document listeners are removed when the shell unmounts');
 return {props,identityText,reviewBadge,appliedTheme:appliedThemes.at(-1)};
 }
 
