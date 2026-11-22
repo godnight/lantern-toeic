@@ -1,4 +1,5 @@
 import type {Theme} from '@/lib/study-model';
+import {syncAppliedNativeTheme} from './native-theme';
 
 /** Display names are separate from persisted Theme IDs. */
 export type UiTheme = 'day' | 'night' | 'hollow' | 'silk' | 'whale-bay' | 'whale-moon';
@@ -51,8 +52,8 @@ export type UiThemePalette = Readonly<{
 
 /** Approved r1 theme tokens, shared with CSS; imagery is a separate layer. */
 export const UI_THEME_PALETTES = {
-  day: {canvas:'#f4f1e9', surface:'#fffcf7', surfaceMuted:'#e9eddf', text:'#29342b', textSecondary:'#606c5f', primary:'#536c51', onPrimary:'#fffdf7', selection:'#e1e8d6', divider:'#d8dfd2', controlBorder:'#73816d', focus:'#4c6d4f', success:'#246b48', warning:'#825c1c', danger:'#9d3832', dangerSoft:'#f8e8e5', warningSoft:'#f5eddb'},
-  night: {canvas:'#121c23', surface:'#1b2932', surfaceMuted:'#253641', text:'#e4eff0', textSecondary:'#afc0c4', primary:'#9cc7ce', onPrimary:'#15252b', selection:'#2b424d', divider:'#3a505d', controlBorder:'#6f8994', focus:'#c0e3e8', success:'#a0d1bd', warning:'#e4c689', danger:'#e8aaa5', dangerSoft:'#482e35', warningSoft:'#443b2c'},
+  day: {canvas:'#f5f5f5', surface:'#ffffff', surfaceMuted:'#eeeeed', text:'#252626', textSecondary:'#646966', primary:'#303331', onPrimary:'#ffffff', selection:'#e7ebe8', divider:'#e1e3e2', controlBorder:'#858a87', focus:'#4c6d5b', success:'#246b48', warning:'#825c1c', danger:'#9d3832', dangerSoft:'#f8e8e5', warningSoft:'#f5eddb'},
+  night: {canvas:'#181a19', surface:'#222524', surfaceMuted:'#2c302e', text:'#edf0ee', textSecondary:'#afb5b1', primary:'#dce5df', onPrimary:'#222524', selection:'#343b37', divider:'#3b413d', controlBorder:'#838a85', focus:'#c0d5c8', success:'#a0d1bd', warning:'#e4c689', danger:'#e8aaa5', dangerSoft:'#482e35', warningSoft:'#443b2c'},
   hollow: {canvas:'#101820', surface:'#19252f', surfaceMuted:'#202c36', text:'#ecf1f4', textSecondary:'#a9b6c2', primary:'#b6d5e9', onPrimary:'#10212f', selection:'#263b4b', divider:'#303b46', controlBorder:'#8093a2', focus:'#b6d5e9', success:'#a0cfb7', warning:'#efcf8f', danger:'#f0aaa4', dangerSoft:'#48323d', warningSoft:'#443d2b'},
   silk: {canvas:'#201822', surface:'#2b212d', surfaceMuted:'#362937', text:'#f2e9e4', textSecondary:'#c7b4c5', primary:'#f18b70', onPrimary:'#291712', selection:'#4a3038', divider:'#503c51', controlBorder:'#a889a4', focus:'#ffc0a8', success:'#abd4b9', warning:'#e6c58c', danger:'#f1b1ad', dangerSoft:'#50313c', warningSoft:'#493b2c'},
   'whale-bay': {canvas:'#f4f1e9', surface:'#fffdf8', surfaceMuted:'#e5eef1', text:'#213642', textSecondary:'#536873', primary:'#285f79', onPrimary:'#ffffff', selection:'#d6e8ee', divider:'#cbd9dd', controlBorder:'#728a95', focus:'#1d658d', success:'#246b48', warning:'#825c1c', danger:'#9d3832', dangerSoft:'#f8e8e5', warningSoft:'#f5eddb'},
@@ -70,4 +71,5 @@ export function applyDocumentTheme(theme: Theme): void {
     document.body.dataset.uiTheme = uiTheme;
     document.body.style.colorScheme = colorScheme;
   }
+  syncAppliedNativeTheme();
 }

@@ -55,7 +55,10 @@ const additionalListening=LISTENING150_ADMISSION?.questions??[];
 if(additionalListening.some(q=>LISTENING50_CATALOG_163.some(old=>old.id===q.id)))throw Error('listening150-legacy-id-collision');
 const LISTENING_COLLECTION_QUESTIONS:Question[]=[...LISTENING50_QUESTIONS,...additionalListening];
 const LISTENING_COLLECTION_STATS={questions:LISTENING_COLLECTION_QUESTIONS.length,materials:unitCount(LISTENING_COLLECTION_QUESTIONS),targetQuestions:200,ready200:additionalListening.length===150};
-const QUESTIONS:Question[]=[...LISTENING50_CATALOG_163,...additionalListening];
+// Keep the existing sealed catalogue as its own reference so a later reviewed
+// addition can be registered separately without replacing resumable sessions.
+const BASE_QUESTIONS:Question[]=[...LISTENING50_CATALOG_163,...additionalListening];
+const QUESTIONS:Question[]=BASE_QUESTIONS;
 const QUESTION_CATALOG_STATS={...registered.counts,availableQuestions:QUESTIONS.length,availableUnits:unitCount(QUESTIONS),newListening50Questions:50,newListening50Units:30,newListening150Questions:additionalListening.length,newListening150Units:unitCount(additionalListening),priorListeningQuestions:CANDIDATE_R2_QUESTIONS.filter(q=>q.part<=4).length};
 /** App opts in explicitly; default workflow APIs and legacy expression seeds remain unchanged. */
 yield;
@@ -75,9 +78,9 @@ yield* sealPracticeCatalogSteps(READING_ONLY_QUESTIONS,QUESTION_CATALOG_VERSIONS
 yield* sealPracticeCatalogSteps(R1_QUESTIONS,QUESTION_CATALOG_VERSIONS.frozenR1_106);
 yield* sealPracticeCatalogSteps(CANDIDATE_R2_QUESTIONS,QUESTION_CATALOG_VERSIONS.candidateR2_113);
 yield* sealPracticeCatalogSteps(LISTENING50_CATALOG_163,QUESTION_CATALOG_VERSIONS.listening50_163);
-yield* sealPracticeCatalogSteps(QUESTIONS,LISTENING150_ADMISSION?'practice-v1:'+LISTENING150_ADMISSION.combined313CanonicalSha256:QUESTION_CATALOG_VERSIONS.listening50_163);
-const PRACTICE_QUESTION_CATALOGS:readonly (readonly Question[])[]=[LEGACY_QUESTIONS,READING_ONLY_QUESTIONS,R1_QUESTIONS,CANDIDATE_R2_QUESTIONS,LISTENING50_CATALOG_163,...(LISTENING150_ADMISSION?[QUESTIONS]:[])];
-return {LEGACY_QUESTIONS,B03_QUESTIONS,B03_SOURCE,CANDIDATE_R2_QUESTIONS,LISTENING50_QUESTIONS,LISTENING50_CATALOG_163,LISTENING_COLLECTION_QUESTIONS,LISTENING_COLLECTION_STATS,QUESTIONS,QUESTION_CATALOG_STATS,READING_ONLY_QUESTIONS,R1_QUESTIONS,QUESTION_CATALOG_VERSIONS,PRACTICE_QUESTION_CATALOGS,getQuestionAudioSelection:(qid:string):QuestionAudioSelection|null=>getReviewedListeningAudio(qid)?.body??registered.audioByQuestion.get(qid)??null};
+yield* sealPracticeCatalogSteps(BASE_QUESTIONS,LISTENING150_ADMISSION?'practice-v1:'+LISTENING150_ADMISSION.combined313CanonicalSha256:QUESTION_CATALOG_VERSIONS.listening50_163);
+const PRACTICE_QUESTION_CATALOGS:readonly (readonly Question[])[]=[LEGACY_QUESTIONS,READING_ONLY_QUESTIONS,R1_QUESTIONS,CANDIDATE_R2_QUESTIONS,LISTENING50_CATALOG_163,...(LISTENING150_ADMISSION?[BASE_QUESTIONS]:[])];
+return {LEGACY_QUESTIONS,B03_QUESTIONS,B03_SOURCE,CANDIDATE_R2_QUESTIONS,LISTENING50_QUESTIONS,LISTENING50_CATALOG_163,LISTENING_COLLECTION_QUESTIONS,LISTENING_COLLECTION_STATS,BASE_QUESTIONS,QUESTIONS,QUESTION_CATALOG_STATS,READING_ONLY_QUESTIONS,R1_QUESTIONS,QUESTION_CATALOG_VERSIONS,PRACTICE_QUESTION_CATALOGS,getQuestionAudioSelection:(qid:string):QuestionAudioSelection|null=>getReviewedListeningAudio(qid)?.body??registered.audioByQuestion.get(qid)??null};
 }
 export function completeQuestionCatalogSynchronously(){
  const steps=questionCatalogSteps();let next=steps.next();while(!next.done)next=steps.next();return next.value;

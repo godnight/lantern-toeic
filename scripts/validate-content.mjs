@@ -3,6 +3,7 @@ import {readFile,access} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
+import {validateListening12Assets} from './validate-listening12.mjs';
 const json=async path=>JSON.parse(await readFile(new URL('../'+path,import.meta.url),'utf8'));
 const legacyQuestions=await json('content/questions.json');
 const batchBytes=await readFile(new URL('../content/questions-v040-b03-r2.json',import.meta.url));
@@ -15,14 +16,19 @@ const {createSourceLoader}=require('../tests/helpers/actual-source-loader.cjs');
 const catalogLoader=createSourceLoader({root:fileURLToPath(new URL('..',import.meta.url)),allowedFiles:[
  'lib/domain-command.ts','lib/question-catalog.ts','lib/question-catalog-admission.ts','lib/practice-catalog-identity.ts','lib/listening50-catalog.ts','lib/question-audio-bindings-v041.ts',
  'lib/question-audio-dispatch-v041.ts','lib/listening150-package.ts','lib/listening150-catalog.ts','lib/natural-audio-catalog-index.ts','content/natural-audio-catalog-v1.json',
+ 'lib/listening-part1-12-catalog.ts','lib/listening-part1-12-package-admission.ts','lib/extend-part1-catalog.ts',
+ 'lib/natural-audio.ts','lib/natural-audio-admission.ts','lib/listening50-pronunciation-exception.ts',
+ 'content/natural-audio-admission-v2.json','content/listening50-exact-pronunciation-exceptions.json',
  'lib/listening150-package-admission.ts','lib/natural-audio-catalog-admission.ts','lib/prepare-listening150-package.ts','lib/prepare-natural-audio-catalog.ts',
  'lib/prepare-study-content.ts','lib/prepare-vocabulary-catalog.ts','lib/cooperative-task.ts','lib/preparation-timing.ts',
  'content/questions-v041-listening150.json','content/questions-v041-listening150-text-image-gates.json','content/questions-v041-listening150-media.json',
+ 'content/questions-v041-part1-twelve.json','content/questions-v041-part1-twelve-gate.json','content/questions-v041-part1-twelve-media.json',
  'content/questions.json','content/questions-v040-b03-r2.json','content/questions-v040-b03-r2-gates.json','content/questions-v040-b03-r2-media.json','content/questions-v040-catalog-r1-snapshot.json',
  'content/questions-v041-listening50.json','content/questions-v041-listening50-text-image-gates.json','content/questions-v041-listening50-media.json'
 ]});
 const exports=catalogLoader.load('lib/question-catalog.ts');
 const questions=exports.QUESTIONS,catalogCounts=exports.QUESTION_CATALOG_STATS;
+const twelveQuestions=catalogLoader.load('lib/listening-part1-12-package-admission.ts').captureCompiledPart1TwelvePackage().input.questions;
 const speaking=await json('content/speaking.json');
 const exams=await json('content/exams/catalogue.json');
 /** Local qualification of newly admitted exact image bytes, not pixel/semantic review. */
@@ -35,7 +41,7 @@ export function validateShaPng(bytes,expectedSha256){
  return {bytes:bytes.length,width,height,sha256:expectedSha256};
 }
 const all=new Set();
-for(const q of [...legacyQuestions,...batch,...exports.LISTENING_COLLECTION_QUESTIONS]){
+for(const q of [...legacyQuestions,...batch,...exports.LISTENING_COLLECTION_QUESTIONS,...twelveQuestions]){
  assert.equal(typeof q.id,'string');assert(!all.has(q.id),`Duplicate question ${q.id}`);all.add(q.id);
  assert(Number.isInteger(q.part)&&q.part>=1&&q.part<=7,q.id);
  assert.equal(q.options.length,q.part===2?3:4,q.id);
@@ -44,11 +50,13 @@ for(const q of [...legacyQuestions,...batch,...exports.LISTENING_COLLECTION_QUES
  if(q.part<=4)assert(q.audioText||q.transcript,`${q.id}: no listening script`);
  if(q.image){
   const newImage=/^\/listening200-r1\/([a-f0-9]{64})\.png$/.exec(q.image);
-  assert((q.image.startsWith('/images/')||/^\/listening50-r3\/[a-f0-9]{64}\.png$/.test(q.image)||newImage)&&!q.image.includes('..'));
+  const twelveImage=/^\/listening12\/([a-f0-9]{64})\.png$/.exec(q.image);
+  assert((q.image.startsWith('/images/')||/^\/listening50-r3\/[a-f0-9]{64}\.png$/.test(q.image)||newImage||twelveImage)&&!q.image.includes('..'));
   const imageUrl=new URL('../public'+q.image,import.meta.url);await access(imageUrl);
-  if(newImage)validateShaPng(await readFile(imageUrl),newImage[1]);
+  if(newImage||twelveImage)validateShaPng(await readFile(imageUrl),(newImage||twelveImage)[1]);
  }
 }
+const twelveValidation=await validateListening12Assets({repoRoot:fileURLToPath(new URL('..',import.meta.url)),loader:catalogLoader});
 for(const s of speaking){
  assert(!all.has(s.id));all.add(s.id);
  assert(s.prompt&&s.sampleAnswer&&s.guide.length);
@@ -65,4 +73,4 @@ for(const r of exams){
  if(r.downloadUrl)assert(r.downloadCheck.includes('opened'),`${r.id}: unverified download`);
  if(r.category==='official-past-paper')assert(r.officialPastExamEvidence&&r.collectionScope==='released-past-exam-selected-items',`${r.id}: missing actual-exam evidence/scope`);
 }
-console.log(`Validated ${questions.length} available questions / ${catalogCounts.availableUnits} complete practice units (${catalogCounts.readingAddedQuestions} added reading questions); ${catalogCounts.listeningAwaitingMediaQuestions} listening questions await media and ${catalogCounts.imageHoldQuestions} image question remains held; ${speaking.length} speaking prompts and ${exams.length} official resource records. Structural validation is not teacher review or reuse permission.`);
+console.log(`Validated ${questions.length} available questions / ${catalogCounts.availableUnits} complete practice units (${catalogCounts.readingAddedQuestions} added reading questions); ${catalogCounts.listeningAwaitingMediaQuestions} listening questions await media and ${catalogCounts.imageHoldQuestions} image question remains held; ${twelveValidation.questions} private-candidate picture questions, ${twelveValidation.images} images and ${twelveValidation.audioTracks} exact audio tracks; ${speaking.length} speaking prompts and ${exams.length} official resource records. Structural validation is not human listening, teacher review or reuse permission.`);

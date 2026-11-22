@@ -1,4 +1,6 @@
 'use client';
+import type {PracticeBatchPlan} from './practice-batches';
+import type {PracticeTaskOrigin} from './practice-task';
 import {useLearningAccess} from './learning-access';
 import type {TrainingWrite} from './practice-training';
 import {useEffect,useRef,useState} from 'react';
@@ -8,8 +10,9 @@ import {createId,type Attempt,type Question} from './study-model';
 
 export type PracticeWorkflowHookOptions={owner:string|null;nativeMode:boolean;ready:boolean;timezone:string;questions:readonly Question[];compatibleQuestionCatalogs?:readonly (readonly Question[])[];attempts?:readonly Attempt[];legacy:PracticeLegacy};
 export type PracticeWorkflowController={
- scopeKey:string;ready:boolean;error:string;busy:boolean;session:PracticeSession|null;sessions:PracticeSession[];pendingSettlements:PracticeSession[];
+ scopeKey:string;ready:boolean;error:string;busy:boolean;session:PracticeSession|null;sessions:PracticeSession[];pendingSettlements:PracticeSession[];batchPlans:PracticeBatchPlan[];
  start:(queue:readonly Question[],options:PracticeStartOptions)=>Promise<PracticeResult>;
+ openBatch:(origin:PracticeTaskOrigin,label:string,source:readonly Question[],index:number)=>Promise<PracticeResult>;
  resume:(id:string)=>Promise<PracticeResult>;resumeGuarded:(id:string,stillWanted:()=>boolean)=>Promise<PracticeResult>;submit:(choice:number,seconds:number,expectedCursor?:number)=>Promise<PracticeResult>;next:(expectedCursor?:number)=>Promise<PracticeResult>;
  closeView:(expectedId?:string)=>Promise<PracticeResult>;restart:(id:string,options:PracticeRestartOptions)=>Promise<PracticeResult>;leave:(id?:string)=>Promise<PracticeResult>;
  updateTraining:(write:TrainingWrite)=>Promise<PracticeResult>;
@@ -92,11 +95,19 @@ export function usePracticeWorkflow(options:PracticeWorkflowHookOptions):Practic
   if(['started','restored','replayed'].includes(result.status))creations.current.delete(signature);else frozen.promise=undefined;
   return result;
  }
+ async function openBatch(origin:PracticeTaskOrigin,label:string,source:readonly Question[],index:number):Promise<PracticeResult>{
+  const signature=JSON.stringify(['batch',key,generation.current,origin,index]);
+  let intent=creations.current.get(signature);if(intent?.promise)return intent.promise;
+  if(!intent){intent={requestId:createId()};creations.current.set(signature,intent);}
+  const frozen=intent,promise=run(value=>value.openBatch(origin,label,source,index,frozen.requestId),true);frozen.promise=promise;
+  const result=await promise;if(['started','restored','replayed'].includes(result.status))creations.current.delete(signature);else frozen.promise=undefined;
+  return result;
+ }
  const renderedService=service.current;
  const noSession=():PracticeResult=>({status:'blocked',reason:'practice-session-not-visible'});
  return {
-  scopeKey:key,ready:current.ready&&options.ready,error:current.error,busy,session,sessions:current.projection?.sessions??[],pendingSettlements:current.projection?.pendingSettlements??[],
-  start,restart:(id,options)=>run(value=>value.restart(id,options),true),resume:id=>run(value=>value.resume(id),true),resumeGuarded:(id,stillWanted)=>run(value=>value.resume(id),true,stillWanted),
+  scopeKey:key,ready:current.ready&&options.ready,error:current.error,busy,session,sessions:current.projection?.sessions??[],pendingSettlements:current.projection?.pendingSettlements??[],batchPlans:current.projection?.batchPlans??[],
+  start,openBatch,restart:(id,options)=>run(value=>value.restart(id,options),true),resume:id=>run(value=>value.resume(id),true),resumeGuarded:(id,stillWanted)=>run(value=>value.resume(id),true,stillWanted),
   submit:(choice,seconds,cursor=session?.cursor)=>session&&cursor!==undefined?run(value=>value.submit(session.id,choice,seconds,cursor)):Promise.resolve(noSession()),
   next:(cursor=session?.cursor)=>session&&cursor!==undefined?run(value=>value.next(session.id,cursor)):Promise.resolve(noSession()),
   closeView:async(expectedId=session?.id)=>{if(!accountAccess()||service.current!==renderedService||activeKey.current!==key||visibleRef.current.key!==key||visibleRef.current.id!==expectedId)return {status:'blocked',reason:'scope-changed'};const id=expectedId??'';setVisible({key,id:null});return {status:'closed',sessionId:id};},

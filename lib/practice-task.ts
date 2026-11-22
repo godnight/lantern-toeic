@@ -1,16 +1,17 @@
 import {canonicalHash,canonicalJson} from './domain-command';
 import type {Question} from './study-model';
 
-export type PracticeTaskOrigin={kind:'listening'|'reading'|'material'|'custom'|'wrong'|'review'|'question'|'combined'|'daily'|'continue';collection?:string;part?:number;count?:number;unitId?:string;chainId?:string;day?:string};
+export type PracticeTaskOrigin={kind:'listening'|'reading'|'material'|'custom'|'wrong'|'review'|'question'|'combined'|'daily'|'continue';collection?:string;part?:number;count?:number;unitId?:string;chainId?:string;day?:string;batchId?:string;batchIndex?:number};
 export type PracticeTask={key:string;label:string;origin:PracticeTaskOrigin};
 export function validatePracticeTaskOrigin(value:unknown):asserts value is PracticeTaskOrigin{
  if(!value||typeof value!=='object'||Array.isArray(value))throw Error('practice-task-invalid');
- const v=value as Record<string,unknown>,fields:Record<string,string[]>={listening:['collection','part'],reading:['part'],material:['collection','unitId'],custom:['part','count'],wrong:['collection','part','count'],review:['part','count'],question:['unitId'],combined:['collection'],daily:['collection','day'],continue:['chainId','count']};
+ const v=value as Record<string,unknown>,fields:Record<string,string[]>={listening:['collection','part','batchId','batchIndex'],reading:['part'],material:['collection','unitId'],custom:['part','count'],wrong:['collection','part','count','batchId','batchIndex'],review:['part','count'],question:['unitId'],combined:['collection'],daily:['collection','day'],continue:['chainId','count']};
  if(typeof v.kind!=='string'||!Object.hasOwn(fields,v.kind)||Object.keys(v).some(key=>key!=='kind'&&!fields[v.kind as string].includes(key)))throw Error('practice-task-invalid');
+ if(('batchId'in v)!==('batchIndex'in v)||'batchId'in v&&(typeof v.batchId!=='string'||!/^practice-batch:[0-9a-f]{64}$/.test(v.batchId)||!Number.isSafeInteger(v.batchIndex)||Number(v.batchIndex)<1))throw Error('practice-task-invalid');
  for(const field of ['collection','unitId','chainId','day'])if(field in v&&(typeof v[field]!=='string'||!v[field]||v[field].length>200||/[\u0000-\u001f]/.test(v[field] as string)))throw Error('practice-task-invalid');
  if('part'in v&&(!Number.isInteger(v.part)||Number(v.part)<1||Number(v.part)>7)||'count'in v&&(!Number.isInteger(v.count)||Number(v.count)<1||Number(v.count)>200))throw Error('practice-task-invalid');
  if(v.kind==='listening'&&Number(v.part)>4||v.kind==='reading'&&Number(v.part)<5)throw Error('practice-task-invalid');
- if((v.kind==='listening'&&(!v.collection||!v.part))||(v.kind==='reading'&&!v.part)||(v.kind==='material'&&(!v.collection||!v.unitId))||(['custom','wrong','review','continue'].includes(v.kind)&&!v.count)||(v.kind==='question'&&!v.unitId)||(v.kind==='continue'&&!v.chainId)||(v.kind==='wrong'&&!v.collection)||(v.kind==='daily'&&(!v.day||!v.collection))||(v.kind==='combined'&&!v.collection))throw Error('practice-task-invalid');
+ if((v.kind==='listening'&&!v.collection)||(v.kind==='reading'&&!v.part)||(v.kind==='material'&&(!v.collection||!v.unitId))||(['custom','wrong','review','continue'].includes(v.kind)&&!v.count)||(v.kind==='question'&&!v.unitId)||(v.kind==='continue'&&!v.chainId)||(v.kind==='wrong'&&!v.collection)||(v.kind==='daily'&&(!v.day||!v.collection))||(v.kind==='combined'&&!v.collection))throw Error('practice-task-invalid');
 }
 export function practiceTaskOriginKey(origin:PracticeTaskOrigin){validatePracticeTaskOrigin(origin);return canonicalHash(canonicalJson(origin));}
 export function makePracticeTask(origin:PracticeTaskOrigin,label:string,catalogVersion:string,unitIds:readonly string[],questionIds:readonly string[]):PracticeTask{

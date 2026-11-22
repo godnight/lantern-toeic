@@ -9,6 +9,12 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const UPSTREAM_COMMIT = 'ea3b729174763ac5a63e86bcb729a5ff865e3cbb';
 export const UPSTREAM_BASE = `https://raw.githubusercontent.com/godnight/lantern-toeic/${UPSTREAM_COMMIT}/public`;
 export const PRODUCTION_ENTRY_COUNT = 12556;
+export const PRODUCTION_MANIFEST_SHA256 = 'a788a60f4d9d7ab08d813bfbc5f943dc28721638b2f498a7eca8e057ab3bc220';
+export const PRIVATE_PACK_ID = 'v040-natural-572f7490ce71';
+export const PRIVATE_AUDIO_MANIFEST_SHA256 = '8f86060947f912ac65d80f4899c6c14cf72ab521870a15b7c5c89ee776832773';
+export const PRIVATE_IMAGE_MANIFEST_SHA256 = 'a61ea0ec2613828312982101a68f2ef4bb968a7a03d91a32740e6d4eefd48f7b';
+export const PRIVATE_AUDIO_COUNT = 14;
+export const PRIVATE_IMAGE_COUNT = 12;
 const PREFIX = '/audio/natural/';
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const fail = message => { throw new Error(`Hosted natural-media prune: ${message}`); };
@@ -38,6 +44,39 @@ export function parseManifest(bytes, expectedCount = PRODUCTION_ENTRY_COUNT) {
     seen.add(entry.path);
   }
   return manifest;
+}
+
+/** A separate local-only list. These entries are never added to the public
+ * upstream/proxy manifest and are not approved for public distribution. */
+export function parsePrivateManifest(audioBytes, imageBytes, expectedAudioSha = PRIVATE_AUDIO_MANIFEST_SHA256, expectedImageSha = PRIVATE_IMAGE_MANIFEST_SHA256) {
+  if (![expectedAudioSha,expectedImageSha].every(sha=>/^[a-f0-9]{64}$/.test(sha)) ||
+      sha256(audioBytes) !== expectedAudioSha || sha256(imageBytes) !== expectedImageSha) fail('private manifest identity differs');
+  const audio = JSON.parse(new TextDecoder('utf-8', {fatal:true}).decode(audioBytes));
+  const images = JSON.parse(new TextDecoder('utf-8', {fatal:true}).decode(imageBytes));
+  if (!keysAre(audio, ['schemaVersion','status','packId','entries']) || audio.schemaVersion !== 1 ||
+      audio.status !== 'PRIVATE_LOCAL_ONLY' || audio.packId !== PRIVATE_PACK_ID ||
+      !Array.isArray(audio.entries) || audio.entries.length !== PRIVATE_AUDIO_COUNT ||
+      !keysAre(images,['schemaVersion','status','entries']) || images.schemaVersion !== 1 || images.status !== 'PRIVATE_LOCAL_ONLY' ||
+      !Array.isArray(images.entries) || images.entries.length !== PRIVATE_IMAGE_COUNT) fail('private manifest schema or count differs');
+  const seen = new Set();
+  for (const entry of [...audio.entries, ...images.entries]) {
+    if (!keysAre(entry, ['path','bytes','sha256','contentType']) || typeof entry.path !== 'string' ||
+        path.posix.normalize(entry.path) !== entry.path || seen.has(entry.path) ||
+        !Number.isSafeInteger(entry.bytes) || entry.bytes <= 0 || typeof entry.sha256 !== 'string' ||
+        !/^[a-f0-9]{64}$/.test(entry.sha256)) fail('unsafe, duplicate, or malformed private entry');
+    const isAudio = new RegExp(`^/audio/natural/${PRIVATE_PACK_ID}/(?:[a-f0-9]{64}\\.mp3|admission\\.json|manifest\\.json)$`).test(entry.path);
+    const image = /^\/listening12\/[a-f0-9]{64}\.png$/.test(entry.path);
+    if ((!isAudio && !image) || entry.contentType !== (image?'image/png':entry.path.endsWith('.mp3')?'audio/mpeg':'application/json') ||
+        (entry.path.endsWith('.mp3') || image) && path.posix.basename(entry.path).split('.')[0] !== entry.sha256)
+      fail('private entry path or content identity differs');
+    seen.add(entry.path);
+  }
+  if (audio.entries.some(e=>!e.path.startsWith(`${PREFIX}${PRIVATE_PACK_ID}/`)) ||
+      images.entries.some(e=>!e.path.startsWith('/listening12/')) ||
+      audio.entries.filter(e=>e.path.endsWith('.mp3')).length !== 12 ||
+      !audio.entries.some(e=>e.path.endsWith('/manifest.json')) || !audio.entries.some(e=>e.path.endsWith('/admission.json')))
+    fail('private manifest members differ');
+  return {audio:audio.entries,images:images.entries};
 }
 
 async function safeNode(target, directory) {
@@ -124,7 +163,7 @@ function exactMembers(actual, expected, label) {
 
 function targetPath(base, entry) {
   const target = path.resolve(base, ...entry.path.slice(1).split('/'));
-  const expectedRoot = path.resolve(base, 'audio/natural');
+  const expectedRoot = path.resolve(base, entry.path.startsWith('/listening12/') ? 'listening12' : 'audio/natural');
   if (!target.startsWith(`${expectedRoot}${path.sep}`)) fail('target escaped exact natural-media directory');
   return target;
 }
@@ -135,9 +174,9 @@ async function verifyEntries(base, entries, label) {
   });
 }
 
-async function nonTargetPins(dist) {
+async function nonTargetPins(dist, removedPaths) {
   const tree = await walk(dist);
-  const members = tree.files.filter(name => !name.startsWith('client/audio/natural/'));
+  const members = tree.files.filter(name => !removedPaths.has(name));
   return mapLimit(members, async name => ({path: name, ...await filePin(path.join(dist, ...name.split('/')))}));
 }
 
@@ -156,51 +195,79 @@ async function ensureReceiptDirectory(receipt) {
 
 // root/expectedCount are injectable only through this module API for isolated tests.
 // The production command below fixes both its repository root and 12,556 members.
-export async function pruneWebNaturalMedia({root = path.resolve(HERE, '..'), checkOnly = false, expectedCount = PRODUCTION_ENTRY_COUNT} = {}) {
+export async function pruneWebNaturalMedia({root = path.resolve(HERE, '..'), checkOnly = false, expectedCount = PRODUCTION_ENTRY_COUNT, expectedManifestSha256 = PRODUCTION_MANIFEST_SHA256,
+  privateAudioManifestSha256 = PRIVATE_AUDIO_MANIFEST_SHA256, privateImageManifestSha256 = PRIVATE_IMAGE_MANIFEST_SHA256} = {}) {
   root = path.resolve(root);
   const manifestPath = path.join(root, 'worker/natural-media-manifest.json');
+  const privateAudioManifestPath = path.join(root, 'worker/local-candidate-media-manifest.json');
+  const privateImageManifestPath = path.join(root, 'scripts/local-candidate-images-manifest.json');
   const publicRoot = path.join(root, 'public');
   const dist = path.join(root, 'dist');
   const client = path.join(dist, 'client');
   const sourceNatural = path.join(publicRoot, 'audio/natural');
   const builtNatural = path.join(client, 'audio/natural');
+  const sourceImages = path.join(publicRoot, 'listening12');
+  const builtImages = path.join(client, 'listening12');
   const receiptPath = path.join(path.dirname(root), 'build-runs/prune-current.json');
   await safeAncestors(path.dirname(manifestPath));
   await safeNode(manifestPath, false);
   const manifestBytes = await readFile(manifestPath);
   const manifestPin = {bytes: manifestBytes.length, sha256: sha256(manifestBytes)};
   const manifest = parseManifest(manifestBytes, expectedCount);
+  if (!/^[a-f0-9]{64}$/.test(expectedManifestSha256) || manifestPin.sha256 !== expectedManifestSha256) fail('fixed upstream manifest identity differs');
+  await safeAncestors(path.dirname(privateAudioManifestPath));
+  await safeAncestors(path.dirname(privateImageManifestPath));
+  await safeNode(privateAudioManifestPath, false);await safeNode(privateImageManifestPath, false);
+  const privateAudioBytes = await readFile(privateAudioManifestPath), privateImageBytes = await readFile(privateImageManifestPath);
+  const privateAudioPin = {bytes: privateAudioBytes.length, sha256: sha256(privateAudioBytes)};
+  const privateImagePin = {bytes: privateImageBytes.length, sha256: sha256(privateImageBytes)};
+  const privateManifest = parsePrivateManifest(privateAudioBytes, privateImageBytes, privateAudioManifestSha256, privateImageManifestSha256);
   const expected = {
     files: manifest.entries.map(entry => entry.path.slice(PREFIX.length)).sort(),
     directories: [...new Set(manifest.entries.map(entry => entry.path.slice(PREFIX.length).split('/')[0]))].sort(),
   };
+  const retainedNatural = {
+    files: privateManifest.audio.map(entry=>entry.path.slice(PREFIX.length)).sort(),
+    directories: [PRIVATE_PACK_ID],
+  };
+  if (expected.directories.includes(PRIVATE_PACK_ID) || privateManifest.audio.some(entry=>manifest.entries.some(old=>old.path===entry.path)))
+    fail('private pack overlaps fixed upstream');
+  const sourceExpected = {files:[...expected.files,...retainedNatural.files].sort(),directories:[...expected.directories,...retainedNatural.directories].sort()};
+  const expectedImages = {files:privateManifest.images.map(entry=>entry.path.slice('/listening12/'.length)).sort(),directories:[]};
+  const removedPaths = new Set(manifest.entries.map(entry=>`client${entry.path}`));
   await safeAncestors(sourceNatural);
   await safeAncestors(builtNatural);
-  windowsReparseCheck([sourceNatural, dist, manifestPath]);
-  exactMembers(await walk(sourceNatural), expected, 'source natural-media tree');
+  await safeAncestors(sourceImages);
+  await safeAncestors(builtImages);
+  windowsReparseCheck([sourceNatural, sourceImages, dist, manifestPath, privateAudioManifestPath, privateImageManifestPath]);
+  exactMembers(await walk(sourceNatural), sourceExpected, 'source natural-media tree');
+  exactMembers(await walk(sourceImages), expectedImages, 'source private-image tree');
   await verifyEntries(publicRoot, manifest.entries, 'source');
+  await verifyEntries(publicRoot, [...privateManifest.audio,...privateManifest.images], 'source private');
+  exactMembers(await walk(builtImages), expectedImages, 'built private-image tree');
+  await verifyEntries(client, [...privateManifest.audio,...privateManifest.images], 'built private');
   const builtTree = await walk(builtNatural);
-  const nonTargets = await nonTargetPins(dist);
+  const nonTargets = await nonTargetPins(dist, removedPaths);
   await ensureReceiptDirectory(receiptPath);
   const totalBytes = manifest.entries.reduce((sum, entry) => sum + entry.bytes, 0);
 
   if (checkOnly) {
-    exactMembers(builtTree, {files: [], directories: []}, 'pruned natural-media tree');
+    exactMembers(builtTree, retainedNatural, 'pruned natural-media tree');
     await safeNode(receiptPath, false);
     const receipt = JSON.parse(await readFile(receiptPath, 'utf8'));
-    if (receipt.schemaVersion !== 1 || receipt.status !== 'PASS_WEB_HOSTED_NATURAL_MEDIA_PRUNED'
+    if (receipt.schemaVersion !== 2 || receipt.status !== 'PASS_WEB_HOSTED_NATURAL_MEDIA_PRUNED' || receipt.scope !== 'PRIVATE_LOCAL_ONLY'
       || receipt.root !== root || receipt.upstreamCommit !== UPSTREAM_COMMIT
-      || !equal(receipt.manifest, manifestPin) || receipt.sourceMembers !== expectedCount
-      || receipt.beforeMembers !== expectedCount || receipt.removedMembers !== expectedCount
-      || receipt.afterMembers !== 0 || receipt.removedBytes !== totalBytes
+      || !equal(receipt.manifest, manifestPin) || !equal(receipt.privateAudioManifest, privateAudioPin) || !equal(receipt.privateImageManifest, privateImagePin) || receipt.sourceMembers !== sourceExpected.files.length
+      || receipt.beforeMembers !== sourceExpected.files.length || receipt.removedMembers !== expectedCount
+      || receipt.afterMembers !== PRIVATE_AUDIO_COUNT || receipt.retainedPrivateImages !== PRIVATE_IMAGE_COUNT || receipt.removedBytes !== totalBytes
       || !equal(receipt.nonTargetFiles, nonTargets)) fail('completed prune receipt does not bind this exact build');
-    if (sha256(await readFile(manifestPath)) !== manifestPin.sha256) fail('manifest changed during verification');
-    return {status: 'PASS_WEB_HOSTED_NATURAL_MEDIA_PRUNE_CHECK', receiptPath, removedMembers: expectedCount, removedBytes: totalBytes};
+    if (sha256(await readFile(manifestPath)) !== manifestPin.sha256 || sha256(await readFile(privateAudioManifestPath)) !== privateAudioPin.sha256 || sha256(await readFile(privateImageManifestPath)) !== privateImagePin.sha256) fail('manifest changed during verification');
+    return {status: 'PASS_WEB_HOSTED_NATURAL_MEDIA_PRUNE_CHECK', scope:'PRIVATE_LOCAL_ONLY', receiptPath, removedMembers: expectedCount, removedBytes: totalBytes};
   }
 
-  exactMembers(builtTree, expected, 'built natural-media tree');
+  exactMembers(builtTree, sourceExpected, 'built natural-media tree');
   await verifyEntries(client, manifest.entries, 'built');
-  if (sha256(await readFile(manifestPath)) !== manifestPin.sha256) fail('manifest changed before deletion');
+  if (sha256(await readFile(manifestPath)) !== manifestPin.sha256 || sha256(await readFile(privateAudioManifestPath)) !== privateAudioPin.sha256 || sha256(await readFile(privateImageManifestPath)) !== privateImagePin.sha256) fail('manifest changed before deletion');
   // All targets and all source bytes have now passed; invalidate any older receipt.
   try { await unlink(receiptPath); } catch (error) { if (error.code !== 'ENOENT') throw error; }
   for (const entry of manifest.entries) {
@@ -215,23 +282,27 @@ export async function pruneWebNaturalMedia({root = path.resolve(HERE, '..'), che
     await safeNode(directory, true);
     await rmdir(directory); // Empty exact manifest directory only; never recursive removal.
   }
-  exactMembers(await walk(builtNatural), {files: [], directories: []}, 'pruned natural-media tree');
-  exactMembers(await walk(sourceNatural), expected, 'source natural-media tree');
+  exactMembers(await walk(builtNatural), retainedNatural, 'pruned natural-media tree');
+  exactMembers(await walk(builtImages), expectedImages, 'retained private-image tree');
+  await verifyEntries(client, [...privateManifest.audio,...privateManifest.images], 'retained private');
+  exactMembers(await walk(sourceNatural), sourceExpected, 'source natural-media tree');
+  exactMembers(await walk(sourceImages), expectedImages, 'source private-image tree');
   await verifyEntries(publicRoot, manifest.entries, 'source after prune');
-  const after = await nonTargetPins(dist);
+  await verifyEntries(publicRoot, [...privateManifest.audio,...privateManifest.images], 'source private after prune');
+  const after = await nonTargetPins(dist, removedPaths);
   if (!equal(nonTargets, after)) fail('non-target built files changed');
-  if (sha256(await readFile(manifestPath)) !== manifestPin.sha256) fail('manifest changed during deletion');
+  if (sha256(await readFile(manifestPath)) !== manifestPin.sha256 || sha256(await readFile(privateAudioManifestPath)) !== privateAudioPin.sha256 || sha256(await readFile(privateImageManifestPath)) !== privateImagePin.sha256) fail('manifest changed during deletion');
   const receipt = {
-    schemaVersion: 1, status: 'PASS_WEB_HOSTED_NATURAL_MEDIA_PRUNED', root,
-    createdAt: new Date().toISOString(), upstreamCommit: UPSTREAM_COMMIT, manifest: manifestPin,
-    sourceMembers: expectedCount, beforeMembers: expectedCount, removedMembers: expectedCount,
-    afterMembers: 0, removedBytes: totalBytes, sourcePreserved: true,
+    schemaVersion: 2, status: 'PASS_WEB_HOSTED_NATURAL_MEDIA_PRUNED', scope:'PRIVATE_LOCAL_ONLY', root,
+    createdAt: new Date().toISOString(), upstreamCommit: UPSTREAM_COMMIT, manifest: manifestPin, privateAudioManifest:privateAudioPin, privateImageManifest:privateImagePin,
+    sourceMembers: sourceExpected.files.length, beforeMembers: sourceExpected.files.length, removedMembers: expectedCount,
+    afterMembers: PRIVATE_AUDIO_COUNT, retainedPrivateImages:PRIVATE_IMAGE_COUNT, removedBytes: totalBytes, sourcePreserved: true,
     nonTargetFiles: after,
   };
   const temporary = `${receiptPath}.${process.pid}.tmp`;
   await writeFile(temporary, `${JSON.stringify(receipt, null, 2)}\n`, {flag: 'wx'});
   await rename(temporary, receiptPath);
-  return {status: receipt.status, receiptPath, removedMembers: expectedCount, removedBytes: totalBytes, nonTargetFiles: after.length};
+  return {status: receipt.status, scope:receipt.scope, receiptPath, removedMembers: expectedCount, removedBytes: totalBytes, nonTargetFiles: after.length};
 }
 
 if (process.argv[1] && normalized(process.argv[1]) === normalized(fileURLToPath(import.meta.url))) {

@@ -63,8 +63,18 @@ function sceneAsset(theme:Theme,slot:ThemeSceneKind):SceneAsset|null{
   if(theme==='whale-moon')return ASSETS[moonSlots[slot]];
   return null;
 }
+// Character illustrations belong only to the page-owned foreground frames.
+// Backgrounds and the word-completion/chooser artwork retain their existing assets.
+const WHALE_CHARACTER_SCENES:Readonly<Record<'whale-bay'|'whale-moon',Partial<Record<ThemeSceneKind,string>>>>={
+  'whale-bay':{todayRest:'bay-01-today',vocabularyOverview:'bay-02-vocabulary',practiceOverview:'bay-03-practice',reviewOverview:'bay-04-review',progressOverview:'bay-05-progress',resourceLibrary:'bay-06-discover'},
+  'whale-moon':{todayRest:'moon-01-today',vocabularyOverview:'moon-02-vocabulary',practiceOverview:'moon-03-practice',reviewOverview:'moon-04-review',progressOverview:'moon-05-progress',resourceLibrary:'moon-06-discover'}
+};
+function foregroundSceneAsset(theme:Theme,slot:ThemeSceneKind):SceneAsset|null{
+  const id=theme==='whale-bay'||theme==='whale-moon'?WHALE_CHARACTER_SCENES[theme][slot]:undefined;
+  return id?{id,position:'50% 50%',contain:true,path:`/images/whale-character-scenes-20261122/${id}.webp`}:sceneAsset(theme,slot);
+}
 const PAGE_SCENE:Readonly<Record<string,ThemeSceneKind>>={today:'todayHero',vocabulary:'vocabularyOverview',review:'reviewOverview',progress:'progressOverview',train:'practiceOverview',resources:'resourceLibrary',profile:'resourceLibrary',themes:'resourceLibrary',about:'resourceLibrary',settings:'resourceLibrary'};
-/** Backgrounds and image frames resolve through the same page-purpose map. */
+/** Backgrounds retain the existing page-purpose map independently of foreground art. */
 export function workspaceSceneBackdrop(theme:Theme,nav:string,discoveryFeedActive=false):{id:string;background:string;mobileBackground:string}|null{
   if(nav==='resources'&&discoveryFeedActive)return null;
   const slot=PAGE_SCENE[nav]??(theme==='whale-bay'||theme==='whale-moon'?'resourceLibrary':null);
@@ -78,7 +88,7 @@ export function workspaceSceneBackdrop(theme:Theme,nav:string,discoveryFeedActiv
 /** The page decides which slot exists; every theme keeps the same image frame. */
 export function ThemeScene({theme,scene='todayHero',caption,className='',loading}:ThemeSceneProps){
   const slot=scene in LEGACY_SCENE?LEGACY_SCENE[scene as LegacySceneKind]:scene as ThemeSceneKind;
-  const asset=sceneAsset(theme,slot);
+  const asset=foregroundSceneAsset(theme,slot);
   // A new asset selection starts a fresh load, even when returning to a prior
   // asset. The generation also rejects errors from an earlier, detached image.
   const selectedId=asset?.id??`neutral-${theme}`;

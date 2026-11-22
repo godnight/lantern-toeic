@@ -93,7 +93,7 @@ jobs:
         run: bash scripts/codex-setup.sh
       - name: Verify hosted media proxy and deployment projection
         if: steps.scope.outputs.full == 'true'
-        run: node --test tests/web-natural-media-proxy.test.cjs tests/web-hosted-prune.test.cjs
+        run: node --test tests/style-entry.test.mjs tests/web-natural-media-proxy.test.cjs tests/web-local-candidate-media.test.cjs tests/hosted-candidate-worker-config.test.cjs tests/web-hosted-prune.test.cjs
       - name: Verify account identity, native Huawei authorization and owner isolation
         if: steps.scope.outputs.full == 'true'
         run: npm run test:auth

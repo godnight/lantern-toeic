@@ -11,6 +11,18 @@
 .listening-whole>.button{width:100%;min-height:48px;}
 .listening-page .v041-task-row{min-height:54px;}
 .listening-page .v041-task-row span{min-width:0;overflow-wrap:anywhere;}
+/* Day/night listening selection details, scoped away from the question screen. */
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) .listening-page .listening-selection{border-color:transparent;border-radius:14px;box-shadow:none;}
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) .listening-page .button{border-radius:10px;box-shadow:none;}
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) .listening-page .listening-whole .button:not(:disabled){background:var(--ui-primary);border-color:var(--ui-primary);color:var(--ui-on-primary);}
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) .listening-page .button:disabled{background:var(--ui-surface-muted);border-color:transparent;color:var(--ui-text-secondary);opacity:.78;}
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) .listening-page>header .text-button,
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) .listening-page .practice-task-menu>.text-button{color:var(--ui-text-secondary);}
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) .listening-page .listening-collections button{border-radius:10px;}
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) .listening-page .listening-collections button[aria-pressed="true"]{background:var(--ui-selection);border-color:var(--ui-primary);color:var(--ui-text);}
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) .listening-page .practice-task-row .button:not(:disabled){background:var(--ui-surface-muted);border-color:var(--ui-control-border);color:var(--ui-text);}
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) .listening-page :is(.v041-task-rows,.v041-task-row,.v041-secondary-tools){border-color:var(--ui-divider);}
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) .listening-page .v041-task-rows{border-top-color:transparent;}
 .listening-practice-page{min-height:100dvh;width:100%;background:var(--ui-background,var(--background));color:var(--ui-text,var(--foreground));padding:0 22px max(32px,env(safe-area-inset-bottom));}
 .listening-practice-header{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:16px;min-height:64px;max-width:860px;margin:0 auto;background:var(--ui-background,var(--background));}
 .listening-practice-header h1{font-size:1.2rem;line-height:1.35;margin:0;}

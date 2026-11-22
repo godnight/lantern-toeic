@@ -1,3 +1,4 @@
+import {partitionPracticeBatch,practiceBatchPlanId,type PracticeBatchPlan} from './practice-batches';
 import {initialPracticeTraining,materialHash,trainingHash,validatePracticeTraining,type PracticeTraining,type TrainingWrite} from './practice-training';
 import {canonicalHash,canonicalJson,canonicalValue} from './domain-command';
 import {practiceCatalogIdentity} from './practice-catalog-identity';
@@ -13,7 +14,7 @@ type ActivePointer={kind:'practice-active';sessionId:string|null};
 type BridgeCommand={kind:'practice-command';scopeKey:string;sessionId:string;stepId:string;intent:'practice-answer'|'settlement';status:'prepared'|'applied';legacyPayload:Attempt|Checkin};
 export type PracticeStep={stepId:string;attemptId:string;commandId:string;initialSeen:boolean;status:'unanswered'|'pending'|'applied'|'reference-unverified';choice:number|null;attempt:Attempt|null};
 export type PracticeSession={training:PracticeTraining;task?:PracticeTask;activityAt?:string;restartOf?:string;id:string;revision:number;catalogVersion:string;chainId:string;unitIds:string[];questionIds:string[];queue:Question[];cursor:number;steps:PracticeStep[];status:'active'|'completed'|'left';startedAt:string;timezone:string;integrityError:string|null;settlement:{checkinId:string;status:'draft'|'pending'|'applied'|'reference-unverified';draft:PracticeSettlementDraft;payload:Checkin|null}};
-export type PracticeProjection={activeSessionId:string|null;sessions:PracticeSession[];pendingSettlements:PracticeSession[]};
+export type PracticeProjection={activeSessionId:string|null;sessions:PracticeSession[];pendingSettlements:PracticeSession[];batchPlans:PracticeBatchPlan[]};
 export type PracticeResult={status:'started'|'restored'|'applied'|'replayed'|'updated'|'closed';sessionId:string;revision?:number}|{status:'pending'|'unknown';sessionId:string;reason:string}|{status:'conflict'|'blocked';reason:string;sessionId?:string};
 export type PracticeLegacy={addAttempt:(attempt:Attempt)=>boolean;addCheckin:(checkin:Checkin)=>boolean;readAttempt:(id:string)=>Attempt|undefined;readCheckin:(id:string)=>Checkin|undefined};
 export type PracticeStartOptions={unitIds:readonly string[];chainId?:string;initialSeenQids?:readonly string[];task?:{origin:PracticeTaskOrigin;label:string};mode?:'resume-or-create'|'new';requestId?:string};
@@ -45,6 +46,10 @@ export function practiceCatalogVersion(questions:readonly Question[]):string {
 }
 function unitId(question:Question){return question.groupId?`group:${question.part}:${question.groupId}`:`question:${question.id}`;}
 
+function validatePracticeQuestionScope(origin:PracticeTaskOrigin,questionIds:readonly string[],questions:Map<string,Question>){
+ if(origin.kind==='listening'&&!origin.part&&questionIds.some(id=>{const question=questions.get(id);return !question||!Number.isInteger(question.part)||question.part<1||question.part>4;}))throw Error('practice-task-reference');
+ if(origin.part&&questionIds.some(id=>questions.get(id)?.part!==origin.part))throw Error('practice-task-reference');
+}
 type RegisteredPracticeCatalog={version:string;questions:readonly Question[];byId:Map<string,Question>};
 function registerPracticeCatalogs(questions:readonly Question[],compatible:readonly (readonly Question[])[]=[]){
  const catalogs=new Map<string,RegisteredPracticeCatalog>();
@@ -54,6 +59,32 @@ function registerPracticeCatalogs(questions:readonly Question[],compatible:reado
  }
  return catalogs;
 }
+function parsePracticeBatchPlan(row:DomainRecord<unknown>,scopeKey:string,catalogs:Map<string,RegisteredPracticeCatalog>):PracticeBatchPlan {
+ const value=row.value;if(!plain(value)||value.kind!=='practice-batch-plan'||value.schemaVersion!==1||value.id!==row.id||value.scopeKey!==scopeKey||typeof value.catalogVersion!=='string'||!/^practice-v1:[0-9a-f]{64}$/.test(value.catalogVersion)||!Array.isArray(value.groups)||!value.groups.length||value.groups.length>10000)throw Error('practice-batch-corrupt');
+ keys(value,['kind','schemaVersion','id','scopeKey','catalogVersion','origin','groups']);
+ const plan=value as unknown as PracticeBatchPlan;if(practiceBatchPlanId(plan.origin)!==plan.id)throw Error('practice-batch-origin-invalid');
+ const allIds:string[]=[],allUnits:string[]=[];
+ for(let i=0;i<plan.groups.length;i++){
+  const group=plan.groups[i];if(!plain(group)||group.index!==i+1||!Array.isArray(group.questionIds)||!group.questionIds.length||group.questionIds.length>200||!group.questionIds.every(validId)||!Array.isArray(group.unitIds)||!group.unitIds.length||!group.unitIds.every(validId))throw Error('practice-batch-corrupt');
+  keys(group as unknown as Record<string,unknown>,['index','questionIds','unitIds']);allIds.push(...group.questionIds);allUnits.push(...group.unitIds);
+ }
+ if(new Set(allIds).size!==allIds.length||new Set(allUnits).size!==allUnits.length)throw Error('practice-batch-duplicate');
+ const source=catalogs.get(plan.catalogVersion);
+ if(source){
+  const selected=allIds.map(id=>source.byId.get(id));if(selected.some(q=>!q))throw Error('practice-batch-question-missing');
+  const fixed=selected as Question[];validatePracticeQuestionScope(plan.origin,allIds,source.byId);if(!same(partitionPracticeBatch(fixed),plan.groups))throw Error('practice-batch-groups-invalid');
+  const chosen=new Set(allIds),canonical=source.questions.filter(q=>chosen.has(q.id));if(!same(canonical.map(q=>q.id),allIds))throw Error('practice-batch-order-invalid');
+  for(const unit of allUnits)if(!same(fixed.filter(q=>unitId(q)===unit).map(q=>q.id),source.questions.filter(q=>unitId(q)===unit).map(q=>q.id)))throw Error('practice-group-incomplete');
+ }
+ return plan;
+}
+function validateBatchReference(session:StoredSession,plans:Map<string,PracticeBatchPlan>){
+ const origin=session.task?.origin;if(!origin?.batchId)return;
+ const plan=plans.get(origin.batchId);if(!plan)throw Error('practice-batch-reference');
+ const group=plan.groups[origin.batchIndex!-1],base={...origin};delete base.batchId;delete base.batchIndex;
+ if(!group||!same(base,plan.origin)||session.catalogVersion!==plan.catalogVersion||!same(session.questionIds,group.questionIds)||!same(session.unitIds,group.unitIds))throw Error('practice-batch-reference');
+}
+
 function parseRegisteredPracticeSession(row:DomainRecord<unknown>,scopeKey:string,primary:RegisteredPracticeCatalog,catalogs:Map<string,RegisteredPracticeCatalog>,now:()=>Date=()=>new Date()):StoredSession {
  const version=plain(row.value)&&typeof row.value.catalogVersion==='string'?row.value.catalogVersion:'';
  const registered=catalogs.get(version),source=registered??primary;
@@ -88,7 +119,9 @@ function parsePracticeSession(row:DomainRecord<unknown>,scopeKey:string,catalogV
   if(!plain(settlement)||!uuid.test(settlement.checkinId)||!validId(settlement.commandId)||!['draft','prepared','applied'].includes(settlement.status)||!validDraft(settlement.draft)||(settlement.status==='draft'?settlement.pendingPayload!==null:!validCheckin(settlement.pendingPayload)||settlement.pendingPayload.id!==settlement.checkinId||!same({minutes:settlement.pendingPayload.minutes,load:settlement.pendingPayload.load,note:settlement.pendingPayload.note},settlement.draft)))throw Error('practice-settlement-corrupt');
   keys(settlement,['checkinId','commandId','status','draft','pendingPayload']);
   if(settlement.pendingPayload&&settlement.pendingPayload.date!==dayKey(settlement.pendingPayload.createdAt,session.timezone))throw Error('practice-settlement-corrupt');
-  if(session.schemaVersion===3){validatePracticeTask(session.task,session.catalogVersion,session.unitIds,session.questionIds);const origin=session.task!.origin;if(origin.part&&session.catalogVersion===catalogVersion&&session.questionIds.some(id=>questions.get(id)?.part!==origin.part)||origin.kind==='material'&&(session.unitIds.length!==1||session.unitIds[0]!==origin.unitId)||origin.kind==='question'&&!session.questionIds.includes(origin.unitId!))throw Error('practice-task-reference');if(!stamp(session.activityAt)||session.restartOf!==undefined&&(!validId(session.restartOf)||!session.restartOf.startsWith('practice:')||session.restartOf===session.id))throw Error('practice-task-invalid');}
+  if(session.schemaVersion===3){validatePracticeTask(session.task,session.catalogVersion,session.unitIds,session.questionIds);const origin=session.task!.origin;
+   if(session.catalogVersion===catalogVersion)validatePracticeQuestionScope(origin,session.questionIds,questions);
+   if(origin.kind==='material'&&(session.unitIds.length!==1||session.unitIds[0]!==origin.unitId)||origin.kind==='question'&&!session.questionIds.includes(origin.unitId!))throw Error('practice-task-reference');if(!stamp(session.activityAt)||session.restartOf!==undefined&&(!validId(session.restartOf)||!session.restartOf.startsWith('practice:')||session.restartOf===session.id))throw Error('practice-task-invalid');}
   if(session.schemaVersion>=2)validatePracticeTraining(session.training,session.unitIds,session.questionIds,session.cursor,session.steps.map(step=>step.status==='applied'),session.catalogVersion===catalogVersion?session.questionIds.map(id=>questions.get(id)!).filter(Boolean):undefined);
   return session;
  }
@@ -102,10 +135,10 @@ export function validatePracticeWorkflowBackup(input:unknown,questions:readonly 
  const scopeKey=workflowScopeKey(input.scope as WorkflowScope);if(expectedScopeKey!==undefined&&scopeKey!==expectedScopeKey)throw Error('scope-mismatch');
  const catalogVersion=practiceCatalogVersion(questions),catalogs=registerPracticeCatalogs(questions,compatibleQuestionCatalogs),primary=catalogs.get(catalogVersion)!;
  const catalog=primary.byId,parse=(row:DomainRecord<unknown>)=>parseRegisteredPracticeSession(row,scopeKey,primary,catalogs);
- const sessions=new Map<string,StoredSession>(),commands=new Map<string,BridgeCommand>();let pointer:ActivePointer|undefined;
+ const sessions=new Map<string,StoredSession>(),commands=new Map<string,BridgeCommand>(),plans=new Map<string,PracticeBatchPlan>();let pointer:ActivePointer|undefined;
  const attemptIds=new Set<string>(),stepIds=new Set<string>(),commandIds=new Set<string>(),checkinIds=new Set<string>();
  const row=(raw:unknown):DomainRecord<unknown>=>{if(!plain(raw)||!validId(raw.id)||!Number.isSafeInteger(raw.revision)||Number(raw.revision)<1||!('value'in raw))throw Error('practice-backup-row');return raw as DomainRecord<unknown>;};
- const isPractice=(raw:DomainRecord<unknown>)=>raw.id.startsWith('practice:')||raw.id.startsWith('practice-answer:')||raw.id.startsWith('practice-settlement:')||(plain(raw.value)&&typeof raw.value.kind==='string'&&raw.value.kind.startsWith('practice-'));
+ const isPractice=(raw:DomainRecord<unknown>)=>raw.id.startsWith('practice:')||raw.id.startsWith('practice-batch:')||raw.id.startsWith('practice-answer:')||raw.id.startsWith('practice-settlement:')||(plain(raw.value)&&typeof raw.value.kind==='string'&&raw.value.kind.startsWith('practice-'));
  function commandValue(raw:DomainRecord<unknown>):BridgeCommand {
   const value=raw.value;
   if(!plain(value)||value.kind!=='practice-command'||value.scopeKey!==scopeKey||!validId(value.sessionId)||!validId(value.stepId)||!['practice-answer','settlement'].includes(String(value.intent))||!['prepared','applied'].includes(String(value.status))||(value.intent==='practice-answer'?!validAttempt(value.legacyPayload):!validCheckin(value.legacyPayload)))throw Error('practice-command-corrupt');
@@ -120,6 +153,7 @@ export function validatePracticeWorkflowBackup(input:unknown,questions:readonly 
  }
  for(const raw of input.records.sessions){const item=row(raw);if(!isPractice(item))continue;
   if(item.id===ACTIVE){if(pointer||!plain(item.value)||item.value.kind!=='practice-active'||(item.value.sessionId!==null&&!validId(item.value.sessionId)))throw Error('practice-pointer-corrupt');keys(item.value,['kind','sessionId']);pointer=item.value as ActivePointer;continue;}
+  if(plain(item.value)&&item.value.kind==='practice-batch-plan'){const plan=parsePracticeBatchPlan(item,scopeKey,catalogs);if(plans.has(plan.id))throw Error('practice-batch-duplicate');plans.set(plan.id,plan);continue;}
   const session=parse(item);if(sessions.has(session.id))throw Error('practice-session-duplicate');validateUnits(session);sessions.set(session.id,session);
   for(const step of session.steps){if(attemptIds.has(step.attemptId)||checkinIds.has(step.attemptId)||stepIds.has(step.stepId)||commandIds.has(step.commandId))throw Error('practice-fixed-id-duplicate');attemptIds.add(step.attemptId);stepIds.add(step.stepId);commandIds.add(step.commandId);}
   if(checkinIds.has(session.settlement.checkinId)||commandIds.has(session.settlement.commandId)||attemptIds.has(session.settlement.checkinId))throw Error('practice-fixed-id-duplicate');checkinIds.add(session.settlement.checkinId);commandIds.add(session.settlement.commandId);
@@ -131,6 +165,7 @@ export function validatePracticeWorkflowBackup(input:unknown,questions:readonly 
   if(!actual||!same(actual,expected))throw Error('practice-command-reference');used.add(id);
  }
  for(const session of sessions.values()){
+  validateBatchReference(session,plans);
   if(session.restartOf&&!sessions.has(session.restartOf))throw Error('practice-restart-reference');
   for(const step of session.steps)if(step.pendingPayload)checkCommand(step.commandId,session,step.stepId,'practice-answer',step.status==='applied'?'applied':'prepared',step.pendingPayload);
   const settlement=session.settlement;if(settlement.pendingPayload)checkCommand(settlement.commandId,session,settlement.checkinId,'settlement',settlement.status==='applied'?'applied':'prepared',settlement.pendingPayload);
@@ -139,13 +174,14 @@ export function validatePracticeWorkflowBackup(input:unknown,questions:readonly 
  const active=[...sessions.values()].filter(session=>session.status==='active');
  if(sessions.size&&!pointer||pointer?.sessionId&&!active.some(session=>session.id===pointer?.sessionId))throw Error('practice-pointer-reference');
  function historical(item:DomainRecord<unknown>){
+  if(plain(item.value)&&item.value.kind==='practice-batch-plan'){const value=parsePracticeBatchPlan(item,scopeKey,catalogs),latest=plans.get(value.id);if(!latest||!same(value,latest))throw Error('practice-batch-reference');return;}
   if(item.id===ACTIVE){if(!plain(item.value)||item.value.kind!=='practice-active'||item.value.sessionId!==null&&!sessions.has(String(item.value.sessionId)))throw Error('practice-pointer-reference');keys(item.value,['kind','sessionId']);return;}
   if(plain(item.value)&&item.value.kind==='practice-command'){
    const value=commandValue(item),session=sessions.get(value.sessionId);if(!session)throw Error('practice-command-reference');
    const step=session.steps.find(candidate=>candidate.commandId===item.id),settlement=session.settlement;
    if(value.intent==='practice-answer'?!step||step.stepId!==value.stepId||!same(step.pendingPayload,value.legacyPayload):settlement.commandId!==item.id||settlement.checkinId!==value.stepId||!same(settlement.pendingPayload,value.legacyPayload))throw Error('practice-command-reference');return;
   }
-  const value=parse(item),latest=sessions.get(value.id);if(!latest)throw Error('practice-session-reference');validateUnits(value);
+  const value=parse(item),latest=sessions.get(value.id);if(!latest)throw Error('practice-session-reference');validateUnits(value);validateBatchReference(value,plans);
   const identity=(session:StoredSession)=>({...(session.task?{task:session.task}:{}),...(session.restartOf?{restartOf:session.restartOf}:{}),id:session.id,scopeKey:session.scopeKey,catalogVersion:session.catalogVersion,chainId:session.chainId,questionIds:session.questionIds,unitIds:session.unitIds,startedAt:session.startedAt,timezone:session.timezone,steps:session.steps.map(({stepId,attemptId,commandId,initialSeen})=>({stepId,attemptId,commandId,initialSeen})),settlement:{checkinId:session.settlement.checkinId,commandId:session.settlement.commandId}});
   if(!same(identity(value),identity(latest)))throw Error('practice-session-reference');
   for(let i=0;i<value.steps.length;i++)if(value.steps[i].pendingPayload&&!same(value.steps[i].pendingPayload,latest.steps[i].pendingPayload))throw Error('practice-command-reference');
@@ -191,7 +227,7 @@ export class PracticeWorkflow {
  close(){this.closed=true;this.repository.close();}
  private current(){if(this.closed||this.options.isCurrent?.()===false)throw Error('scope-changed');}
  private parse(row:DomainRecord<unknown>):StoredSession {return parseRegisteredPracticeSession(row,this.scopeKey,this.primaryCatalog,this.catalogs,this.now);}
- private async sessionRow(id:string){const row=await this.repository.read<unknown>('sessions',id);this.current();if(!row)throw Error('practice-session-missing');return {...row,value:this.parse(row)};}
+ private async sessionRow(id:string){const row=await this.repository.read<unknown>('sessions',id);this.current();if(!row)throw Error('practice-session-missing');const value=this.parse(row);if(value.task?.origin.batchId){const planRow=await this.repository.read<unknown>('sessions',value.task.origin.batchId);this.current();if(!planRow)throw Error('practice-batch-reference');const plan=parsePracticeBatchPlan(planRow,this.scopeKey,this.catalogs);if(!this.catalogs.has(plan.catalogVersion))throw Error('catalog-mismatch');validateBatchReference(value,new Map([[plan.id,plan]]));}return {...row,value};}
  private async pointer(){const row=await this.repository.read<ActivePointer>('sessions',ACTIVE);this.current();if(row&&(!plain(row.value)||row.value.kind!=='practice-active'||(row.value.sessionId!==null&&!validId(row.value.sessionId))))throw Error('practice-pointer-corrupt');return row;}
  private async bridgeRow(session:StoredSession,id:string,stepId:string,intent:BridgeCommand['intent'],status:BridgeCommand['status'],payload:Attempt|Checkin){
   const row=await this.repository.read<BridgeCommand>('commands',id);this.current();
@@ -245,12 +281,14 @@ export class PracticeWorkflow {
   // Start/finish changes pointer and session atomically. Separate read transactions may straddle
   // that commit; retry that ordinary race instead of mistaking it for corrupt storage.
   if(pointer?.revision!==after?.revision||pointer?.value.sessionId!==after?.value.sessionId){if(retry<3)return this.readProjection(retry+1);throw Error('practice-snapshot-changed');}
-  const sessions:PracticeSession[]=[];
-  for(const row of rows){if(row.id===ACTIVE)continue;if(row.id.startsWith('practice:')&&(!plain(row.value)||row.value.kind!=='practice-session'))throw Error('practice-session-corrupt');if(plain(row.value)&&row.value.kind==='practice-session')sessions.push(await this.project({...row,value:this.parse(row)}));}
+  const sessions:PracticeSession[]=[],plans=new Map<string,PracticeBatchPlan>();
+  for(const row of rows){if(row.id.startsWith('practice-batch:')&&(!plain(row.value)||row.value.kind!=='practice-batch-plan'))throw Error('practice-batch-corrupt');if(plain(row.value)&&row.value.kind==='practice-batch-plan'){const plan=parsePracticeBatchPlan(row,this.scopeKey,this.catalogs);if(plans.has(plan.id))throw Error('practice-batch-duplicate');plans.set(plan.id,plan);}}
+  for(const row of rows){if(row.id===ACTIVE)continue;if(row.id.startsWith('practice:')&&(!plain(row.value)||row.value.kind!=='practice-session'))throw Error('practice-session-corrupt');if(plain(row.value)&&row.value.kind==='practice-session'){const session=this.parse(row);validateBatchReference(session,plans);sessions.push(await this.project({...row,value:session}));}}
+
   sessions.sort((a,b)=>a.startedAt.localeCompare(b.startedAt)||a.id.localeCompare(b.id));
   const activeSessionId=pointer?.value.sessionId??null;
   if(activeSessionId&&!sessions.some(session=>session.id===activeSessionId&&session.status==='active'))throw Error('practice-pointer-corrupt');
-  this.current();return {activeSessionId,sessions,pendingSettlements:sessions.filter(session=>session.status!=='active'&&session.steps.some(step=>step.status!=='unanswered')&&session.settlement.status!=='applied')};
+  this.current();return {activeSessionId,sessions,batchPlans:[...plans.values()].map(plan=>this.catalogs.has(plan.catalogVersion)?plan:{...plan,integrityError:'catalog-mismatch'}),pendingSettlements:sessions.filter(session=>session.status!=='active'&&session.steps.some(step=>step.status!=='unanswered')&&session.settlement.status!=='applied')};
  }
  private outcome(result:DomainCommitResult,sessionId:string,success:'started'|'applied'|'updated'|'closed'='updated'):PracticeResult{
   if(result.status==='committed')return {status:success,sessionId};
@@ -263,21 +301,58 @@ export class PracticeWorkflow {
  private async transact(commandId:string,occurredAt:string,payload:unknown,rows:{collection:'sessions'|'commands';row:DomainRecord<unknown>|undefined;id:string;value:unknown}[]){
   this.current();const result=await this.repository.commit({commandId,occurredAt,payload:json(payload),expected:rows.map(({collection,row,id})=>({collection,id,revision:row?.revision??null})),writes:rows.map(({collection,row,id,value})=>({collection,id,revision:(row?.revision??0)+1,value:json(value)}))},()=>this.current());this.current();return result;
  }
- private freshSession(queue:readonly Question[],start:PracticeStartOptions,id:string,chainId:string,at:string):StoredSession{
+ private freshSession(queue:readonly Question[],start:PracticeStartOptions,id:string,chainId:string,at:string,version=this.catalogVersion):StoredSession{
+  const source=this.catalogs.get(version);if(!source)throw Error('catalog-mismatch');
   if(!queue.length||queue.length>200||new Set(queue.map(question=>question.id)).size!==queue.length)throw Error('practice-queue-invalid');
   const chosen=new Set(queue.map(question=>question.id));
-  for(const question of queue){const authored=this.questions.get(question.id);if(!authored||!same(JSON.parse(JSON.stringify(question)),JSON.parse(JSON.stringify(authored))))throw Error('practice-catalog-mismatch');if(question.groupId&&this.options.questions.some(other=>other.part===question.part&&other.groupId===question.groupId&&!chosen.has(other.id)))throw Error('practice-group-incomplete');}
+  for(const question of queue){const authored=source.byId.get(question.id);if(!authored||!same(JSON.parse(JSON.stringify(question)),JSON.parse(JSON.stringify(authored))))throw Error('practice-catalog-mismatch');if(question.groupId&&source.questions.some(other=>other.part===question.part&&other.groupId===question.groupId&&!chosen.has(other.id)))throw Error('practice-group-incomplete');}
   const unitIds=[...new Set(queue.map(unitId))];if(!same(unitIds,start.unitIds))throw Error('practice-units-invalid');
-  for(const unit of unitIds)if(!same(queue.filter(question=>unitId(question)===unit).map(question=>question.id),this.options.questions.filter(question=>unitId(question)===unit).map(question=>question.id)))throw Error('practice-group-order-invalid');
+  for(const unit of unitIds)if(!same(queue.filter(question=>unitId(question)===unit).map(question=>question.id),source.questions.filter(question=>unitId(question)===unit).map(question=>question.id)))throw Error('practice-group-order-invalid');
   if(!validId(chainId))throw Error('practice-chain-invalid');
   const seen=new Set(start.initialSeenQids??this.options.seenQuestionIds?.()??[]),questionIds=queue.map(q=>q.id);
-  const task=start.task?makePracticeTask(start.task.origin,start.task.label,this.catalogVersion,unitIds,questionIds):undefined;
-  const value:StoredSession={kind:'practice-session',schemaVersion:task?3:1,...(task?{task,activityAt:at,training:initialPracticeTraining([...queue],0)}:{}),id,scopeKey:this.scopeKey,catalogVersion:this.catalogVersion,chainId,questionIds,unitIds,cursor:0,steps:queue.map(question=>({stepId:this.id(),attemptId:this.id(),commandId:'practice-answer:'+this.id(),initialSeen:seen.has(question.id),status:'unanswered',pendingPayload:null})),status:'active',startedAt:at,timezone:this.options.timezone,settlement:{checkinId:this.id(),commandId:'practice-settlement:'+this.id(),status:'draft',draft:{minutes:1,load:'刚好',note:''},pendingPayload:null}};
+  const task=start.task?makePracticeTask(start.task.origin,start.task.label,version,unitIds,questionIds):undefined;
+  const value:StoredSession={kind:'practice-session',schemaVersion:task?3:1,...(task?{task,activityAt:at,training:initialPracticeTraining([...queue],0)}:{}),id,scopeKey:this.scopeKey,catalogVersion:version,chainId,questionIds,unitIds,cursor:0,steps:queue.map(question=>({stepId:this.id(),attemptId:this.id(),commandId:'practice-answer:'+this.id(),initialSeen:seen.has(question.id),status:'unanswered',pendingPayload:null})),status:'active',startedAt:at,timezone:this.options.timezone,settlement:{checkinId:this.id(),commandId:'practice-settlement:'+this.id(),status:'draft',draft:{minutes:1,load:'刚好',note:''},pendingPayload:null}};
   this.parse({id,revision:1,value});return value;
+ }
+ async openBatch(origin:PracticeTaskOrigin,label:string,sourceQuestions:readonly Question[],index:number,requestId?:string):Promise<PracticeResult>{
+  let id='';try{
+   this.current();if(!Number.isSafeInteger(index)||index<1||requestId!==undefined&&!uuid.test(requestId))throw Error('practice-batch-request-invalid');
+   const planId=practiceBatchPlanId(origin),at=this.now().toISOString(),request=requestId??this.id();id='practice:'+request;
+   for(let retry=0;retry<5;retry++){
+    const pointer=await this.pointer(),planRow=await this.repository.read<unknown>('sessions',planId),existing=await this.readProjection();this.current();
+    if(existing.sessions.some(session=>session.integrityError))throw Error('reference-unverified');
+    let plan:PracticeBatchPlan;
+    if(planRow){plan=parsePracticeBatchPlan(planRow,this.scopeKey,this.catalogs);if(!this.catalogs.has(plan.catalogVersion))throw Error('catalog-mismatch');}
+    else {
+     if(!sourceQuestions.length)throw Error('practice-batch-plan-missing');
+     plan={kind:'practice-batch-plan',schemaVersion:1,id:planId,scopeKey:this.scopeKey,catalogVersion:this.catalogVersion,origin:JSON.parse(canonicalJson(origin)),groups:partitionPracticeBatch(sourceQuestions)};
+     parsePracticeBatchPlan({id:planId,revision:1,value:plan},this.scopeKey,this.catalogs);
+    }
+    const group=plan.groups[index-1];if(!group)throw Error('practice-batch-group-missing');
+    const matching=existing.sessions.filter(session=>session.task?.origin.batchId===planId&&session.task.origin.batchIndex===index);
+    const prior=existing.sessions.find(session=>session.id===id);
+    if(prior){if(prior.task?.origin.batchId!==planId||prior.task.origin.batchIndex!==index)throw Error('practice-request-conflict');return {status:'restored',sessionId:id};}
+    const active=matching.filter(session=>session.status==='active');if(active.length>1)return {status:'conflict',reason:'practice-select-session'};
+    if(active.length===1)return await this.resume(active[0].id);
+    if(matching.some(session=>session.status==='completed'))return {status:'blocked',reason:'practice-batch-already-completed'};
+    const source=this.catalogs.get(plan.catalogVersion)!;
+    const queue=group.questionIds.map(qid=>source.byId.get(qid));if(queue.some(q=>!q))throw Error('catalog-mismatch');
+    const task={origin:{...origin,batchId:planId,batchIndex:index},label};
+    const value=this.freshSession(queue as Question[],{unitIds:group.unitIds,task},id,this.id(),at,plan.catalogVersion);
+    validateBatchReference(value,new Map([[planId,plan]]));
+    if(pointer?.provenance==='restored-unverified'){const confirmed=await this.repository.confirmRestored({records:[{collection:'sessions',id:ACTIVE,revision:pointer.revision,value:json(pointer.value)}],commands:[]});this.current();if(confirmed.status==='blocked'||confirmed.status==='conflict')throw Error(confirmed.reason);}
+    if(planRow?.provenance==='restored-unverified'){const confirmed=await this.repository.confirmRestored({records:[{collection:'sessions',id:planId,revision:planRow.revision,value:json(plan)}],commands:[]});this.current();if(confirmed.status==='blocked'||confirmed.status==='conflict')throw Error(confirmed.reason);}
+    const rows:{collection:'sessions';row:DomainRecord<unknown>|undefined;id:string;value:unknown}[]=[{collection:'sessions',row:undefined,id,value},{collection:'sessions',row:pointer,id:ACTIVE,value:{kind:'practice-active',sessionId:id}}];
+    if(!planRow)rows.push({collection:'sessions',row:undefined,id:planId,value:plan});
+    const result=await this.transact('practice-batch-start:'+request,at,{intent:'practice-batch-start',sessionId:id,planId,index},rows);
+    if(result.status==='conflict')continue;return this.outcome(result,id,'started');
+   }
+   return {status:'conflict',reason:'practice-batch-start-changed',sessionId:id};
+  }catch(error){return this.blocked(error,id||undefined);}
  }
  async start(queue:readonly Question[],start:PracticeStartOptions):Promise<PracticeResult>{
   let id='';try{
-   this.current();if(start.requestId!==undefined&&!uuid.test(start.requestId))throw Error('practice-request-invalid');
+   this.current();if(start.task?.origin.batchId!==undefined||start.task?.origin.batchIndex!==undefined)throw Error('practice-batch-use-plan');if(start.requestId!==undefined&&!uuid.test(start.requestId))throw Error('practice-request-invalid');
    id='practice:'+(start.requestId??this.id());const at=this.now().toISOString(),value=this.freshSession(queue,start,id,start.chainId??this.id(),at);
    for(let retry=0;retry<5;retry++){
     const pointer=await this.pointer(),existing=await this.readProjection();this.current();
@@ -309,7 +384,7 @@ export class PracticeWorkflow {
    await this.reconcile(row);const pointer=await this.pointer(),at=this.now().toISOString();
    const task=row.value.task??{origin:{kind:'combined' as const,collection:'legacy:'+id},label:'旧练习重练'};
    const seen=[...new Set([...(this.options.seenQuestionIds?.()??[]),...projection.steps.filter(step=>step.status==='applied').map(step=>step.attempt!.qid)])];
-   const value=this.freshSession(projection.queue,{unitIds:row.value.unitIds,task,initialSeenQids:seen},freshId,this.id(),at);value.restartOf=id;this.parse({id:freshId,revision:1,value});
+   const value=this.freshSession(projection.queue,{unitIds:row.value.unitIds,task,initialSeenQids:seen},freshId,this.id(),at,row.value.catalogVersion);value.restartOf=id;this.parse({id:freshId,revision:1,value});
    const rows:{collection:'sessions';row:DomainRecord<unknown>|undefined;id:string;value:unknown}[]=[{collection:'sessions',row,id,value:{...row.value,status:row.value.status==='active'?'left':row.value.status}},{collection:'sessions',row:undefined,id:freshId,value}];
    if(pointer?.value.sessionId===id)rows.push({collection:'sessions',row:pointer,id:ACTIVE,value:{kind:'practice-active',sessionId:freshId}});
    const result=await this.transact('practice-restart:'+options.requestId,at,{intent:'practice-restart',sessionId:id,newSessionId:freshId,expectedRevision:options.expectedRevision},rows);

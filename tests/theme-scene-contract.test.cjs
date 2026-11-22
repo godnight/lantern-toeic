@@ -35,24 +35,34 @@ test('approved Hollow images remain assigned to their intended pages',()=>{
  assert(render('hollow','reviewOverview').includes('/images/maps/white-palace.webp'));
 });
 
-test('each whale theme has a distinct approved scene for each of the five learning pages',()=>{
- const pages={vocabulary:'vocabularyOverview',train:'practiceOverview',review:'reviewOverview',progress:'progressOverview',resources:'resourceLibrary'};
+test('whale character scenes remain separate from the retained workspace backdrops',()=>{
+ const scenes={todayRest:'01-today',vocabularyOverview:'02-vocabulary',practiceOverview:'03-practice',reviewOverview:'04-review',progressOverview:'05-progress',resourceLibrary:'06-discover'};
+ const backgrounds={
+  'whale-bay':{today:'whale-bay-study',vocabulary:'bay-word-lighthouse',train:'bay-practice-dawn-pier',review:'bay-review-tide-garden',progress:'bay-progress-cliff',resources:'bay-resource-bookshop'},
+  'whale-moon':{today:'whale-moon-study',vocabulary:'moon-word-gallery',train:'moon-practice-reef',review:'moon-review-moonlit-cove',progress:'moon-progress-star-observatory',resources:'moon-resource-bookshop'}
+ };
  for(const theme of ['whale-bay','whale-moon']){
+  const prefix=theme==='whale-bay'?'bay':'moon';
   const ids=[];
-  for(const [nav,slot] of Object.entries(pages)){
-   const html=render(theme,slot),id=html.match(/data-scene-source="([^"]+)"/)?.[1];assert(id,`${theme}/${slot} must have a scene`);
-   assert(!id.endsWith('-home'),`${theme}/${slot} must not use the complete character art`);
-   assert(html.includes(`/images/whale-scenes-20261115/${id}.webp`));
-   const backdrop=workspaceSceneBackdrop(theme,nav,false);assert(backdrop);assert.equal(backdrop.id,id,`${theme}/${nav} frame and backdrop must use the same scene`);
+  for(const [slot,suffix] of Object.entries(scenes)){
+   const html=render(theme,slot),id=`${prefix}-${suffix}`;
+   assert(html.includes(`data-scene-source="${id}"`));
+   assert(html.includes(`/images/whale-character-scenes-20261122/${id}.webp`));
+   assert(html.includes('v041-theme-scene--contain'),`${theme}/${slot} must preserve the entire image`);
    ids.push(id);
   }
-  assert.equal(new Set(ids).size,5,`${theme} should not repeat one ordinary scene across learning pages`);
+  assert.equal(new Set(ids).size,6);
+  for(const [nav,id] of Object.entries(backgrounds[theme])){
+   const backdrop=workspaceSceneBackdrop(theme,nav,false);assert(backdrop);assert.equal(backdrop.id,id);
+   const dir=nav==='today'?'whale-themes':'whale-scenes-20261115';
+   assert(backdrop.background.includes(`/images/${dir}/${id}.webp`));
+  }
  }
 });
 
-test('workspace backgrounds and the same page image windows resolve to one asset for every theme',()=>{
+test('non-whale backgrounds and corresponding image windows retain their asset identity',()=>{
  const pages={today:'todayHero',vocabulary:'vocabularyOverview',train:'practiceOverview',review:'reviewOverview',progress:'progressOverview',resources:'resourceLibrary'};
- for(const theme of themes)for(const [nav,slot] of Object.entries(pages)){
+ for(const theme of ['paper','crystal','hollow','silk'])for(const [nav,slot] of Object.entries(pages)){
   const html=render(theme,slot),id=html.match(/data-scene-source="([^"]+)"/)[1];
   const backdrop=workspaceSceneBackdrop(theme,nav,false);
   if(theme==='paper'||theme==='crystal'){assert.equal(backdrop,null,`${theme}/${nav} stays neutral`);continue;}
@@ -61,7 +71,7 @@ test('workspace backgrounds and the same page image windows resolve to one asset
   const image=html.match(/<img\b[^>]*\bsrc="([^"]+)"/)[1];
   if(theme==='hollow'&&nav==='today'){
    assert(image.endsWith('/design-r1/hollow-home.webp'));
-   assert(backdrop.background.includes('/phase2-theme/dirtmouth-hd-1x.webp'),'Today keeps its existing same-scene high-resolution variants');
+   assert(backdrop.background.includes('/phase2-theme/dirtmouth-hd-1x.webp'));
   }else assert(backdrop.background.includes(image),`${theme}/${nav} backdrop differs from image ${image}`);
   for(const url of [...(backdrop.background+' '+backdrop.mobileBackground).matchAll(/url\(['"]?([^'"\)]+)['"]?\)/g)].map(m=>m[1])){
    assert(fs.existsSync(path.join(root,'public',url.replace(/^\//,''))),`Missing mapped backdrop ${url}`);

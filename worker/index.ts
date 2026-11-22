@@ -2,6 +2,7 @@
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
 import { handleNaturalMediaRequest } from "./natural-media-proxy";
+import { handleLocalCandidateMedia } from "./local-candidate-media";
 
 interface Env {
   ASSETS: Fetcher;
@@ -28,6 +29,8 @@ interface ExecutionContext {
 
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const candidateResponse = await handleLocalCandidateMedia(request, env.ASSETS);
+    if (candidateResponse) return candidateResponse;
     const mediaResponse = await handleNaturalMediaRequest(request);
     if (mediaResponse) return mediaResponse;
     const url = new URL(request.url);

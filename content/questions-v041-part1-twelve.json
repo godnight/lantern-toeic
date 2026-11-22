@@ -1,0 +1,242 @@
+[
+  {
+    "id": "v049-p1x12-01",
+    "part": 1,
+    "title": "Part 1 · 01",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "A woman is looking through a microscope.",
+      "A woman is pouring liquid into a test tube.",
+      "A woman is putting on protective glasses.",
+      "A woman is writing notes beside a computer."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：目镜与眼睛的位置、调焦手势直接支持 looking through a microscope。 B：双手没有拿着倾斜容器，画面没有倒液动作。 C：女子的手不在脸部或眼镜旁，未做戴眼镜动作。 D：女子在看显微镜，没有握笔书写，桌上也没有电脑。",
+    "evidence": "A woman is looking through a microscope.\n只有一名成年女子，坐在实验台前，脸部贴近显微镜目镜。\n一只手握住调焦旋钮，另一只手放在台面；眼睛贴近目镜，这些位置关系清楚可见。\n没有举起或倾倒的容器、戴眼镜的动作、笔或电脑。",
+    "skill": "人物动作：观察与倒液、戴眼镜、记录区分",
+    "difficulty": "未标定",
+    "transcript": "A. A woman is looking through a microscope.\nB. A woman is pouring liquid into a test tube.\nC. A woman is putting on protective glasses.\nD. A woman is writing notes beside a computer.",
+    "translation": "A. 一名女子正在通过显微镜观察。\nB. 一名女子正在往试管里倒液体。\nC. 一名女子正在戴防护眼镜。\nD. 一名女子正在电脑旁做笔记。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening12/cda4a6b9a63932f3ad075c69593e449aedf76065ecba997bafd27cca919a1632.png"
+  },
+  {
+    "id": "v049-p1x12-02",
+    "part": 1,
+    "title": "Part 1 · 02",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "Some paddles are floating beside a dock.",
+      "Several kayaks are leaning against tree trunks.",
+      "Several kayaks are resting on a storage rack.",
+      "Two people are carrying a kayak to the water."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：水面上没有漂浮的船桨，主体是岸上的皮艇。 B：皮艇水平放在金属架上，没有立起或倚靠树干。 C：多个艇身由存放架的横臂支撑，resting on 准确描述这种静态位置。 D：画面没有人物，也没有抬运皮艇的动作。",
+    "evidence": "Several kayaks are resting on a storage rack.\n四艘单人皮艇水平放在岸上的两层独立金属存放架上。\n皮艇艇身与支架横臂的支撑关系清楚，不接触树干，也不在水面上。\n背景可见一片平静水面；画面无人，没有漂浮船桨或被人抬着的皮艇。",
+    "skill": "物体状态：resting on 与 leaning against",
+    "difficulty": "未标定",
+    "transcript": "A. Some paddles are floating beside a dock.\nB. Several kayaks are leaning against tree trunks.\nC. Several kayaks are resting on a storage rack.\nD. Two people are carrying a kayak to the water.",
+    "translation": "A. 几支船桨漂浮在码头旁。\nB. 几艘皮艇倚靠着树干。\nC. 几艘皮艇放在存放架上。\nD. 两个人正把一艘皮艇搬向水边。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening12/2a331e139dd8913761d4aaac440285923e1d5be6573b9a7d7e2eb20f829fe08e.png"
+  },
+  {
+    "id": "v049-p1x12-03",
+    "part": 1,
+    "title": "Part 1 · 03",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "A man is spreading flour over a tray.",
+      "A man is flattening dough with a rolling pin.",
+      "A man is slicing a baked loaf.",
+      "A man is lifting a mixing bowl off a shelf."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：画面虽有少量面粉，但双手正握住擀面杖，没有撒粉或托盘。 B：擀面杖与展开的生面团接触，两手施压，与 flattening dough 一致。 C：面团还未烘烤，男子手中没有切面包的刀。 D：双手在台面上的擀面杖处，没有抬碗或伸向架子的动作。",
+    "evidence": "A man is flattening dough with a rolling pin.\n一名男子站在操作台前，两手分别握着木制擀面杖两端。\n擀面杖紧贴一大片生面团，面团被压平在台面上。\n台面和围裙上可见面粉痕迹；双手握着擀面杖，没有撒粉动作，未见刀具、托盘或碗。",
+    "skill": "人物动作：flattening dough 与撒粉、切面包区分",
+    "difficulty": "未标定",
+    "transcript": "A. A man is spreading flour over a tray.\nB. A man is flattening dough with a rolling pin.\nC. A man is slicing a baked loaf.\nD. A man is lifting a mixing bowl off a shelf.",
+    "translation": "A. 一名男子正在把面粉撒到托盘上。\nB. 一名男子正在用擀面杖把面团擀平。\nC. 一名男子正在切一条烤好的面包。\nD. 一名男子正在从架子上拿起一个搅拌碗。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening12/4f8bf43ff44c1281e3012bd90c83f7f0b49bd5ab99fad954007dec50b5851973.png"
+  },
+  {
+    "id": "v049-p1x12-04",
+    "part": 1,
+    "title": "Part 1 · 04",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "Clothes are hanging from a rail.",
+      "Baskets have been placed on top of the machines.",
+      "All of the machine doors are closed.",
+      "One of the washing machine doors is open."
+    ],
+    "correctIndex": 3,
+    "explanation": "A：照片中没有晾衣杆或挂起的衣服。 B：洗衣篮在地面，不在洗衣机顶部；听到 baskets 不能忽略位置。 C：近处一扇圆形门明显打开，因此 all ... closed 不成立。 D：近处洗衣机的一扇圆形门向外打开，其余门关闭，one ... open 与画面相符。",
+    "evidence": "One of the washing machine doors is open.\n室内一排四台前开门滚筒洗衣机，只有近处一台圆形门明显打开。\n其余三台圆形门关闭，机器顶部没有任何物品。\n一个空塑料洗衣篮在地面上，画面无人，没有挂着的衣服或晾衣杆。",
+    "skill": "物体状态：open/closed 与 all/one",
+    "difficulty": "未标定",
+    "transcript": "A. Clothes are hanging from a rail.\nB. Baskets have been placed on top of the machines.\nC. All of the machine doors are closed.\nD. One of the washing machine doors is open.",
+    "translation": "A. 衣服挂在一根横杆上。\nB. 篮子放在了机器顶部。\nC. 所有机器的门都关着。\nD. 其中一台洗衣机的门开着。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening12/f7995da65245a99370dcd5d5376b8fb12e17b083693140abdaf1b418f129c040.png"
+  },
+  {
+    "id": "v049-p1x12-05",
+    "part": 1,
+    "title": "Part 1 · 05",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "Both people are holding walking sticks.",
+      "Two people are looking at an unfolded map.",
+      "A woman is attaching a map to a noticeboard.",
+      "A man is packing a map into a bag."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：两人握的是地图边缘，手中没有手杖。 B：地图在两人面前完全展开，两人的视线都朝向地图。 C：地图悬在两人手中，没有被固定到告示板上。 D：地图仍展开在胸前，画面没有装入包里的动作。",
+    "evidence": "Two people are looking at an unfolded map.\n一男一女并排站在户外步道旁，视线均朝向两人胸前的一张展开的折叠地图。\n地图较大，折痕与道路线条可见；两人分别握住左右边缘。\n没有手杖、告示板、包或收起地图的动作；地图无需可读地名。",
+    "skill": "人物与物体：looking at / unfolded",
+    "difficulty": "未标定",
+    "transcript": "A. Both people are holding walking sticks.\nB. Two people are looking at an unfolded map.\nC. A woman is attaching a map to a noticeboard.\nD. A man is packing a map into a bag.",
+    "translation": "A. 两个人都拿着手杖。\nB. 两个人正在看一张展开的地图。\nC. 一名女子正在把地图固定到告示板上。\nD. 一名男子正在把地图装进包里。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening12/89c447e57b8546f7630c61db5cf5436a680b178aeab473ef13e7672b158c7f7e.png"
+  },
+  {
+    "id": "v049-p1x12-06",
+    "part": 1,
+    "title": "Part 1 · 06",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "A man is sprinkling salt on a path.",
+      "A man is leaning a shovel against a wall.",
+      "A man is sweeping leaves off some steps.",
+      "A man is shoveling snow from a walkway."
+    ],
+    "correctIndex": 3,
+    "explanation": "A：双手正握着雪铲，没有撒盐器、盐袋或撒落物。 B：雪铲的铲头在地面积雪处，男子正握住它，并非靠墙放置。 C：可见的是平坦积雪步道；男子使用雪铲，未见扫帚或清扫台阶落叶的动作。 D：雪铲贴着步道上的雪并承托积雪，符合 shoveling snow。",
+    "evidence": "A man is shoveling snow from a walkway.\n冬季户外一名男子双手握雪铲长柄，铲头紧贴平坦步道上的雪层并托着一小堆雪。\n一段清理过的深色步道和旁边成堆的雪都可见。\n可见的是平坦积雪步道；男子使用雪铲，未见台阶、扫帚、撒盐动作或正在清扫落叶的动作。",
+    "skill": "人物动作：shoveling snow",
+    "difficulty": "未标定",
+    "transcript": "A. A man is sprinkling salt on a path.\nB. A man is leaning a shovel against a wall.\nC. A man is sweeping leaves off some steps.\nD. A man is shoveling snow from a walkway.",
+    "translation": "A. 一名男子正在小路上撒盐。\nB. 一名男子正在把铲子斜靠在墙上。\nC. 一名男子正在清扫台阶上的树叶。\nD. 一名男子正在铲走步道上的雪。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening12/718117134f9ce05d40a5165f2d3dacc98cc7d65aa149770eec99263d4a36627b.png"
+  },
+  {
+    "id": "v049-p1x12-07",
+    "part": 1,
+    "title": "Part 1 · 07",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "A man is gripping handles attached to a sheet of glass.",
+      "A man is washing a window with a sponge.",
+      "A sheet of glass is lying flat on a bench.",
+      "A man is fitting curtains above a window."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：双手握住的两个手柄通过吸盘附在竖立的玻璃板上，附着和握持关系均可见。 B：男子握的是硬质吸盘手柄，没有海绵或擦洗的动作。 C：玻璃板竖立在人物身前，不是平放在工作台上。 D：双手位于玻璃板中央的手柄处，没有窗帘或高举安装动作。",
+    "evidence": "A man is gripping handles attached to a sheet of glass.\n男子站在车间里，一块大矩形透明玻璃板竖立在他面前，其边缘、反光和厚度可见。\n玻璃板上附有两个吸盘手柄，男子戴手套的双手各紧握一个手柄。\n玻璃并未平放；没有海绵、水迹、窗帘或抬手安装窗帘动作。",
+    "skill": "人物持物：玻璃板与附着手柄",
+    "difficulty": "未标定",
+    "transcript": "A. A man is gripping handles attached to a sheet of glass.\nB. A man is washing a window with a sponge.\nC. A sheet of glass is lying flat on a bench.\nD. A man is fitting curtains above a window.",
+    "translation": "A. 一名男子正握着附在一块玻璃板上的手柄。\nB. 一名男子正在用海绵擦洗窗户。\nC. 一块玻璃板平放在工作台上。\nD. 一名男子正在窗户上方安装窗帘。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening12/572741634d0abd6d192ea9feca5e39f1d60b974e96281ccc9682c71c8e6c86d5.png"
+  },
+  {
+    "id": "v049-p1x12-08",
+    "part": 1,
+    "title": "Part 1 · 08",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "A woman is drinking directly from a fountain.",
+      "A woman is tightening a cap on a bottle.",
+      "A bottle is being filled at a water dispenser.",
+      "Several bottles are standing in a sink."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：女子的嘴远离出水口和水瓶，未直接饮水。 B：瓶口敞开并在接水，双手没有拧瓶盖。 C：水流清楚地进入敞口瓶中，符合 is being filled。 D：画面只有一个由人握住的水瓶，没有多个瓶子立在水槽内。",
+    "evidence": "A bottle is being filled at a water dispenser.\n女子站在公共饮水设施旁，一手将一个透明的敞口水瓶保持在向下出水的龙头下。\n清楚的一股水流从出水口进入瓶口，瓶内已有部分水。\n瓶口远离她的嘴，另一只手按出水按钮；没有瓶盖动作，画面仅一个水瓶。",
+    "skill": "物体动作：a bottle is being filled",
+    "difficulty": "未标定",
+    "transcript": "A. A woman is drinking directly from a fountain.\nB. A woman is tightening a cap on a bottle.\nC. A bottle is being filled at a water dispenser.\nD. Several bottles are standing in a sink.",
+    "translation": "A. 一名女子正在直接对着饮水器喝水。\nB. 一名女子正在拧紧瓶盖。\nC. 一个水瓶正在饮水设备处接水。\nD. 几个水瓶立在水槽里。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening12/274c4c487154640d59314c428cb75476046174aaacd00f81cf3eafdf120149b5.png"
+  },
+  {
+    "id": "v049-p1x12-09",
+    "part": 1,
+    "title": "Part 1 · 09",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "A man is brushing mud off his trousers.",
+      "A man is fastening a strap around a bag.",
+      "A man is tying the laces of his boot.",
+      "A man is pulling a sock over his foot."
+    ],
+    "correctIndex": 2,
+    "explanation": "A：手指捏的是鞋带，手中没有刷子，也没有刷裤子的动作。 B：人物脚旁没有包，手中的细带属于靴子而不是包带。 C：双手正在靴子鞋面处拉住鞋带两端系结，与 tying the laces 一致。 D：脚已经穿在靴子里，手不在套袜子。",
+    "evidence": "A man is tying the laces of his boot.\n男子在户外步道旁俯身，一只穿好登山靴的脚放在低矮长凳上。\n双手靠近靴子鞋面，分别捏住鞋带两端形成可见的系带动作。\n靴子完整包住脚；手中没有刷子、包带或袜子，脚旁无背包。",
+    "skill": "人物动作：tying laces",
+    "difficulty": "未标定",
+    "transcript": "A. A man is brushing mud off his trousers.\nB. A man is fastening a strap around a bag.\nC. A man is tying the laces of his boot.\nD. A man is pulling a sock over his foot.",
+    "translation": "A. 一名男子正在刷去裤子上的泥。\nB. 一名男子正在扣紧包外面的带子。\nC. 一名男子正在系靴子的鞋带。\nD. 一名男子正在往脚上套袜子。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening12/f294e618961efa0c8f81125c44324d239055e7ef5343353b3ea8851519af1806.png"
+  },
+  {
+    "id": "v049-p1x12-10",
+    "part": 1,
+    "title": "Part 1 · 10",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "Sockets are arranged in rows inside an open case.",
+      "Several wrenches are hanging above a bench.",
+      "A case of tools is being carried through a doorway.",
+      "Hand tools are scattered across the floor."
+    ],
+    "correctIndex": 0,
+    "explanation": "A：金属套筒的圆柱外形和内孔清楚，排列在敞开箱子的槽位中。 B：工具在箱内，不在工作台上方悬挂。 C：工具箱静放在台上，没有人物搬运或经过门口。 D：可见工具整齐收在箱内，画面未显示工具散落在地板上。",
+    "evidence": "Sockets are arranged in rows inside an open case.\n一只便携式硬壳工具箱打开后平稳放在工作台上。\n箱内多枚金属套筒按大小成两排固定在衬托凹槽中，开口形状清晰。\n可见工具整齐收在箱内，画面无人，未显示工具悬挂在墙上或散落在地板上。",
+    "skill": "物体位置：arranged in rows / inside",
+    "difficulty": "未标定",
+    "transcript": "A. Sockets are arranged in rows inside an open case.\nB. Several wrenches are hanging above a bench.\nC. A case of tools is being carried through a doorway.\nD. Hand tools are scattered across the floor.",
+    "translation": "A. 套筒成排摆放在一个打开的工具箱里。\nB. 几把扳手悬挂在工作台上方。\nC. 一个工具箱正在被搬过门口。\nD. 手动工具散落在地板上。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening12/c352f9f29c4dc9549b72e295eac4dfc29d6529997b993ab8e4a6518221d860a3.png"
+  },
+  {
+    "id": "v049-p1x12-11",
+    "part": 1,
+    "title": "Part 1 · 11",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "Several sculptures are displayed inside a glass case.",
+      "A sculpture is suspended from the ceiling.",
+      "A rope has been laid across the top of a pedestal.",
+      "A rope barrier surrounds a sculpture on a pedestal."
+    ],
+    "correctIndex": 3,
+    "explanation": "A：展品只有一件，四周是开放的围绳，没有玻璃柜。 B：雕塑底部直接落在基座上，不是从天花板悬吊。 C：绳子连接周围立柱，没有铺在基座顶部。 D：基座上的雕塑由四周的围绳隔开，surrounds 准确描述这一关系。",
+    "evidence": "A rope barrier surrounds a sculpture on a pedestal.\n空旷展厅只有一件抽象雕塑稳放在一座方形基座上。\n四根独立立柱用下垂围绳连接，在地面上围成一圈，全部位于基座四周。\n雕塑没有悬吊线缆和玻璃柜；围绳不接触基座顶面。",
+    "skill": "物体关系：围绕、基座与围栏",
+    "difficulty": "未标定",
+    "transcript": "A. Several sculptures are displayed inside a glass case.\nB. A sculpture is suspended from the ceiling.\nC. A rope has been laid across the top of a pedestal.\nD. A rope barrier surrounds a sculpture on a pedestal.",
+    "translation": "A. 几件雕塑陈列在一个玻璃柜里。\nB. 一件雕塑悬挂在天花板上。\nC. 一根绳子横放在基座顶部。\nD. 绳索围栏围着一件放在基座上的雕塑。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening12/847d19fc85e10c93cc05293185008d2fd858103741b1f3157a7756e50ac2115b.png"
+  },
+  {
+    "id": "v049-p1x12-12",
+    "part": 1,
+    "title": "Part 1 · 12",
+    "prompt": "Select the statement that best describes the photograph.",
+    "options": [
+      "A woman is pulling a rake across the sand.",
+      "A woman is holding a metal detector above the sand.",
+      "A woman is picking up shells with both hands.",
+      "A woman is digging in the sand with a shovel."
+    ],
+    "correctIndex": 1,
+    "explanation": "A：长杆末端是圆形探测线圈，不是带齿耙头，而且没有接触沙面耙沙。 B：控制盒、杆和圆形线圈构成金属探测器，女子握持着它，线圈位于沙面上方。 C：女子站立并拿着器材，没有用双手捡贝壳的动作。 D：末端没有铲刃，沙地上也没有正在挖开的洞。",
+    "evidence": "A woman is holding a metal detector above the sand.\n女子独自站在沙滩上，手握一台长杆金属探测器。\n杆身上方有小控制盒，下端为平行于地面的圆形探测线圈，线圈与沙面有清楚间隙。\n她双手都在器材附近，没有弯腰捡东西；画面没有耙齿、铲刃或挖开的洞。",
+    "skill": "人物持物：metal detector / above the sand",
+    "difficulty": "未标定",
+    "transcript": "A. A woman is pulling a rake across the sand.\nB. A woman is holding a metal detector above the sand.\nC. A woman is picking up shells with both hands.\nD. A woman is digging in the sand with a shovel.",
+    "translation": "A. 一名女子正在用耙子耙沙。\nB. 一名女子正把金属探测器保持在沙面上方。\nC. 一名女子正在用双手捡贝壳。\nD. 一名女子正在用铲子挖沙。\n问题：请选择最能描述照片的陈述。",
+    "image": "/listening12/8be368f3179934c75aeedfae330404b172f9efd70a5902aa9778ffeedff08a60.png"
+  }
+]

@@ -14,6 +14,13 @@ const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 const localBindingConfig = {
   main: "./worker/index.ts",
   compatibility_flags: ["nodejs_compat"],
+  // The private local candidate must pass through its exact SHA-checking
+  // Worker handler before an asset can be returned. Other routes retain the
+  // Cloudflare plugin's existing routing behavior.
+  assets: {
+    binding: "ASSETS",
+    run_worker_first: ["/audio/natural/v040-natural-572f7490ce71/*"],
+  },
   d1_databases: d1
     ? [
         {

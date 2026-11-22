@@ -93,21 +93,19 @@ test('theme chooser exposes six concise choices, selected state and approved wha
 });
 
 const slots=['todayHero','todayRest','vocabularyOverview','reviewOverview','progressOverview','practiceOverview','resourceLibrary','wordComplete'];
-const pageScenes={
- 'whale-bay':{vocabularyOverview:'bay-word-lighthouse',practiceOverview:'bay-practice-dawn-pier',reviewOverview:'bay-review-tide-garden',progressOverview:'bay-progress-cliff',resourceLibrary:'bay-resource-bookshop'},
- 'whale-moon':{vocabularyOverview:'moon-word-gallery',practiceOverview:'moon-practice-reef',reviewOverview:'moon-review-moonlit-cove',progressOverview:'moon-progress-star-observatory',resourceLibrary:'moon-resource-bookshop'},
-};
+const pageScenes={todayRest:'01-today',vocabularyOverview:'02-vocabulary',practiceOverview:'03-practice',reviewOverview:'04-review',progressOverview:'05-progress',resourceLibrary:'06-discover'};
 for(const theme of whaleThemes){
- test(`${theme} uses approved page-specific scenes and the complete character only for rest and word completion`,()=>{
+ test(`${theme} uses six complete character scenes while retaining home and background artwork`,()=>{
+  const prefix=theme==='whale-bay'?'bay':'moon';
   for(const scene of slots){
    const html=render(ThemeScene,{theme,scene});
-   const character=scene==='todayRest'||scene==='wordComplete';
    assert(html.includes(`data-scene="${scene}"`));
-   const expected=character?`${theme}-home`:scene==='todayHero'?`${theme}-study`:pageScenes[theme][scene];
-   const directory=character||scene==='todayHero'?'whale-themes':'whale-scenes-20261115';
+   const character=Object.hasOwn(pageScenes,scene);
+   const expected=character?`${prefix}-${pageScenes[scene]}`:scene==='todayHero'?`${theme}-study`:`${theme}-home`;
+   const directory=character?'whale-character-scenes-20261122':'whale-themes';
    assert(html.includes(`data-scene-source="${expected}"`),`${theme}/${scene} must use its approved scene`);
    assert(html.includes(`/images/${directory}/${expected}.webp`));
-   assert.equal(html.includes(`/images/whale-themes/${theme}-home.webp`),character,`${scene} must not repeat the character`);
+   assert.equal(html.includes('v041-theme-scene--contain'),character||scene==='wordComplete');
    assert(html.includes('width="1672"'));assert(html.includes('height="941"'));
   }
  });

@@ -15,10 +15,10 @@ test('actual catalog dependency closure admits all50 only through the real uncha
   assert.equal(c.QUESTIONS.length,163);assert.equal(c.LISTENING_COLLECTION_QUESTIONS.length,50);assert.equal(c.LISTENING_COLLECTION_STATS.ready200,false);
   assert.equal(c.QUESTION_CATALOG_STATS.availableUnits,93);assert.equal(c.QUESTION_CATALOG_STATS.newListening150Questions,0);assert.equal(c.PRACTICE_QUESTION_CATALOGS.length,5);
  }else{
-  assert.equal(admission.questions.length,150);assert.equal(c.QUESTIONS.length,313);assert.equal(c.LISTENING_COLLECTION_QUESTIONS.length,200);assert.equal(c.LISTENING_COLLECTION_STATS.ready200,true);
-  assert.equal(c.QUESTION_CATALOG_STATS.availableUnits,195);assert.equal(c.QUESTION_CATALOG_STATS.newListening150Units,102);assert.equal(c.PRACTICE_QUESTION_CATALOGS.length,6);
-  assert.deepEqual(plain(c.QUESTIONS.slice(163)),plain(admission.questions));assert.equal(c.QUESTION_CATALOG_VERSIONS.listening200_313,'practice-v1:'+admission.combined313CanonicalSha256);
-  assert.deepEqual(plain(c.PRACTICE_QUESTION_CATALOGS[5]),plain(c.QUESTIONS));
+  assert.equal(admission.questions.length,150);assert.equal(c.BASE_QUESTIONS.length,313);assert.equal(c.QUESTIONS.length,325);assert.equal(c.LISTENING_COLLECTION_QUESTIONS.length,200);assert.equal(c.LISTENING_COLLECTION_STATS.ready200,true);
+  assert.equal(c.QUESTION_CATALOG_STATS.availableUnits,207);assert.equal(c.QUESTION_CATALOG_STATS.newListening150Units,102);assert.equal(c.PRACTICE_QUESTION_CATALOGS.length,7);
+  assert.deepEqual(plain(c.BASE_QUESTIONS.slice(163)),plain(admission.questions));assert.equal(c.QUESTION_CATALOG_VERSIONS.listening200_313,'practice-v1:'+admission.combined313CanonicalSha256);
+  assert.deepEqual(plain(c.PRACTICE_QUESTION_CATALOGS[5]),plain(c.BASE_QUESTIONS));assert.deepEqual(plain(c.PRACTICE_QUESTION_CATALOGS[6]),plain(c.QUESTIONS));
  }
  assert.deepEqual(JSON.parse(JSON.stringify(c.LISTENING50_STATS.byPart)),{'1':8,'2':12,'3':15,'4':15});
  assert.equal(l.load('lib/question-catalog.ts'),c,'One graph reuses the same actual module instance');
