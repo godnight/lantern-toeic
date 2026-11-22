@@ -1,7 +1,7 @@
 {
   "name": "lantern-toeic-mobile",
   "private": true,
-  "version": "0.4.8",
+  "version": "0.4.9",
   "type": "module",
   "scripts": {
     "prebuild": "node ../scripts/check-version-consistency.mjs",

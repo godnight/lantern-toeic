@@ -17,7 +17,7 @@ const {chromium} = repoRequire('playwright');
 const UI_THEME_ORDER=['paper','crystal','hollow','silk','whale-bay','whale-moon'];
 const UI_THEME_BY_PERSISTED={paper:'day',crystal:'night',hollow:'hollow',silk:'silk','whale-bay':'whale-bay','whale-moon':'whale-moon'};
 const UI_THEME_META={paper:{name:'日间'},crystal:{name:'夜间'},hollow:{name:'空洞骑士'},silk:{name:'丝之歌'},'whale-bay':{name:'咕噜海湾'},'whale-moon':{name:'澜音星海'}};
-const EXPECTED_COLORS={paper:['rgb(244, 241, 233)','rgb(41, 52, 43)'],crystal:['rgb(18, 28, 35)','rgb(228, 239, 240)'],hollow:['rgb(16, 24, 32)','rgb(236, 241, 244)'],silk:['rgb(32, 24, 34)','rgb(242, 233, 228)'],'whale-bay':['rgb(244, 241, 233)','rgb(33, 54, 66)'],'whale-moon':['rgb(15, 27, 48)','rgb(237, 243, 249)']};
+const EXPECTED_COLORS={paper:['rgb(245, 245, 245)','rgb(37, 38, 38)'],crystal:['rgb(24, 26, 25)','rgb(237, 240, 238)'],hollow:['rgb(16, 24, 32)','rgb(236, 241, 244)'],silk:['rgb(32, 24, 34)','rgb(242, 233, 228)'],'whale-bay':['rgb(244, 241, 233)','rgb(33, 54, 66)'],'whale-moon':['rgb(15, 27, 48)','rgb(237, 243, 249)']};
 
 const MODE=process.argv.includes('--web')?'web':process.env.LANTERN_THEME_QA_MODE||'native';
 assert.ok(['native','web'].includes(MODE),'LANTERN_THEME_QA_MODE must be native or web');

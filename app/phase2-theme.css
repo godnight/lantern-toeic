@@ -37,10 +37,10 @@ body[data-ui-theme="hollow"] .lantern-workspace::before {
   background-color: var(--ui-canvas);
 }
 body[data-ui-theme="day"] .lantern-workspace {
-  background: radial-gradient(ellipse at 95% 0,#f5e0c55c,transparent 560px), var(--ui-canvas);
+  background: var(--ui-canvas);
 }
-body[data-ui-theme="day"] .workspace-topbar { background: #f5eee2ef; }
-body[data-ui-theme="day"] .workspace-sidebar { background: #fffcf7; }
+body[data-ui-theme="day"] .workspace-topbar { background: var(--ui-canvas); }
+body[data-ui-theme="day"] .workspace-sidebar { background: var(--ui-surface); }
 body[data-ui-theme="day"] .panel {
   border-radius: var(--ui-radius-panel); box-shadow: 0 10px 26px #655d4210;
 }

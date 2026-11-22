@@ -48,6 +48,12 @@
 .v041-data-management .button-row{flex-wrap:wrap}
 .v041-data-management button{white-space:normal;min-height:44px}
 .v041-data-management [role=alert]{color:var(--bad);overflow-wrap:anywhere}
+/* Day/night data-management details; panel boxes and touch targets stay unchanged. */
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) .v041-data-management .panel{border-color:transparent;border-radius:14px;box-shadow:none}
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) .v041-data-management .button{border-radius:10px;box-shadow:none}
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) :is(.v041-data-management>.panel:nth-of-type(-n + 2)>.button.secondary,.v041-data-management>.panel:nth-of-type(-n + 2)>.button-row>.button.secondary:first-child):not(:disabled){background:var(--ui-primary);border-color:var(--ui-primary);color:var(--ui-on-primary)}
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) .v041-data-management .button:disabled{background:var(--ui-surface-muted);border-color:transparent;color:var(--ui-text-secondary);opacity:.78}
+body:is([data-ui-theme="day"],[data-ui-theme="night"]) .v041-data-management>.panel:nth-of-type(-n + 2) .text-button{color:var(--ui-text-secondary)}
 .v041-resource-search{margin:0 0 18px;max-width:100%}
 .rs-library-heading{margin:0 0 12px!important}
 .rs-resource-row{border-radius:12px!important}
