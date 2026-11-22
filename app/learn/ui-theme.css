@@ -2,17 +2,17 @@
 html[data-ui-theme="day"],
 body[data-ui-theme="day"],
 .ui-theme-preview[data-ui-theme="day"] {
-  --ui-canvas: #f4f1e9;
-  --ui-surface: #fffcf7;
-  --ui-surface-muted: #e9eddf;
-  --ui-text: #29342b;
-  --ui-text-secondary: #606c5f;
-  --ui-primary: #536c51;
-  --ui-on-primary: #fffdf7;
-  --ui-selection: #e1e8d6;
-  --ui-divider: #d8dfd2;
-  --ui-control-border: #73816d;
-  --ui-focus: #4c6d4f;
+  --ui-canvas: #f5f5f5;
+  --ui-surface: #ffffff;
+  --ui-surface-muted: #eeeeec;
+  --ui-text: #242625;
+  --ui-text-secondary: #6f7371;
+  --ui-primary: #303331;
+  --ui-on-primary: #ffffff;
+  --ui-selection: #e7ebe8;
+  --ui-divider: #e5e6e4;
+  --ui-control-border: #9a9e9b;
+  --ui-focus: #4c6d5b;
   --ui-success: #246b48;
   --ui-warning: #825c1c;
   --ui-danger: #9d3832;
@@ -24,17 +24,17 @@ body[data-ui-theme="day"],
 html[data-ui-theme="night"],
 body[data-ui-theme="night"],
 .ui-theme-preview[data-ui-theme="night"] {
-  --ui-canvas: #121c23;
-  --ui-surface: #1b2932;
-  --ui-surface-muted: #253641;
-  --ui-text: #e4eff0;
-  --ui-text-secondary: #afc0c4;
-  --ui-primary: #9cc7ce;
-  --ui-on-primary: #15252b;
-  --ui-selection: #2b424d;
-  --ui-divider: #3a505d;
-  --ui-control-border: #6f8994;
-  --ui-focus: #c0e3e8;
+  --ui-canvas: #181a19;
+  --ui-surface: #222524;
+  --ui-surface-muted: #2c302e;
+  --ui-text: #edf0ee;
+  --ui-text-secondary: #afb5b1;
+  --ui-primary: #dce5df;
+  --ui-on-primary: #222524;
+  --ui-selection: #343b37;
+  --ui-divider: #383d3a;
+  --ui-control-border: #727a75;
+  --ui-focus: #c0d5c8;
   --ui-success: #a0d1bd;
   --ui-warning: #e4c689;
   --ui-danger: #e8aaa5;
