@@ -374,26 +374,49 @@ async function assertScrollableWordHeader(word) {
   const before = await header.evaluate(element => ({height:element.clientHeight, full:element.scrollHeight}));
   assert.ok(before.height > 0, 'Word header has no reading area');
   await header.evaluate(element => element.focus({preventScroll:true}));
-  if(before.full > before.height + 1){await page.keyboard.press('End');await page.waitForFunction(()=>{const el=document.querySelector('.phase2-word-header');return el.scrollTop>=el.scrollHeight-el.clientHeight-2;});}
+  const waitForEdge = async edge => {
+    try {
+      await page.waitForFunction(async edge => {
+        const el=document.querySelector('.phase2-word-header');
+        if(!el)return false;
+        // Keyboard scrolling is animated: do not sample its intermediate frame.
+        // scrollHeight/clientHeight are rounded, so allow 1px at the end only.
+        const reached=()=>edge==='start'?el.scrollTop===0:Math.abs(el.scrollTop-(el.scrollHeight-el.clientHeight))<=1;
+        if(!reached())return false;
+        const first=el.scrollTop;
+        await new Promise(requestAnimationFrame);
+        if(!reached()||Math.abs(el.scrollTop-first)>.01)return false;
+        await new Promise(requestAnimationFrame);
+        return reached()&&Math.abs(el.scrollTop-first)<=.01;
+      },edge);
+    } catch(error) {
+      const position=await header.evaluate(el=>({scrollTop:el.scrollTop,clientHeight:el.clientHeight,scrollHeight:el.scrollHeight,focus:document.activeElement?.className||document.activeElement?.tagName}));
+      throw new Error(`Keyboard ${edge} did not settle: ${JSON.stringify({word:word.word,...position})}`,{cause:error});
+    }
+  };
+  if(before.full > before.height + 1){await page.keyboard.press('End');await waitForEdge('end');}
   const end = await header.evaluate(element => {
     const phonetic = element.querySelector('.word-phonetic'), h = element.getBoundingClientRect(), p = phonetic.getBoundingClientRect();
-    return {scrollTop:element.scrollTop, max:element.scrollHeight-element.clientHeight,
+    return {scrollTop:element.scrollTop, max:element.scrollHeight-element.clientHeight, headerFocused:document.activeElement===element,
       phoneticBottom:p.bottom, headerBottom:h.bottom, phoneticText:phonetic.textContent.trim()};
   });
-  assert.ok(end.scrollTop >= end.max - 2, 'Keyboard cannot reach the end of the word header');
-  assert.ok(end.phoneticBottom <= end.headerBottom + 2, 'End of the phonetic text is not reachable');
+  assert.equal(end.headerFocused, true, 'Keyboard focus left the word header: '+JSON.stringify({word:word.word,...end}));
+  assert.ok(end.scrollTop >= end.max - 2, 'Keyboard cannot reach the end of the word header: '+JSON.stringify({word:word.word,...end}));
+  assert.ok(end.phoneticBottom <= end.headerBottom + 2, 'End of the phonetic text is not reachable: '+JSON.stringify({word:word.word,...end}));
   assert.equal(end.phoneticText, word.phonetics.length ? word.phonetics.join(' · ') : '暂无音标');
-  if(before.full > before.height + 1){await page.keyboard.press('Home');await page.waitForFunction(()=>document.querySelector('.phase2-word-header').scrollTop<=2);}
+  if(before.full > before.height + 1){await page.keyboard.press('Home');await waitForEdge('start');}
   const first = await header.evaluate(element => {
     const title = element.querySelector('.phase2-current-word'), button = element.querySelector('.speech-audio-icon');
     const h=element.getBoundingClientRect(), t=title.getBoundingClientRect(), b=button?.getBoundingClientRect();
     const hit=b&&document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);
     return {scrollTop:element.scrollTop, title: title.textContent.trim(), titleTop:t.top, headerTop:h.top,
+      headerFocused:document.activeElement===element, focus:document.activeElement?.className||document.activeElement?.tagName,
       audioHit:!!button&&(hit===button||button.contains(hit))};
   });
-  assert.ok(first.scrollTop <= 2 && first.titleTop >= first.headerTop - 1, 'Keyboard cannot return to the start of the word');
+  assert.ok(first.scrollTop <= 2 && first.titleTop >= first.headerTop - 1, 'Keyboard cannot return to the start of the word: '+JSON.stringify({word:word.word,...first}));
+  assert.equal(first.headerFocused, true, 'Keyboard focus left the word header: '+JSON.stringify({word:word.word,...first}));
   assert.equal(first.title, word.word);
-  assert.equal(first.audioHit, true, 'Word audio button is not reachable after returning to the start');
+  assert.equal(first.audioHit, true, 'Word audio button is not reachable after returning to the start: '+JSON.stringify({word:word.word,...first}));
   await page.locator('.phase2-current-word').evaluate(element => element.focus({preventScroll:true}));
 }
 async function runCondition(config) {
