@@ -10,6 +10,8 @@ const net = require('node:net');
 const {spawn} = require('node:child_process');
 const {createRequire} = require('node:module');
 const {pathToFileURL} = require('node:url');
+const {waitForWordHeaderEdge} = require('./word-header-edge.cjs');
+const {verifyWordHeaderEdge} = require('./word-header-edge-check.cjs');
 
 const REPO = path.resolve(process.env.LANTERN_WORDCARD_QA_REPO || path.join(__dirname, '../..'));
 const repoRequire = createRequire(path.join(REPO, 'package.json'));
@@ -206,22 +208,44 @@ async function screenshot(condition, suffix) {
   report.screenshots.push({condition: condition.id, file: name, bytes: bytes.length, sha256: digest(bytes)});
 }
 async function reachControls() {
-  await page.locator('.phase2-word-controls').scrollIntoViewIfNeeded();
-  await page.evaluate(() => {
-    const button = document.querySelector('.phase2-word-controls .button');
-    const r = button.getBoundingClientRect();
-    const nav = document.querySelector('.workspace-mobile-nav');
-    const n = nav?.getBoundingClientRect();
-    const boundary = n && getComputedStyle(nav).position === 'fixed' ? n.top : innerHeight;
-    if (r.bottom > boundary - 8) scrollBy(0, r.bottom - boundary + 8);
-  });
-  await settleFrames();
-  const hit = await page.locator('.phase2-word-controls .button').first().evaluate(element => {
+  const button=page.locator('.phase2-word-controls .button').first();
+  const readHit=()=>button.evaluate(element => {
     const r = element.getBoundingClientRect(), x = r.x + r.width / 2, y = r.y + r.height / 2;
     const target = document.elementFromPoint(x, y);
-    return {visible: x >= 0 && x <= innerWidth && y >= 0 && y <= innerHeight, hit: target === element || element.contains(target)};
+    const header=document.querySelector('.workspace-topbar'),h=header?.getBoundingClientRect();
+    const nav=document.querySelector('.workspace-mobile-nav'),n=nav?.getBoundingClientRect();
+    const top=h&&h.height>0?Math.max(0,h.bottom):0;
+    const bottom=n&&n.height>0&&getComputedStyle(nav).position==='fixed'?Math.min(innerHeight,n.top):innerHeight;
+    return {visible:r.left>=0&&r.right<=innerWidth&&r.top>=top-1&&r.bottom<=bottom+1,
+      hit:target===element||element.contains(target),width:r.width,height:r.height};
   });
+  let hit=await readHit();
+  if(!hit.visible||!hit.hit){
+    // Only move the actual action if needed; the whole footer includes hidden
+    // tools and can push an otherwise reachable session heading under the bar.
+    await button.scrollIntoViewIfNeeded();
+    await button.evaluate(element=>{
+      const r=element.getBoundingClientRect(),header=document.querySelector('.workspace-topbar'),h=header?.getBoundingClientRect();
+      const nav=document.querySelector('.workspace-mobile-nav'),n=nav?.getBoundingClientRect();
+      const top=h&&h.height>0?Math.max(0,h.bottom):0;
+      const bottom=n&&n.height>0&&getComputedStyle(nav).position==='fixed'?Math.min(innerHeight,n.top):innerHeight;
+      if(r.top<top)scrollBy(0,r.top-top-8);else if(r.bottom>bottom)scrollBy(0,r.bottom-bottom+8);
+    });
+    await settleFrames();
+    hit=await readHit();
+  }
+  assert.ok(hit.width>=44&&hit.height>=44,'Action target below44px: '+JSON.stringify(hit));
   assert.ok(hit.visible && hit.hit, 'Action unreachable or under fixed navigation: ' + JSON.stringify(hit));
+  const sessionHeading=await page.locator('.phase2-word-session-heading').evaluate(element=>{
+    const header=document.querySelector('.workspace-topbar'),h=header?.getBoundingClientRect();
+    const top=h&&h.height>0?Math.max(0,h.bottom):0;
+    return [...element.querySelectorAll(':scope > span')].map(span=>{
+      const r=span.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,target=document.elementFromPoint(x,y);
+      return {text:span.textContent.trim(),visible:r.top>=top-1&&r.bottom<=innerHeight+1,hit:target===span||span.contains(target)};
+    });
+  });
+  assert.equal(sessionHeading.length,2,'Word count and date must both be present');
+  assert.ok(sessionHeading.every(item=>item.text&&item.visible&&item.hit),'Word count or date is obscured: '+JSON.stringify(sessionHeading));
 }
 async function visiblePointerClick(locator,condition,wordIndex,phase,reference) {
   const before=await snapshot(condition,wordIndex,`${phase}-neutral-preclick`);
@@ -374,26 +398,7 @@ async function assertScrollableWordHeader(word) {
   const before = await header.evaluate(element => ({height:element.clientHeight, full:element.scrollHeight}));
   assert.ok(before.height > 0, 'Word header has no reading area');
   await header.evaluate(element => element.focus({preventScroll:true}));
-  const waitForEdge = async edge => {
-    try {
-      await page.waitForFunction(async edge => {
-        const el=document.querySelector('.phase2-word-header');
-        if(!el)return false;
-        // Keyboard scrolling is animated: do not sample its intermediate frame.
-        // scrollHeight/clientHeight are rounded, so allow 1px at the end only.
-        const reached=()=>edge==='start'?el.scrollTop===0:Math.abs(el.scrollTop-(el.scrollHeight-el.clientHeight))<=1;
-        if(!reached())return false;
-        const first=el.scrollTop;
-        await new Promise(requestAnimationFrame);
-        if(!reached()||Math.abs(el.scrollTop-first)>.01)return false;
-        await new Promise(requestAnimationFrame);
-        return reached()&&Math.abs(el.scrollTop-first)<=.01;
-      },edge);
-    } catch(error) {
-      const position=await header.evaluate(el=>({scrollTop:el.scrollTop,clientHeight:el.clientHeight,scrollHeight:el.scrollHeight,focus:document.activeElement?.className||document.activeElement?.tagName}));
-      throw new Error(`Keyboard ${edge} did not settle: ${JSON.stringify({word:word.word,...position})}`,{cause:error});
-    }
-  };
+  const waitForEdge = edge => waitForWordHeaderEdge(page,header,edge,word.word);
   if(before.full > before.height + 1){await page.keyboard.press('End');await waitForEdge('end');}
   const end = await header.evaluate(element => {
     const phonetic = element.querySelector('.word-phonetic'), h = element.getBoundingClientRect(), p = phonetic.getBoundingClientRect();
@@ -546,6 +551,8 @@ async function main() {
   await fs.access(chromium.executablePath()); // Never install a browser here.
   browser = await chromium.launch({headless: true});
   report.browser = {playwright: repoRequire('playwright/package.json').version, executable: chromium.executablePath()};
+  const edgePage=await browser.newPage();
+  try{await verifyWordHeaderEdge(edgePage);}finally{await edgePage.close();}
   await runFreshPreparationControl();
   for (const condition of CONDITIONS) await runCondition(condition);
   const ordinary = report.conditions.find(condition => condition.id === 'hollow-390').geometry.find(row => row.typography.meaning);
