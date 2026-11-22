@@ -52,3 +52,23 @@ test('actual 325 catalog partitions all 265 listening questions without loss and
  const source=catalog.LISTENING_COLLECTION_QUESTIONS,unitIds=loader.load('lib/practice-selection.ts').practiceUnits(source).map(u=>u.id),old=await v.start(source,{unitIds,task:{origin:{kind:'listening',collection:'listening50'},label:'听力练习'},requestId:crypto.randomUUID()});assert.equal(old.status,'started',JSON.stringify(old));
  const first=await v.openBatch({kind:'listening',collection:'all'},'听力练习',all,1,crypto.randomUUID());assert.equal(first.status,'started',JSON.stringify(first));const view=await v.readProjection();assert.equal(view.sessions.find(s=>s.id===old.sessionId).questionIds.length,200);assert.deepEqual(plain(view.batchPlans[0].groups.flatMap(g=>g.questionIds)),plain(all.map(q=>q.id)));assert.notEqual(first.sessionId,old.sessionId);v.close();
 });
+
+test('entire batch scope rejects a later wrong-Part question before any writes',async()=>{
+ for(const [task,lastPart] of [[{kind:'listening',collection:'all'},5],[{kind:'listening',collection:'all',part:1},2],[{kind:'wrong',collection:'catalog',part:1,count:200},5]]){
+  const rows=[...Array.from({length:200},(_,i)=>q(i+1)),{...q(201),part:lastPart}],workflow=await open(new IDBFactory(),'scope-reject',rows);
+  const before=plain(await workflow.repository.exportBackup()),result=await workflow.openBatch(task,'Scope check',rows,1,crypto.randomUUID());
+  assert.equal(result.status,'blocked',JSON.stringify(result));assert.equal(result.reason,'practice-task-reference');
+  const after=plain(await workflow.repository.exportBackup());assert.deepEqual(after.records,before.records);assert.deepEqual(after.commands,before.commands);
+  const projection=await workflow.readProjection();assert.equal(projection.batchPlans.length,0);assert.equal(projection.sessions.length,0);assert.equal(projection.activeSessionId,null);workflow.close();
+ }
+});
+test('known-catalog invalid future group is rejected on restore preflight and stored-plan read',async()=>{
+ const rows=[...Array.from({length:201},(_,i)=>q(i+1)),{...q(202),part:5}],workflow=await open(new IDBFactory(),'scope-restore',rows);
+ const result=await workflow.openBatch({kind:'listening',collection:'all'},'Listening',rows.slice(0,201),1,crypto.randomUUID());assert.equal(result.status,'started',JSON.stringify(result));
+ const backup=plain(await workflow.repository.exportBackup()),corrupt=plain(backup),plan=corrupt.records.sessions.find(row=>row.value.kind==='practice-batch-plan');
+ plan.value.groups[1].questionIds.push('q202');plan.value.groups[1].unitIds.push('question:q202');
+ assert.throws(()=>validatePracticeWorkflowBackup(corrupt,rows),/practice-task-reference/);
+ const old=await workflow.repository.read('sessions',plan.id);assert(old);
+ const write=await workflow.repository.commit({commandId:'test-corrupt-plan:'+crypto.randomUUID(),occurredAt:new Date().toISOString(),payload:{purpose:'scope regression'},expected:[{collection:'sessions',id:plan.id,revision:old.revision}],writes:[{collection:'sessions',id:plan.id,revision:old.revision+1,value:plan.value}]});
+ assert.equal(write.status,'committed');await assert.rejects(()=>workflow.readProjection(),/practice-task-reference/);workflow.close();
+});

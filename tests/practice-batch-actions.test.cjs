@@ -42,3 +42,11 @@ test('outside pointer closes the list and Escape closes it with focus restored',
  f.handlers.get('pointerdown')({target:new f.NodeFixture()});assert.equal(all(f.render(),n=>n.type==='button'&&n.props['aria-expanded']!==undefined)[0].props['aria-expanded'],false);cleanup();
  more=all(f.render(),n=>n.type==='button'&&n.props['aria-expanded']!==undefined)[0];more.props.onClick();f.render();cleanup=f.effects[0]();let prevented=false,stopped=false;f.handlers.get('keydown')({key:'Escape',preventDefault(){prevented=true;},stopPropagation(){stopped=true;}});assert.equal(prevented,true);assert.equal(stopped,true);assert.equal(f.focused,1);assert.equal(all(f.render(),n=>n.type==='button'&&n.props['aria-expanded']!==undefined)[0].props['aria-expanded'],false);cleanup();assert.equal(f.handlers.size,0);
 });
+
+test('menu actions pass the stable More button as the return focus target',()=>{
+ const f=fixture([group('first',1,3,'active',1),group('second',2,2,'completed',2)]),received=[];
+ f.props.onOpen=(id,target)=>received.push(['open',id,target]);f.props.onHistory=(id,target)=>received.push(['history',id,target]);
+ let tree=f.render(),more=all(tree,n=>n.type==='button'&&n.props['aria-expanded']!==undefined)[0];more.props.onClick();tree=f.render();all(tree,n=>n.type==='button'&&n.props.className==='practice-batch-option')[0].props.onClick();
+ more=all(f.render(),n=>n.type==='button'&&n.props['aria-expanded']!==undefined)[0];more.props.onClick();tree=f.render();all(tree,n=>n.type==='button'&&n.props.className==='practice-batch-option')[1].props.onClick();
+ assert.deepEqual(received,[['open','first',f.refs[1].current],['history','second',f.refs[1].current]]);
+});

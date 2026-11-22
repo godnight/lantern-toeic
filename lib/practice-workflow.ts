@@ -46,6 +46,10 @@ export function practiceCatalogVersion(questions:readonly Question[]):string {
 }
 function unitId(question:Question){return question.groupId?`group:${question.part}:${question.groupId}`:`question:${question.id}`;}
 
+function validatePracticeQuestionScope(origin:PracticeTaskOrigin,questionIds:readonly string[],questions:Map<string,Question>){
+ if(origin.kind==='listening'&&!origin.part&&questionIds.some(id=>{const question=questions.get(id);return !question||!Number.isInteger(question.part)||question.part<1||question.part>4;}))throw Error('practice-task-reference');
+ if(origin.part&&questionIds.some(id=>questions.get(id)?.part!==origin.part))throw Error('practice-task-reference');
+}
 type RegisteredPracticeCatalog={version:string;questions:readonly Question[];byId:Map<string,Question>};
 function registerPracticeCatalogs(questions:readonly Question[],compatible:readonly (readonly Question[])[]=[]){
  const catalogs=new Map<string,RegisteredPracticeCatalog>();
@@ -68,7 +72,7 @@ function parsePracticeBatchPlan(row:DomainRecord<unknown>,scopeKey:string,catalo
  const source=catalogs.get(plan.catalogVersion);
  if(source){
   const selected=allIds.map(id=>source.byId.get(id));if(selected.some(q=>!q))throw Error('practice-batch-question-missing');
-  const fixed=selected as Question[];if(!same(partitionPracticeBatch(fixed),plan.groups))throw Error('practice-batch-groups-invalid');
+  const fixed=selected as Question[];validatePracticeQuestionScope(plan.origin,allIds,source.byId);if(!same(partitionPracticeBatch(fixed),plan.groups))throw Error('practice-batch-groups-invalid');
   const chosen=new Set(allIds),canonical=source.questions.filter(q=>chosen.has(q.id));if(!same(canonical.map(q=>q.id),allIds))throw Error('practice-batch-order-invalid');
   for(const unit of allUnits)if(!same(fixed.filter(q=>unitId(q)===unit).map(q=>q.id),source.questions.filter(q=>unitId(q)===unit).map(q=>q.id)))throw Error('practice-group-incomplete');
  }
@@ -116,8 +120,8 @@ function parsePracticeSession(row:DomainRecord<unknown>,scopeKey:string,catalogV
   keys(settlement,['checkinId','commandId','status','draft','pendingPayload']);
   if(settlement.pendingPayload&&settlement.pendingPayload.date!==dayKey(settlement.pendingPayload.createdAt,session.timezone))throw Error('practice-settlement-corrupt');
   if(session.schemaVersion===3){validatePracticeTask(session.task,session.catalogVersion,session.unitIds,session.questionIds);const origin=session.task!.origin;
-   if(session.catalogVersion===catalogVersion&&origin.kind==='listening'&&!origin.part&&session.questionIds.some(id=>{const question=questions.get(id);return !question||!Number.isInteger(question.part)||question.part<1||question.part>4;}))throw Error('practice-task-reference');
-   if(origin.part&&session.catalogVersion===catalogVersion&&session.questionIds.some(id=>questions.get(id)?.part!==origin.part)||origin.kind==='material'&&(session.unitIds.length!==1||session.unitIds[0]!==origin.unitId)||origin.kind==='question'&&!session.questionIds.includes(origin.unitId!))throw Error('practice-task-reference');if(!stamp(session.activityAt)||session.restartOf!==undefined&&(!validId(session.restartOf)||!session.restartOf.startsWith('practice:')||session.restartOf===session.id))throw Error('practice-task-invalid');}
+   if(session.catalogVersion===catalogVersion)validatePracticeQuestionScope(origin,session.questionIds,questions);
+   if(origin.kind==='material'&&(session.unitIds.length!==1||session.unitIds[0]!==origin.unitId)||origin.kind==='question'&&!session.questionIds.includes(origin.unitId!))throw Error('practice-task-reference');if(!stamp(session.activityAt)||session.restartOf!==undefined&&(!validId(session.restartOf)||!session.restartOf.startsWith('practice:')||session.restartOf===session.id))throw Error('practice-task-invalid');}
   if(session.schemaVersion>=2)validatePracticeTraining(session.training,session.unitIds,session.questionIds,session.cursor,session.steps.map(step=>step.status==='applied'),session.catalogVersion===catalogVersion?session.questionIds.map(id=>questions.get(id)!).filter(Boolean):undefined);
   return session;
  }

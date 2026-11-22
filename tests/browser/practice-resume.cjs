@@ -101,13 +101,13 @@ async function geometry(p,label){const result=await p.evaluate(()=>({width:inner
  const batch=wp.locator('.practice-batch-actions');await batch.waitFor();
  const summary=(await batch.locator('.practice-batch-summary').innerText()).replace(/\s+/g,' '),summaryMatch=summary.match(/共 (\d+) 题 · 分 (\d+) 组/);
  assert(summaryMatch,'Actual group summary is present');assert.equal(Number(summaryMatch[1]),expectedIds.length);assert.equal(Number(summaryMatch[2]),2,'This catalogue crosses the 200-question boundary once');
- await wp.getByRole('button',{name:'听力练习 · 更多',exact:true}).click();const secondOption=batch.getByRole('button',{name:/^第 2 组 · /});await secondOption.waitFor();await secondOption.click();await wholePage.waitFor();
+ await wp.getByRole('button',{name:'听力练习 · 更多',exact:true}).click();const secondOption=batch.getByRole('button',{name:/^第 2 组 · /});await secondOption.waitFor();await secondOption.focus();await wp.keyboard.press('Enter');await wholePage.waitFor();
  const planState=await state(wp,D),plans=planState.rows.filter(row=>row.value?.kind==='practice-batch-plan');assert.equal(plans.length,1);const planSnapshot=plans[0].value;
  assert.deepEqual(planSnapshot.groups.flatMap(group=>group.questionIds),expectedIds,'The entire batch plan must be saved when any group starts');
  assert.equal((await state(foreign.p,B)).rows.filter(row=>row.value?.kind==='practice-batch-plan').length,0,'Batch plans must remain in their owner partition');
  let grouped=sessions(planState).filter(row=>row.value.task?.origin?.collection==='all'&&row.value.task.origin.batchIndex===2);
  assert.equal(grouped.length,1);const secondId=grouped[0].id,secondQuestions=grouped[0].value.questionIds;assert(secondQuestions.length>0&&secondQuestions.length<=200);
- await wholePage.getByRole('radio').first().click();await wholePage.getByRole('button',{name:'确认答案',exact:true}).click();await wholePage.locator('.answer-feedback').waitFor();await save(wp);
+ await wholePage.getByRole('radio').first().click();await wholePage.getByRole('button',{name:'确认答案',exact:true}).click();await wholePage.locator('.answer-feedback').waitFor();await save(wp);await wp.waitForFunction(()=>document.activeElement?.classList.contains('practice-batch-more'));
  await wp.getByRole('button',{name:'听力练习 · 更多',exact:true}).click();await batch.getByRole('button',{name:/^第 2 组 · /}).click();await wholePage.waitFor();
  grouped=sessions(await state(wp,D)).filter(row=>row.id===secondId);assert.equal(grouped.length,1);assert.deepEqual(grouped[0].value.questionIds,secondQuestions);assert.equal(grouped[0].value.steps.filter(step=>step.status==='applied').length,1);await save(wp);
  check('direct selection of second group preserves its answer and resumes the same snapshot');
@@ -135,11 +135,11 @@ async function geometry(p,label){const result=await p.evaluate(()=>({width:inner
  assert(secondAfter);assert.equal(secondAfter.value.steps.filter(step=>step.status==='applied').length,1);assert.deepEqual(secondAfter.value.questionIds,secondQuestions);
  assert.equal(grouped.filter(row=>row.value.task?.origin?.batchId===firstRecord.value.task.origin.batchId&&row.value.task.origin.batchIndex===2).length,1,'Continuation must resume the original second group');await save(wp);
  check('completing first group continues the already saved second group without duplication');
- await wp.getByRole('button',{name:'听力练习 · 更多',exact:true}).click();const completedOption=batch.getByRole('button',{name:/^第 1 组 · /});assert.match(await completedOption.innerText(),/已完成/);await completedOption.click();
+ await wp.getByRole('button',{name:'听力练习 · 更多',exact:true}).click();const completedOption=batch.getByRole('button',{name:/^第 1 组 · /});assert.match(await completedOption.innerText(),/已完成/);await completedOption.focus();const groupScroll=await wp.evaluate(()=>scrollY);await wp.keyboard.press('Enter');
  const batchHistory=wp.locator('.practice-history');await batchHistory.waitFor();assert.equal(await batchHistory.locator('.practice-history-question').count(),firstQuestions.length);
  assert.equal(await batchHistory.locator('.practice-history-question h3').first().innerText(),'1. '+byId.get(firstQuestions[0]).title);
- assert.equal(sessions(await state(wp,D)).filter(row=>row.id===secondId).length,1);assert.equal(sessions(await state(wp,D)).filter(row=>row.id===wholeId).length,1);
- check('completed group history excludes the other group and legacy 200-question session');
+ assert.equal(sessions(await state(wp,D)).filter(row=>row.id===secondId).length,1);assert.equal(sessions(await state(wp,D)).filter(row=>row.id===wholeId).length,1);await batchHistory.getByRole('button',{name:'返回练习记录',exact:true}).click();await batchHistory.waitFor({state:'hidden'});await wp.waitForFunction(()=>document.activeElement?.classList.contains('practice-batch-more'));assert(Math.abs(await wp.evaluate(()=>scrollY)-groupScroll)<=2,'Returning from group history restores scroll');
+ check('completed group history excludes the other group and legacy 200-question session; keyboard focus returns to More');
  // The 12 new items appear in the existing all-listening material selector;
  // exercise real playback and completed-history playback with a fresh owner.
  const addedQuestions=require('../../content/questions-v041-part1-twelve.json');
