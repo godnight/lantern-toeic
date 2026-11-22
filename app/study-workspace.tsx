@@ -220,8 +220,9 @@ export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable
  const restorePracticeOrigin=()=>{const saved=practiceOrigin.current;practiceOrigin.current=null;if(!saved||saved.owner!==owner||saved.nav!==nav||!accountAccess())return;requestAnimationFrame(()=>{if(!accountAccess()||practiceOriginScope.current.owner!==saved.owner||practiceOriginScope.current.nav!==saved.nav)return;window.scrollTo({top:saved.scroll,behavior:'auto'});if(saved.focus?.isConnected)saved.focus.focus({preventScroll:true});});};
  const launchPractice=(selected:Question[],chainId?:string,task:TaskInput={origin:{kind:'combined',collection:'direct'},label:'综合练习'},mode:'new'|'resume-or-create'='resume-or-create')=>{
   if(!selected.length)return;if(!practiceWorkflow.ready){toast.error(practiceWorkflow.error||'练习会话正在读取，请稍后重试。');return;}
-  rememberPracticeOrigin();
   const authoredUnits=new Map(practiceUnits(questions).map(unit=>[unit.id,unit.questions])),full=practiceUnits(selected).flatMap(unit=>authoredUnits.get(unit.id)||[]);
+  if(full.length>200){toast.error('本组超过200题，请按题型选择练习');return;}
+  rememberPracticeOrigin();
   void practiceWorkflow.start(full,{unitIds:practiceUnits(full).map(unit=>unit.id),chainId,initialSeenQids:data.attempts.map(a=>a.qid),task,mode}).then(result=>{if(['blocked','conflict','pending','unknown'].includes(result.status)&&'reason'in result)toast.error(result.reason);});
  };
  const selectAndStart=(intent:'continue'|'custom'|'wrong'|'review',part?:number,count=5,chainId?:string,task?:TaskInput)=>{try{

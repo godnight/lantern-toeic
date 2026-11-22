@@ -44,18 +44,21 @@ test('locator shares pending work and a failed complete validation requires expl
 });
 
 test('shared preparation overlaps independent questions and vocabulary but gates views, mounting and explicit retry',async()=>{
- const hold=deferred(),order=[],marks=[];let fail=true,viewRuns=0;
+ const hold=deferred(),questionDone=deferred(),order=[],marks=[];let fail=true,viewRuns=0;
  const api=createSourceLoader({root,globals:{window:{},performance:{now:()=>performance.now(),mark:name=>marks.push(name)}},imports:{
   './prepare-natural-audio-catalog':{prepareNaturalAudioCatalog:async()=>{}},
   './prepare-listening150-package':{prepareListening150Package:async()=>{}},
   './lesson-audio':{prepareProductLessonAudio:async()=>({status:'ready'})},
   './prepare-vocabulary-catalog':{prepareVocabularyCatalog:async()=>{await hold.promise;order.push('vocabulary');}},
-  './question-catalog-admission':{questionCatalogSteps:function*(){order.push('questions');yield;return {validated:true};}},
+  './question-catalog-admission':{questionCatalogSteps:function*(){order.push('questions');yield;return {validated:true,BASE_QUESTIONS:[]};}},
+  './listening-part1-12-package-admission':{captureCompiledPart1TwelvePackage:()=>({input:{},pins:{},extensionPins:{}})},
+  './listening-part1-12-catalog':{admitPart1TwelvePackageSteps:function*(){yield;return {accepted:true};}},
+  './extend-part1-catalog':{extendPart1Catalog:base=>{questionDone.resolve();return base;}},
   './learning-word-views-admission':{learningWordViewSteps:function*(){order.push('views');viewRuns++;yield;if(fail)throw Error('view failure');return {complete:true};}},
  }}).load('lib/prepare-study-content.ts');
  const first=api.prepareStudyContent();assert.equal(api.prepareStudyContent(),first);assert.deepEqual(order,[]);
  assert.throws(api.readPreparedQuestionCatalog,/仍在核验/);assert.throws(api.readPreparedLearningWordViews,/仍在核验/);
- hold.resolve();await assert.rejects(first,/view failure/);assert(order.indexOf('views')>order.indexOf('vocabulary'));assert.equal(order.filter(item=>item==='questions').length,1);assert.equal(api.readPreparedQuestionCatalog().validated,true);assert.throws(api.readPreparedLearningWordViews,/仍在核验/);
+ hold.resolve();await assert.rejects(first,/view failure/);await questionDone.promise;assert(order.indexOf('views')>order.indexOf('vocabulary'));assert.equal(order.filter(item=>item==='questions').length,1);assert.equal(api.readPreparedQuestionCatalog().validated,true);assert.throws(api.readPreparedLearningWordViews,/仍在核验/);
  await assert.rejects(api.prepareStudyContent(),/view failure/);assert.equal(viewRuns,1);assert(!marks.includes('lantern:required-content-ready'));fail=false;await api.prepareStudyContent(true);assert.equal(viewRuns,2);assert.equal(api.readPreparedLearningWordViews().complete,true);assert.equal(marks.filter(name=>name==='lantern:required-content-ready').length,1);
 });
 
@@ -63,8 +66,8 @@ test('complete browser preparation retains frozen practice pins and both exact h
  const loader=createSourceLoader({root,globals:{window:{}},imports:{'./lesson-audio':{prepareProductLessonAudio:async()=>({status:'ready'})}}}),api=loader.load('lib/prepare-study-content.ts');
  await api.prepareStudyContent();
  const questions=loader.load('lib/question-catalog.ts'),identity=loader.load('lib/practice-catalog-identity.ts'),domain=loader.load('lib/domain-command.ts'),views=loader.load('lib/learning-word-views.ts');
- assert.equal(questions.QUESTIONS.length,313);assert.equal(questions.LISTENING_COLLECTION_QUESTIONS.length,200);
- assert.equal(questions.PRACTICE_QUESTION_CATALOGS.length,6);
+ assert.equal(questions.BASE_QUESTIONS.length,313);assert.equal(questions.QUESTIONS.length,325);assert.equal(questions.LISTENING_COLLECTION_QUESTIONS.length,200);
+ assert.equal(questions.PRACTICE_QUESTION_CATALOGS.length,7);assert(questions.PRACTICE_QUESTION_CATALOGS.includes(questions.BASE_QUESTIONS));
  for(const rows of questions.PRACTICE_QUESTION_CATALOGS){assert(Object.isFrozen(rows)&&Object.isFrozen(rows[0]));assert.equal(identity.practiceCatalogIdentity(rows),'practice-v1:'+domain.canonicalHash(domain.canonicalJson(JSON.parse(JSON.stringify(rows)))));}
  // These digests came from the actual frozen d73 source declarations, before
  // this layer was implemented (cold-ready/views-baseline.json).

@@ -10,7 +10,7 @@ const {createSyntheticListening150}=require('./fixtures/listening200-synthetic.c
 const plain=value=>JSON.parse(JSON.stringify(value));
 const loader=imports=>createSourceLoader({root,imports});
 const actual=loader({}),pending=loader({'./listening150-package':{LISTENING150_ADMISSION:null}});
-const old=pending.load('lib/question-catalog.ts'),canonical=actual.load('lib/domain-command.ts');
+const old=pending.load('lib/question-catalog-admission.ts').completeQuestionCatalogSynchronously(),canonical=actual.load('lib/domain-command.ts');
 const realIndex=actual.load('lib/natural-audio-catalog-index.ts'),workflow=actual.load('lib/practice-workflow.ts');
 const hash=value=>canonical.canonicalHash(canonical.canonicalJson(value)),unitId=q=>q.groupId?`group:${q.part}:${q.groupId}`:`question:${q.id}`;
 function fixture(){return createSyntheticListening150({legacy163:old.QUESTIONS,canonicalHash:canonical.canonicalHash,
@@ -18,7 +18,7 @@ function fixture(){return createSyntheticListening150({legacy163:old.QUESTIONS,c
 function repin(f){f.policy.questionsCanonicalSha256=hash(f.input.questions);f.policy.gateCanonicalSha256=hash(f.input.gate);f.policy.mediaCanonicalSha256=hash(f.input.media);}
 function admit(f){return loader({'./natural-audio-catalog-index':{compiledNaturalAudioCatalog:f.index,
  naturalAudioSelectorDigest:realIndex.naturalAudioSelectorDigest}}).load('lib/listening150-catalog.ts').admitListening150Package(f.input,f.policy);}
-const admitted=admit(fixture()),expanded=loader({'./listening150-package':{LISTENING150_ADMISSION:admitted}}).load('lib/question-catalog.ts');
+const admitted=admit(fixture()),expanded=loader({'./listening150-package':{LISTENING150_ADMISSION:admitted}}).load('lib/question-catalog-admission.ts').completeQuestionCatalogSynchronously();
 
 test('pending package preserves actual original 163 catalog and 50-question collection',()=>{
  assert.equal(old.QUESTIONS.length,163);assert.equal(old.LISTENING50_CATALOG_163.length,163);
@@ -45,10 +45,12 @@ test('all 50 old dispatcher body/question selectors equal the original binding m
 test('actual compiled provider reports only its truly admitted count',()=>{
  const packageValue=actual.load('lib/listening150-package.ts'),catalog=actual.load('lib/question-catalog.ts');
  if(packageValue.LISTENING150_ADMISSION===null){assert.equal(catalog.QUESTIONS.length,163);assert.equal(catalog.LISTENING_COLLECTION_QUESTIONS.length,50);assert.equal(catalog.LISTENING_COLLECTION_STATS.ready200,false);}
- else{assert.equal(catalog.QUESTIONS.length,313);assert.equal(catalog.LISTENING_COLLECTION_QUESTIONS.length,200);assert.equal(catalog.LISTENING_COLLECTION_STATS.ready200,true);assert.equal(workflow.practiceCatalogVersion(catalog.QUESTIONS),catalog.QUESTION_CATALOG_VERSIONS.listening200_313);}
+ else{assert.equal(catalog.BASE_QUESTIONS.length,313);assert.equal(catalog.QUESTIONS.length,325);assert.equal(catalog.LISTENING_COLLECTION_QUESTIONS.length,200);assert.equal(catalog.LISTENING_COLLECTION_STATS.ready200,true);assert.equal(workflow.practiceCatalogVersion(catalog.BASE_QUESTIONS),catalog.QUESTION_CATALOG_VERSIONS.listening200_313);assert.equal(workflow.practiceCatalogVersion(catalog.QUESTIONS),catalog.QUESTION_CATALOG_VERSIONS.part1Extra325);}
 });
 test('synthetic gate fixture: complete150 produces 313 catalog, 200 collection, 253 all-listening and 132 materials',()=>{
  assert.equal(admitted.questions.length,150);assert.equal(expanded.QUESTIONS.length,313);assert.equal(expanded.LISTENING_COLLECTION_QUESTIONS.length,200);
+ assert.equal(expanded.BASE_QUESTIONS,expanded.QUESTIONS);assert(expanded.PRACTICE_QUESTION_CATALOGS.includes(expanded.BASE_QUESTIONS));
+ assert(Object.isFrozen(expanded.BASE_QUESTIONS));assert.equal(workflow.practiceCatalogVersion(expanded.BASE_QUESTIONS),expanded.QUESTION_CATALOG_VERSIONS.listening200_313);
  assert.equal(expanded.QUESTIONS.filter(q=>q.part<=4).length,253);assert.equal(expanded.LISTENING_COLLECTION_STATS.materials,132);
  const ids=new Set(expanded.LISTENING_COLLECTION_QUESTIONS.map(q=>q.id));assert.equal(old.CANDIDATE_R2_QUESTIONS.filter(q=>q.part<=4&&ids.has(q.id)).length,0);
  assert.deepEqual(plain(expanded.LISTENING50_CATALOG_163),plain(old.QUESTIONS));assert.equal(expanded.PRACTICE_QUESTION_CATALOGS.length,6);

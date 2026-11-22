@@ -5,14 +5,18 @@ import {runCooperativeSteps} from './cooperative-task';
 import {preparationMark} from './preparation-timing';
 import type {QuestionCatalogSnapshot} from './question-catalog-admission';
 import type {LearningWordViews} from './learning-word-views-admission';
+import type {extendPart1Catalog} from './extend-part1-catalog';
 
-let questions:QuestionCatalogSnapshot|null=null,views:LearningWordViews|null=null;
+type ReadyQuestionCatalog=ReturnType<typeof extendPart1Catalog>;
+let questions:ReadyQuestionCatalog|null=null,views:LearningWordViews|null=null;
 let ready=false,pending:Promise<void>|null=null,failure:unknown=null;
 let workflowPending:Promise<void>|null=null,workflowFailure:unknown=null;
 export class StudyContentPendingError extends Error{constructor(){super('学习内容仍在核验。');}}
 export function readPreparedQuestionCatalog(){if(!questions)throw new StudyContentPendingError();return questions;}
+/** New question audio is visible only with the fully admitted, published catalogue. */
+export function readPreparedPart1Audio(qid:string){return questions?.getReviewedPart1Audio(qid)??null;}
 export function readPreparedLearningWordViews(){if(!views)throw new StudyContentPendingError();return views;}
-export function installServerQuestionCatalog(create:()=>QuestionCatalogSnapshot){
+export function installServerQuestionCatalog(create:()=>ReadyQuestionCatalog){
  if(typeof window!=='undefined')return readPreparedQuestionCatalog();
  return questions??=Object.freeze(create());
 }
@@ -54,7 +58,14 @@ export function prepareStudyContent(retry=false):Promise<void>{
    preparationMark('question-catalog-start');
    await listening;
    const {questionCatalogSteps}=await import('./question-catalog-admission');
-   questions=Object.freeze(await runCooperativeSteps(questionCatalogSteps()));
+   const base:QuestionCatalogSnapshot=await runCooperativeSteps(questionCatalogSteps());
+   // The extra pack binds to the frozen old 313. Neither the extended catalogue
+   // nor its audio may escape if any image, question or exact track pin fails.
+   const [{captureCompiledPart1TwelvePackage},{admitPart1TwelvePackageSteps},{extendPart1Catalog}]=await Promise.all([
+    import('./listening-part1-12-package-admission'),import('./listening-part1-12-catalog'),import('./extend-part1-catalog')]);
+   const source=captureCompiledPart1TwelvePackage();
+   const accepted=await runCooperativeSteps(admitPart1TwelvePackageSteps(source.input,source.pins,base.BASE_QUESTIONS));
+   questions=extendPart1Catalog(base,accepted,source.extensionPins);
    preparationMark('question-catalog-ready');
   }
  })();

@@ -334,7 +334,7 @@ async function sceneScreenshotReady(id) {
  await eventually(async () => await scenes.count() === 1,'Today must render its one page-owned scene frame');
  const frameNames=await scenes.evaluateAll(elements=>elements.map(el=>el.getAttribute('data-scene')));
  assert.deepEqual(frameNames,['todayRest']);
- const sources={paper:'neutral-paper',crystal:'neutral-crystal',hollow:'hollow-lake',silk:'silk-calm','whale-bay':'whale-bay-home','whale-moon':'whale-moon-home'};
+ const sources={paper:'neutral-paper',crystal:'neutral-crystal',hollow:'hollow-lake',silk:'silk-calm','whale-bay':'bay-01-today','whale-moon':'moon-01-today'};
  assert.equal(await scenes.first().getAttribute('data-scene-source'),sources[id]);
  const images = await scenes.locator('img').evaluateAll(async elements => {
   let timer;
@@ -372,6 +372,48 @@ async function sceneScreenshotReady(id) {
 }
 async function imageInfo(locator){await locator.scrollIntoViewIfNeeded();await eventually(()=>locator.evaluate(img=>img.complete&&img.naturalWidth>0),'Image failed to decode');return locator.evaluate(async img=>{const r=img.getBoundingClientRect();const bitmap=await createImageBitmap(await(await fetch(img.currentSrc)).blob());const pixelWidth=bitmap.width;bitmap.close();return{pixelWidth,path:new URL(img.currentSrc).pathname,width:img.naturalWidth,height:img.naturalHeight,displayWidth:r.width,displayHeight:r.height,fit:getComputedStyle(img).objectFit};});}
 async function artwork(id){await navigate('今日');const brand=page.locator('.workspace-mobile-brand');await accessibleControl(brand);const icon=brand.locator('img');assert.equal(await icon.count(),1);assert.equal(await icon.getAttribute('src'),'/icons/login-approved.png');await eventually(()=>icon.evaluate(img=>img.complete&&img.naturalWidth>0),'Approved brand image must decode');const scenes=page.locator('[data-scene="todayHero"], [data-scene="todayRest"]');assert.equal(await scenes.count(),1,'Every theme must use the same today slot');const data=[];for(const scene of await scenes.all()){const image=scene.locator('img');data.push({slot:await scene.getAttribute('data-scene'),source:await scene.getAttribute('data-scene-source'),...(await image.count()?{image:await imageInfo(image)}:{neutral:true})});}return{scenes:data};}
+// Inspect the actual page-owned frames. Screenshots remain available for a
+// human to check character placement; contain and decoded dimensions prove the
+// entire source image is fitted into the existing frame.
+const WHALE_SCENES=[
+ {nav:'今日',slot:'todayRest',suffix:'01-today'},
+ {nav:'单词',slot:'vocabularyOverview',suffix:'02-vocabulary'},
+ {nav:'练习',slot:'practiceOverview',suffix:'03-practice'},
+ {nav:'复习',slot:'reviewOverview',suffix:'04-review'},
+ {nav:'进度',slot:'progressOverview',suffix:'05-progress'},
+ {nav:'发现',slot:'resourceLibrary',suffix:'06-discover',library:true}
+];
+const whaleFrameGeometry=new Map();
+async function checkWhaleScenes(theme,width){
+ const prefix=theme==='whale-bay'?'bay':'moon',result=[];
+ for(const item of WHALE_SCENES){
+  await navigate(item.nav);
+  const scene=page.locator(`[data-scene="${item.slot}"]`);
+  if(item.library){
+   assert.equal(await scene.count(),0,'The discovery feed must not acquire the library illustration');
+   await page.getByRole('button',{name:'资料库',exact:true}).click();
+  }
+  await scene.waitFor({state:'visible'});
+  const expected=`${prefix}-${item.suffix}`;
+  assert.equal(await scene.getAttribute('data-scene-source'),expected);
+  assert.equal(await scene.getAttribute('data-scene-status'),'available');
+  const image=scene.locator('img');assert.equal(await image.count(),1);
+  const info=await imageInfo(image);
+  assert.equal(info.path,`/images/whale-character-scenes-20261122/${expected}.webp`);
+  assert.deepEqual([info.width,info.height],[1672,941]);
+  assert.equal(info.fit,'contain',`${expected} must display the whole source image`);
+  const frame=await scene.evaluate(el=>{const r=el.getBoundingClientRect();return {width:r.width,height:r.height};});
+  assert.ok(frame.width>0&&frame.height>0);
+  if(item.slot==='todayRest')assert.ok(Math.abs(frame.width/frame.height-2)<0.03,'Today keeps its 2:1 art window');
+  const key=`${width}:${item.slot}`,previous=whaleFrameGeometry.get(key);
+  if(previous)for(const axis of ['width','height'])assert.ok(Math.abs(frame[axis]-previous[axis])<=1,`${key} ${axis} changed between themes`);
+  else whaleFrameGeometry.set(key,frame);
+  const file=path.join(OUT,`${theme}-${item.suffix}-${width}.png`);
+  await scene.screenshot({path:file,animations:'disabled'});report.screenshots.push(file);
+  result.push({slot:item.slot,frame,image:info,screenshot:file});
+ }
+ return result;
+}
 async function choose(id,method){await openNavigation();await page.locator('.workspace-sidebar-bottom').getByRole('button',{name:'设置',exact:true}).click();await closeNavigation();await page.getByRole('button',{name:/^外观主题/}).click();const group=page.getByRole('group',{name:'界面主题',exact:true});await group.waitFor();assert.equal(await group.getByRole('button').count(),6);const button=group.locator('[data-theme-choice="'+id+'"]');await accessibleControl(button);if(method==='preview')await button.locator('.v041-theme-thumb').click();else if(method==='caption')await button.locator('.v041-theme-option-name').click();else{await button.focus();await page.keyboard.press(method==='space'?'Space':'Enter');}await eventually(()=>button.getAttribute('aria-pressed').then(value=>value==='true'),'Theme selection did not become pressed');assert.equal(await group.locator('button[aria-pressed="true"]').count(),1);await rootTheme(id);await accessibleControl(button);return layout('theme-picker-'+id);}
 async function colors(id,width){const sample=await page.locator('body').evaluate(el=>({background:getComputedStyle(el).backgroundColor,foreground:getComputedStyle(el).color}));assert.deepEqual([sample.background,sample.foreground],EXPECTED_COLORS[id],'Rendered palette must match accepted workspace colors');paletteSamples.push({id,width,...sample});return sample;}
 (async()=>{
@@ -385,6 +427,15 @@ async function colors(id,width){const sample=await page.locator('body').evaluate
   }
   const beforePractice=await facts();await step(`${width}px: representative practice dialog remains readable and closes without writing an answer`,async()=>{await navigate('练习');const task=page.locator('.practice-task-row').filter({hasText:'Part 5 ·'});await task.locator('[data-task-primary]').click();const dialog=page.getByRole('dialog').filter({has:page.locator('.practice-footer')});await dialog.waitFor({state:'visible'});assert.ok(await dialog.getByRole('radio').count()>=3);const control=dialog.getByRole('button',{name:'确认答案',exact:true});assert.equal(await control.isDisabled(),true);await accessibleControl(control);const dimensions=await layout('practice-representative');await screenshot(`practice-representative-${width}`);await page.keyboard.press('Escape');const confirmation=page.getByRole('dialog',{name:'暂时退出练习？',exact:true});await confirmation.waitFor({state:'visible'});await confirmation.getByRole('button',{name:'保存并返回',exact:true}).click();await eventually(()=>page.getByRole('dialog').count().then(n=>n===0),'Practice did not close');assert.deepEqual(await facts(),beforePractice);return dimensions;});
   await step(`${width}px: six distinct rendered palettes and reduced motion respected`,async()=>{const samples=paletteSamples.filter(x=>x.width===width);assert.equal(new Set(samples.map(x=>x.background+' / '+x.foreground)).size,6);await page.emulateMedia({reducedMotion:'reduce'});const running=await page.evaluate(()=>document.getAnimations().filter(a=>a.playState==='running'&&Number(a.effect?.getComputedTiming().duration)>1).map(a=>({name:a.animationName,duration:a.effect?.getComputedTiming().duration})));assert.deepEqual(running,[],'Reduced-motion preference left a long running animation');await page.reload({waitUntil:'domcontentloaded'});await ready();await rootTheme(PALETTES.at(-1));await page.emulateMedia({reducedMotion:'no-preference'});return{palettes:6,reducedMotion:true};});
+ }
+ for(const width of [390,840]){
+  await freshPage(width);
+  for(const theme of ['whale-bay','whale-moon']){
+   await step(`${width}px: ${theme} six character illustrations decode in existing frames`,async()=>{
+    await choose(theme,'caption');
+    return {scenes:await checkWhaleScenes(theme,width)};
+   });
+  }
  }
  await step('no unhandled errors, failed local requests or external traffic',async()=>{assert.deepEqual(report.pageErrors,[]);assert.deepEqual(report.mockErrors||[],[]);assert.deepEqual(report.consoleErrors,[]);assert.deepEqual(report.httpErrors,[]);assert.deepEqual(report.blockedExternal,[]);if(MODE==='web'){assert.ok(mockCalls.some(x=>x.method==='GET'));for(const id of PALETTES)assert.ok(mockCalls.some(x=>x.method==='POST'&&x.type==='theme'&&x.theme===id),'Missing owner-scoped theme write '+id);}return{mockCalls:mockCalls.length};});report.status='passed';
 })().catch(async error=>{report.status='failed';report.error=String(error.stack||error);if(page&&!page.isClosed()){try{await screenshot('failure');report.lastUrl=page.url();report.lastBody=(await page.locator('body').innerText()).slice(0,15000);}catch{}}process.exitCode=1;}).finally(async()=>{try{await cleanup();}catch(error){report.status='failed';report.cleanupError=String(error.stack||error);process.exitCode=1;}report.finishedAt=new Date().toISOString();report.outputDirectory=OUT;report.mockCalls=mockCalls;report.paletteSamples=paletteSamples;if(ownsOutput)await fs.writeFile(path.join(OUT,'result.json'),JSON.stringify(report,null,2),{flag:'wx'});console.log(JSON.stringify({mode:MODE,status:report.status,passed:report.steps.filter(x=>x.status==='passed').length,failed:report.steps.filter(x=>x.status==='failed').length,output:OUT,error:report.error?.split('\n').slice(0,3).join('\n')}));if(report.cleanupError)setTimeout(()=>process.exit(1),100).unref();});

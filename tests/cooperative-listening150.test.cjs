@@ -2,7 +2,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),crypto=require('node:crypto');
 const {createSourceLoader}=require('./helpers/actual-source-loader.cjs'),{createSyntheticListening150}=require('./fixtures/listening200-synthetic.cjs'),root=path.resolve(__dirname,'..');
 const actual=createSourceLoader({root}),domain=actual.load('lib/domain-command.ts'),index=actual.load('lib/natural-audio-catalog-index.ts');
-const legacy=createSourceLoader({root,imports:{'./listening150-package':{LISTENING150_ADMISSION:null}}}).load('lib/question-catalog.ts');
+const legacy=createSourceLoader({root,imports:{'./listening150-package':{LISTENING150_ADMISSION:null}}}).load('lib/question-catalog-admission.ts').completeQuestionCatalogSynchronously();
 function fixture(){return createSyntheticListening150({legacy163:legacy.QUESTIONS,canonicalHash:domain.canonicalHash,canonicalJson:domain.canonicalJson,naturalAudioSelectorDigest:index.naturalAudioSelectorDigest});}
 function validator(f,imports={}){return createSourceLoader({root,imports:{'./natural-audio-catalog-index':{compiledNaturalAudioCatalog:f.index,naturalAudioSelectorDigest:index.naturalAudioSelectorDigest},...imports}}).load('lib/listening150-catalog.ts');}
 function drain(steps){let next=steps.next();while(!next.done)next=steps.next();return next.value;}

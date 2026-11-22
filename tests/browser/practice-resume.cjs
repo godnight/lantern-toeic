@@ -6,12 +6,14 @@ const {hostRuntime,response}=require('../helpers/native-auth-host-runtime.cjs');
 const ROOT=path.resolve(__dirname,'../..'),web=process.argv.includes('--web');
 const DIST=path.resolve(process.env.LANTERN_PRACTICE_SHARED||path.join(ROOT,web?'dist/client':'mobile/dist'));
 const OUT=path.resolve(process.env.LANTERN_PRACTICE_OUT||path.join(ROOT,'.preview/practice-resume'));
-const ORIGIN=web?'https://study.test':'https://lantern.local',A={id:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'},B={id:'usr_bbbbbbbb-2222-4222-8222-222222222222',username:'synthetic_b'};
+const ORIGIN=web?'https://study.test':'https://lantern.local',A={id:'usr_aaaaaaaa-1111-4111-8111-111111111111',username:'synthetic_a'},B={id:'usr_bbbbbbbb-2222-4222-8222-222222222222',username:'synthetic_b'},C={id:'usr_cccccccc-3333-4333-8333-333333333333',username:'synthetic_c'},D={id:'usr_dddddddd-4444-4444-8444-444444444444',username:'synthetic_d'},E={id:'usr_eeeeeeee-5555-4555-8555-555555555555',username:'synthetic_e'};
 const caps={passwordLogin:true,phoneLogin:false,passwordRecovery:false},contexts=[],hosts=[];
 const report={scope:web?'Actual built Hosted Web ordinary Practice':'Actual Shared ordinary Practice',checks:[],screenshots:[],pageErrors:[],privateRequests:[],frames:[],limits:['Synthetic proof/OS ports, not real authentication/TLS/ArkWeb/device.','Real UI and IndexedDB/Study facts; no personal data, microphone or publishing.','Frame geometry is a browser proxy, not FPS/INP or a performance matrix.']};let browser;
 const sha=v=>crypto.createHash('sha256').update(v).digest('hex');
+const fixtureUsers=new Map([[A,'a'],[B,'b'],[C,'c'],[D,'d'],[E,'e']].map(([user,letter])=>[user.id,{user,token:letter.repeat(64)}]));
+function fixtureToken(user){const entry=fixtureUsers.get(user.id);assert(entry&&entry.user.username===user.username,'Unknown synthetic owner');return entry.token;}
 const check=(name,data=true)=>{report.checks.push({name,data});process.stdout.write('PASS '+name+'\n');};
-const mime=f=>({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.woff2':'font/woff2'}[path.extname(f)]||'application/octet-stream');
+const mime=f=>({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.woff2':'font/woff2','.mp3':'audio/mpeg'}[path.extname(f)]||'application/octet-stream');
 function asset(base,pathname){const file=path.resolve(base,'.'+pathname);return file.startsWith(base+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?file:null;}
 let webWorker,webEnv;
 async function prepareWeb(){
@@ -20,7 +22,7 @@ async function prepareWeb(){
   LANTERN_AUTH_ENABLED:'true',LANTERN_AUTH_ORIGIN:ORIGIN,
   DB:{prepare(sql){
    assert(/SELECT .*auth_sessions|SELECT .*auth_users/s.test(sql),'Only synthetic session reads are allowed');
-   return {bind(token){return {async first(){const user=token===sha('a'.repeat(64))?A:token===sha('b'.repeat(64))?B:null;return user?{...user,expiresAt:Date.now()+3600000}:null;}};}};
+   return {bind(token){return {async first(){const entry=[...fixtureUsers.values()].find(candidate=>sha(candidate.token)===token);return entry?{...entry.user,expiresAt:Date.now()+3600000}:null;}};}};
   }},
   ASSETS:{fetch:async request=>{const f=asset(DIST,new URL(request.url).pathname);return f?new Response(fs.readFileSync(f),{headers:{'content-type':mime(f)}}):new Response('Not found',{status:404});}}
  };
@@ -31,7 +33,7 @@ async function prepareWeb(){
 function seed(user){const key='lantern-v1-'+user.id;if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify({data:{schemaVersion:2,profile:{name:user.username,lrGoal:650,speakingGoal:130,examDate:'2026-12-20',dailyMinutes:25,timezone:'Asia/Shanghai',theme:'paper',weeklyTarget:4,onboarded:true},attempts:[],checkins:[],recordings:[],questionMarks:[],resourceTasks:[]}}));}
 async function open(user=A,storageState){
  const c=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,timezoneId:'Asia/Shanghai',...(storageState?{storageState}:{})});contexts.push(c);
- const host=web?null:hostRuntime({initialToken:'a'.repeat(64),dispatch:async(url,options)=>{assert.equal(new URL(url).pathname,'/api/auth/session');return response(200,{user,capabilities:caps,...options.header['X-Lantern-Session-Proof']==='2'?{session:{version:2,remainingMs:3600000}}:{}});}});if(host)hosts.push(host);if(web)await c.addCookies([{name:'__Host-lantern-session',value:(user.id===A.id?'a':'b').repeat(64),url:ORIGIN,secure:true,httpOnly:true,sameSite:'Strict'}]);
+ const host=web?null:hostRuntime({initialToken:'a'.repeat(64),dispatch:async(url,options)=>{assert.equal(new URL(url).pathname,'/api/auth/session');return response(200,{user,capabilities:caps,...options.header['X-Lantern-Session-Proof']==='2'?{session:{version:2,remainingMs:3600000}}:{}});}});if(host)hosts.push(host);if(web)await c.addCookies([{name:'__Host-lantern-session',value:fixtureToken(user),url:ORIGIN,secure:true,httpOnly:true,sameSite:'Strict'}]);
  await c.route('**/*',async r=>{const u=new URL(r.request().url());if(u.origin!==ORIGIN||u.pathname.startsWith('/api/')&&(!web||u.pathname!=='/api/auth/session')){report.privateRequests.push(u.pathname);return r.abort();}if(web&&(u.pathname==='/'||u.pathname==='/api/auth/session')){const res=await webWorker.fetch(new Request(r.request().url(),{headers:await r.request().allHeaders()}),webEnv,{waitUntil(){},passThroughOnException(){}});return r.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:Buffer.from(await res.arrayBuffer())});}const f=asset(DIST,u.pathname==='/'?'/index.html':u.pathname);return f?r.fulfill({contentType:mime(f),body:fs.readFileSync(f)}):r.abort();});
  const p=await c.newPage();p.on('pageerror',e=>report.pageErrors.push(e.stack||e.message));if(host)await p.exposeFunction('__practiceHost',raw=>host.invoke(JSON.parse(raw)));await p.addInitScript(seed,user);await p.addInitScript(({native,trace})=>{if(trace){const log=(name,detail)=>{const rows=JSON.parse(sessionStorage.getItem('practice-history-trace')||'[]');rows.push({name,detail,at:Date.now()});sessionStorage.setItem('practice-history-trace',JSON.stringify(rows.slice(-80)));};for(const method of ['pushState','replaceState','back']){const fn=history[method];history[method]=function(...args){log(method,{keys:Object.keys(args[0]||{}),practice:args[0]?.lanternPracticeView,nav:args[0]?.lanternWorkspaceView,stack:new Error().stack?.split('\n').slice(1,4)});return fn.apply(this,args);};}const add=window.addEventListener.bind(window),remove=window.removeEventListener.bind(window),listeners=new WeakMap();let n=0;window.addEventListener=function(type,fn,opts){if(type!=='popstate'||typeof fn!=='function')return add(type,fn,opts);const id=++n;log('register',{id,opts,stack:new Error().stack?.split('\n').slice(1,4)});const wrapped=function(e){log('handler',{id,stateKeys:Object.keys(e.state||{}),practice:e.state?.lanternPracticeView,nav:e.state?.lanternWorkspaceView});return fn.call(this,e);};listeners.set(fn,wrapped);return add(type,wrapped,opts);};window.removeEventListener=function(type,fn,opts){return remove(type,listeners.get(fn)||fn,opts);};log('document',{});}if(native)window.LanternAuthHost={request(raw){void window.__practiceHost(raw).then(reply=>window.__lanternAuthReceive?.(reply));}};const put=IDBObjectStore.prototype.put;IDBObjectStore.prototype.put=function(v,...args){if(window.__failPracticeTraining&&v?.value?.kind==='practice-session'&&v.value.training)throw new DOMException('Synthetic offline storage quota','QuotaExceededError');return put.call(this,v,...args);};},{native:!web,trace:process.env.LANTERN_PRACTICE_TRACE==='1'});
  await p.goto(ORIGIN,{waitUntil:'domcontentloaded'});p.setDefaultTimeout(12000);try{await p.getByRole('heading',{name:'今日',exact:true}).waitFor();}catch(error){report.bootstrap={body:(await p.locator('body').innerText()).slice(0,3000),hostRequests:host?.requests.map(r=>({path:r.path,method:r.method})),html:(await p.locator('#root').innerHTML()).slice(0,2000)};await shot(p,'bootstrap-failure');throw error;}await p.getByRole('button',{name:'选择题型',exact:true}).waitFor({state:'attached'}).catch(()=>{});await p.evaluate(()=>document.fonts.ready);const guard=await p.evaluate(()=>({version:window.__lanternPracticeHistory?.version,scripts:[...document.scripts].map(s=>({src:s.getAttribute('src'),type:s.type}))}));assert.equal(guard.version,1);report.guard=guard;const guardAt=guard.scripts.findIndex(s=>s.src&&new URL(s.src,ORIGIN).pathname==='/practice-history-guard.js');assert(guardAt===0&&guard.scripts.length>1,'blocking guard is the first executable script before framework bootstrap');report.guard=guard;return {p,c};
@@ -69,7 +71,7 @@ async function geometry(p,label){const result=await p.evaluate(()=>({width:inner
  await foreign.p.getByRole('button',{name:'返回练习',exact:true}).click();await foreign.p.evaluate(()=>{window.__ordinaryPops=0;window.addEventListener('popstate',()=>window.__ordinaryPops++);history.pushState({ordinaryProbe:true},'', '?ordinary-probe=1');});await foreign.p.goBack();await foreign.p.waitForURL(ORIGIN+'/');if(web)await foreign.p.getByRole('heading',{name:'今日',exact:true}).waitFor();else{await foreign.p.getByRole('button',{name:'练习记录',exact:true}).waitFor();assert.equal(await foreign.p.evaluate(()=>window.__ordinaryPops),1);}check('without a live lease ordinary Back passes to normal navigation');
  // New listening page is exercised in a separate synthetic owner, preserving all
  // reading/record and cross-owner assertions above without changing their facts.
- const C={id:'usr_cccccccc-3333-4333-8333-333333333333',username:'synthetic_c'},listening=await open(C),lp=listening.p;
+ const listening=await open(C),lp=listening.p;
  await train(lp);await lp.getByRole('button',{name:'听力 Part 1–4',exact:true}).click();await lp.locator('.listening-page').waitFor();
  const task=lp.getByRole('button',{name:'听力 · Part 1 · 开始',exact:true});await task.scrollIntoViewIfNeeded();await task.focus();const source=await lp.evaluate(()=>({y:scrollY,label:document.activeElement?.getAttribute('aria-label')}));await task.click();
  const listeningPage=lp.locator('.listening-practice-page');await listeningPage.waitFor();await lp.waitForFunction(()=>document.activeElement?.matches('.listening-practice-header h1'));assert.equal(await lp.locator('.practice-dialog').count(),0);check('listening question uses a standalone page and focuses its heading');
@@ -79,5 +81,55 @@ async function geometry(p,label){const result=await p.evaluate(()=>({width:inner
  const lstate=await state(lp,C),groups=sessions(lstate).filter(row=>row.value.status==='active'&&row.value.task?.origin?.kind==='listening'&&row.value.task?.origin?.part===1);assert.equal(groups.length,2);
  const choose=lp.getByRole('button',{name:'听力 · Part 1 · 选择续练',exact:true});await choose.click();await lp.getByRole('heading',{name:'练习记录',exact:true}).waitFor();assert.equal(await lp.locator('.practice-record-row').count(),2);for(const item of groups)assert.equal(await lp.locator(`[data-practice-record="${item.id}"]`).count(),1);await lp.getByRole('button',{name:'返回练习',exact:true}).click();await lp.locator('.listening-page').waitFor();await lp.waitForFunction(()=>document.activeElement?.getAttribute('aria-label')==='听力 · Part 1 · 选择续练');check('same listening task opens both real saved groups and restores selection focus');
  await lp.getByRole('button',{name:'返回练习',exact:true}).click();await lp.getByRole('button',{name:'练习记录',exact:true}).waitFor();await lp.getByRole('button',{name:'展开导航',exact:true}).click();await lp.getByRole('navigation',{name:'主导航'}).getByRole('button',{name:'进度',exact:true}).click();await lp.getByRole('heading',{name:'进度',exact:true}).waitFor();await lp.waitForTimeout(250);assert.equal(await lp.getByRole('heading',{name:'进度',exact:true}).isVisible(),true);check('leaving listening cannot undo a later navigation');
+ // The real selection page must use PracticeTaskActions, not its fallback.
+ // Keep this separate from the Part 1 group so its stored facts stay isolated.
+ const whole=await open(D),wp=whole.p;
+ await train(wp);await wp.getByRole('button',{name:'听力 Part 1–4',exact:true}).click();await wp.locator('.listening-page').waitFor();
+ await wp.getByRole('button',{name:'听力练习 · 开始本组',exact:true}).click();const wholePage=wp.locator('.listening-practice-page');await wholePage.waitFor();
+ let wholeState=await state(wp,D),wholeRows=sessions(wholeState).filter(row=>row.value.task?.origin?.kind==='listening'&&row.value.task?.origin?.collection==='listening50'&&!('part' in row.value.task.origin));
+ assert.equal(wholeRows.length,1);assert.equal(wholeRows[0].value.questionIds.length,200);const wholeId=wholeRows[0].id,wholeQuestions=wholeRows[0].value.questionIds;
+ await wholePage.getByRole('radio').first().click();await wholePage.getByRole('button',{name:'确认答案',exact:true}).click();await wholePage.locator('.answer-feedback').waitFor();await save(wp);
+ wholeState=await state(wp,D);wholeRows=sessions(wholeState).filter(row=>row.id===wholeId);assert.equal(wholeRows[0].value.steps.filter(step=>step.status==='applied').length,1);
+ await wp.getByRole('button',{name:'听力练习 · 继续',exact:true}).click();await wholePage.waitFor();await save(wp);
+ wholeState=await state(wp,D);wholeRows=sessions(wholeState).filter(row=>row.id===wholeId);assert.equal(wholeRows.length,1);assert.deepEqual(wholeRows[0].value.questionIds,wholeQuestions);assert.equal(wholeRows[0].value.steps.filter(step=>step.status==='applied').length,1);
+ await wp.getByRole('button',{name:'全部听力',exact:true}).click();const beforeTooMany=await state(wp,D);await wp.getByRole('button',{name:'听力练习 · 开始本组',exact:true}).click();
+ await wp.getByText('本组超过200题，请按题型选择练习',{exact:true}).waitFor();assert.equal(await wholePage.isVisible(),false);assert.deepEqual(await state(wp,D),beforeTooMany);
+ check('real 200-question collection starts, saves, resumes and oversized whole collection reports without writes');
+ // The 12 new items appear in the existing all-listening material selector;
+ // exercise real playback and completed-history playback with a fresh owner.
+ const addedQuestions=require('../../content/questions-v041-part1-twelve.json');
+ const addedMedia=require('../../content/questions-v041-part1-twelve-media.json');
+ const requested=[addedQuestions[0],addedQuestions[1],addedQuestions[11]],mediaById=new Map(addedMedia.units.map(unit=>[unit.qid,unit]));
+ const photos=await open(E),pp=photos.p,requests=[];
+ pp.on('request',request=>{const url=new URL(request.url());if(url.pathname.endsWith('.mp3'))requests.push(url.pathname);});
+ await train(pp);await pp.getByRole('button',{name:'听力 Part 1–4',exact:true}).click();await pp.locator('.listening-page').waitFor();
+ await pp.getByRole('button',{name:'全部听力',exact:true}).click();
+ let firstSession;
+ for(const question of requested){
+  const details=pp.locator('details.v041-secondary-tools').filter({has:pp.getByText('按材料选择',{exact:true})});
+  if(!await details.evaluate(el=>el.open))await details.locator('summary').click();
+  await pp.getByLabel('材料',{exact:true}).selectOption('question:'+question.id);
+  await pp.getByRole('button',{name:`材料 · ${question.title} · 开始这段材料`,exact:true}).click();
+  const page=pp.locator('.listening-practice-page');await page.waitFor();
+  const stateBefore=await state(pp,E),record=sessions(stateBefore).find(row=>row.value.status==='active'&&row.value.questionIds?.includes(question.id));
+  assert(record);if(!firstSession)firstSession=record.id;
+  const picture=page.getByRole('img',{name:'本题配图，请根据图片与音频作答'});await picture.waitFor();
+  assert.equal(await picture.getAttribute('src'),question.image);
+  await pp.waitForFunction(()=>{const img=document.querySelector('.listening-practice-page img.question-image');return !!img&&img.complete&&img.naturalWidth>0;});
+  await page.getByRole('button',{name:'听本题',exact:true}).click();
+  await pp.waitForFunction(()=>{const a=document.querySelector('.listening-practice-page .speech-audio audio');return !!a&&!a.paused&&a.currentTime>0.1;},null,{timeout:20000});
+  const track=mediaById.get(question.id);assert(track);
+  assert(requests.some(request=>request.endsWith('/'+track.body.mp3Sha256+'.mp3')),'The admitted exact MP3 must actually be requested');
+  await page.getByRole('radio').nth(question.correctIndex).click();await page.getByRole('button',{name:'确认答案',exact:true}).click();await page.locator('.answer-feedback').waitFor();
+  await page.getByRole('button',{name:'完成本组答题',exact:true}).click();await pp.getByText('本组答题已记录。',{exact:true}).waitFor();
+  await pp.getByRole('button',{name:'先休息一下',exact:true}).click();await pp.locator('.listening-page').waitFor();
+ }
+ const recorded=await state(pp,E);for(const question of requested)assert(sessions(recorded).some(row=>row.value.status==='completed'&&row.value.questionIds?.includes(question.id)));
+ await pp.getByRole('button',{name:'返回练习',exact:true}).click();await pp.getByRole('button',{name:'练习记录',exact:true}).click();
+ await pp.getByRole('tab',{name:'已结束',exact:true}).click();await pp.locator(`[data-practice-record="${firstSession}"]`).getByRole('button',{name:'查看',exact:true}).click();
+ const history=pp.locator('.practice-history');await history.waitFor();assert.equal(await history.getByRole('img',{name:'本题配图'}).getAttribute('src'),requested[0].image);
+ await history.getByRole('button',{name:'听材料',exact:true}).click();
+ await pp.waitForFunction(()=>{const a=document.querySelector('.practice-history .speech-audio audio');return !!a&&!a.paused&&a.currentTime>0.1;},null,{timeout:20000});
+ check('three actual added questions play their exact audio, save and reopen; completed history plays again',{ids:requested.map(q=>q.id),audioRequests:requests.filter(p=>p.endsWith('.mp3'))});
  assert.deepEqual(report.pageErrors,[]);assert.deepEqual(report.privateRequests,[]);report.status='PASS';
 })().catch(e=>{report.status='FAIL';report.error=e.stack;process.exitCode=1;}).finally(async()=>{for(const c of contexts)await c.close().catch(()=>{});for(const h of hosts)h.dispose();if(browser)await browser.close();report.resourcesClosed=true;fs.mkdirSync(OUT,{recursive:true});fs.writeFileSync(path.join(OUT,'report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({status:report.status,error:report.error,out:OUT,checks:report.checks.length,closed:report.resourcesClosed}));setImmediate(()=>process.exit(process.exitCode||0));});
