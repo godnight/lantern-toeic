@@ -11,6 +11,8 @@ declare global {
 // Only the packaged main document can ask the native window to update. The
 // host independently verifies the calling frame, lifecycle and allowlist.
 let nativeStateConfirmed=false;
+type ThemePermit={theme:Theme|null;canSync:()=>boolean};
+let permit:ThemePermit|null=null;
 function trustedMainDocument(): boolean {
   if(typeof window==='undefined'||typeof document==='undefined')return false;
   try{return window.top===window&&window.location.origin==='https://lantern.local'&&window.location.pathname==='/';}
@@ -38,10 +40,28 @@ export function syncAppliedNativeTheme():boolean {
     const uiTheme=document.documentElement?.dataset.uiTheme;
     if(!uiTheme||document.body?.dataset.uiTheme!==uiTheme)return false;
     const theme=persistedTheme(uiTheme),host=window.LanternThemeHost;
-    if(!theme||!host||typeof host.apply!=='function')return false;
+    if(!theme||!permit||(permit.theme!==null&&permit.theme!==theme)||!permit.canSync()||!host||typeof host.apply!=='function')return false;
     return host.apply(theme)==='ACCEPTED';
   }catch{return false;}
 }
+
+/** Permit only a verified account's loaded preference, or a confirmed account page.
+ * The returned cleanup cannot revoke a newer owner's permit. */
+export function permitNativeTheme(theme:Theme,canSync:()=>boolean):()=>void {
+  const granted:ThemePermit={theme,canSync};permit=granted;
+  syncAppliedNativeTheme();
+  return ()=>{if(permit===granted)permit=null;};
+}
+
+/** A confirmed signed-out account page retains whichever theme it renders. */
+export function permitCurrentNativeTheme(canSync:()=>boolean):()=>void {
+  // The 401 proof may arrive before the default DOM theme is initialized.
+  const granted:ThemePermit={theme:null,canSync};permit=granted;
+  syncAppliedNativeTheme();
+  return ()=>{if(permit===granted)permit=null;};
+}
+
+export function revokeNativeTheme():void {permit=null;}
 
 /** The native host calls this again after its bridge becomes ready or resumes. */
 export function installNativeThemeSync():void {
@@ -53,16 +73,16 @@ export function installNativeThemeSync():void {
   const unsubscribe=subscribeNativeState(foreground=>{
     if(!subscribed)return;
     nativeStateConfirmed=true;
-    if(foreground)syncAppliedNativeTheme();
+    if(foreground)syncAppliedNativeTheme();else revokeNativeTheme();
   });
   subscribed=true;
   // Native onActive can make the document visible after bridge-ready resync.
   // Retry on that actual transition, with all normal trust checks still active.
-  const visibilityChanged=()=>{if(document.visibilityState==='visible')syncAppliedNativeTheme();};
+  const visibilityChanged=()=>{if(document.visibilityState==='visible')syncAppliedNativeTheme();else revokeNativeTheme();};
   document.addEventListener('visibilitychange',visibilityChanged);
   const pageHidden=(event:PageTransitionEvent)=>{
     if(event.persisted)return;
-    unsubscribe();document.removeEventListener('visibilitychange',visibilityChanged);
+    revokeNativeTheme();unsubscribe();document.removeEventListener('visibilitychange',visibilityChanged);
     window.removeEventListener('pagehide',pageHidden);nativeStateConfirmed=false;
     if(window.__LANTERN_THEME_SYNC__===syncAppliedNativeTheme)delete window.__LANTERN_THEME_SYNC__;
   };

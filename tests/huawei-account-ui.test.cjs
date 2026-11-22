@@ -31,12 +31,26 @@ function harness(initial=ready(null)){
  const React={useState(initial){const index=cursor++;if(!cells[index])cells[index]={value:initial};return [cells[index].value,value=>{cells[index].value=typeof value==='function'?value(cells[index].value):value;}];},useRef(initial){const index=cursor++;if(!cells[index])cells[index]={current:initial};return cells[index];},useCallback:fn=>fn,useEffect(fn,deps){const index=cursor++,old=cells[index];if(!old||deps.some((dep,i)=>!Object.is(dep,old.deps[i])))effects.push(()=>{old?.cleanup?.();cells[index]={deps,cleanup:fn()};});}};
  const jsx={jsx:(type,props)=>({type,props}),jsxs:(type,props)=>({type,props})};
  const imports={react:React,'react/jsx-runtime':jsx,'react-dom':{flushSync:fn=>fn()},'@/app/study-app':{default:StudyApp},'@/app/account/account-panel':{AccountPanel},'@/app/learn/guest-data-recovery':{GuestDataRecovery:()=>null},'@/lib/native-host':{subscribeNativeState:fn=>{nativeListener=fn;return()=>{nativeListener=null;};},registerNativeBack:()=>()=>{}},'@/lib/native-auth-transport':{createNativeAuthTransport:()=>({})},'@/lib/native-account-controller':{INITIAL_NATIVE_ACCOUNT_STATE:{status:'checking',message:''},NativeAccountController:Controller},'@/lib/ui-theme':{applyDocumentTheme(){}},'@/lib/native-workspace-resume':require('./helpers/actual-source-loader.cjs').createSourceLoader({root}).load('lib/native-workspace-resume.ts')};
+ imports['@/lib/native-theme']={permitCurrentNativeTheme:check=>{calls.push({themePermit:check});return()=>{};},revokeNativeTheme:()=>calls.push('theme-revoke')};
  const exports={};vm.runInNewContext(source,{exports,require:name=>{assert(Object.hasOwn(imports,name),'Unexpected UI dependency '+name);return imports[name];},window:target,document},{filename:'mobile/src/NativeAccountRoot.tsx'});
  const render=()=>{cursor=0;output=exports.default();while(effects.length)effects.shift()();return output;};
  const fire=(map,name)=>{for(const listener of map.get(name)??[])listener();};
  render();render();
  return {render,providers,calls,StudyApp,AccountPanel,get controller(){return instance;},hide(){document.visibilityState='hidden';fire(documentEvents,'visibilitychange');},pagehide(){fire(windowEvents,'pagehide');},native(active){nativeListener(active);},unmount(){for(const cell of cells)cell?.cleanup?.();},panel(){const tree=render();assert.equal(tree.type,AccountPanel);return tree.props;}};
 }
+
+test('only a confirmed anonymous session can authorize the account page theme',()=>{
+ const h=harness({status:'checking',message:''});try{
+  assert.equal(h.calls.filter(x=>x?.themePermit).length,0);
+  h.controller.emit({...ready(null),unavailable:true});
+  assert.equal(h.calls.filter(x=>x?.themePermit).length,0,'503 is not confirmed anonymous');
+  h.controller.emit(ready(null));
+  const permit=h.calls.filter(x=>x?.themePermit).at(-1).themePermit;
+  assert.equal(permit(),true);
+  h.controller.emit({status:'blocked',message:''});assert.equal(permit(),false);
+  h.controller.emit(ready(A));assert.equal(h.calls.filter(x=>x?.themePermit).length,1,'an owner requires a loaded profile');
+ }finally{h.unmount();}
+});
 
 test('native UI discovers providers once and only publishes successful discovery',async()=>{
  const h=harness();try{

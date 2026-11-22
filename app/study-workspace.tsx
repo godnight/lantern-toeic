@@ -53,6 +53,7 @@ import {formatStudyDate,isSupportedStudyTimezone,studyTimezoneChoices} from '@/l
 import localAsrProfile from '@/content/local-asr-profile.json';
 import {stopLessonAudio} from '@/lib/lesson-audio';
 import {applyDocumentTheme,UI_THEME_META} from '@/lib/ui-theme';
+import {permitNativeTheme} from '@/lib/native-theme';
 import {getSpeakingRecovery,hasSpeakingRecovery,retainSpeakingRecovery,releaseSpeakingRecovery,subscribeSpeakingRecovery} from '@/lib/speaking-recovery';
 import {nativeWorkspaceResume,resumeForOwner,type NativeWorkspaceResume,type VocabularyPrevious,type DiscoveryResume} from '@/lib/native-workspace-resume';
 let workspaceOwnerEpoch=Date.now();
@@ -64,6 +65,7 @@ function ChoiceSelect({value,onChange,items,label}:{value:string;onChange:(v:str
 export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable=false,remoteLearningEnabled=false,resumeSnapshot,onResumeSnapshot}:{owner:string|null;nativeMode?:boolean;onAccount?:()=>void;legacyAvailable?:boolean;remoteLearningEnabled?:boolean;resumeSnapshot?:NativeWorkspaceResume|null;onResumeSnapshot?:(snapshot:NativeWorkspaceResume|null)=>void}){
  const pendingNativeResume=useRef(nativeMode?resumeForOwner(resumeSnapshot??null,owner):null);
  const accountAccess=useLearningAccess(owner);
+ const nativeThemeAccess=useLearningAccess(owner,true);
  useEffect(()=>()=>stopLessonAudio(),[]);
  const [feedbackOwnerGeneration]=useState(()=>++workspaceOwnerEpoch);
  const recoveryScope=JSON.stringify([nativeMode,owner]);const [,setRecoveryVersion]=useState(0);
@@ -202,6 +204,10 @@ export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable
   return false;
  }),[practiceSettlementId,mockOpen,speaking,recordingPlay,checkinOpen,themeOpen,planRoute,installOpen,queue,practiceBlocked,nav,searchFrom,listeningFocused]);
  useEffect(()=>applyDocumentTheme(profile.theme),[profile.theme]);
+ useEffect(()=>{
+  if(!nativeMode||!owner||!ready||recordsReadable!==true||!nativeThemeAccess())return;
+  return permitNativeTheme(profile.theme,nativeThemeAccess);
+ },[nativeMode,owner,ready,recordsReadable,profile.theme,nativeThemeAccess]);
  useEffect(()=>{const t=setInterval(()=>setNow(new Date()),60000);if(!nativeMode&&'serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});const before=(e:Event)=>{e.preventDefault();setInstallPrompt(e);};window.addEventListener('beforeinstallprompt',before);return()=>{clearInterval(t);window.removeEventListener('beforeinstallprompt',before);};},[]);
  const partStats=PARTS.map((name,i)=>{const a=first.filter(a=>questionById.get(a.qid)?.part===i+1);return {part:i+1,name,total:a.length,correct:a.filter(x=>x.correct).length,rate:a.length?Math.round(a.filter(x=>x.correct).length/a.length*100):null};});
  const {listeningPart,readingPart,oral,checkedTasks,recommendation}=dailyPlan(data,questions,prompts,today);

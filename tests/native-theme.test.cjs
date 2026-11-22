@@ -27,6 +27,7 @@ test('six themes are sent only after both document roots reflect the applied the
   const rows=[['paper','day'],['crystal','night'],['hollow','hollow'],['silk','silk'],['whale-bay','whale-bay'],['whale-moon','whale-moon']];
   for(const [theme,applied] of rows){
     h.ui.applyDocumentTheme(theme);
+    h.native.permitNativeTheme(theme,()=>true);
     assert.deepEqual(h.calls.at(-1),{theme,html:applied,body:applied});
     assert.equal(h.window.__LANTERN_THEME_SYNC__(),true);
     assert.deepEqual(h.calls.at(-1),{theme,html:applied,body:applied});
@@ -49,6 +50,7 @@ test('cold start, bridge readiness and foreground resume resync the current appl
   const h=harness();h.host.installHarmonyHost();h.native.installNativeThemeSync();
   const native=h.window.LanternThemeHost;delete h.window.LanternThemeHost;
   h.ui.applyDocumentTheme('paper');assert.equal(h.calls.length,0);
+  h.native.permitNativeTheme('paper',()=>true);
   h.window.__LANTERN_HARMONY__.onAppState(true);
   h.window.LanternThemeHost=native;
   assert.equal(h.window.__LANTERN_THEME_SYNC__(),true);assert.equal(h.calls.at(-1).theme,'paper');
@@ -56,20 +58,22 @@ test('cold start, bridge readiness and foreground resume resync the current appl
   h.ui.applyDocumentTheme('silk');assert.equal(h.calls.length,1);
   assert.equal(h.window.__LANTERN_THEME_SYNC__(),false);
   h.window.__LANTERN_HARMONY__.onAppState(true);
+  assert.equal(h.calls.length,1,'Foreground cannot reuse a revoked partition');
+  h.native.permitNativeTheme('silk',()=>true);
   assert.equal(h.calls.at(-1).theme,'silk');assert.equal(h.window.__LANTERN_THEME_SYNC__(),true);
 });
 
 test('missing, inconsistent, hidden, refused and throwing states fail closed without affecting themes',()=>{
   const h=harness();h.host.installHarmonyHost();h.native.installNativeThemeSync();h.window.__LANTERN_HARMONY__.onAppState(true);
   assert.equal(h.window.__LANTERN_THEME_SYNC__(),false);
-  h.ui.applyDocumentTheme('paper');h.calls.length=0;
+  h.ui.applyDocumentTheme('paper');h.native.permitNativeTheme('paper',()=>true);h.calls.length=0;
   h.document.body.dataset.uiTheme='night';assert.equal(h.window.__LANTERN_THEME_SYNC__(),false);
   h.document.body.dataset.uiTheme='day';h.document.visibilityState='hidden';assert.equal(h.window.__LANTERN_THEME_SYNC__(),false);
   h.document.visibilityState='visible';h.document.documentElement.dataset.uiTheme='unknown';h.document.body.dataset.uiTheme='unknown';
   assert.equal(h.window.__LANTERN_THEME_SYNC__(),false);assert.equal(h.calls.length,0);
-  h.window.LanternThemeHost={apply(){return 'REJECTED';}};h.ui.applyDocumentTheme('crystal');
+  h.window.LanternThemeHost={apply(){return 'REJECTED';}};h.ui.applyDocumentTheme('crystal');h.native.permitNativeTheme('crystal',()=>true);
   assert.equal(h.window.__LANTERN_THEME_SYNC__(),false);assert.equal(h.document.body.dataset.uiTheme,'night');
-  h.window.LanternThemeHost={apply(){throw Error('not available');}};h.ui.applyDocumentTheme('whale-bay');
+  h.window.LanternThemeHost={apply(){throw Error('not available');}};h.ui.applyDocumentTheme('whale-bay');h.native.permitNativeTheme('whale-bay',()=>true);
   assert.equal(h.window.__LANTERN_THEME_SYNC__(),false);assert.equal(h.document.body.dataset.uiTheme,'whale-bay');
   h.document.body=null;h.ui.applyDocumentTheme('hollow');assert.equal(h.window.__LANTERN_THEME_SYNC__(),false);
   assert.equal(h.document.documentElement.dataset.uiTheme,'hollow');
@@ -78,6 +82,7 @@ test('missing, inconsistent, hidden, refused and throwing states fail closed wit
 test('confirmed foreground and actual visibility recover a ready bridge, and unload removes listeners',()=>{
   const h=harness();h.host.installHarmonyHost();h.native.installNativeThemeSync();
   h.ui.applyDocumentTheme('hollow');assert.equal(h.calls.length,0,'Default foreground is not a native lifecycle signal');
+  h.native.permitNativeTheme('hollow',()=>true);
   h.document.visibilityState='hidden';h.window.__LANTERN_HARMONY__.onAppState(true);
   assert.equal(h.window.__LANTERN_THEME_SYNC__(),false);assert.equal(h.calls.length,0);
   h.document.visibilityState='visible';h.emitDocument('visibilitychange');
@@ -85,4 +90,39 @@ test('confirmed foreground and actual visibility recover a ready bridge, and unl
   h.emitWindow('pagehide',{persisted:true});h.emitDocument('visibilitychange');assert.equal(h.calls.length,2,'BFCache retains sync');
   h.emitWindow('pagehide',{persisted:false});assert.equal(h.window.__LANTERN_THEME_SYNC__,undefined);
   h.emitDocument('visibilitychange');assert.equal(h.calls.length,2,'Unloaded page cannot resync');
+});
+
+test('unverified paper is never sent on cold start or resume, including bridge and visibility retries',()=>{
+  const h=harness();h.host.installHarmonyHost();h.native.installNativeThemeSync();h.window.__LANTERN_HARMONY__.onAppState(true);
+  h.ui.applyDocumentTheme('paper');h.window.__LANTERN_THEME_SYNC__();h.emitDocument('visibilitychange');
+  assert.equal(h.calls.length,0);
+  h.ui.applyDocumentTheme('hollow');let live=true;const release=h.native.permitNativeTheme('hollow',()=>live);
+  assert.equal(h.calls.at(-1).theme,'hollow');
+  h.window.__LANTERN_HARMONY__.onAppState(false);live=false;h.window.__LANTERN_HARMONY__.onAppState(true);
+  h.ui.applyDocumentTheme('paper');h.window.__LANTERN_THEME_SYNC__();h.emitDocument('visibilitychange');
+  assert.deepEqual(h.calls.map(x=>x.theme),['hollow']);
+  h.ui.applyDocumentTheme('hollow');h.native.permitNativeTheme('hollow',()=>true);
+  release();assert.equal(h.window.__LANTERN_THEME_SYNC__(),true,'old cleanup cannot revoke new proof');
+  assert.deepEqual(h.calls.map(x=>x.theme),['hollow','hollow','hollow']);
+});
+
+test('proof changes, invalidation and a genuine paper preference remain distinguishable',()=>{
+  const h=harness();h.host.installHarmonyHost();h.native.installNativeThemeSync();h.window.__LANTERN_HARMONY__.onAppState(true);
+  h.ui.applyDocumentTheme('paper');assert.equal(h.calls.length,0);
+  let owner='a',valid=true;h.native.permitNativeTheme('paper',()=>valid&&owner==='a');
+  assert.equal(h.calls.at(-1).theme,'paper');
+  owner='b';assert.equal(h.window.__LANTERN_THEME_SYNC__(),false);
+  h.ui.applyDocumentTheme('crystal');assert.equal(h.calls.length,1);
+  h.native.permitNativeTheme('crystal',()=>valid&&owner==='b');assert.equal(h.calls.at(-1).theme,'crystal');
+  valid=false;assert.equal(h.window.__LANTERN_THEME_SYNC__(),false);
+  h.native.revokeNativeTheme();h.ui.applyDocumentTheme('paper');assert.equal(h.window.__LANTERN_THEME_SYNC__(),false);
+  h.native.permitCurrentNativeTheme(()=>true);assert.equal(h.calls.at(-1).theme,'paper','confirmed signed-out page');
+  h.native.revokeNativeTheme();assert.equal(h.window.__LANTERN_THEME_SYNC__(),false,'blocked state');
+});
+
+test('confirmed anonymous proof before DOM initialization sends the eventual rendered theme',()=>{
+  const h=harness();h.host.installHarmonyHost();h.native.installNativeThemeSync();h.window.__LANTERN_HARMONY__.onAppState(true);
+  h.native.permitCurrentNativeTheme(()=>true);assert.equal(h.calls.length,0);
+  h.ui.applyDocumentTheme('paper');assert.equal(h.calls.at(-1).theme,'paper');
+  h.ui.applyDocumentTheme('hollow');assert.equal(h.calls.at(-1).theme,'hollow','account page follows rendered DOM after logout');
 });

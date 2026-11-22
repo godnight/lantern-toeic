@@ -8,6 +8,7 @@ import {subscribeNativeState,registerNativeBack} from '@/lib/native-host';
 import {createNativeAuthTransport} from '@/lib/native-auth-transport';
 import {INITIAL_NATIVE_ACCOUNT_STATE,NativeAccountController,type NativeAccountState} from '@/lib/native-account-controller';
 import {applyDocumentTheme} from '@/lib/ui-theme';
+import {permitCurrentNativeTheme,revokeNativeTheme} from '@/lib/native-theme';
 import {resumeForOwner,type NativeWorkspaceResume} from '@/lib/native-workspace-resume';
 
 export default function NativeAccountRoot(){
@@ -23,6 +24,10 @@ export default function NativeAccountRoot(){
   const value=new NativeAccountController(createNativeAuthTransport());controller.current=value;
   let foreground=true,initialized=false;
   const off=value.subscribe((next,sync)=>{
+   // A new account proof invalidates the previous partition's system-bar theme.
+   // Only a confirmed signed-out account page can authorize its current theme.
+   revokeNativeTheme();
+   if(next.status==='ready'&&!next.user&&!next.unavailable)permitCurrentNativeTheme(()=>value.getSnapshot()===next&&next.access.canAccess());
    if((next.status==='ready'&&next.user?.id!==savedWorkspace.current?.owner)||
       (next.status==='blocked'&&foreground&&document.visibilityState!=='hidden'))savedWorkspace.current=null;
    if(sync)flushSync(()=>setState(next));else setState(next);
@@ -33,7 +38,7 @@ export default function NativeAccountRoot(){
   window.addEventListener('pagehide',leave);window.addEventListener('pageshow',show);window.addEventListener('focus',show);document.addEventListener('visibilitychange',visibility);
   initialized=true;if(foreground&&document.visibilityState!=='hidden')value.start();else value.suspend(false);
   if(!document.documentElement.dataset.uiTheme)applyDocumentTheme('paper');
-  return()=>{off();native();value.dispose();controller.current=null;savedWorkspace.current=null;window.removeEventListener('pagehide',leave);window.removeEventListener('pageshow',show);window.removeEventListener('focus',show);document.removeEventListener('visibilitychange',visibility);};
+  return()=>{revokeNativeTheme();off();native();value.dispose();controller.current=null;savedWorkspace.current=null;window.removeEventListener('pagehide',leave);window.removeEventListener('pageshow',show);window.removeEventListener('focus',show);document.removeEventListener('visibilitychange',visibility);};
  },[]);
  useEffect(()=>{
   const active=controller.current;
