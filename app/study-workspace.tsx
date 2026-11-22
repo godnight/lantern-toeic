@@ -33,6 +33,7 @@ import './practice-task-resume.css';
 import {PracticeHome} from './learn/practice-home';
 import {PracticeRecords,PracticeTaskActions,PracticeRestartDialog} from './learn/practice-records';
 import {PracticeHistory} from './learn/practice-history';
+import {createPracticeReturnFocus} from './learn/practice-return-focus';
 import {practiceSavedCount,practiceTaskLabel,practiceTaskOriginKey,sortPracticeSessions,type PracticeTaskOrigin} from '@/lib/practice-task';
 import type {PracticeSession} from '@/lib/practice-workflow';
 import {PublicInfoLinks} from './learn/legal-pages';
@@ -216,10 +217,16 @@ export function StudyWorkspace({owner,nativeMode=false,onAccount,legacyAvailable
  const focusEvidence=recommendation.parts.find(item=>item.part===recommendation.focusPart);
  const weakest=focusEvidence?{part:focusEvidence.part,name:PARTS[focusEvidence.part-1],total:focusEvidence.sampleCount,rate:Math.round((focusEvidence.accuracy??0)*100)}:undefined;
  type TaskInput={origin:PracticeTaskOrigin;label:string};
- const practiceOrigin=useRef<{owner:string|null;nav:string;scroll:number;focus:HTMLElement|null}|null>(null);
- const practiceOriginScope=useRef({owner,nav});practiceOriginScope.current={owner,nav};
- const rememberPracticeOrigin=(returnFocus?:HTMLElement|null)=>{practiceOrigin.current={owner,nav,scroll:window.scrollY,focus:returnFocus??(document.activeElement instanceof HTMLElement?document.activeElement:null)};};
- const restorePracticeOrigin=()=>{const saved=practiceOrigin.current;practiceOrigin.current=null;if(!saved||saved.owner!==owner||saved.nav!==nav||!accountAccess())return;requestAnimationFrame(()=>{if(!accountAccess()||practiceOriginScope.current.owner!==saved.owner||practiceOriginScope.current.nav!==saved.nav)return;window.scrollTo({top:saved.scroll,behavior:'auto'});if(saved.focus?.isConnected)saved.focus.focus({preventScroll:true});});};
+ const practiceOrigin=useRef<{owner:string|null;nav:string;epoch:number;scroll:number;focus:HTMLElement|null}|null>(null);
+ const practiceOriginScope=useRef({owner,nav,scope:practiceWorkflow.scopeKey,epoch:0,busy:practiceWorkflow.busy,ready:practiceWorkflow.ready,queue:!!queue,access:accountAccess});
+ const priorPracticeScope=practiceOriginScope.current,practiceEpoch=priorPracticeScope.epoch+(priorPracticeScope.owner!==owner||priorPracticeScope.nav!==nav||priorPracticeScope.scope!==practiceWorkflow.scopeKey?1:0);
+ practiceOriginScope.current={owner,nav,scope:practiceWorkflow.scopeKey,epoch:practiceEpoch,busy:practiceWorkflow.busy,ready:practiceWorkflow.ready,queue:!!queue,access:accountAccess};
+ const returnPracticeFocus=useRef<ReturnType<typeof createPracticeReturnFocus>|null>(null);
+ if(!returnPracticeFocus.current)returnPracticeFocus.current=createPracticeReturnFocus({requestFrame:callback=>requestAnimationFrame(callback),cancelFrame:id=>cancelAnimationFrame(id),scroll:top=>window.scrollTo({top,behavior:'auto'})});
+ useEffect(()=>{const cancel=()=>returnPracticeFocus.current?.cancel();document.addEventListener('pointerdown',cancel,true);document.addEventListener('keydown',cancel,true);document.addEventListener('wheel',cancel,true);document.addEventListener('touchstart',cancel,true);return()=>{cancel();document.removeEventListener('pointerdown',cancel,true);document.removeEventListener('keydown',cancel,true);document.removeEventListener('wheel',cancel,true);document.removeEventListener('touchstart',cancel,true);};},[]);
+ useEffect(()=>{returnPracticeFocus.current?.retry();},[owner,nav,practiceWorkflow.scopeKey,practiceWorkflow.busy,practiceWorkflow.ready,practiceWorkflow.error,queue]);
+ const rememberPracticeOrigin=(returnFocus?:HTMLElement|null)=>{returnPracticeFocus.current?.cancel();practiceOrigin.current={owner,nav,epoch:practiceEpoch,scroll:window.scrollY,focus:returnFocus??(document.activeElement instanceof HTMLElement?document.activeElement:null)};};
+ const restorePracticeOrigin=()=>{const saved=practiceOrigin.current;practiceOrigin.current=null;if(!saved)return;returnPracticeFocus.current?.request({target:saved.focus,scrollTop:saved.scroll,isCurrent:()=>{const current=practiceOriginScope.current;return current.epoch===saved.epoch&&current.owner===saved.owner&&current.nav===saved.nav&&current.access();},canScroll:()=>!practiceOriginScope.current.queue&&!document.querySelector('[role="dialog"][data-state="open"]'),canFocus:()=>{const current=practiceOriginScope.current;return current.ready&&!current.busy&&!current.queue&&!document.querySelector('[role="dialog"][data-state="open"]');}});};
  const launchPractice=(selected:Question[],chainId?:string,task:TaskInput={origin:{kind:'combined',collection:'direct'},label:'综合练习'},mode:'new'|'resume-or-create'='resume-or-create')=>{
   if(!selected.length)return;if(!practiceWorkflow.ready){toast.error(practiceWorkflow.error||'练习会话正在读取，请稍后重试。');return;}
   const authoredUnits=new Map(practiceUnits(questions).map(unit=>[unit.id,unit.questions])),full=practiceUnits(selected).flatMap(unit=>authoredUnits.get(unit.id)||[]);
