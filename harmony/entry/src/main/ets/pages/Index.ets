@@ -6,6 +6,8 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { NativeDownloads } from '../NativeDownloads';
 import { NativeAuthHost } from '../auth/NativeAuthHost';
 import { SpeakingMediaHost } from '../media/SpeakingMediaHost';
+import { NativeThemeHost } from '../theme/NativeThemeHost';
+import { themeWindow } from '../theme/ThemeWindow';
 
 // This is an intercepted local origin. No server or certificate is required.
 const APP_ORIGIN: string = 'https://lantern.local';
@@ -517,12 +519,14 @@ struct Index {
   private downloads: NativeDownloads | undefined = undefined;
   private authHost: NativeAuthHost | undefined = undefined;
   private speakingMedia: SpeakingMediaHost | undefined = undefined;
+  private themeHost: NativeThemeHost | undefined = undefined;
   private attached: boolean = false;
   private alive: boolean = false;
   private documentGeneration: number = 0;
   private lifecycleGeneration: number = 0;
   private bridgeSequence: number = 0;
   private bridgeRetryTimer: number = -1;
+  private themeRetryTimer: number = -1;
   private backSequence: number = 0;
   private backTimer: number = -1;
   private lastExitBackAt: number = 0;
@@ -536,6 +540,8 @@ struct Index {
   }
 
   aboutToDisappear(): void {
+    this.themeHost?.dispose();
+    this.themeHost = undefined;
     this.speakingMedia?.dispose();
     this.speakingMedia = undefined;
     this.authHost?.dispose();
@@ -591,6 +597,10 @@ struct Index {
     this.speakingMedia?.invalidate();
     this.bridgeReady = false;
     this.bridgeSequence++;
+    if (this.themeRetryTimer !== -1) {
+      clearTimeout(this.themeRetryTimer);
+      this.themeRetryTimer = -1;
+    }
     if (this.bridgeRetryTimer !== -1) {
       clearTimeout(this.bridgeRetryTimer);
       this.bridgeRetryTimer = -1;
@@ -599,6 +609,7 @@ struct Index {
 
   private onForegroundChanged(): void {
     this.authHost?.onForegroundChanged(this.foreground);
+    if (!this.foreground) this.themeHost?.invalidate();
     // @Watch runs synchronously. Even a background/foreground round trip
     // invalidates every earlier permission and Back callback.
     this.lifecycleGeneration++;
@@ -645,6 +656,9 @@ struct Index {
         }
         if (!error && result === 'true') {
           this.bridgeReady = true;
+          // onAppState runs before this native ready flag is set. Request the
+          // actually applied web theme again after the trusted bridge is ready.
+          if (this.foreground) this.requestThemeSync(sequence, document, lifecycle, 0);
           return;
         }
         this.retryBridge(sequence, document, lifecycle, attempt);
@@ -652,6 +666,35 @@ struct Index {
     } catch {
       this.retryBridge(sequence, document, lifecycle, attempt);
     }
+  }
+
+  private requestThemeSync(sequence: number, document: number, lifecycle: number, attempt: number): void {
+    if (sequence !== this.bridgeSequence || document !== this.documentGeneration ||
+      lifecycle !== this.lifecycleGeneration || !this.foreground || !this.pageReady ||
+      !this.bridgeReady || !this.isTrustedDocument() || this.themeHost === undefined) return;
+    const script: string = '(function(){try{' +
+      'return typeof window.__LANTERN_THEME_SYNC__==="function"&&window.__LANTERN_THEME_SYNC__()===true;' +
+      '}catch(e){return false;}})()';
+    try {
+      this.controller.runJavaScript(script, (error: BusinessError, result: string) => {
+        if (sequence !== this.bridgeSequence || document !== this.documentGeneration ||
+          lifecycle !== this.lifecycleGeneration || !this.foreground || !this.pageReady ||
+          !this.bridgeReady || !this.isTrustedDocument()) return;
+        if (!error && result === 'true') return;
+        this.retryThemeSync(sequence, document, lifecycle, attempt);
+      });
+    } catch { this.retryThemeSync(sequence, document, lifecycle, attempt); }
+  }
+
+  private retryThemeSync(sequence: number, document: number, lifecycle: number, attempt: number): void {
+    if (attempt >= 19) {
+      console.warn('LANTERN theme bridge is not ready');
+      return;
+    }
+    this.themeRetryTimer = setTimeout(() => {
+      this.themeRetryTimer = -1;
+      this.requestThemeSync(sequence, document, lifecycle, attempt + 1);
+    }, 100);
   }
 
   private retryBridge(sequence: number, document: number, lifecycle: number, attempt: number): void {
@@ -667,6 +710,7 @@ struct Index {
 
   private pageBegin(): void {
     this.authHost?.invalidate();
+    this.themeHost?.invalidate();
     this.downloads?.invalidate();
     this.documentGeneration++;
     this.pageReady = false;
@@ -977,6 +1021,11 @@ struct Index {
         .mediaPlayGestureAccess(true)
         .onControllerAttached(() => {
           this.attached = true;
+          this.themeHost?.dispose();
+          this.themeHost = new NativeThemeHost(this.controller,
+            () => this.alive && this.foreground && this.pageReady && this.bridgeReady && this.isTrustedDocument(),
+            themeWindow);
+          if (!this.themeHost.attach()) this.themeHost = undefined;
           this.speakingMedia?.dispose();
           this.speakingMedia = undefined;
           this.authHost?.dispose();

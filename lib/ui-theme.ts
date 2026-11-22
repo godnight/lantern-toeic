@@ -1,4 +1,5 @@
 import type {Theme} from '@/lib/study-model';
+import {syncAppliedNativeTheme} from './native-theme';
 
 /** Display names are separate from persisted Theme IDs. */
 export type UiTheme = 'day' | 'night' | 'hollow' | 'silk' | 'whale-bay' | 'whale-moon';
@@ -70,4 +71,5 @@ export function applyDocumentTheme(theme: Theme): void {
     document.body.dataset.uiTheme = uiTheme;
     document.body.style.colorScheme = colorScheme;
   }
+  syncAppliedNativeTheme();
 }

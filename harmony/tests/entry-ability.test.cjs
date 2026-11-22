@@ -8,10 +8,15 @@ const source = fs.readFileSync(path.join(__dirname, '../entry/src/main/ets/entry
 const code = ts.transpileModule(source, {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
 const tick = () => new Promise(resolve => setImmediate(resolve));
 function fixture(loadContent) {
-  const errors = [], exports = {};
-  const imports = {'@kit.AbilityKit':{UIAbility:class {}}, '@kit.ArkUI':{}, '@kit.BasicServicesKit':{}};
-  vm.runInNewContext(code, {exports,require:name=>imports[name],AppStorage:{setOrCreate(){}},console:{error:message=>errors.push(message)}});
-  return {ability:new exports.default(),stage:{loadContent},errors};
+  const errors = [], exports = {}, themeEvents = [], storageEvents = [], mainWindow = {};
+  const themeWindow = {
+    clearWindow: () => themeEvents.push(['clearWindow']),
+    setForeground: value => themeEvents.push(['setForeground', value]),
+    setReadyWindow: value => themeEvents.push(['setReadyWindow', value]),
+  };
+  const imports = {'@kit.AbilityKit':{UIAbility:class {}}, '@kit.ArkUI':{}, '@kit.BasicServicesKit':{}, '../theme/ThemeWindow':{themeWindow}};
+  vm.runInNewContext(code, {exports,require:name=>imports[name],AppStorage:{setOrCreate:(...args)=>storageEvents.push(args)},console:{error:message=>errors.push(message),warn:message=>errors.push(message)},setTimeout,clearTimeout});
+  return {ability:new exports.default(),stage:{loadContent,getMainWindowSync:()=>mainWindow},errors,themeEvents,storageEvents,mainWindow};
 }
 test('page loading succeeds without an error report', async () => {
   const paths = [], h = fixture(value=>{paths.push(value);return Promise.resolve();});
@@ -30,4 +35,21 @@ test('asynchronous page rejection is handled and reported once', async () => {
   assert.deepEqual(h.errors, []);
   rejectLoad(Object.assign(Error('invalid page'), {code:401})); await tick();
   assert.deepEqual(h.errors, ['LANTERN page load failed: 401']);
+});
+test('theme window binds only after loading and follows ability lifecycle', async () => {
+  let finishLoad;
+  const pending = new Promise(resolve => { finishLoad = resolve; });
+  const h = fixture(() => pending);
+  h.ability.onCreate();
+  h.ability.onWindowStageCreate(h.stage);
+  h.ability.onForeground();
+  assert.deepEqual(h.themeEvents, [['setForeground', false], ['clearWindow'], ['setForeground', true]]);
+  finishLoad(); await tick();
+  assert.deepEqual(h.themeEvents.at(-1), ['setReadyWindow', h.mainWindow]);
+  h.ability.onBackground();
+  h.ability.onWindowStageDestroy();
+  h.ability.onDestroy();
+  assert.deepEqual(h.themeEvents.slice(-4), [['setForeground', false], ['clearWindow'], ['setForeground', false], ['clearWindow']]);
+  assert.deepEqual(h.storageEvents, [['lanternForeground', false], ['lanternForeground', true], ['lanternForeground', false], ['lanternForeground', false]]);
+  assert.deepEqual(h.errors, []);
 });
