@@ -92,9 +92,54 @@ async function geometry(p,label){const result=await p.evaluate(()=>({width:inner
  wholeState=await state(wp,D);wholeRows=sessions(wholeState).filter(row=>row.id===wholeId);assert.equal(wholeRows[0].value.steps.filter(step=>step.status==='applied').length,1);
  await wp.getByRole('button',{name:'听力练习 · 继续',exact:true}).click();await wholePage.waitFor();await save(wp);
  wholeState=await state(wp,D);wholeRows=sessions(wholeState).filter(row=>row.id===wholeId);assert.equal(wholeRows.length,1);assert.deepEqual(wholeRows[0].value.questionIds,wholeQuestions);assert.equal(wholeRows[0].value.steps.filter(step=>step.status==='applied').length,1);
- await wp.getByRole('button',{name:'全部听力',exact:true}).click();const beforeTooMany=await state(wp,D);await wp.getByRole('button',{name:'听力练习 · 开始本组',exact:true}).click();
- await wp.getByText('本组超过200题，请按题型选择练习',{exact:true}).waitFor();assert.equal(await wholePage.isVisible(),false);assert.deepEqual(await state(wp,D),beforeTooMany);
- check('real 200-question collection starts, saves, resumes and oversized whole collection reports without writes');
+ check('real 200-question collection starts, saves and resumes with its legacy origin');
+ // Derive the actual full catalogue independently; do not assume 200/65.
+ const {createSourceLoader}=require('../helpers/actual-source-loader.cjs');
+ const actualListening=JSON.parse(JSON.stringify(createSourceLoader({root:ROOT}).load('lib/question-catalog.ts').QUESTIONS.filter(q=>q.part<=4)));
+ const expectedIds=actualListening.map(q=>q.id);assert(expectedIds.length>200);
+ await wp.getByRole('button',{name:'全部听力',exact:true}).click();
+ const batch=wp.locator('.practice-batch-actions');await batch.waitFor();
+ const summary=(await batch.locator('.practice-batch-summary').innerText()).replace(/\s+/g,' '),summaryMatch=summary.match(/共 (\d+) 题 · 分 (\d+) 组/);
+ assert(summaryMatch,'Actual group summary is present');assert.equal(Number(summaryMatch[1]),expectedIds.length);assert.equal(Number(summaryMatch[2]),2,'This catalogue crosses the 200-question boundary once');
+ await wp.getByRole('button',{name:'听力练习 · 更多',exact:true}).click();const secondOption=batch.getByRole('button',{name:/^第 2 组 · /});await secondOption.waitFor();await secondOption.click();await wholePage.waitFor();
+ const planState=await state(wp,D),plans=planState.rows.filter(row=>row.value?.kind==='practice-batch-plan');assert.equal(plans.length,1);const planSnapshot=plans[0].value;
+ assert.deepEqual(planSnapshot.groups.flatMap(group=>group.questionIds),expectedIds,'The entire batch plan must be saved when any group starts');
+ assert.equal((await state(foreign.p,B)).rows.filter(row=>row.value?.kind==='practice-batch-plan').length,0,'Batch plans must remain in their owner partition');
+ let grouped=sessions(planState).filter(row=>row.value.task?.origin?.collection==='all'&&row.value.task.origin.batchIndex===2);
+ assert.equal(grouped.length,1);const secondId=grouped[0].id,secondQuestions=grouped[0].value.questionIds;assert(secondQuestions.length>0&&secondQuestions.length<=200);
+ await wholePage.getByRole('radio').first().click();await wholePage.getByRole('button',{name:'确认答案',exact:true}).click();await wholePage.locator('.answer-feedback').waitFor();await save(wp);
+ await wp.getByRole('button',{name:'听力练习 · 更多',exact:true}).click();await batch.getByRole('button',{name:/^第 2 组 · /}).click();await wholePage.waitFor();
+ grouped=sessions(await state(wp,D)).filter(row=>row.id===secondId);assert.equal(grouped.length,1);assert.deepEqual(grouped[0].value.questionIds,secondQuestions);assert.equal(grouped[0].value.steps.filter(step=>step.status==='applied').length,1);await save(wp);
+ check('direct selection of second group preserves its answer and resumes the same snapshot');
+ await wp.getByRole('button',{name:'听力练习 · 继续第 2 组',exact:true}).waitFor();
+ await wp.getByRole('button',{name:'听力练习 · 更多',exact:true}).click();await batch.getByRole('button',{name:/^第 1 组 · /}).click();await wholePage.waitFor();
+ grouped=sessions(await state(wp,D)).filter(row=>row.value.task?.origin?.collection==='all'&&row.value.task.origin.batchIndex===1);
+ assert.equal(grouped.length,1);const firstId=grouped[0].id,firstQuestions=grouped[0].value.questionIds;assert(firstQuestions.length>0&&firstQuestions.length<=200);
+ assert.deepEqual([...firstQuestions,...secondQuestions],expectedIds);assert.equal(new Set([...firstQuestions,...secondQuestions]).size,expectedIds.length);
+ const unitKey=q=>q.groupId?`group:${q.part}:${q.groupId}`:`question:${q.id}`,byId=new Map(actualListening.map(q=>[q.id,q]));
+ const firstUnits=new Set(firstQuestions.map(id=>unitKey(byId.get(id)))),secondUnits=new Set(secondQuestions.map(id=>unitKey(byId.get(id))));
+ assert([...firstUnits].every(unit=>!secondUnits.has(unit)),'A listening material must never be split across groups');
+ const groupsBefore=await state(wp,D),firstRecord=sessions(groupsBefore).find(row=>row.id===firstId),secondRecord=sessions(groupsBefore).find(row=>row.id===secondId);
+ assert(firstRecord.value.task.origin.batchId);assert.equal(firstRecord.value.task.origin.batchId,secondRecord.value.task.origin.batchId);
+ check('all listening groups cover the exact original order with intact materials',{counts:[firstQuestions.length,secondQuestions.length],total:expectedIds.length});
+ // Complete the first group through the real UI; never mutate practice state.
+ for(let index=0;index<firstQuestions.length;index++){
+  await wp.waitForFunction(({index})=>document.querySelector('.listening-practice-header p')?.textContent?.startsWith(`${index+1} / `),{index});
+  await wholePage.getByRole('radio').first().click();await wholePage.getByRole('button',{name:'确认答案',exact:true}).click();await wholePage.locator('.answer-feedback').waitFor();
+  await wholePage.getByRole('button',{name:index===firstQuestions.length-1?'完成本组答题':'下一题',exact:true}).click();
+ }
+ await wp.getByText('本组答题已记录。',{exact:true}).waitFor();await wp.getByRole('button',{name:'继续一组',exact:true}).click();
+ await wp.getByText('本组答题已记录。',{exact:true}).waitFor({state:'hidden'});await wholePage.getByRole('button',{name:'下一题',exact:true}).waitFor();
+ const completedState=await state(wp,D);assert.deepEqual(completedState.rows.find(row=>row.id===planSnapshot.id).value,planSnapshot,'Answering cannot change the batch snapshot');
+ grouped=sessions(completedState);assert.equal(grouped.find(row=>row.id===firstId).value.status,'completed');const secondAfter=grouped.find(row=>row.id===secondId);
+ assert(secondAfter);assert.equal(secondAfter.value.steps.filter(step=>step.status==='applied').length,1);assert.deepEqual(secondAfter.value.questionIds,secondQuestions);
+ assert.equal(grouped.filter(row=>row.value.task?.origin?.batchId===firstRecord.value.task.origin.batchId&&row.value.task.origin.batchIndex===2).length,1,'Continuation must resume the original second group');await save(wp);
+ check('completing first group continues the already saved second group without duplication');
+ await wp.getByRole('button',{name:'听力练习 · 更多',exact:true}).click();const completedOption=batch.getByRole('button',{name:/^第 1 组 · /});assert.match(await completedOption.innerText(),/已完成/);await completedOption.click();
+ const batchHistory=wp.locator('.practice-history');await batchHistory.waitFor();assert.equal(await batchHistory.locator('.practice-history-question').count(),firstQuestions.length);
+ assert.equal(await batchHistory.locator('.practice-history-question h3').first().innerText(),'1. '+byId.get(firstQuestions[0]).title);
+ assert.equal(sessions(await state(wp,D)).filter(row=>row.id===secondId).length,1);assert.equal(sessions(await state(wp,D)).filter(row=>row.id===wholeId).length,1);
+ check('completed group history excludes the other group and legacy 200-question session');
  // The 12 new items appear in the existing all-listening material selector;
  // exercise real playback and completed-history playback with a fresh owner.
  const addedQuestions=require('../../content/questions-v041-part1-twelve.json');

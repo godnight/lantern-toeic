@@ -17,6 +17,12 @@ test('whole listening origin keeps Part and collection validation and stable exi
  assert.doesNotThrow(()=>tasks.validatePracticeTask(identity,'v',['question:a'],['a']));
  assert.equal(tasks.practiceTaskOriginKey(identity.origin),tasks.practiceTaskOriginKey(part));
  assert.notEqual(tasks.practiceTaskOriginKey(whole),tasks.practiceTaskOriginKey(part));
+ assert.equal(tasks.practiceTaskOriginKey(whole),'b1dbc041d435d7ca7189cebb5b164dd4ebefd8e39c76299f860bad02d824bc8f','Pre-batch 200-question origin retains its established key');
+ const batchId='practice-batch:'+'a'.repeat(64),first={kind:'listening',collection:'all',batchId,batchIndex:1},second={...first,batchIndex:2};
+ for(const origin of [first,second])assert.doesNotThrow(()=>tasks.validatePracticeTaskOrigin(origin));
+ assert.notEqual(tasks.practiceTaskOriginKey(first),tasks.practiceTaskOriginKey(second),'Distinct groups must never share an origin key');
+ assert.notEqual(tasks.practiceTaskOriginKey(whole),tasks.practiceTaskOriginKey(first));
+ for(const invalid of [{...whole,batchId},{...whole,batchIndex:1},{...whole,batchId,batchIndex:0},{...whole,batchId:'practice-batch:bad',batchIndex:1},{kind:'reading',part:5,batchId,batchIndex:1}])assert.throws(()=>tasks.validatePracticeTaskOrigin(invalid),/practice-task-invalid/);
 });
 
 test('real listening page and task actions create, save and resume its exact 200-question collection',async()=>{
@@ -40,6 +46,16 @@ test('real listening page and task actions create, save and resume its exact 200
  assert.equal(session.steps[0].status,'applied');assert.equal(session.steps[0].attempt.seconds,7);assert.equal(session.queue.length,200);
  tree=draw(projection.sessions);button=nodes(tree,n=>n.type==='button'&&n.props?.['aria-label']==='听力练习 · 继续')[0];assert(button,'real wrapped action offers resume');assert.equal(button.props.disabled,false);button.props.onClick();
  assert.equal((await pending).sessionId,started.sessionId);assert.equal((await pending).status,'restored');assert.equal(facts.size,1);workflow.close();
+});
+
+test('real all-listening page routes the full admitted catalogue into grouping',()=>{
+ const catalog=domainLoader.load('lib/question-catalog.ts'),pool=catalog.QUESTIONS.filter(q=>q.part<=4);assert(pool.length>200);
+ const fakeReact={useState:init=>[init==='listening50'?'all':typeof init==='function'?init():init,()=>{}],useRef:init=>({current:init}),useEffect:()=>{}};
+ const jsx=(type,props,key)=>({type,props,key}),icons=new Proxy({},{get:(_,name)=>String(name)});
+ const loader=createSourceLoader({root,imports:{react:fakeReact,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':icons,'@/components/ui/tabs':icons,'@/components/ui/dialog':icons,'@/lib/study-model':{PARTS:['照片','应答','对话','独白','短句','长文','阅读'],createId:()=>crypto.randomUUID()},'@/lib/practice-history-browser':{},'@/lib/native-host':{},'@/lib/practice-selection':{practiceUnits:()=>[]},'@/lib/practice-task':tasks}});
+ const {PracticeHome}=loader.load('app/learn/practice-home.tsx');let received;
+ const tree=PracticeHome({questions:catalog.QUESTIONS,listening:catalog.LISTENING_COLLECTION_QUESTIONS,busy:false,tab:'lr',listeningFocused:true,practiceSessions:[],onTab(){},onPart(){},onCustom(){},onWrong(){},onListeningWrong(){},onMock(){},children:null,onStart:()=>assert.fail('A whole oversized queue must never be started'),renderTaskAction:()=>null,renderBatchAction:(collection,items)=>{received={collection,ids:items.map(q=>q.id)};return {type:'grouping-marker',props:{}};}});
+ assert.equal(nodes(tree,n=>n.type==='grouping-marker').length,1);assert.equal(received.collection,'all');assert.deepEqual(snapshot(received.ids),snapshot(pool.map(q=>q.id)));
 });
 
 test('listening whole rejects reading questions and oversize queues without creating sessions',async()=>{
