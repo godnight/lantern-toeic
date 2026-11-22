@@ -8,13 +8,7 @@ const TMP=path.join(ROOT,'outputs','kimi-scene-check');
 const OUT=path.join(TMP,'screenshots');
 const entry=`import React from 'react';
 import {createRoot} from 'react-dom/client';
-import '../../app/globals.css';
-import '../../app/redesign.css';
-import '../../app/v041-design-theme.css';
-import '../../app/learn/v041-vocabulary.css';
-import '../../app/learn/audio-redesign.css';
-import '../../app/v041-app-redesign.css';
-import '../../app/learn/legal-pages.css';
+import '../../app/style-entry';
 import {applyDocumentTheme} from '../../lib/ui-theme';
 import {TodayDashboard} from '../../app/learn/today-dashboard';
 import {WorkspaceShell} from '../../app/learn/workspace-shell';
@@ -22,7 +16,7 @@ const theme=new URL(location.href).searchParams.get('theme')||'paper';
 applyDocumentTheme(theme);
 const noop=()=>{};
 const task=<section className="v040-word-task"><h2>今日单词</h2><p>本组 20 词 · 已保存 10 词</p><button type="button" className="button primary">继续背词</button></section>;
-createRoot(document.getElementById('root')).render(<WorkspaceShell nav="today" theme={theme} name="测试" scope="合成" syncLabel="本机" reviewCount={0} onNavigate={noop} onSearch={noop} onSync={noop}><TodayDashboard theme={theme} dateLabel="11 月 22 日 · 星期日" wordTask={task} wordSummary="" reviewSummary="" onOpenPlan={noop} onOpenPractice={noop} onOpenReview={noop}/></WorkspaceShell>);`;
+createRoot(document.getElementById('root')).render(<WorkspaceShell nav="today" theme={theme} reviewCount={0} onNavigate={noop} onSearch={noop}><TodayDashboard theme={theme} dateLabel="11 月 22 日 · 星期日" wordTask={task} wordSummary="" reviewSummary="" onOpenPlan={noop} onOpenPractice={noop} onOpenReview={noop}/></WorkspaceShell>);`;
 async function run(){
  fs.mkdirSync(OUT,{recursive:true});fs.writeFileSync(path.join(TMP,'entry.jsx'),entry);
  fs.writeFileSync(path.join(TMP,'index.html'),'<!doctype html><html lang="zh-CN"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="root"></div><script type="module" src="./entry.jsx"></script></body></html>');
@@ -36,7 +30,7 @@ async function run(){
    const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1});page.on('pageerror',e=>report.errors.push(e.message));
    await page.route('**/*',route=>{const u=new URL(route.request().url());if(u.origin!==origin){report.blockedRequests.push(u.origin);return route.abort();}return route.continue();});
    await page.goto(`${origin}/outputs/kimi-scene-check/index.html?theme=${theme}`,{waitUntil:'networkidle'});await page.locator('.v040-today-lead').waitFor();
-   if(opened){await page.getByRole('button',{name:'展开导航',exact:true}).click();await page.locator('.v040-workspace-shell[data-drawer-open="true"]').waitFor();await page.waitForFunction(()=>{const body=document.querySelector('.workspace-body'),drawer=document.querySelector('.workspace-sidebar');return Math.abs(parseFloat(getComputedStyle(body).marginLeft)-drawer.getBoundingClientRect().width)<1;});}
+   if(opened){await page.getByRole('button',{name:'展开导航',exact:true}).click();await page.locator('.v040-workspace-shell[data-drawer-open="true"]').waitFor();await page.waitForFunction(()=>{const body=document.querySelector('.workspace-body'),drawer=document.querySelector('.workspace-sidebar');return Math.abs(parseFloat(getComputedStyle(body).marginLeft)-drawer.getBoundingClientRect().width)<.02;});}
    await page.evaluate(async()=>{await document.fonts.ready;const img=document.querySelector('.v041-today-calm img');if(img){await img.decode();}});
    const v=await page.evaluate(()=>{const rect=s=>{const r=document.querySelector(s).getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom}};const f=document.querySelector('.v041-today-calm'),img=f.querySelector('img');return {viewport:[innerWidth,innerHeight],documentWidth:document.documentElement.scrollWidth,task:rect('.v040-word-action'),frame:rect('.v041-today-calm'),source:f.dataset.sceneSource,status:f.dataset.sceneStatus,img:img?{src:img.currentSrc,complete:img.complete,natural:[img.naturalWidth,img.naturalHeight],fit:getComputedStyle(img).objectFit}:null};});
    const file=path.join(OUT,`${theme}-${width}${opened?'-drawer':''}.png`);await page.screenshot({path:file,fullPage:true});report.cases.push({theme,width,height,opened,...v,file});

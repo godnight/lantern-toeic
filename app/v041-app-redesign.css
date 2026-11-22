@@ -11,7 +11,6 @@
 .workspace-topbar button{min-width:44px;min-height:44px}
 .workspace-topbar .workspace-search-entry>span{display:none}
 .workspace-topbar .workspace-search-entry{width:44px;padding:10px;justify-content:center}
-.workspace-nav-caption{font-size:.8rem}
 .v040-page-heading{margin-bottom:20px}
 .v040-profile-card{padding:18px!important}
 .v040-settings-row{min-height:60px!important;gap:12px}
@@ -23,13 +22,6 @@
 .v041-today-scene .v041-theme-scene{margin:0}
 .v041-today-scene .v040-page-heading{margin:12px 0 0}
 .v041-today-scene .v040-date{font-size:.85rem;margin:0 0 8px}
-.v040-task-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border:0;background:transparent;padding:0}
-.v040-task-row{display:grid!important;grid-template-columns:28px minmax(0,1fr);padding:16px!important;gap:8px!important;min-height:100px;background:var(--card);border:1px solid var(--border);border-radius:14px}
-.v040-task-copy{min-width:0}
-.v040-task-copy strong{font-size:1rem!important}
-.v040-task-copy small{font-size:.8rem!important;line-height:1.5}
-.v040-task-row .v040-row-action{grid-column:2;justify-self:start;padding:0;min-height:44px;font-size:.85rem}
-.v040-task-icon{width:auto!important;height:auto!important;background:none!important}
 .v040-section-heading h2{font-size:1.1rem}
 .v041-today-calm{margin-top:22px!important}
 .v041-task-rows{display:grid;gap:0;border-block:1px solid var(--border)}
@@ -110,7 +102,6 @@
 @media(prefers-reduced-motion:reduce){.v041-today-scene *{animation:none!important;transition:none!important}}
 
 /* Verified integration corrections: old mobile rules hid search and used serif headings. */
-.v040-workspace-shell .workspace-topbar{background:var(--background)!important;background-image:none!important;}
 .v040-workspace-shell .workspace-topbar .workspace-search-entry{display:flex!important;}
 .v040-workspace-shell :is(h1,h2,h3,button,.button,.text-button,input,select,textarea),
 .practice-dialog :is(h1,h2,h3,button,.button,.text-button,input,select,textarea){font-family:var(--ui-font,system-ui,sans-serif)!important;}
@@ -136,15 +127,6 @@
 }
 
 /* Today only: quiet full-width actions, aligned at the bottom of both cards. */
-.v040-today .v045-today-tasks{grid-template-columns:repeat(auto-fit,minmax(min(100%,7.5rem),1fr));}
-.v040-today .v045-today-task{grid-template-rows:1fr auto;align-items:start;}
-.v045-today-task .v040-task-icon{align-self:start;padding-top:2px;}
-.v040-today .v045-today-task .v045-today-action{grid-column:1/-1;align-self:end;justify-self:stretch;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:44px;margin:0;padding:8px 0;border:0;border-top:1px solid var(--border);border-radius:0;background:transparent;color:var(--ui-primary);font-size:.85rem;line-height:1.5;text-align:left;white-space:normal;}
-.v045-today-action>span{min-width:0;overflow-wrap:anywhere;}
-.v045-today-action>svg{flex-shrink:0;}
-.v040-today .v045-today-task .v045-today-action:focus-visible{outline:2px solid var(--ring);outline-offset:3px;border-radius:4px;}
-.v040-today .v045-today-task .v045-today-action:active:not(:disabled){background:var(--ui-selection);border-radius:4px;}
-.v040-today .v045-today-task .v045-today-action:disabled{opacity:.5;cursor:default;}
 
 /* Tab scenes and overview surfaces. Formal learning surfaces keep their tokens. */
 body:is([data-ui-theme="hollow"],[data-ui-theme="silk"]) .v040-workspace-shell{

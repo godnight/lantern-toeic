@@ -1,13 +1,7 @@
 import React from 'react';
 import {createRoot} from 'react-dom/client';
 import NativeAccountRoot from './NativeAccountRoot';
-import '../../app/globals.css';
-import '../../app/redesign.css';
-import "../../app/v041-design-theme.css";
-import "../../app/learn/v041-vocabulary.css";
-import "../../app/learn/audio-redesign.css";
-import "../../app/v041-app-redesign.css";
-import "../../app/learn/legal-pages.css";
+import '../../app/style-entry';
 import {PublicInfoBoundary} from "../../app/learn/legal-pages";
 import {installHarmonyHost} from '../../lib/native-host';
 import {installBundledLessonAudio} from '../../lib/bundled-lesson-audio';

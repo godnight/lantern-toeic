@@ -3,7 +3,7 @@
 import {BookOpen,ChartNoAxesCombined,ChevronLeft,Headphones,Home,Library,Menu,Palette,RotateCcw,Search,Settings,X} from 'lucide-react';
 import {useEffect,useRef,useState,type CSSProperties,type ReactNode} from 'react';
 import type {Theme} from '@/lib/study-model';
-import {ThemeMotif,workspaceSceneBackdrop} from './ui-theme';
+import {workspaceSceneBackdrop} from './ui-theme';
 import './workspace-drawer.css';
 
 export const WORKSPACE_NAV = [
@@ -13,8 +13,8 @@ export const WORKSPACE_NAV = [
 ];
 
 export type WorkspaceShellProps={
- nav:string;theme:Theme;name:string;scope:string;syncLabel:string;reviewCount:number;
- onNavigate:(nav:string)=>void;onSearch:()=>void;onSync:()=>void;focused?:boolean;children:ReactNode;
+ nav:string;theme:Theme;reviewCount:number;
+ onNavigate:(nav:string)=>void;onSearch:()=>void;focused?:boolean;children:ReactNode;
  /** Parent owns navigation/history and may override the default personal-page hierarchy. */
  onBack?:()=>void;backLabel?:string;onProfile?:()=>void;discoveryFeedActive?:boolean;
 };
@@ -24,16 +24,6 @@ const TITLES:Record<string,string>={today:'今日学习',train:'练习',review:'
  settings:'学习偏好',account:'账号与安全',backups:'数据管理',art:'内容与来源'};
 const PERSONAL_PAGES=new Set(['profile','themes','about','account','settings','backups','art']);
 
-/** Kept separate from content: this decor never changes learning state. */
-function WorkspaceAmbient({theme}:{theme:Theme}){
- if(theme!=='hollow'&&theme!=='silk')return null;
- return <div className="v040-ambient" data-kind={theme} aria-hidden="true">
-  {theme==='hollow'&&<img src="/phase2-theme/rain-city-hd-1x.webp"
-   srcSet="/phase2-theme/rain-city-hd-1x.webp 560w, /phase2-theme/rain-city-hd-2x.webp 1120w, /phase2-theme/rain-city-hd-3x.webp 1672w"
-   sizes="462px" width={560} height={315} alt="" decoding="async"/>}
- </div>;
-}
-
 function Brand({onClick,mobile=false}:{onClick:()=>void;mobile?:boolean}){
  return <button type="button" className={mobile?'workspace-mobile-brand':'workspace-brand'}
   onClick={onClick} aria-label="微光，返回今日">
@@ -41,7 +31,7 @@ function Brand({onClick,mobile=false}:{onClick:()=>void;mobile?:boolean}){
  </button>;
 }
 
-export function WorkspaceShell({nav,theme,name,scope,syncLabel,reviewCount,onNavigate,onSearch,onSync,
+export function WorkspaceShell({nav,theme,reviewCount,onNavigate,onSearch,
  focused=false,children,onBack,backLabel,onProfile,discoveryFeedActive=false}:WorkspaceShellProps){
  const subpage=PERSONAL_PAGES.has(nav);
  const parent=nav==='profile'?'today':'profile';
@@ -81,7 +71,7 @@ export function WorkspaceShell({nav,theme,name,scope,syncLabel,reviewCount,onNav
  </div>;
 }
 
-export function WorkspaceHeading({theme,title,eyebrow,description}:{theme:Theme;title:string;eyebrow?:string;description?:string}){
+export function WorkspaceHeading({title}:{title:string}){
  return <div className="workspace-heading"><h1>{title}</h1></div>;
 }
 export function BackToWorkspace({onBack,children='返回'}:{onBack:()=>void;children?:ReactNode}){

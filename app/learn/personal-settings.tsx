@@ -63,7 +63,7 @@ export function ThemeSettings({theme,onChange,disabled=false}:ThemeSettingsProps
 }
 
 export type AboutSettingsProps={
-  version:string;buildId:string;versionCode?:number;nativeMode?:boolean;
+  version:string;buildId?:string;versionCode?:number;nativeMode?:boolean;
   onSources:()=>void;onInstall:()=>void;
 };
 export function AboutSettings({version,buildId,versionCode,nativeMode=false,onSources,onInstall}:AboutSettingsProps){
@@ -72,8 +72,8 @@ export function AboutSettings({version,buildId,versionCode,nativeMode=false,onSo
     <section className="v040-about-card">
       <h2>微光</h2><p>托业学习</p>
       <dl className="v040-about-facts">
-        <div><dt>应用版本</dt><dd>v{version}{versionCode!==undefined?` / ${versionCode}`:''}</dd></div>
-        <div><dt>构建标识</dt><dd>{buildId}</dd></div>
+        <div><dt>应用版本</dt><dd>v{version}{nativeMode&&versionCode!==undefined?` / ${versionCode}`:''}</dd></div>
+        {nativeMode&&buildId&&<div><dt>构建标识</dt><dd>{buildId}</dd></div>}
         <div><dt>使用方式</dt><dd>{nativeMode?'鸿蒙本机应用':'网页版'}</dd></div>
       </dl>
       <p className="v040-about-note">TOEIC 是 ETS 注册商标，微光为独立学习工具。</p>

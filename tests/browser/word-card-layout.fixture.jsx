@@ -104,8 +104,8 @@ function Fixture({VocabularyStudyCard}) {
     return () => {delete window.__wordCardQA;};
   }, []);
 
-  return <WorkspaceShell nav="vocabulary" theme={theme} name="合成布局验证" scope="隔离测试"
-    syncLabel="本机" reviewCount={0} onNavigate={() => {}} onSearch={() => {}} onSync={() => {}}>
+  return <WorkspaceShell nav="vocabulary" theme={theme}
+    reviewCount={0} onNavigate={() => {}} onSearch={() => {}}>
     <section className="phase2-vocabulary-plan v041-vocabulary">
       <VocabularyStudyCard workflow={workflow} theme={theme} onExampleLookup={() => {}}/>
     </section>

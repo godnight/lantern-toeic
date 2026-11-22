@@ -1,4 +1,15 @@
 /* Shared, data-driven page presentation for the approved compact layout. */
+.v040-task-icon{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:auto!important;height:auto!important;border-radius:12px;background:none!important;color:var(--ui-text-secondary)}
+.v040-task-copy{flex:1;min-width:0}
+.v040-task-copy strong{display:block;font-size:1rem!important;font-weight:600}
+.v040-task-copy small{display:block;margin-top:3px;color:var(--ui-text-secondary);font-size:.8rem!important;line-height:1.5;overflow-wrap:anywhere}
+.v040-page .v040-row-action{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;min-height:44px;border-radius:0;background:transparent;line-height:1.5;text-align:left;white-space:normal}
+.v045-today-task .v040-task-icon{align-self:start;padding-top:2px}
+.v045-today-action>span{min-width:0;overflow-wrap:anywhere}
+.v045-today-action>svg{flex-shrink:0}
+.v040-today .v045-today-task .v045-today-action:focus-visible{outline:2px solid var(--ring);outline-offset:3px;border-radius:4px}
+.v040-today .v045-today-task .v045-today-action:active:not(:disabled){background:var(--ui-selection);border-radius:4px}
+.v040-today .v045-today-task .v045-today-action:disabled{opacity:.5;cursor:default}
 body[data-ui-theme] .v040-workspace-shell::before{background-image:none!important;background-color:var(--ui-canvas)!important}
 body[data-ui-theme] .v040-today .v041-today-scene{margin:0 0 24px}
 body[data-ui-theme] .v040-today .v041-today-scene .v040-page-heading{margin:0}

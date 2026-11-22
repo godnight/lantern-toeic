@@ -18,13 +18,11 @@ body[data-ui-theme] .small,body[data-ui-theme] .pill,body[data-ui-theme] .muted{
 .workspace-brand{display:flex;gap:12px;align-items:center;text-align:left;min-height:48px;color:var(--foreground)}
 .workspace-brand>span{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;background:var(--primary);color:var(--primary-foreground);font-size:24px;font-weight:650}
 .workspace-brand b{font-size:21px;display:block}.workspace-brand small{font-size:9px;letter-spacing:.12em;display:block;color:var(--muted-foreground)}
-.workspace-nav-caption{color:var(--muted-foreground);font-size:13px;margin:44px 0 12px}
 .workspace-sidebar nav{display:grid;gap:7px}.workspace-sidebar nav button{display:flex;gap:14px;align-items:center;min-height:48px;padding:11px 14px;border-radius:12px;text-align:left;color:var(--muted-foreground)}
 .workspace-sidebar nav button[aria-current=page]{background:var(--secondary);color:var(--foreground);font-weight:600}.workspace-sidebar nav button small{margin-left:auto;border-radius:7px;padding:0 6px;font-size:12px;background:var(--muted)}
 .workspace-sidebar-bottom{margin-top:auto;display:grid;gap:14px}.workspace-sidebar-bottom>button{display:flex;gap:12px;align-items:center;min-height:44px;font-size:14px;text-align:left}
-.workspace-identity{border-top:1px solid var(--border);padding-top:18px;display:flex;gap:12px;align-items:center}.workspace-identity>span{width:34px;height:34px;background:var(--secondary);border-radius:50%;display:grid;place-items:center;font-size:13px}.workspace-identity b{display:block;font-size:13px}.workspace-identity small{display:block;font-size:11px;color:var(--muted-foreground)}
 .workspace-body{margin-left:224px;min-width:0}.workspace-topbar{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;border-bottom:1px solid var(--border);gap:12px;background:var(--background)}
-.workspace-location{font-size:13px;color:var(--muted-foreground)}.workspace-topbar>div{display:flex;align-items:center;gap:14px}
+.workspace-topbar>div{display:flex;align-items:center;gap:14px}
 .workspace-search-entry{display:flex;align-items:center;gap:10px;padding:8px 14px;min-height:44px;background:var(--card);border:1px solid var(--ui-control-border,var(--input));border-radius:12px;font-size:13px}
 .workspace-search-entry kbd{font-size:10px;color:var(--muted-foreground);border:1px solid var(--border);border-radius:4px;padding:1px 5px;margin-left:12px}.workspace-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:10px}.workspace-sync{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted-foreground);min-height:44px}
 .workspace-main{min-width:0;max-width:1320px;padding:44px 40px 28px;margin:auto;outline:none}

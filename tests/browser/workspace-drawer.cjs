@@ -7,7 +7,7 @@ const fixture=path.join(root,'outputs','workspace-drawer-test');
 const entry=`import React,{useState} from 'react';import{createRoot}from'react-dom/client';
 import{WorkspaceShell}from'../../app/learn/workspace-shell';
 import '../../app/globals.css';import '../../app/redesign.css';import '../../app/workspace-redesign.css';import '../../app/v040-interface.css';import '../../app/v041-design-theme.css';import '../../app/v041-app-redesign.css';import '../../app/learn/discovery.css';
-function App(){const [nav,setNav]=useState('today');const [focused,setFocused]=useState(false);return <WorkspaceShell nav={nav} theme="paper" name="Test" scope="Test" syncLabel="" reviewCount={0} onNavigate={setNav} onSearch={()=>setNav('search')} onSync={()=>{}} focused={focused} discoveryFeedActive={nav==='resources'}><p data-page>{nav}</p><button onClick={()=>setFocused(!focused)}>{focused?'结束专注':'进入专注'}</button></WorkspaceShell>}document.body.dataset.uiTheme='paper';createRoot(document.getElementById('root')).render(<App/>);`;
+function App(){const [nav,setNav]=useState('today');const [focused,setFocused]=useState(false);return <WorkspaceShell nav={nav} theme="paper" reviewCount={0} onNavigate={setNav} onSearch={()=>setNav('search')} focused={focused} discoveryFeedActive={nav==='resources'}><p data-page>{nav}</p><button onClick={()=>setFocused(!focused)}>{focused?'结束专注':'进入专注'}</button></WorkspaceShell>}document.body.dataset.uiTheme='paper';createRoot(document.getElementById('root')).render(<App/>);`;
 
 (async()=>{
  fs.mkdirSync(fixture,{recursive:true});

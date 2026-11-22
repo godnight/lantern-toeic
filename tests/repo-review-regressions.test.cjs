@@ -509,8 +509,18 @@ test('about shows the actual native build version and preserves the web release 
     assert.ok(about,'Find the real about page entry');about.props.onClick();
     const facts=nodes(render(),n=>n.type==='dl'&&n.props.className==='v040-about-facts')[0];
     assert.ok(facts,'Render the real about page');
-    assert.match(textOf(facts),new RegExp(`应用版本v${(nativeMode?identity.versionName:release.version).replaceAll('.','\\.')} / ${identity.versionCode}`));
-    assert.ok(textOf(facts).includes(identity.buildId));
+    const actual=textOf(facts);
+    assert.match(actual,new RegExp(`应用版本v${(nativeMode?identity.versionName:release.version).replaceAll('.','\\.')}`));
+    if(nativeMode){
+      assert.ok(actual.includes(` / ${identity.versionCode}`));
+      assert.ok(actual.includes(`构建标识${identity.buildId}`));
+      assert.ok(actual.includes('使用方式鸿蒙本机应用'));
+    }else{
+      assert.ok(!actual.includes(String(identity.versionCode)),'Web must not display the native version code');
+      assert.ok(!actual.includes(identity.buildId),'Web must not display the native build ID');
+      assert.ok(!actual.includes('构建标识'));
+      assert.ok(actual.includes('使用方式网页版'));
+    }
     h.cleanup();
   }
 });

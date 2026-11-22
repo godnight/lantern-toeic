@@ -21,6 +21,8 @@ jobs:
       - name: Classify cumulative PR changes (main and manual runs are full)
         id: scope
         run: node .github/scripts/change-scope.mjs
+      - name: Verify source version consistency
+        run: node scripts/check-version-consistency.mjs
       - name: Verify CI classifier and workflow contracts
         if: steps.scope.outputs.tooling == 'true' || steps.scope.outputs.full == 'true'
         run: node --test .github/tests/*.test.mjs

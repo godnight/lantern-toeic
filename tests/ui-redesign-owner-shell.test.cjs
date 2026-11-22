@@ -95,7 +95,7 @@ function settle(){let count=0;while(navigation.length){assert.ok(++count<20);nav
 function key(values={}){let prevented=false;const event={key:'k',ctrlKey:true,metaKey:false,isComposing:false,keyCode:0,preventDefault(){prevented=true;},...values};for(const fn of [...listeners.get('keydown')||[]])fn(event);render();return prevented;}
 
 const shellHooks={useState:value=>[typeof value==='function'?value():value,()=>{}],useRef:value=>({current:value}),useEffect(){}};
-const actualShell=load('app/learn/workspace-shell.tsx',{react:shellHooks,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':proxy,'./ui-theme':{ThemeMotif:'ThemeMotif',workspaceSceneBackdrop:()=>null}}).WorkspaceShell;
+const actualShell=load('app/learn/workspace-shell.tsx',{react:shellHooks,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'lucide-react':proxy,'./ui-theme':{workspaceSceneBackdrop:()=>null}}).WorkspaceShell;
 cursor=0;effects=[];tree=app({owner:'bob',nativeMode:false});effects.forEach(fn=>fn());
 const props=shell().props,output=actualShell(props);
 // The drawer no longer renders the owner identity; inspect the whole shell so
@@ -111,11 +111,11 @@ test('C09: real owner-switch pre-effect snapshot cannot project prior nickname, 
   alice.attempts=[{id:'private-owner-attempt',qid:'owner-wrong-question',choice:0,correct:false,createdAt:'2026-10-12T00:00:00.000Z',seconds:12,mode:'first'}];
   const storage=new Map([['lantern-v1-alice',JSON.stringify({data:alice})],['lantern-v1-bob:required-schema',JSON.stringify({schemaVersion:999})]]);
   const original=storage.get('lantern-v1-alice'),h=hookHarness(storage);h.render('alice');const readable=h.render('alice');
-  const normal=shellProjection(readable);assert.equal(normal.props.name,'PRIVATE Alice Owner A');assert.equal(normal.props.reviewCount,1);assert.equal(normal.reviewBadge,true);assert.equal(normal.appliedTheme,'silk');
+  const normal=shellProjection(readable);assert.doesNotMatch(normal.identityText,/PRIVATE Alice/);assert.equal(normal.props.reviewCount,1);assert.equal(normal.reviewBadge,true);assert.equal(normal.appliedTheme,'silk');
   const switching=h.render('bob');assert.equal(switching.ready,true);assert.equal(switching.recordsReadable,false);assert.equal(switching.data.profile.name,'PRIVATE Alice Owner A','Fixture must reproduce the actual retained snapshot before owner effect');
-  const blocked=shellProjection(switching);assert.equal(blocked.props.name,'记录暂不可读');assert.doesNotMatch(blocked.identityText,/PRIVATE Alice/);assert.equal(blocked.reviewBadge,false);assert.equal(blocked.props.reviewCount,0);assert.equal(blocked.appliedTheme,'paper');
+  const blocked=shellProjection(switching);assert.doesNotMatch(blocked.identityText,/PRIVATE Alice/);assert.equal(blocked.reviewBadge,false);assert.equal(blocked.props.reviewCount,0);assert.equal(blocked.appliedTheme,'paper');
   const failed=h.render('bob');assert.equal(failed.sync,'blocked');assert.equal(failed.recordsReadable,false);assert.equal(failed.data.attempts.length,0);
-  const failure=shellProjection(failed);assert.equal(failure.props.name,'记录暂不可读');assert.equal(failure.reviewBadge,false);assert.equal(failure.appliedTheme,'paper');
+  const failure=shellProjection(failed);assert.doesNotMatch(failure.identityText,/PRIVATE Alice/);assert.equal(failure.reviewBadge,false);assert.equal(failure.appliedTheme,'paper');
   assert.equal(h.writes.length,0);assert.equal(storage.get('lantern-v1-alice'),original);h.unmount();
 });
 
@@ -123,6 +123,6 @@ test('C09: loading shell with stale data uses neutral identity and hides review 
   const original=structuredClone(model.EMPTY_DATA);original.profile={...original.profile,name:'PRIVATE Loading Previous Owner',theme:'hollow'};
   original.attempts=[{id:'stale-review',qid:'previous-question',choice:0,correct:false,createdAt:'2026-10-12T00:00:00.000Z',seconds:12,mode:'first'}];
   const shell=shellProjection({data:original,ready:false,recordsReadable:false,sync:'loading',issues:[],syncNow(){}});
-  assert.equal(shell.props.name,'正在读取记录');assert.doesNotMatch(shell.identityText,/PRIVATE Loading/);assert.equal(shell.props.reviewCount,0);assert.equal(shell.reviewBadge,false);assert.equal(shell.appliedTheme,'paper');
+  assert.doesNotMatch(shell.identityText,/PRIVATE Loading/);assert.equal(shell.props.reviewCount,0);assert.equal(shell.reviewBadge,false);assert.equal(shell.appliedTheme,'paper');
   assert.equal(original.profile.name,'PRIVATE Loading Previous Owner');assert.equal(original.profile.theme,'hollow');assert.equal(original.attempts.length,1,'Projection must not clear stored records');
 });
